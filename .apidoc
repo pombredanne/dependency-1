@@ -4,6 +4,7 @@ code:
       version: latest
       generators:
         play_2_4_client: generated/app
+        play_2_x_routes: api/conf/routes
   flow:
     common:
       version: latest

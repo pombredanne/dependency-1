@@ -1,12 +1,12 @@
 package controllers
 
 import com.bryzek.dependency.v0.Client
-import com.bryzek.dependency.v0.models.Healthcheck
+import io.flow.common.v0.models.Healthcheck
 
 import play.api.libs.ws._
 import play.api.test._
 
-class HealthchecksSpec extends PlaySpecification {
+class IoFlowCommonV0ModelsHealthchecksSpec extends PlaySpecification {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -15,7 +15,7 @@ class HealthchecksSpec extends PlaySpecification {
 
   "GET /_internal_/healthcheck" in new WithServer(port=port) {
     await(
-      client.Healthchecks.getInternalAndHealthcheck()
+      client.ioFlowCommonV0ModelsHealthchecks.getInternalAndHealthcheck()
     ) must beEqualTo(
       Healthcheck("healthy")
     )
