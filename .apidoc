@@ -1,0 +1,15 @@
+code:
+  bryzek:
+    dependency:
+      version: latest
+      generators:
+        play_2_4_client: generated/app
+  flow:
+    common:
+      version: latest
+      generators:
+        play_2_x_json: generated/app
+    github:
+      version: latest
+      generators:
+        play_2_4_client: generated/app

@@ -1,0 +1,69 @@
+{
+    "name": "dependency",
+
+    "imports": [
+	{ "uri": "http://www.apidoc.me/flow/common/0.0.1-dev/service.json" }
+    ],
+
+    "enums": {
+	"scms": {
+	    "values": [
+		{ "name": "GitHub" }
+	    ]
+	}
+    },
+
+    "models": {
+	    
+	"user": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "email", "type": "string" }
+	    ]
+	},
+
+	"library": {
+	    "fields": [
+		{ "name": "group_id", "type": "string" },
+		{ "name": "artifact_id", "type": "string" },
+		{ "name": "version", "type": "string" }
+	    ]
+	},
+
+	"project": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "name", "type": "string" },
+		{ "name": "scms", "type": "scms" },
+		{ "name": "uri", "type": "string" },
+                { "name": "audit", "type": "io.flow.common.v0.models.audit" }
+	    ]
+	},
+	
+	"project_form": {
+	    "fields": [
+		{ "name": "name", "type": "string" },
+		{ "name": "scms", "type": "scms" },
+		{ "name": "uri", "type": "string" }
+	    ]
+	}
+	
+    },
+
+    "resources": {
+
+	"io.flow.common.v0.models.healthcheck": {
+	    "path": "/_internal_",
+            "operations": [
+                {
+                    "method": "GET",
+		    "path": "/healthcheck",
+                    "responses": {
+                        "200": { "type": "io.flow.common.v0.models.healthcheck" }
+                    }
+                }
+	    ]
+	}
+    }
+
+}
