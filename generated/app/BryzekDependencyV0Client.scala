@@ -34,7 +34,7 @@ package com.bryzek.dependency.v0.models {
 
   object Scms {
 
-    case object GitHub extends Scms { override def toString = "GitHub" }
+    case object GitHub extends Scms { override def toString = "git_hub" }
 
     /**
      * UNDEFINED captures values that are sent either in error or
