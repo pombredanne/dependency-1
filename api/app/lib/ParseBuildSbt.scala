@@ -13,28 +13,23 @@ case class ParseBuildSbt(contents: String) {
   private val lines = contents.split("\n").map(_.trim).filter(!_.isEmpty)
 
   val languages: Seq[Language] = {
-    lines.find(_.startsWith("scalaVersion")) match {
-      case None => Nil
-      case Some(line) => {
-        line.split(":=").map(_.trim).toList match {
-          case Nil => {
-            Nil
-          }
-          case head :: tail :: Nil => {
-            stripQuotes(tail) match {
-              case None => Nil
-              case Some(version) => Seq(Language(Scala, version))
-            }
-          }
-          case _ => {
-            Nil
-          }
+    lines.
+      filter(_.startsWith("scalaVersion")).
+      filter(!_.startsWith("//")).
+      flatMap { line =>
+      line.split(":=").map(_.trim).toList match {
+        case head :: tail :: Nil => {
+          stripQuotes(tail).map { version => Language(Scala, version) }
+        }
+        case _ => {
+          None
         }
       }
     }
   }
 
   val libraries: Seq[Library] = {
+    // lines.filter(_.startsWith("scalaVersion")).flatMap { line =>
     Nil
   }
 
