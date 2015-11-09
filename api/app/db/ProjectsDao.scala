@@ -1,5 +1,6 @@
 package db
 
+import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Scms, Project, ProjectForm, User}
 import io.flow.common.v0.models.Error
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
@@ -70,6 +71,8 @@ object ProjectsDao {
       ).execute()
     }
 
+    MainActor.ref ! MainActor.Messages.ProjectCreated(guid)
+
     findByGuid(guid).getOrElse {
       sys.error("Failed to create project")
     }
@@ -77,6 +80,7 @@ object ProjectsDao {
 
   def softDelete(deletedBy: User, project: Project) {
     SoftDelete.delete("projects", deletedBy.guid, project.guid)
+    MainActor.ref ! MainActor.Messages.ProjectDeleted(project.guid)
   }
 
   def findByGuid(guid: UUID): Option[Project] = {
