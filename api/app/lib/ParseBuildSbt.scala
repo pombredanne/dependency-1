@@ -34,15 +34,14 @@ case class ParseBuildSbt(contents: String) {
   val libraries: Seq[Library] = {
     lines.
       filter(_.replaceAll("%%", "%").split("%").size >= 2).
+      map(stripComments(_)).
+      map(_.trim).
       map(_.stripSuffix(",")).
       map(_.trim).
       map { line =>
         toLibrary(line) match {
           case Left(error) => sys.error(error)
-          case Right(library) => {
-            println(s"Found library[$library] line[$line]")
-            library
-          }
+          case Right(library) => library
         }
       }
   }
@@ -66,6 +65,15 @@ case class ParseBuildSbt(contents: String) {
 
   def stripQuotes(value: String): String = {
     value.stripPrefix("\"").stripSuffix("\"").trim
+  }
+
+  def stripComments(value: String): String = {
+    val i = value.indexOf("//")
+    if (i < 0) {
+      value
+    } else {
+      value.substring(0, i)
+    }
   }
 
 }

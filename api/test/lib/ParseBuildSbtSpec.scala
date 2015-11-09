@@ -55,6 +55,34 @@ lazy val root = project
         )
       )
     }
+ }
 
-  }
+  "dependencies w/ comments" should {
+
+    val contents = """
+lazy val root = project
+  .in(file("."))
+  .settings(
+    libraryDependencies ++= Seq(
+      ws,
+      "io.flow" %% "lib-play-postgresql" % "0.0.1-SNAPSHOT" % Test, // Foo
+      "org.postgresql" % "postgresql" % "9.4-1202-jdbc42" // Bar
+    )
+)
+"""
+
+    "parses dependencies" in {
+      val result = ParseBuildSbt(contents)
+      result.languages must beEqualTo(Nil)
+      result.libraries must beEqualTo(
+        Seq(
+          Library("io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT"),
+          Library("org.postgresql", "postgresql", "9.4-1202-jdbc42")
+        )
+      )
+    }
+ }
+
+
+
 }
