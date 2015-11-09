@@ -29,7 +29,7 @@ case class ParseBuildSbt(contents: String) {
         }
       }
     }
-  }
+  }.distinct.sortBy { l => s"${l.name}:${l.version}" }
 
   val libraries: Seq[Library] = {
     lines.
@@ -44,7 +44,7 @@ case class ParseBuildSbt(contents: String) {
           case Right(library) => library
         }
       }
-  }
+  }.distinct.sortBy { l => s"${l.groupId}:${l.artifactId}:${l.version}" }
 
   def toLibrary(value: String): Either[String, Library] = {
     value.replaceAll("%%", "%").split("%").map(_.trim).toList match {

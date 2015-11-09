@@ -81,8 +81,42 @@ lazy val root = project
         )
       )
     }
- }
+  }
 
+  "multi project build w/ duplicates" should {
 
+    val contents = """
+lazy val api = project
+  .in(file("api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      ws,
+      "io.flow" %% "lib-play-postgresql" % "0.0.1-SNAPSHOT",
+      "org.postgresql" % "postgresql" % "9.4-1202-jdbc42"
+    )
+)
+
+lazy val www = project
+  .in(file("api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "io.flow" %% "lib-play-postgresql" % "0.0.2-SNAPSHOT",
+      "org.postgresql" % "postgresql" % "9.4-1202-jdbc42"
+    )
+)
+"""
+
+    "parses dependencies" in {
+      val result = ParseBuildSbt(contents)
+      result.languages must beEqualTo(Nil)
+      result.libraries must beEqualTo(
+        Seq(
+          Library("io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT"),
+          Library("io.flow", "lib-play-postgresql", "0.0.2-SNAPSHOT"),
+          Library("org.postgresql", "postgresql", "9.4-1202-jdbc42")
+        )
+      )
+    }
+  }
 
 }
