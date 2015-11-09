@@ -14,7 +14,7 @@ lazy val root = project
   .in(file("."))
 """
 
-    "parses dependencies" in {
+    "parse dependencies" in {
       val result = ParseBuildSbt(contents)
       result.languages must beEqualTo(Nil)
       result.libraries must beEqualTo(Nil)
@@ -45,7 +45,7 @@ lazy val root = project
 )
 """
 
-    "parses dependencies" in {
+    "parse dependencies" in {
       val result = ParseBuildSbt(contents)
       result.languages must beEqualTo(Seq(Language("scala", "2.11.7")))
       result.libraries must beEqualTo(
@@ -71,7 +71,7 @@ lazy val root = project
 )
 """
 
-    "parses dependencies" in {
+    "parse dependencies" in {
       val result = ParseBuildSbt(contents)
       result.languages must beEqualTo(Nil)
       result.libraries must beEqualTo(
@@ -106,7 +106,7 @@ lazy val www = project
 )
 """
 
-    "parses dependencies" in {
+    "parse dependencies" in {
       val result = ParseBuildSbt(contents)
       result.languages must beEqualTo(Nil)
       result.libraries must beEqualTo(
