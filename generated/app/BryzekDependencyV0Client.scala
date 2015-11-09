@@ -5,6 +5,11 @@
  */
 package com.bryzek.dependency.v0.models {
 
+  case class Language(
+    name: String,
+    version: String
+  )
+
   case class Library(
     groupId: String,
     artifactId: String,
@@ -97,6 +102,20 @@ package com.bryzek.dependency.v0.models {
     implicit val jsonReadsDependencyScms = __.read[String].map(Scms.apply)
     implicit val jsonWritesDependencyScms = new Writes[Scms] {
       def writes(x: Scms) = JsString(x.toString)
+    }
+
+    implicit def jsonReadsDependencyLanguage: play.api.libs.json.Reads[Language] = {
+      (
+        (__ \ "name").read[String] and
+        (__ \ "version").read[String]
+      )(Language.apply _)
+    }
+
+    implicit def jsonWritesDependencyLanguage: play.api.libs.json.Writes[Language] = {
+      (
+        (__ \ "name").write[String] and
+        (__ \ "version").write[String]
+      )(unlift(Language.unapply _))
     }
 
     implicit def jsonReadsDependencyLibrary: play.api.libs.json.Reads[Library] = {
