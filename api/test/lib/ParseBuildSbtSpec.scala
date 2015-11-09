@@ -5,12 +5,27 @@ import org.specs2.mutable._
 
 class ParseBuildSbtSpec extends Specification {
 
-  "simple library" should {
+  "simple library with no dependencies" should {
+
+    val contents = """
+name := "lib-play"
+
+lazy val root = project
+  .in(file("."))
+"""
+
+    "parses dependencies" in {
+      val result = ParseBuildSbt(contents)
+      result.languages must beEqualTo(Nil)
+      result.libraries must beEqualTo(Nil)
+    }
+
+  }
+
+  "single project w/ dependencies" should {
 
     val contents = """
 import play.PlayImport.PlayKeys._
-
-name := "lib-play"
 
 organization := "io.flow"
 
@@ -18,14 +33,14 @@ scalaVersion in ThisBuild := "2.11.7"
 
 crossScalaVersions := Seq("2.11.7")
 
-version := "0.0.1-SNAPSHOT"
-
 lazy val root = project
   .in(file("."))
   .enablePlugins(PlayScala)
   .settings(
     libraryDependencies ++= Seq(
-      ws
+      ws,
+      "io.flow" %% "lib-play-postgresql" % "0.0.1-SNAPSHOT",
+      "org.postgresql" % "postgresql" % "9.4-1202-jdbc42"
     )
 )
 """
@@ -33,7 +48,12 @@ lazy val root = project
     "parses dependencies" in {
       val result = ParseBuildSbt(contents)
       result.languages must beEqualTo(Seq(Language("scala", "2.11.7")))
-      result.libraries must beEqualTo(Nil)
+      result.libraries must beEqualTo(
+        Seq(
+          Library("io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT"),
+          Library("org.postgresql", "postgresql", "9.4-1202-jdbc42")
+        )
+      )
     }
 
   }
