@@ -13,4 +13,8 @@ code:
     github:
       version: latest
       generators:
-        ning_1_9_client: generated/app
+        play_2_4_client: generated/app
+    maven:
+      version: latest
+      generators:
+        play_2_4_client: generated/app
