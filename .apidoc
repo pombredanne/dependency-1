@@ -17,4 +17,4 @@ code:
     maven:
       version: latest
       generators:
-        play_2_4_client: generated/app
+        ning_1_9_client: generated/app
