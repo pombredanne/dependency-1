@@ -8,13 +8,31 @@ import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm}
   */
 case class ParseBuildSbt(contents: String) {
 
-  private val Scala = "scala"
+  private case class Variable(name: String, value: String)
+
+  private val LanguageScala = "scala"
 
   private val lines = contents.
     split("\n").
+    map(stripComments(_)).
     map(_.trim).
     filter(!_.isEmpty).
     filter(!_.startsWith("//"))
+
+  // Pull out all lines that start w/ "val " or "var " and capture
+  // variable declarations
+  private val variables = lines.
+    filter(line => line.startsWith("val ") || line.startsWith("var ")).
+    flatMap { line =>
+      line.split("=").map(_.trim).toList match {
+        case declaration :: value :: Nil => {
+          Some(Variable(declaration.substring(declaration.indexOf(" ")).trim, stripQuotes(value)))
+        }
+        case _ => {
+          None
+        }
+      }
+    }
 
   val languages: Seq[LanguageForm] = {
     lines.
@@ -24,15 +42,15 @@ case class ParseBuildSbt(contents: String) {
         case head :: Nil => {
           Some(
             LanguageForm(
-              name = head
+              name = LanguageScala
             )
           )
         }
         case head :: version :: Nil => {
           Some(
             LanguageForm(
-              name = head,
-              version = Some(stripQuotes(version))
+              name = LanguageScala,
+              version = Some(interpolate(version))
             )
           )
         }
@@ -41,7 +59,7 @@ case class ParseBuildSbt(contents: String) {
         }
       }
     }
-  }.distinct.sortBy { l => s"${l.name}:${l.version}" }
+  }.distinct.sortBy { l => (l.name, l.version) }
 
   val libraries: Seq[LibraryForm] = {
     lines.
@@ -56,7 +74,7 @@ case class ParseBuildSbt(contents: String) {
           case Right(library) => library
         }
       }
-  }.distinct.sortBy { l => s"${l.groupId}:${l.artifactId}:${l.version}" }
+  }.distinct.sortBy { l => (l.groupId, l.artifactId, l.version) }
 
   def toLibraryForm(value: String): Either[String, LibraryForm] = {
     value.replaceAll("%%", "%").split("%").map(_.trim).toList match {
@@ -69,20 +87,30 @@ case class ParseBuildSbt(contents: String) {
       case groupId :: artifactId :: Nil => {
         Right(
           LibraryForm(
-            groupId = stripQuotes(groupId),
-            artifactId = stripQuotes(artifactId)
+            groupId = interpolate(groupId),
+            artifactId = interpolate(artifactId)
           )
         )
       }
       case groupId :: artifactId :: version :: more => {
         Right(
           LibraryForm(
-            groupId = stripQuotes(groupId),
-            artifactId = stripQuotes(artifactId),
-            version = Some(stripQuotes(version))
+            groupId = interpolate(groupId),
+            artifactId = interpolate(artifactId),
+            version = Some(interpolate(version))
           )
         )
       }
+    }
+  }
+
+  def interpolate(value: String): String = {
+    val formatted = stripQuotes(value)
+    variables.find(_.name == formatted) match {
+      case None => {
+        formatted
+      }
+      case Some(variable) => variable.value
     }
   }
 

@@ -59,7 +59,7 @@ object GitHubUtil {
 private[lib] case class GitHubDependencyProvider(githubToken: String) extends DependencyProvider {
 
   private val GithubHost = "https://api.github.com"
-  private val Filename = "build.sbt"
+  private val BuildSbtFilename = "build.sbt"
 
   lazy val client = new Client(
     apiUrl = GithubHost,
@@ -77,7 +77,7 @@ private[lib] case class GitHubDependencyProvider(githubToken: String) extends De
         client.contents.getReposByOwnerAndRepoAndPath(
           owner = parsed.owner,
           repo = parsed.repository,
-          path = Filename
+          path = BuildSbtFilename
         ).map { contents =>
           val result = ParseBuildSbt(
             GitHubUtil.toText(contents)
