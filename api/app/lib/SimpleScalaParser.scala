@@ -56,19 +56,39 @@ trait SimpleScalaParser {
   }
 
   /**
-    * Removes any in-line comments
+    * Removes any in-line comments - handles both block and trailing // comments.
+    * 
+    * Taken from http://stackoverflow.com/questions/1657066/java-regular-expression-finding-comments-in-code
     */
   def stripComments(value: String): String = {
-    val i = value.indexOf("//")
-    if (i < 0) {
-      value
-    } else {
-      value.substring(0, i)
-    }
+    value.replaceAll( "//.*|(\"(?:\\\\[^\"]|\\\\\"|.)*?\")|(?s)/\\*.*?\\*/", "$1 " ).trim
+  }
+
+
+  def parseLibraries(): Seq[LibraryForm] = {
+    lines.
+      filter(_.replaceAll("%%", "%").split("%").size >= 2).
+      map(_.stripSuffix(",")).
+      map(_.trim).
+      map { line =>
+        toLibraryForm(line) match {
+          case Left(error) => sys.error(error)
+          case Right(library) => library
+        }
+      }.distinct.sortBy { l => (l.groupId, l.artifactId, l.version) }
   }
 
   def toLibraryForm(value: String): Either[String, LibraryForm] = {
-    value.replaceAll("%%", "%").split("%").map(_.trim).toList match {
+    val firstParen = value.indexOf("(")
+    val lastParen = value.lastIndexOf(")")
+
+    val substring = if (firstParen >= 0) {
+      value.substring(firstParen+1, lastParen)
+    } else {
+      value
+    }
+
+    substring.replaceAll("%%", "%").split("%").map(_.trim).toList match {
       case Nil => {
         Left(s"Could not parse library from[$value]")
       }

@@ -10,6 +10,8 @@ case class BuildSbtScalaParser(contents: String) extends SimpleScalaParser {
 
   private val LanguageScala = "scala"
 
+  val libraries: Seq[LibraryForm] = parseLibraries
+
   val languages: Seq[LanguageForm] = {
     lines.
       filter(_.startsWith("scalaVersion")).
@@ -36,18 +38,5 @@ case class BuildSbtScalaParser(contents: String) extends SimpleScalaParser {
       }
     }
   }.distinct.sortBy { l => (l.name, l.version) }
-
-  val libraries: Seq[LibraryForm] = {
-    lines.
-      filter(_.replaceAll("%%", "%").split("%").size >= 2).
-      map(_.stripSuffix(",")).
-      map(_.trim).
-      map { line =>
-        toLibraryForm(line) match {
-          case Left(error) => sys.error(error)
-          case Right(library) => library
-        }
-      }
-  }.distinct.sortBy { l => (l.groupId, l.artifactId, l.version) }
 
 }
