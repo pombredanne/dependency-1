@@ -61,6 +61,14 @@
 	    ]
 	},
 
+	"language_version": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "version", "type": "string" },
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+	    ]
+	},
+	
 	"library": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
@@ -78,6 +86,14 @@
 	    ]
 	},
 
+	"library_version": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "version", "type": "string" },
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+	    ]
+	},
+	
 	"project": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },

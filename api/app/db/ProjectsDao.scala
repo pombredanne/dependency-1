@@ -16,7 +16,7 @@ object ProjectsDao {
     select projects.guid,
            projects.scms,
            projects.name,
-           ${AuditsDao.queryCreation("projects")}
+           ${AuditsDao.query("projects")}
       from projects
      where true
   """

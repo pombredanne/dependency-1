@@ -16,6 +16,12 @@ package com.bryzek.dependency.v0.models {
     version: _root_.scala.Option[String] = None
   )
 
+  case class LanguageVersion(
+    guid: _root_.java.util.UUID,
+    version: String,
+    audit: io.flow.common.v0.models.Audit
+  )
+
   case class Library(
     guid: _root_.java.util.UUID,
     groupId: String,
@@ -27,6 +33,12 @@ package com.bryzek.dependency.v0.models {
     groupId: String,
     artifactId: String,
     version: _root_.scala.Option[String] = None
+  )
+
+  case class LibraryVersion(
+    guid: _root_.java.util.UUID,
+    version: String,
+    audit: io.flow.common.v0.models.Audit
   )
 
   case class Name(
@@ -164,6 +176,22 @@ package com.bryzek.dependency.v0.models {
       )(unlift(LanguageForm.unapply _))
     }
 
+    implicit def jsonReadsDependencyLanguageVersion: play.api.libs.json.Reads[LanguageVersion] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "version").read[String] and
+        (__ \ "audit").read[io.flow.common.v0.models.Audit]
+      )(LanguageVersion.apply _)
+    }
+
+    implicit def jsonWritesDependencyLanguageVersion: play.api.libs.json.Writes[LanguageVersion] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "version").write[String] and
+        (__ \ "audit").write[io.flow.common.v0.models.Audit]
+      )(unlift(LanguageVersion.unapply _))
+    }
+
     implicit def jsonReadsDependencyLibrary: play.api.libs.json.Reads[Library] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
@@ -196,6 +224,22 @@ package com.bryzek.dependency.v0.models {
         (__ \ "artifact_id").write[String] and
         (__ \ "version").writeNullable[String]
       )(unlift(LibraryForm.unapply _))
+    }
+
+    implicit def jsonReadsDependencyLibraryVersion: play.api.libs.json.Reads[LibraryVersion] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "version").read[String] and
+        (__ \ "audit").read[io.flow.common.v0.models.Audit]
+      )(LibraryVersion.apply _)
+    }
+
+    implicit def jsonWritesDependencyLibraryVersion: play.api.libs.json.Writes[LibraryVersion] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "version").write[String] and
+        (__ \ "audit").write[io.flow.common.v0.models.Audit]
+      )(unlift(LibraryVersion.unapply _))
     }
 
     implicit def jsonReadsDependencyName: play.api.libs.json.Reads[Name] = {

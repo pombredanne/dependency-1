@@ -16,7 +16,7 @@ object LibrariesDao {
     select libraries.guid,
            libraries.group_id,
            libraries.artifact_id,
-           ${AuditsDao.queryCreation("libraries")}
+           ${AuditsDao.query("libraries")}
       from libraries
      where true
   """
@@ -62,7 +62,7 @@ object LibrariesDao {
       }
       case Some(lib) => {
         Util.trimmedString(form.version).map { version =>
-          // TODO: Create version
+          LibraryVersionsDao.upsert(createdBy, lib.guid, version)
         }
         lib
       }

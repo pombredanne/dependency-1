@@ -15,7 +15,7 @@ object LanguagesDao {
   private[this] val BaseQuery = s"""
     select languages.guid,
            languages.name,
-           ${AuditsDao.queryCreation("languages")}
+           ${AuditsDao.query("languages")}
       from languages
      where true
   """
@@ -50,7 +50,7 @@ object LanguagesDao {
       }
       case Some(lang) => {
         Util.trimmedString(form.version).map { version =>
-          // TODO: Create version
+          LanguageVersionsDao.upsert(createdBy, lang.guid, version)
         }
         lang
       }

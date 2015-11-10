@@ -31,7 +31,7 @@ object UsersDao {
            users.email,
            users.first_name,
            users.last_name,
-           ${AuditsDao.queryCreation("users")}
+           ${AuditsDao.query("users")}
       from users
      where true
   """

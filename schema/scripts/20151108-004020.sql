@@ -82,7 +82,7 @@ create unique index user_projects_user_guid_project_guid_not_deleted_un_idx on u
 create table libraries (
   guid                    uuid primary key,
   group_id                text not null check(non_empty_trimmed_string(group_id)),
-  library_id             text not null check(non_empty_trimmed_string(library_id))
+  library_id              text not null check(non_empty_trimmed_string(library_id))
 );
 
 comment on table libraries is '
@@ -96,7 +96,7 @@ create unique index libraries_group_id_library_id_not_deleted_un_idx on librarie
 
 create table library_versions (
   guid                    uuid primary key,
-  library_guid           uuid not null references libraries,
+  library_guid            uuid not null references libraries,
   version                 text not null check(non_empty_trimmed_string(version))
 );
 
@@ -106,7 +106,7 @@ comment on table library_versions is '
 
 select schema_evolution_manager.create_basic_audit_data('public', 'library_versions');
 create index on library_versions(library_guid);
-create unique index library_versions_library_guid_version_not_deleted_un_idx on library_versions(library_guid, version) where deleted_at is null;
+create unique index library_versions_library_guid_lower_version_not_deleted_un_idx on library_versions(library_guid, lower(version)) where deleted_at is null;
 
 create table languages (
   guid                    uuid primary key,
