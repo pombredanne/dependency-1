@@ -3,7 +3,7 @@ package com.bryzek.dependency.lib
 import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm}
 import org.specs2.mutable._
 
-class ParseBuildSbtSpec extends Specification {
+class BuildSbtScalaParserSpec extends Specification {
 
   "simple library with no dependencies" should {
 
@@ -15,7 +15,7 @@ lazy val root = project
 """
 
     "parse dependencies" in {
-      val result = ParseBuildSbt(contents)
+      val result = BuildSbtScalaParser(contents)
       result.languages must beEqualTo(Nil)
       result.libraries must beEqualTo(Nil)
     }
@@ -46,7 +46,7 @@ lazy val root = project
 """
 
     "parse dependencies" in {
-      val result = ParseBuildSbt(contents)
+      val result = BuildSbtScalaParser(contents)
       result.languages must beEqualTo(Seq(LanguageForm("scala", Some("2.11.7"))))
       result.libraries must beEqualTo(
         Seq(
@@ -72,7 +72,7 @@ lazy val root = project
 """
 
     "parse dependencies" in {
-      val result = ParseBuildSbt(contents)
+      val result = BuildSbtScalaParser(contents)
       result.languages must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
@@ -107,7 +107,7 @@ lazy val www = project
 """
 
     "parse dependencies" in {
-      val result = ParseBuildSbt(contents)
+      val result = BuildSbtScalaParser(contents)
       result.languages must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
@@ -134,7 +134,7 @@ lazy val avro = project
     )
   )
 """
-    val result = ParseBuildSbt(contents)
+    val result = BuildSbtScalaParser(contents)
     result.languages must beEqualTo(Nil)
     result.libraries must beEqualTo(
       Seq(

@@ -79,7 +79,7 @@ private[lib] case class GitHubDependencyProvider(githubToken: String) extends De
           repo = parsed.repository,
           path = BuildSbtFilename
         ).map { contents =>
-          val result = ParseBuildSbt(
+          val result = BuildSbtScalaParser(
             GitHubUtil.toText(contents)
           )
           Some(

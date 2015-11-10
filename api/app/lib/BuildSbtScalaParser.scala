@@ -6,7 +6,7 @@ import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm}
   * Takes the contents of a build.sbt file and parses it, providing
   * access to its dependencies (libraries, languages and versions).
   */
-case class ParseBuildSbt(contents: String) extends SimpleScalaParser {
+case class BuildSbtScalaParser(contents: String) extends SimpleScalaParser {
 
   private val LanguageScala = "scala"
 
