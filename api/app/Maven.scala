@@ -3,6 +3,7 @@ import io.flow.maven.v0.Client
 import play.api._
 import play.api.mvc._
 import play.api.libs.json._
+import scala.concurrent.Future
 
 object Maven {
 
@@ -22,18 +23,27 @@ object Maven {
 
   def test() {
     debug("starting")
-
-    client.docs.getSelect("g:com.google.inject AND a:guice").map { apiResponse =>
-      println("got response")
-      println(" - numFound: " + apiResponse.response.numFound)
-      println(" - start: " + apiResponse.response.start)
-      println( " - documents:")
-      apiResponse.response.docs.foreach { doc =>
-        println( "  - doc: " + doc)
+    latestVersion("com.google.inject", "guice").map { version =>
+      version match {
+        case None => debug("no version found")
+        case v => debug(s"Version: $v")
       }
     }
-
-    Thread.sleep(1000)
   }
 
+  def latestVersion(
+    groupId: String,
+    artifactId: String
+  ): Future[Option[String]] = {
+    client.docs.getSelect(s"g:$groupId AND a:$artifactId").map { apiResponse =>
+      apiResponse.response.docs.map(_.latestVersion) match {
+        case Nil => None
+        case version :: Nil => Some(version)
+        case multiple => {
+          play.api.Logger.warn(s"Multiple versions found for group[$groupId] artifact[$artifactId]")
+          multiple.headOption
+        }
+      }
+    }
+  }
 }
