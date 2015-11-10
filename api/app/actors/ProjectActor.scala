@@ -2,7 +2,6 @@ package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.lib.GithubClientRepositoryMetadataFetcher
 import com.bryzek.dependency.v0.models.Project
-import io.flow.play.postgresql.Pager
 import db.ProjectsDao
 import play.api.Logger
 import akka.actor.Actor
@@ -16,48 +15,43 @@ object ProjectActor {
   private lazy val githubClient = new GithubClientRepositoryMetadataFetcher(token)
 
   object Messages {
-    case class Sync(guid: UUID)
-    case object SyncAll
-  }
-
-  def sync(project: Project) {
-    println(s"Syncing project[${project.guid}] scms[${project.scms}] name[${project.name}]")
-    githubClient.repositoryMetadata(project.name).map { result =>
-      result match {
-        case None => " - project build file not found"
-        case Some(md) => {
-          ProjectsDao.setDependencies(
-            createdBy = MainActor.SystemUser,
-            project = project,
-            languages = Some(md.languages),
-            libraries = Some(md.libraries)
-          )
-        }
-      }
-    }
+    case class Data(guid: UUID)
+    case object Sync
   }
 
 }
 
 class ProjectActor extends Actor {
 
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  var dataProject: Option[Project] = None
+
   def receive = {
 
-    case ProjectActor.Messages.SyncAll => Util.withVerboseErrorHandler(
-      s"ProjectActor.Messages.SyncAll"
+    case ProjectActor.Messages.Data(guid) => Util.withVerboseErrorHandler(
+      s"ProjectActor.Messages.Data($guid)"
     ) {
-      Pager.eachPage { offset =>
-        ProjectsDao.findAll(offset = offset)
-      } { project =>
-        ProjectActor.sync(project)
-      }
+      dataProject = ProjectsDao.findByGuid(guid)
     }
 
-    case ProjectActor.Messages.Sync(guid) => Util.withVerboseErrorHandler(
-      s"ProjectActor.Messages.Sync($guid)"
+    case ProjectActor.Messages.Sync => Util.withVerboseErrorHandler(
+      s"ProjectActor.Messages.Sync"
     ) {
-      ProjectsDao.findByGuid(guid).foreach { project =>
-        ProjectActor.sync(project)
+      dataProject.foreach { project =>
+        ProjectActor.githubClient.repositoryMetadata(project.name).map { result =>
+          result match {
+            case None => " - project build file not found"
+            case Some(md) => {
+              ProjectsDao.setDependencies(
+                createdBy = MainActor.SystemUser,
+                project = project,
+                languages = Some(md.languages),
+                libraries = Some(md.libraries)
+              )
+            }
+          }
+        }
       }
     }
 
