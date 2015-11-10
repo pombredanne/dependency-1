@@ -18,9 +18,8 @@ package com.bryzek.dependency.v0.models {
 
   case class Project(
     guid: _root_.java.util.UUID,
-    name: String,
     scms: com.bryzek.dependency.v0.models.Scms,
-    uri: String,
+    name: String,
     audit: io.flow.common.v0.models.Audit
   )
 
@@ -137,9 +136,8 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyProject: play.api.libs.json.Reads[Project] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "name").read[String] and
         (__ \ "scms").read[com.bryzek.dependency.v0.models.Scms] and
-        (__ \ "uri").read[String] and
+        (__ \ "name").read[String] and
         (__ \ "audit").read[io.flow.common.v0.models.Audit]
       )(Project.apply _)
     }
@@ -147,9 +145,8 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyProject: play.api.libs.json.Writes[Project] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "name").write[String] and
         (__ \ "scms").write[com.bryzek.dependency.v0.models.Scms] and
-        (__ \ "uri").write[String] and
+        (__ \ "name").write[String] and
         (__ \ "audit").write[io.flow.common.v0.models.Audit]
       )(unlift(Project.unapply _))
     }

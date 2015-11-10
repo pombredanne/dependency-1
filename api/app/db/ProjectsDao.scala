@@ -17,9 +17,8 @@ object ProjectsDao {
 
   private[this] val BaseQuery = s"""
     select projects.guid,
-           projects.name,
            projects.scms,
-           projects.uri,
+           projects.name,
            ${AuditsDao.queryCreation("projects")}
       from projects
      where true
@@ -27,9 +26,9 @@ object ProjectsDao {
 
   private[this] val InsertQuery = """
     insert into projects
-    (guid, name, uri, scms, created_by_guid, updated_by_guid)
+    (guid, scms, name, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {name}, {uri}, {scms}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {scms}, {name}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def validate(
@@ -64,9 +63,8 @@ object ProjectsDao {
     DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
-        'name -> valid.form.name.trim,
         'scms -> valid.form.scms.toString,
-        'uri -> valid.form.uri.trim,
+        'name -> valid.form.name.trim,
         'created_by_guid -> createdBy.guid
       ).execute()
     }
@@ -116,9 +114,8 @@ object ProjectsDao {
   ): Project = {
     Project(
       guid = row[UUID]("guid"),
-      name = row[String]("name"),
       scms = Scms(row[String]("scms")),
-      uri = row[String]("uri"),
+      name = row[String]("name"),
       audit = AuditsDao.fromRowCreation(row)
     )
   }

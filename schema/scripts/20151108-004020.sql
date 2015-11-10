@@ -4,9 +4,8 @@ drop table if exists projects;
 
 create table projects (
   guid                    uuid primary key,
-  name                    text not null check(non_empty_trimmed_string(name)),
   scms                    text not null check(enum(scms)),
-  uri                     text not null check(non_empty_trimmed_string(uri))
+  name                    text not null check(non_empty_trimmed_string(name))
 );
 
 comment on table projects is '
@@ -14,13 +13,22 @@ comment on table projects is '
   tracking its dependent artifacts.
 ';
 
+comment on column projects.scms is '
+  The source code management system where we find this project.
+';
+
+comment on column projects.name is '
+  The full name for this project. In github, this will be
+  <owner>/<name> (e.g. bryzek/apidoc).
+';
+
 select schema_evolution_manager.create_basic_audit_data('public', 'projects');
-create unique index projects_lower_name_not_deleted_un_idx on projects(lower(name)) where deleted_at is null;
+create unique index projects_scms_lower_name_not_deleted_un_idx on projects(scms, lower(name)) where deleted_at is null;
 
 create table artifacts (
   guid                    uuid primary key,
   group_id                text not null check(non_empty_trimmed_string(group_id)),
-  artifact_id             text not null check(non_empty_trimmed_string(group_id))
+  artifact_id             text not null check(non_empty_trimmed_string(artifact_id))
 );
 
 comment on table artifacts is '
@@ -28,20 +36,20 @@ comment on table artifacts is '
 ';
 
 select schema_evolution_manager.create_basic_audit_data('public', 'artifacts');
-create index on artifactcs(group_id);
-create index on artifactcs(artifact_id);
+create index on artifacts(group_id);
+create index on artifacts(artifact_id);
 create unique index artifacts_group_id_artifact_id_not_deleted_un_idx on artifacts(group_id, artifact_id) where deleted_at is null;
 
-create table versions (
+create table artifact_versions (
   guid                    uuid primary key,
   artifact_guid           uuid not null references artifacts,
   version                 text not null check(non_empty_trimmed_string(version))
 );
 
-comment on table versions is '
-  Stores all versions of a given artifact - e.g. 9.4-1205-jdbc42
+comment on table artifact_versions is '
+  Stores all artifact_versions of a given artifact - e.g. 9.4-1205-jdbc42
 ';
 
-select schema_evolution_manager.create_basic_audit_data('public', 'versions');
-create index on versions(artifact_guid);
-create unique index versions_artifact_guid_version_not_deleted_un_idx on versions(artifact_guid, version) where deleted_at is null;
+select schema_evolution_manager.create_basic_audit_data('public', 'artifact_versions');
+create index on artifact_versions(artifact_guid);
+create unique index artifact_versions_artifact_guid_version_not_deleted_un_idx on artifact_versions(artifact_guid, version) where deleted_at is null;

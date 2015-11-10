@@ -6,7 +6,7 @@ import io.flow.github.v0.errors.UnitResponse
 import io.flow.github.v0.models.{Contents, Encoding}
 import org.apache.commons.codec.binary.Base64
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 case class RepositoryMetadata(
@@ -15,6 +15,17 @@ case class RepositoryMetadata(
 )
 
 object GitHub {
+
+  case class FullName(owner: String, repository: String)
+
+  def parseFullName(fullName: String): Either[String, FullName] = {
+    fullName.split("/").toList match {
+      case Nil => Left(s"Invalid full name[$fullName]")
+      case owner :: Nil => Left(s"Invalid full name[$fullName] - missing /")
+      case owner :: repo :: Nil => Right(FullName(owner, repo))
+      case multiple => Left(s"Invalid full name[$fullName] - expected exactly one /")
+    }
+  }
 
   def toText(contents: Contents): String = {
     (contents.content, contents.encoding) match {
@@ -32,32 +43,46 @@ object GitHub {
 
 }
 
-class GitHub @Inject() (
-  client: Client
-) {
+case class GithubClientRepositoryMetadataFetcher(githubToken: String) {
+
+  private val GithubHost = "https://api.github.com"
+  private val Filename = "build.sbt"
+
+  lazy val client = new Client(
+    apiUrl = GithubHost,
+    defaultHeaders = Seq(
+      "Authorization" -> s"token $githubToken"
+    )
+  )
 
   def repositoryMetadata(
-    owner: String,
-    repository: String
+    fullName: String
   ) (
     implicit ec: ExecutionContext
   ) : Future[Option[RepositoryMetadata]] = {
-    client.contents.getReposByOwnerAndRepoAndPath(
-      owner = owner,
-      repo = repository,
-      path = "build.sbt"
-    ).map { contents =>
-      val result = ParseBuildSbt(
-        GitHub.toText(contents)
-      )
-      Some(
-        RepositoryMetadata(
-          languages = result.languages,
-          libraries = result.libraries
-        )
-      )
-    }.recover {
-      case UnitResponse(404) => None
+    GitHub.parseFullName(fullName) match {
+      case Left(error) => {
+        sys.error(error)
+      }
+      case Right(parsed) => {
+        client.contents.getReposByOwnerAndRepoAndPath(
+          owner = parsed.owner,
+          repo = parsed.repository,
+          path = Filename
+        ).map { contents =>
+          val result = ParseBuildSbt(
+            GitHub.toText(contents)
+          )
+          Some(
+            RepositoryMetadata(
+              languages = result.languages,
+              libraries = result.libraries
+            )
+          )
+        }.recover {
+          case UnitResponse(404) => None
+        }
+      }
     }
   }
 

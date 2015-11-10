@@ -40,9 +40,8 @@
 	"project": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
-		{ "name": "name", "type": "string" },
 		{ "name": "scms", "type": "scms" },
-		{ "name": "uri", "type": "string" },
+		{ "name": "name", "type": "string" },
                 { "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},
