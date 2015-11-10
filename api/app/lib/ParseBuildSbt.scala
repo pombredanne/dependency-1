@@ -1,6 +1,6 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.{Language, Library}
+import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm}
 
 /**
   * Takes the contents of a build.sbt file and parses it, providing
@@ -16,13 +16,25 @@ case class ParseBuildSbt(contents: String) {
     filter(!_.isEmpty).
     filter(!_.startsWith("//"))
 
-  val languages: Seq[Language] = {
+  val languages: Seq[LanguageForm] = {
     lines.
       filter(_.startsWith("scalaVersion")).
       flatMap { line =>
       line.split(":=").map(_.trim).toList match {
+        case head :: Nil => {
+          Some(
+            LanguageForm(
+              name = head
+            )
+          )
+        }
         case head :: version :: Nil => {
-          Some(Language(Scala, stripQuotes(version)))
+          Some(
+            LanguageForm(
+              name = head,
+              version = Some(stripQuotes(version))
+            )
+          )
         }
         case _ => {
           None
@@ -31,7 +43,7 @@ case class ParseBuildSbt(contents: String) {
     }
   }.distinct.sortBy { l => s"${l.name}:${l.version}" }
 
-  val libraries: Seq[Library] = {
+  val libraries: Seq[LibraryForm] = {
     lines.
       filter(_.replaceAll("%%", "%").split("%").size >= 2).
       map(stripComments(_)).
@@ -39,14 +51,14 @@ case class ParseBuildSbt(contents: String) {
       map(_.stripSuffix(",")).
       map(_.trim).
       map { line =>
-        toLibrary(line) match {
+        toLibraryForm(line) match {
           case Left(error) => sys.error(error)
           case Right(library) => library
         }
       }
   }.distinct.sortBy { l => s"${l.groupId}:${l.artifactId}:${l.version}" }
 
-  def toLibrary(value: String): Either[String, Library] = {
+  def toLibraryForm(value: String): Either[String, LibraryForm] = {
     value.replaceAll("%%", "%").split("%").map(_.trim).toList match {
       case Nil => {
         Left(s"Could not parse library from[$value]")
@@ -55,10 +67,21 @@ case class ParseBuildSbt(contents: String) {
         Left(s"Could not parse library from[$value] - only found groupId[$groupId]")
       }
       case groupId :: artifactId :: Nil => {
-        Left(s"Could not parse library from[$value] - missing version for groupId[$groupId] artifactId[$artifactId]")
+        Right(
+          LibraryForm(
+            groupId = stripQuotes(groupId),
+            artifactId = stripQuotes(artifactId)
+          )
+        )
       }
       case groupId :: artifactId :: version :: more => {
-        Right(Library(stripQuotes(groupId), stripQuotes(artifactId), stripQuotes(version)))
+        Right(
+          LibraryForm(
+            groupId = stripQuotes(groupId),
+            artifactId = stripQuotes(artifactId),
+            version = Some(stripQuotes(version))
+          )
+        )
       }
     }
   }

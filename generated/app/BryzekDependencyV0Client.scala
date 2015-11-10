@@ -6,14 +6,37 @@
 package com.bryzek.dependency.v0.models {
 
   case class Language(
+    guid: _root_.java.util.UUID,
     name: String,
-    version: String
+    audit: io.flow.common.v0.models.Audit
+  )
+
+  case class LanguageForm(
+    name: String,
+    version: _root_.scala.Option[String] = None
   )
 
   case class Library(
+    guid: _root_.java.util.UUID,
     groupId: String,
     artifactId: String,
-    version: String
+    audit: io.flow.common.v0.models.Audit
+  )
+
+  case class LibraryForm(
+    groupId: String,
+    artifactId: String,
+    version: _root_.scala.Option[String] = None
+  )
+
+  case class Name(
+    first: _root_.scala.Option[String] = None,
+    last: _root_.scala.Option[String] = None
+  )
+
+  case class NameForm(
+    first: _root_.scala.Option[String] = None,
+    last: _root_.scala.Option[String] = None
   )
 
   case class Project(
@@ -31,7 +54,15 @@ package com.bryzek.dependency.v0.models {
 
   case class User(
     guid: _root_.java.util.UUID,
-    email: String
+    email: String,
+    name: _root_.scala.Option[com.bryzek.dependency.v0.models.Name] = None,
+    audit: io.flow.common.v0.models.Audit
+  )
+
+  case class UserForm(
+    guid: _root_.java.util.UUID,
+    email: String,
+    name: _root_.scala.Option[com.bryzek.dependency.v0.models.NameForm] = None
   )
 
   sealed trait Scms
@@ -105,32 +136,94 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyLanguage: play.api.libs.json.Reads[Language] = {
       (
+        (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "name").read[String] and
-        (__ \ "version").read[String]
+        (__ \ "audit").read[io.flow.common.v0.models.Audit]
       )(Language.apply _)
     }
 
     implicit def jsonWritesDependencyLanguage: play.api.libs.json.Writes[Language] = {
       (
+        (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "name").write[String] and
-        (__ \ "version").write[String]
+        (__ \ "audit").write[io.flow.common.v0.models.Audit]
       )(unlift(Language.unapply _))
+    }
+
+    implicit def jsonReadsDependencyLanguageForm: play.api.libs.json.Reads[LanguageForm] = {
+      (
+        (__ \ "name").read[String] and
+        (__ \ "version").readNullable[String]
+      )(LanguageForm.apply _)
+    }
+
+    implicit def jsonWritesDependencyLanguageForm: play.api.libs.json.Writes[LanguageForm] = {
+      (
+        (__ \ "name").write[String] and
+        (__ \ "version").writeNullable[String]
+      )(unlift(LanguageForm.unapply _))
     }
 
     implicit def jsonReadsDependencyLibrary: play.api.libs.json.Reads[Library] = {
       (
+        (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "group_id").read[String] and
         (__ \ "artifact_id").read[String] and
-        (__ \ "version").read[String]
+        (__ \ "audit").read[io.flow.common.v0.models.Audit]
       )(Library.apply _)
     }
 
     implicit def jsonWritesDependencyLibrary: play.api.libs.json.Writes[Library] = {
       (
+        (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "group_id").write[String] and
         (__ \ "artifact_id").write[String] and
-        (__ \ "version").write[String]
+        (__ \ "audit").write[io.flow.common.v0.models.Audit]
       )(unlift(Library.unapply _))
+    }
+
+    implicit def jsonReadsDependencyLibraryForm: play.api.libs.json.Reads[LibraryForm] = {
+      (
+        (__ \ "group_id").read[String] and
+        (__ \ "artifact_id").read[String] and
+        (__ \ "version").readNullable[String]
+      )(LibraryForm.apply _)
+    }
+
+    implicit def jsonWritesDependencyLibraryForm: play.api.libs.json.Writes[LibraryForm] = {
+      (
+        (__ \ "group_id").write[String] and
+        (__ \ "artifact_id").write[String] and
+        (__ \ "version").writeNullable[String]
+      )(unlift(LibraryForm.unapply _))
+    }
+
+    implicit def jsonReadsDependencyName: play.api.libs.json.Reads[Name] = {
+      (
+        (__ \ "first").readNullable[String] and
+        (__ \ "last").readNullable[String]
+      )(Name.apply _)
+    }
+
+    implicit def jsonWritesDependencyName: play.api.libs.json.Writes[Name] = {
+      (
+        (__ \ "first").writeNullable[String] and
+        (__ \ "last").writeNullable[String]
+      )(unlift(Name.unapply _))
+    }
+
+    implicit def jsonReadsDependencyNameForm: play.api.libs.json.Reads[NameForm] = {
+      (
+        (__ \ "first").readNullable[String] and
+        (__ \ "last").readNullable[String]
+      )(NameForm.apply _)
+    }
+
+    implicit def jsonWritesDependencyNameForm: play.api.libs.json.Writes[NameForm] = {
+      (
+        (__ \ "first").writeNullable[String] and
+        (__ \ "last").writeNullable[String]
+      )(unlift(NameForm.unapply _))
     }
 
     implicit def jsonReadsDependencyProject: play.api.libs.json.Reads[Project] = {
@@ -170,15 +263,35 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyUser: play.api.libs.json.Reads[User] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "email").read[String]
+        (__ \ "email").read[String] and
+        (__ \ "name").readNullable[com.bryzek.dependency.v0.models.Name] and
+        (__ \ "audit").read[io.flow.common.v0.models.Audit]
       )(User.apply _)
     }
 
     implicit def jsonWritesDependencyUser: play.api.libs.json.Writes[User] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "email").write[String]
+        (__ \ "email").write[String] and
+        (__ \ "name").writeNullable[com.bryzek.dependency.v0.models.Name] and
+        (__ \ "audit").write[io.flow.common.v0.models.Audit]
       )(unlift(User.unapply _))
+    }
+
+    implicit def jsonReadsDependencyUserForm: play.api.libs.json.Reads[UserForm] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "email").read[String] and
+        (__ \ "name").readNullable[com.bryzek.dependency.v0.models.NameForm]
+      )(UserForm.apply _)
+    }
+
+    implicit def jsonWritesDependencyUserForm: play.api.libs.json.Writes[UserForm] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "email").write[String] and
+        (__ \ "name").writeNullable[com.bryzek.dependency.v0.models.NameForm]
+      )(unlift(UserForm.unapply _))
     }
   }
 }

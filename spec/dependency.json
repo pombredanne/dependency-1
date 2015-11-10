@@ -18,22 +18,63 @@
 	"user": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
-		{ "name": "email", "type": "string" }
+		{ "name": "email", "type": "string" },
+		{ "name": "name", "type": "name", "required": false },
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+	    ]
+	},
+
+	"name": {
+	    "fields": [
+		{ "name": "first", "type": "string", "required": false },
+		{ "name": "last", "type": "string", "required": false }
+	    ]
+	},
+
+	"user_form": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "email", "type": "string" },
+		{ "name": "name", "type": "name_form", "required": false }
+	    ]
+	},
+
+	"name_form": {
+	    "fields": [
+		{ "name": "first", "type": "string", "required": false },
+		{ "name": "last", "type": "string", "required": false }
 	    ]
 	},
 
 	"language": {
 	    "fields": [
+		{ "name": "guid", "type": "uuid" },
 		{ "name": "name", "type": "string", "example": "scala" },
-		{ "name": "version", "type": "string", "example": "2.11.7" }
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+	    ]
+	},
+
+	"language_form": {
+	    "fields": [
+		{ "name": "name", "type": "string" },
+		{ "name": "version", "type": "string", "required": false, "description": "If provided, we automatically record this version of the language." }
 	    ]
 	},
 
 	"library": {
 	    "fields": [
+		{ "name": "guid", "type": "uuid" },
 		{ "name": "group_id", "type": "string" },
 		{ "name": "artifact_id", "type": "string" },
-		{ "name": "version", "type": "string" }
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+	    ]
+	},
+
+	"library_form": {
+	    "fields": [
+		{ "name": "group_id", "type": "string" },
+		{ "name": "artifact_id", "type": "string" },
+		{ "name": "version", "type": "string", "required": false, "description": "If provided, we automatically record this version of this library." }
 	    ]
 	},
 

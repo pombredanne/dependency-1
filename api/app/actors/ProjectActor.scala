@@ -26,8 +26,12 @@ object ProjectActor {
       result match {
         case None => " - project build file not found"
         case Some(md) => {
-          println("  - languages: " + md.languages.mkString(", "))
-          println("  - libraries: " + md.libraries.mkString(", "))
+          ProjectsDao.setDependencies(
+            createdBy = MainActor.SystemUser,
+            project = project,
+            languages = Some(md.languages),
+            libraries = Some(md.libraries)
+          )
         }
       }
     }

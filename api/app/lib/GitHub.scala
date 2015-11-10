@@ -1,6 +1,6 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.{Language, Library}
+import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm}
 import io.flow.github.v0.Client
 import io.flow.github.v0.errors.UnitResponse
 import io.flow.github.v0.models.{Contents, Encoding}
@@ -10,8 +10,8 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 case class RepositoryMetadata(
-  languages: Seq[Language],
-  libraries: Seq[Library]
+  languages: Seq[LanguageForm],
+  libraries: Seq[LibraryForm]
 )
 
 object GitHub {

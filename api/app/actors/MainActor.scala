@@ -13,10 +13,18 @@ object MainActor {
 
   lazy val ref = Akka.system.actorOf(props(), "main")
 
+  lazy val SystemUser = db.UsersDao.systemUser
+
   object Messages {
 
     case class ProjectCreated(guid: UUID)
     case class ProjectDeleted(guid: UUID)
+
+    case class LibraryCreated(guid: UUID)
+    case class LibraryDeleted(guid: UUID)
+
+    case class LanguageCreated(guid: UUID)
+    case class LanguageDeleted(guid: UUID)
 
   }
 }
@@ -41,6 +49,30 @@ class MainActor(name: String) extends Actor with ActorLogging {
       s"MainActor.Messages.ProjectDeleted($guid)"
     ) {
       // NO-OP
+    }
+
+    case MainActor.Messages.LibraryCreated(guid) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.LibraryCreated($guid)"
+    ) {
+      // TODO
+    }
+
+    case MainActor.Messages.LibraryDeleted(guid) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.LibraryDeleted($guid)"
+    ) {
+      // TODO
+    }
+
+    case MainActor.Messages.LanguageCreated(guid) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.LanguageCreated($guid)"
+    ) {
+      // TODO
+    }
+
+    case MainActor.Messages.LanguageDeleted(guid) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.LanguageDeleted($guid)"
+    ) {
+      // TODO
     }
 
     case m: Any => {

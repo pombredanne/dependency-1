@@ -1,7 +1,7 @@
 drop table if exists language_versions;
 drop table if exists languages;
-drop table if exists artifact_versions;
-drop table if exists artifacts;
+drop table if exists library_versions;
+drop table if exists libraries;
 drop table if exists user_projects;
 drop table if exists projects;
 drop table if exists authorizations;
@@ -9,7 +9,9 @@ drop table if exists users;
 
 create table users (
   guid                    uuid primary key,
-  email                   text not null check(non_empty_trimmed_string(email))
+  email                   text not null check(non_empty_trimmed_string(email)),
+  first_name              text check(trim(first_name) = first_name),
+  last_name               text check(trim(last_name) = last_name)
 );
 
 comment on table users is '
@@ -47,7 +49,7 @@ create table projects (
 
 comment on table projects is '
   A project is essentially a source code repository for which we are
-  tracking its dependent artifacts.
+  tracking its dependent libraries.
 ';
 
 comment on column projects.scms is '
@@ -77,34 +79,34 @@ create index on user_projects(user_guid);
 create index on user_projects(project_guid);
 create unique index user_projects_user_guid_project_guid_not_deleted_un_idx on user_projects(user_guid, project_guid) where deleted_at is null;
 
-create table artifacts (
+create table libraries (
   guid                    uuid primary key,
   group_id                text not null check(non_empty_trimmed_string(group_id)),
-  artifact_id             text not null check(non_empty_trimmed_string(artifact_id))
+  library_id             text not null check(non_empty_trimmed_string(library_id))
 );
 
-comment on table artifacts is '
-  Stores all artifacts that we are tracking in some way.
+comment on table libraries is '
+  Stores all libraries that we are tracking in some way.
 ';
 
-select schema_evolution_manager.create_basic_audit_data('public', 'artifacts');
-create index on artifacts(group_id);
-create index on artifacts(artifact_id);
-create unique index artifacts_group_id_artifact_id_not_deleted_un_idx on artifacts(group_id, artifact_id) where deleted_at is null;
+select schema_evolution_manager.create_basic_audit_data('public', 'libraries');
+create index on libraries(group_id);
+create index on libraries(library_id);
+create unique index libraries_group_id_library_id_not_deleted_un_idx on libraries(group_id, library_id) where deleted_at is null;
 
-create table artifact_versions (
+create table library_versions (
   guid                    uuid primary key,
-  artifact_guid           uuid not null references artifacts,
+  library_guid           uuid not null references libraries,
   version                 text not null check(non_empty_trimmed_string(version))
 );
 
-comment on table artifact_versions is '
-  Stores all artifact_versions of a given artifact - e.g. 9.4-1205-jdbc42
+comment on table library_versions is '
+  Stores all library_versions of a given library - e.g. 9.4-1205-jdbc42
 ';
 
-select schema_evolution_manager.create_basic_audit_data('public', 'artifact_versions');
-create index on artifact_versions(artifact_guid);
-create unique index artifact_versions_artifact_guid_version_not_deleted_un_idx on artifact_versions(artifact_guid, version) where deleted_at is null;
+select schema_evolution_manager.create_basic_audit_data('public', 'library_versions');
+create index on library_versions(library_guid);
+create unique index library_versions_library_guid_version_not_deleted_un_idx on library_versions(library_guid, version) where deleted_at is null;
 
 create table languages (
   guid                    uuid primary key,
