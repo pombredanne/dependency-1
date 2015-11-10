@@ -3,6 +3,7 @@ package db
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Scms, Language, LanguageForm, Library, LibraryForm, Project, ProjectForm, User}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
+import io.flow.play.util.ValidatedForm
 import anorm._
 import play.api.db._
 import play.api.Play.current

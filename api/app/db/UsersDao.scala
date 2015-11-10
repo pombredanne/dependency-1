@@ -1,8 +1,9 @@
 package db
 
+import com.bryzek.dependency.v0.models.{Name, User, UserForm}
 import io.flow.common.v0.models.Audit
 import io.flow.play.postgresql.{AuditsDao, Filters, OrderBy}
-import com.bryzek.dependency.v0.models.{Name, User, UserForm}
+import io.flow.play.util.ValidatedForm
 import java.util.UUID
 import anorm._
 import play.api.db._
