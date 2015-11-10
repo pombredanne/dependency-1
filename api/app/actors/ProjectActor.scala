@@ -1,6 +1,6 @@
 package com.bryzek.dependency.actors
 
-import com.bryzek.dependency.lib.GithubClientRepositoryMetadataFetcher
+import com.bryzek.dependency.lib.{GitHubClient, GitHubClientRepositoryMetadataFetcher}
 import com.bryzek.dependency.v0.models.Project
 import db.ProjectsDao
 import play.api.Logger
@@ -8,11 +8,6 @@ import akka.actor.Actor
 import java.util.UUID
 
 object ProjectActor {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  private lazy val token: String = scala.io.Source.fromFile("/tmp/github-token.txt", "UTF-8").mkString
-  private lazy val githubClient = new GithubClientRepositoryMetadataFetcher(token)
 
   object Messages {
     case class Data(guid: UUID)
@@ -39,7 +34,7 @@ class ProjectActor extends Actor {
       s"ProjectActor.Messages.Sync"
     ) {
       dataProject.foreach { project =>
-        ProjectActor.githubClient.repositoryMetadata(project.name).map { result =>
+        GitHubClient.instance.repositoryMetadata(project.name).map { result =>
           result match {
             case None => " - project build file not found"
             case Some(md) => {

@@ -14,6 +14,11 @@ case class RepositoryMetadata(
   libraries: Seq[LibraryForm]
 )
 
+object GitHubClient {
+  private lazy val token: String = scala.io.Source.fromFile("/tmp/github-token.txt", "UTF-8").mkString
+  lazy val instance = new GitHubClientRepositoryMetadataFetcher(token)
+}
+
 object GitHub {
 
   case class FullName(owner: String, repository: String)
@@ -43,7 +48,7 @@ object GitHub {
 
 }
 
-case class GithubClientRepositoryMetadataFetcher(githubToken: String) {
+case class GitHubClientRepositoryMetadataFetcher(githubToken: String) {
 
   private val GithubHost = "https://api.github.com"
   private val Filename = "build.sbt"
