@@ -37,20 +37,27 @@ trait SimpleScalaParser {
       }
     }
 
+  /**
+    * This method will substitute any variables for their values. For
+    * literals, we strip the quotes.
+    */
   def interpolate(value: String): String = {
-    val formatted = stripQuotes(value)
-    variables.find(_.name == formatted) match {
-      case None => {
-        formatted
-      }
+    variables.find(_.name == value) match {
+      case None => stripQuotes(value)
       case Some(variable) => variable.value
     }
   }
 
+  /**
+   * Removes leading and trailing quotes
+   */
   def stripQuotes(value: String): String = {
     value.stripPrefix("\"").stripSuffix("\"").trim
   }
 
+  /**
+    * Removes any in-line comments
+    */
   def stripComments(value: String): String = {
     val i = value.indexOf("//")
     if (i < 0) {
