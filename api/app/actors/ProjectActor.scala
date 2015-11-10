@@ -1,6 +1,6 @@
 package com.bryzek.dependency.actors
 
-import com.bryzek.dependency.lib.{GitHubClient, GitHubClientRepositoryMetadataFetcher}
+import com.bryzek.dependency.lib.GitHubClient
 import com.bryzek.dependency.v0.models.Project
 import db.ProjectsDao
 import play.api.Logger
@@ -34,7 +34,7 @@ class ProjectActor extends Actor {
       s"ProjectActor.Messages.Sync"
     ) {
       dataProject.foreach { project =>
-        GitHubClient.instance.repositoryMetadata(project.name).map { result =>
+        GitHubClient.instance.dependencies(project).map { result =>
           result match {
             case None => " - project build file not found"
             case Some(md) => {

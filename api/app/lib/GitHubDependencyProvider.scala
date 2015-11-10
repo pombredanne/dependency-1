@@ -1,25 +1,33 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm}
+import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm, Project}
 import io.flow.github.v0.Client
 import io.flow.github.v0.errors.UnitResponse
 import io.flow.github.v0.models.{Contents, Encoding}
+import io.flow.play.util.Config
 import org.apache.commons.codec.binary.Base64
 
-import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-case class RepositoryMetadata(
-  languages: Seq[LanguageForm],
-  libraries: Seq[LibraryForm]
-)
-
 object GitHubClient {
-  private lazy val token: String = scala.io.Source.fromFile("/tmp/github-token.txt", "UTF-8").mkString
-  lazy val instance = new GitHubClientRepositoryMetadataFetcher(token)
+
+  private lazy val token: String = {
+    (
+      Config.optionalString("github.api.token.file"),
+      Config.optionalString("github.api.token")
+    ) match {
+      case (None, None) => sys.error("Missing configuration for github.api.token and github.api.token.file")
+      case (Some(_), Some(_)) => sys.error("Cannot specify configuration for both github.api.token and github.api.token.file")
+      case (Some(file), None) => scala.io.Source.fromFile("/tmp/github-token.txt", "UTF-8").mkString
+      case (None, Some(token)) => token
+    }
+  }
+
+  lazy val instance = new GitHubDependencyProvider(token)
+
 }
 
-object GitHub {
+object GitHubUtil {
 
   case class FullName(owner: String, repository: String)
 
@@ -48,7 +56,7 @@ object GitHub {
 
 }
 
-case class GitHubClientRepositoryMetadataFetcher(githubToken: String) {
+private[lib] case class GitHubDependencyProvider(githubToken: String) extends DependencyProvider {
 
   private val GithubHost = "https://api.github.com"
   private val Filename = "build.sbt"
@@ -60,12 +68,8 @@ case class GitHubClientRepositoryMetadataFetcher(githubToken: String) {
     )
   )
 
-  def repositoryMetadata(
-    fullName: String
-  ) (
-    implicit ec: ExecutionContext
-  ) : Future[Option[RepositoryMetadata]] = {
-    GitHub.parseFullName(fullName) match {
+  override def dependencies(project: Project)(implicit ec: ExecutionContext): Future[Option[Dependencies]] = {
+    GitHubUtil.parseFullName(project.name) match {
       case Left(error) => {
         sys.error(error)
       }
@@ -76,10 +80,10 @@ case class GitHubClientRepositoryMetadataFetcher(githubToken: String) {
           path = Filename
         ).map { contents =>
           val result = ParseBuildSbt(
-            GitHub.toText(contents)
+            GitHubUtil.toText(contents)
           )
           Some(
-            RepositoryMetadata(
+            Dependencies(
               languages = result.languages,
               libraries = result.libraries
             )
