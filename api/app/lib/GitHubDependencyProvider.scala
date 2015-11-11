@@ -112,8 +112,8 @@ private[lib] case class GitHubDependencyProvider(githubToken: String) extends De
       )
       Some(
         Dependencies(
-          languages = result.languages,
-          libraries = result.libraries
+          languages = Some(result.languages),
+          libraries = Some(result.libraries)
         )
       )
     }.recover {
@@ -136,8 +136,8 @@ private[lib] case class GitHubDependencyProvider(githubToken: String) extends De
       )
       Some(
         Dependencies(
-          plugins = result.plugins,
-          resolvers = result.resolvers
+          plugins = Some(result.plugins),
+          resolvers = Some(result.resolvers)
         )
       )
     }.recover {

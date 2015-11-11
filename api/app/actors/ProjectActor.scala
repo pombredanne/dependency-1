@@ -1,6 +1,6 @@
 package com.bryzek.dependency.actors
 
-import com.bryzek.dependency.lib.GitHubClient
+import com.bryzek.dependency.lib.{Dependencies, GitHubClient}
 import com.bryzek.dependency.v0.models.Project
 import db.ProjectsDao
 import play.api.Logger
@@ -21,6 +21,7 @@ class ProjectActor extends Actor {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   var dataProject: Option[Project] = None
+  var dataDependencies: Option[Dependencies] = None
 
   def receive = {
 
@@ -36,16 +37,19 @@ class ProjectActor extends Actor {
       dataProject.foreach { project =>
         GitHubClient.instance.dependencies(project).map { result =>
           result match {
-            case None => " - project build file not found"
-            case Some(md) => {
+            case None => {
+              println(" - project build file not found")
+            }
+            case Some(dependencies) => {
               ProjectsDao.setDependencies(
                 createdBy = MainActor.SystemUser,
                 project = project,
-                languages = Some(md.languages),
-                libraries = Some(md.libraries)
+                languages = dependencies.languages,
+                libraries = dependencies.librariesAndPlugins
               )
             }
           }
+          this.dataDependencies = result
         }
       }
     }

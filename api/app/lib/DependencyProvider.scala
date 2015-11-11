@@ -4,11 +4,23 @@ import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm, Project}
 import scala.concurrent.{ExecutionContext, Future}
 
 case class Dependencies(
-  languages: Seq[LanguageForm] = Nil,
-  libraries: Seq[LibraryForm] = Nil,
-  resolvers: Seq[Resolver] = Nil,
-  plugins: Seq[LibraryForm] = Nil
-)
+  languages: Option[Seq[LanguageForm]] = None,
+  libraries: Option[Seq[LibraryForm]] = None,
+  resolvers: Option[Seq[Resolver]] = None,
+  plugins: Option[Seq[LibraryForm]] = None
+) {
+
+  def librariesAndPlugins: Option[Seq[LibraryForm]] = {
+    (libraries, plugins) match {
+      case (None, None) => None
+      case (Some(lib), None) => Some(lib)
+      case (None, Some(plugins)) => Some(plugins)
+      case (Some(lib), Some(plugins)) => Some(lib ++ plugins)
+    }
+  }
+
+}
+
 
 trait DependencyProvider {
 
