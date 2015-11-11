@@ -4,22 +4,38 @@ import java.net.URL
 
 object Exploration {
 
+  case class UrlResult(
+    url: String,
+    files: Seq[String] = Nil,
+    directories: Seq[String] = Nil
+  )
+
   def test() {
     // getHeadlinesFromUrl("http://dl.bintray.com/typesafe/maven-releases/com/typesafe/play/play_2.11/")
-    getHeadlinesFromUrl("file:///web/dependency/play_2.11.html")
+    println("")
+    println(getHeadlinesFromUrl("file:///web/dependency/play_2.11.html"))
+
+    println("")
+    println(getHeadlinesFromUrl("file:///web/dependency/2.3.7.html"))
   }
 
-  def getHeadlinesFromUrl(url: String): Seq[String] = {
+  def getHeadlinesFromUrl(url: String): UrlResult = {
+    println(s"==> Fetching $url")
     val cleaner = new HtmlCleaner()
     val rootNode = cleaner.clean(new URL(url))
-    rootNode.getElementsByName("a", true).flatMap { elem =>
-      Option(elem.getAttributeByName("href")).flatMap { rawHref =>
+    var result = UrlResult(url = url)
+    rootNode.getElementsByName("a", true).foreach { elem =>
+      Option(elem.getAttributeByName("href")).foreach { rawHref =>
         val text = StringEscapeUtils.unescapeHtml4(elem.getText.toString)
         val href =StringEscapeUtils.unescapeHtml4(rawHref)
         println(s" - text[$text] href[$href]")
-        Some(href)
+        text.endsWith("/") match {
+          case true => result = result.copy(directories = result.directories ++ Seq(text))
+          case false => result = result.copy(files = result.files ++ Seq(text))
+        }
       }
-    }.toSeq
+    }
+    result
   }
 
 }
