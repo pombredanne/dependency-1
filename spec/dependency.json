@@ -72,6 +72,7 @@
 	"library": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
+		{ "name": "resolvers", "type": "[string]" },
 		{ "name": "group_id", "type": "string" },
 		{ "name": "artifact_id", "type": "string" },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
@@ -81,6 +82,7 @@
 	"library_form": {
 	    "fields": [
 		{ "name": "group_id", "type": "string" },
+		{ "name": "resolvers", "type": "[string]" },
 		{ "name": "artifact_id", "type": "string" },
 		{ "name": "version", "type": "string", "required": false, "description": "If provided, we automatically record this version of this library." }
 	    ]

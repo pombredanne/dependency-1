@@ -14,6 +14,7 @@ object LibrariesDao {
 
   private[this] val BaseQuery = s"""
     select libraries.guid,
+           libraries.resolvers,
            libraries.group_id,
            libraries.artifact_id,
            ${AuditsDao.query("libraries")}
@@ -23,9 +24,9 @@ object LibrariesDao {
 
   private[this] val InsertQuery = """
     insert into libraries
-    (guid, group_id, artifact_id, created_by_guid, updated_by_guid)
+    (guid, resolvers, group_id, artifact_id, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {group_id}, {artifact_id}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {resolvers}, {group_id}, {artifact_id}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def validate(
@@ -44,9 +45,9 @@ object LibrariesDao {
     }
 
     val existsErrors = if (groupIdErrors.isEmpty && artifactIdErrors.isEmpty) {
-      LibrariesDao.findByGroupIdAndArtifactId(form.groupId, form.artifactId) match {
+      LibrariesDao.findByResolversAndGroupIdAndArtifactId(form.resolvers, form.groupId, form.artifactId) match {
         case None => Nil
-        case Some(_) => Seq("group id and artifact id already exist")
+        case Some(_) => Seq("Library with these resolvers, group id and artifact id already exists")
       }
     } else {
       Nil
@@ -56,7 +57,7 @@ object LibrariesDao {
   }
 
   def upsert(createdBy: User, form: LibraryForm): Library = {
-    LibrariesDao.findByGroupIdAndArtifactId(form.groupId, form.artifactId) match {
+    LibrariesDao.findByResolversAndGroupIdAndArtifactId(form.resolvers, form.groupId, form.artifactId) match {
       case None => {
         create(createdBy, validate(form))
       }
@@ -77,6 +78,7 @@ object LibrariesDao {
     DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
+        'resolvers -> resolversToString(valid.form.resolvers),
         'group_id -> valid.form.groupId.trim,
         'artifact_id -> valid.form.artifactId.trim,
         'created_by_guid -> createdBy.guid
@@ -95,8 +97,17 @@ object LibrariesDao {
     MainActor.ref ! MainActor.Messages.LibraryDeleted(library.guid)
   }
 
-  def findByGroupIdAndArtifactId(groupId: String, artifactId: String): Option[Library] = {
-    findAll(groupId = Some(groupId), artifactId = Some(artifactId), limit = 1).headOption
+  def findByResolversAndGroupIdAndArtifactId(
+    resolvers: Seq[String],
+    groupId: String,
+    artifactId: String
+  ): Option[Library] = {
+    findAll(
+      resolvers = Some(resolvers),
+      groupId = Some(groupId),
+      artifactId = Some(artifactId),
+      limit = 1
+    ).headOption
   }
 
   def findByGuid(guid: UUID): Option[Library] = {
@@ -106,6 +117,7 @@ object LibrariesDao {
   def findAll(
     guid: Option[UUID] = None,
     projectGuid: Option[UUID] = None,
+    resolvers: Option[Seq[String]] = None,
     groupId: Option[String] = None,
     artifactId: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -115,6 +127,7 @@ object LibrariesDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       projectGuid.map { v => "and libraries.guid in (select library_guid from project_libraries where project_guid = {project_guid}::uuid and deleted_at is null" },
+      resolvers.map { v => "and libraries.resolvers = {resolvers}" },
       groupId.map { v => "and lower(libraries.group_id) = lower(trim({group_id}))" },
       artifactId.map { v => "and lower(libraries.artifact_id) = lower(trim({artifact_id}))" },
       isDeleted.map(Filters.isDeleted("libraries", _)),
@@ -124,6 +137,7 @@ object LibrariesDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       projectGuid.map('project_guid -> _.toString),
+      resolvers.map(v => 'resolvers -> resolversToString(v)),
       groupId.map('group_id -> _.toString),
       artifactId.map('artifact_id -> _.toString)
     ).flatten
@@ -133,15 +147,24 @@ object LibrariesDao {
     }
   }
 
-  private[db] def fromRow(
+ private[db] def fromRow(
     row: anorm.Row
   ): Library = {
     Library(
       guid = row[UUID]("guid"),
+      resolvers = resolversFromString(row[String]("resolvers")),
       groupId = row[String]("group_id"),
       artifactId = row[String]("artifact_id"),
       audit = AuditsDao.fromRowCreation(row)
     )
+  }
+
+  private[db] def resolversToString(resolvers: Seq[String]): String = {
+    resolvers.map(_.trim).filter(!_.isEmpty).mkString(" ")
+  }
+
+  private[db] def resolversFromString(value: String): Seq[String] = {
+    value.trim.split("\\s+").map(_.trim).filter(!_.isEmpty)
   }
 
 }

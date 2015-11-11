@@ -81,6 +81,7 @@ create unique index user_projects_user_guid_project_guid_not_deleted_un_idx on u
 
 create table libraries (
   guid                    uuid primary key,
+  resolvers               text not null check(non_empty_trimmed_string(resolvers)),
   group_id                text not null check(non_empty_trimmed_string(group_id)),
   library_id              text not null check(non_empty_trimmed_string(library_id))
 );
@@ -89,10 +90,17 @@ comment on table libraries is '
   Stores all libraries that we are tracking in some way.
 ';
 
+comment on column libraries.resolvers is '
+  This is a space separate list of the resolvers in the order in which
+  we check to find this library. Sole purpose of this column is to allow
+  two projects to have identical libraries but different resolvers - we
+  want to deterministically make sure we get the right version of each.
+';
+
 select schema_evolution_manager.create_basic_audit_data('public', 'libraries');
 create index on libraries(group_id);
 create index on libraries(library_id);
-create unique index libraries_group_id_library_id_not_deleted_un_idx on libraries(group_id, library_id) where deleted_at is null;
+create unique index libraries_resolvers_group_id_library_id_not_deleted_un_idx on libraries(resolvers, group_id, library_id) where deleted_at is null;
 
 create table library_versions (
   guid                    uuid primary key,

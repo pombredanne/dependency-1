@@ -1,6 +1,6 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm}
+import com.bryzek.dependency.v0.models.LanguageForm
 
 /**
   * Takes the contents of a build.sbt file and parses it, providing
@@ -10,7 +10,7 @@ case class BuildSbtScalaParser(contents: String) extends SimpleScalaParser {
 
   private val LanguageScala = "scala"
 
-  val libraries: Seq[LibraryForm] = parseLibraries
+  val libraries: Seq[Artifact] = parseLibraries
 
   val languages: Seq[LanguageForm] = {
     lines.

@@ -65,20 +65,20 @@ trait SimpleScalaParser {
   }
 
 
-  def parseLibraries(): Seq[LibraryForm] = {
+  def parseLibraries(): Seq[Artifact] = {
     lines.
       filter(_.replaceAll("%%", "%").split("%").size >= 2).
       map(_.stripSuffix(",")).
       map(_.trim).
       map { line =>
-        toLibraryForm(line) match {
+        toArtifact(line) match {
           case Left(error) => sys.error(error)
           case Right(library) => library
         }
       }.distinct.sortBy { l => (l.groupId, l.artifactId, l.version) }
   }
 
-  def toLibraryForm(value: String): Either[String, LibraryForm] = {
+  def toArtifact(value: String): Either[String, Artifact] = {
     val firstParen = value.indexOf("(")
     val lastParen = value.lastIndexOf(")")
 
@@ -97,7 +97,7 @@ trait SimpleScalaParser {
       }
       case groupId :: artifactId :: Nil => {
         Right(
-          LibraryForm(
+          Artifact(
             groupId = interpolate(groupId),
             artifactId = interpolate(artifactId)
           )
@@ -105,7 +105,7 @@ trait SimpleScalaParser {
       }
       case groupId :: artifactId :: version :: more => {
         Right(
-          LibraryForm(
+          Artifact(
             groupId = interpolate(groupId),
             artifactId = interpolate(artifactId),
             version = Some(interpolate(version))
