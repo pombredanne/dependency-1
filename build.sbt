@@ -31,6 +31,7 @@ lazy val api = project
     libraryDependencies ++= Seq(
       "io.flow" %% "lib-play" % "0.0.1-SNAPSHOT",
       "io.flow" %% "lib-play-postgresql" % "0.0.1-SNAPSHOT",
+      "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.15",
       "org.postgresql" % "postgresql" % "9.4-1202-jdbc42"
     )
   )
