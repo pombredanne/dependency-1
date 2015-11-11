@@ -60,6 +60,7 @@ private[lib] case class GitHubDependencyProvider(githubToken: String) extends De
 
   private val GithubHost = "https://api.github.com"
   private val BuildSbtFilename = "build.sbt"
+  private val ProjectPluginsSbtFilename = "project/plugins.sbt"
 
   lazy val client = new Client(
     apiUrl = GithubHost,
@@ -74,24 +75,73 @@ private[lib] case class GitHubDependencyProvider(githubToken: String) extends De
         sys.error(error)
       }
       case Right(parsed) => {
-        client.contents.getReposByOwnerAndRepoAndPath(
-          owner = parsed.owner,
-          repo = parsed.repository,
-          path = BuildSbtFilename
-        ).map { contents =>
-          val result = BuildSbtScalaParser(
-            GitHubUtil.toText(contents)
-          )
-          Some(
-            Dependencies(
-              languages = result.languages,
-              libraries = result.libraries
-            )
-          )
-        }.recover {
-          case UnitResponse(404) => None
+        for {
+          build <- getBuildDependencies(parsed)
+          plugins <- getPluginsDependencies(parsed)
+        } yield {
+          (build, plugins) match {
+            case (None, None) => None
+            case (Some(build), None) => Some(build)
+            case (None, Some(plugins)) => Some(plugins)
+            case (Some(build), Some(plugins)) => {
+              Some(
+                build.copy(
+                  resolvers = plugins.resolvers,
+                  plugins = plugins.plugins
+                )
+              )
+            }
+          }
         }
       }
+    }
+  }
+
+  private[this] def getBuildDependencies(
+    parsed: GitHubUtil.FullName
+  ) (
+    implicit ec: ExecutionContext
+  ): Future[Option[Dependencies]] = {
+    client.contents.getReposByOwnerAndRepoAndPath(
+      owner = parsed.owner,
+      repo = parsed.repository,
+      path = BuildSbtFilename
+    ).map { contents =>
+      val result = BuildSbtScalaParser(
+        GitHubUtil.toText(contents)
+      )
+      Some(
+        Dependencies(
+          languages = result.languages,
+          libraries = result.libraries
+        )
+      )
+    }.recover {
+      case UnitResponse(404) => None
+    }
+  }
+
+  private[this] def getPluginsDependencies(
+    parsed: GitHubUtil.FullName
+  ) (
+    implicit ec: ExecutionContext
+  ): Future[Option[Dependencies]] = {
+    client.contents.getReposByOwnerAndRepoAndPath(
+      owner = parsed.owner,
+      repo = parsed.repository,
+      path = ProjectPluginsSbtFilename
+    ).map { contents =>
+      val result = ProjectPluginsSbtScalaParser(
+        GitHubUtil.toText(contents)
+      )
+      Some(
+        Dependencies(
+          plugins = result.plugins,
+          resolvers = result.resolvers
+        )
+      )
+    }.recover {
+      case UnitResponse(404) => None
     }
   }
 
