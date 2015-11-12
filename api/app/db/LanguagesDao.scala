@@ -8,7 +8,6 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-import org.joda.time.DateTime
 import java.util.UUID
 
 object LanguagesDao {
@@ -113,31 +112,8 @@ object LanguagesDao {
       name.map('name -> _.toString)
     ).flatten
 
-    object Audit {
-      import io.flow.common.v0.models.Reference
-
-      def parser(table: String): RowParser[io.flow.common.v0.models.Audit] = {
-        SqlParser.get[DateTime](s"$table.created_at") ~
-        SqlParser.get[UUID](s"$table.created_by_guid") ~
-        SqlParser.get[DateTime](s"$table.updated_at") ~
-        SqlParser.get[UUID](s"$table.updated_by_guid") map {
-          case createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid => {
-            io.flow.common.v0.models.Audit(createdAt, Reference(createdByGuid), updatedAt, Reference(updatedByGuid))
-          }
-        }
-      }
-    }
-
-    val parser: RowParser[Language] = {
-      SqlParser.get[UUID]("languages.guid") ~
-      SqlParser.get[String]("languages.name") ~
-      Audit.parser("users") map {
-        case guid ~ name ~ audit => Language(guid, ProgrammingLanguage(name), audit)
-      }
-    }
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(parser.*)
+      SQL(sql).on(bind: _*).as(com.bryzek.dependency.v0.anorm.Language.parser("languages").*)
     }
   }
 
