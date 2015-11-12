@@ -203,11 +203,10 @@ package io.flow.maven.v0 {
       defaultHeaders.foreach { h => builder.addHeader(h._1, h._2) }
 
       auth.fold(builder) {
-        case Authorization.Basic(username, passwordOpt) => {
+        case Authorization.Basic(username, password) => {
           builder.setRealm(
             new Realm.RealmBuilder()
               .setPrincipal(username)
-              .setPassword(passwordOpt.getOrElse(""))
               .setUsePreemptiveAuth(true)
               .setScheme(Realm.AuthScheme.BASIC)
               .build()
