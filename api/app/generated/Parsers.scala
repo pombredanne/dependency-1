@@ -4,18 +4,30 @@ import java.util.UUID
 
 package io.flow.common.v0.anorm {
 
+  object Reference {
+    def parser(column: String): RowParser[io.flow.common.v0.models.Reference] = {
+      SqlParser.get[UUID](column) map {
+        case guid => {
+          io.flow.common.v0.models.Reference(
+            guid = guid
+          )
+        }
+      }
+    }
+  }
+
   object Audit {
     def parser(table: String): RowParser[io.flow.common.v0.models.Audit] = {
       SqlParser.get[DateTime](s"$table.created_at") ~
-      SqlParser.get[UUID](s"$table.created_by_guid") ~
+      Reference.parser(s"$table.created_by_guid") ~
       SqlParser.get[DateTime](s"$table.updated_at") ~
-      SqlParser.get[UUID](s"$table.updated_by_guid") map {
-        case createdAt ~ createdByGuid ~ updatedAt ~ updatedByGuid => {
+      Reference.parser(s"$table.updated_by_guid") map {
+        case createdAt ~ createdBy ~ updatedAt ~ updatedBy => {
           io.flow.common.v0.models.Audit(
             createdAt = createdAt,
-            createdBy = io.flow.common.v0.models.Reference(createdByGuid),
+            createdBy = createdBy,
             updatedAt = updatedAt,
-            updatedBy = io.flow.common.v0.models.Reference(updatedByGuid)
+            updatedBy = updatedBy
           )
         }
       }
