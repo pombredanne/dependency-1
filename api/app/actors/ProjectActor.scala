@@ -45,7 +45,7 @@ class ProjectActor extends Actor {
                 createdBy = MainActor.SystemUser,
                 project = project,
                 languages = dependencies.languages,
-                libraries = dependencies.librariesAndPlugins
+                libraries = dependencies.librariesAndPlugins.map(_.map(_.toLibraryForm(dependencies.resolvers.getOrElse(Nil))))
               )
             }
           }

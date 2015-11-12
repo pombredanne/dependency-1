@@ -1,7 +1,20 @@
 package com.bryzek.dependency.lib
 
+import com.bryzek.dependency.v0.models.LibraryForm
+
 case class Artifact(
   groupId: String,
   artifactId: String,
-  version: Option[String] = None // TODO: Should we remove?
-)
+  version: Option[String] = None
+) {
+
+  def toLibraryForm(resolvers: Seq[Resolver]): LibraryForm = {
+    LibraryForm(
+      resolvers = resolvers.map(_.uri),
+      groupId = groupId,
+      artifactId = artifactId,
+      version = version
+    )
+  }
+
+}

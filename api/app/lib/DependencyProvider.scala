@@ -5,12 +5,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class Dependencies(
   languages: Option[Seq[LanguageForm]] = None,
-  libraries: Option[Seq[LibraryForm]] = None,
+  libraries: Option[Seq[Artifact]] = None,
   resolvers: Option[Seq[Resolver]] = None,
-  plugins: Option[Seq[LibraryForm]] = None
+  plugins: Option[Seq[Artifact]] = None
 ) {
 
-  def librariesAndPlugins: Option[Seq[LibraryForm]] = {
+  def librariesAndPlugins: Option[Seq[Artifact]] = {
     (libraries, plugins) match {
       case (None, None) => None
       case (Some(lib), None) => Some(lib)
