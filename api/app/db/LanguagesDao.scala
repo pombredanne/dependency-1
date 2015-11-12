@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.actors.MainActor
-import com.bryzek.dependency.v0.models.{Language, LanguageForm, User}
+import com.bryzek.dependency.v0.models.{Language, LanguageForm, ProgrammingLanguage, User}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.play.util.ValidatedForm
 import anorm._
@@ -122,7 +122,7 @@ object LanguagesDao {
   ): Language = {
     Language(
       guid = row[UUID]("guid"),
-      name = row[String]("name"),
+      name = ProgrammingLanguage(row[String]("name")),
       audit = AuditsDao.fromRowCreation(row)
     )
   }

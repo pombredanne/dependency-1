@@ -10,6 +10,12 @@
 	    "values": [
 		{ "name": "git_hub" }
 	    ]
+	},
+
+	"programming_language": {
+	    "values": [
+		{ "name": "scala" }
+	    ]
 	}
     },
 
@@ -49,7 +55,7 @@
 	"language": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
-		{ "name": "name", "type": "string", "example": "scala" },
+		{ "name": "name", "type": "programming_language" },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},

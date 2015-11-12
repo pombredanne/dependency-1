@@ -7,7 +7,7 @@ package com.bryzek.dependency.v0.models {
 
   case class Language(
     guid: _root_.java.util.UUID,
-    name: String,
+    name: com.bryzek.dependency.v0.models.ProgrammingLanguage,
     audit: io.flow.common.v0.models.Audit
   )
 
@@ -79,6 +79,39 @@ package com.bryzek.dependency.v0.models {
     name: _root_.scala.Option[com.bryzek.dependency.v0.models.NameForm] = None
   )
 
+  sealed trait ProgrammingLanguage
+
+  object ProgrammingLanguage {
+
+    case object Scala extends ProgrammingLanguage { override def toString = "scala" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends ProgrammingLanguage
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(Scala)
+
+    private[this]
+    val byName = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): ProgrammingLanguage = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[ProgrammingLanguage] = byName.get(value.toLowerCase)
+
+  }
+
   sealed trait Scms
 
   object Scms {
@@ -143,6 +176,11 @@ package com.bryzek.dependency.v0.models {
       }
     }
 
+    implicit val jsonReadsDependencyProgrammingLanguage = __.read[String].map(ProgrammingLanguage.apply)
+    implicit val jsonWritesDependencyProgrammingLanguage = new Writes[ProgrammingLanguage] {
+      def writes(x: ProgrammingLanguage) = JsString(x.toString)
+    }
+
     implicit val jsonReadsDependencyScms = __.read[String].map(Scms.apply)
     implicit val jsonWritesDependencyScms = new Writes[Scms] {
       def writes(x: Scms) = JsString(x.toString)
@@ -151,7 +189,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyLanguage: play.api.libs.json.Reads[Language] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "name").read[String] and
+        (__ \ "name").read[com.bryzek.dependency.v0.models.ProgrammingLanguage] and
         (__ \ "audit").read[io.flow.common.v0.models.Audit]
       )(Language.apply _)
     }
@@ -159,7 +197,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyLanguage: play.api.libs.json.Writes[Language] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "name").write[String] and
+        (__ \ "name").write[com.bryzek.dependency.v0.models.ProgrammingLanguage] and
         (__ \ "audit").write[io.flow.common.v0.models.Audit]
       )(unlift(Language.unapply _))
     }
@@ -371,6 +409,17 @@ package com.bryzek.dependency.v0 {
 
     implicit val queryStringBindableTypeDateIso8601 = new QueryStringBindable.Parsing[org.joda.time.LocalDate](
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
+    )
+
+    // Enum: ProgrammingLanguage
+    private[this] val enumProgrammingLanguageNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.bryzek.dependency.v0.models.ProgrammingLanguage.all.mkString(", ")}"
+
+    implicit val pathBindableEnumProgrammingLanguage = new PathBindable.Parsing[com.bryzek.dependency.v0.models.ProgrammingLanguage] (
+      ProgrammingLanguage.fromString(_).get, _.toString, enumProgrammingLanguageNotFound
+    )
+
+    implicit val queryStringBindableEnumProgrammingLanguage = new QueryStringBindable.Parsing[com.bryzek.dependency.v0.models.ProgrammingLanguage](
+      ProgrammingLanguage.fromString(_).get, _.toString, enumProgrammingLanguageNotFound
     )
 
     // Enum: Scms
