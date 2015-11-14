@@ -21,19 +21,12 @@
 
     "models": {
 	    
-	"audit": {
-	    "description": "TODO remove once anorm parsers work w/ imported models",
-	    "fields": [
-		{ "name": "created_at", "type": "date-time-iso8601" }
-	    ]
-	},
-	    
 	"user": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
 		{ "name": "email", "type": "string" },
 		{ "name": "name", "type": "name", "required": false },
-		{ "name": "audit", "type": "audit" }
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},
 
@@ -63,7 +56,7 @@
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
 		{ "name": "name", "type": "programming_language" },
-		{ "name": "audit", "type": "audit" }
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},
 
@@ -78,7 +71,7 @@
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
 		{ "name": "version", "type": "string" },
-		{ "name": "audit", "type": "audit" }
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},
 	
@@ -88,7 +81,7 @@
 		{ "name": "resolvers", "type": "[string]" },
 		{ "name": "group_id", "type": "string" },
 		{ "name": "artifact_id", "type": "string" },
-		{ "name": "audit", "type": "audit" }
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},
 
@@ -105,7 +98,7 @@
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
 		{ "name": "version", "type": "string" },
-		{ "name": "audit", "type": "audit" }
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},
 	
@@ -114,7 +107,7 @@
 		{ "name": "guid", "type": "uuid" },
 		{ "name": "scms", "type": "scms" },
 		{ "name": "name", "type": "string" },
-                { "name": "audit", "type": "audit" }
+                { "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},
 	

@@ -4,26 +4,6 @@ package com.bryzek.dependency.v0.anorm {
 
   package parsers {
 
-    object ProgrammingLanguage {
-
-      def newParser(name: String): RowParser[com.bryzek.dependency.v0.models.ProgrammingLanguage] = {
-        SqlParser.str(name) map {
-          case value => com.bryzek.dependency.v0.models.ProgrammingLanguage(value)
-        }
-      }
-
-    }
-
-    object Scms {
-
-      def newParser(name: String): RowParser[com.bryzek.dependency.v0.models.Scms] = {
-        SqlParser.str(name) map {
-          case value => com.bryzek.dependency.v0.models.Scms(value)
-        }
-      }
-
-    }
-
     object Language {
 
       def newParser(config: util.Config) = {
@@ -31,7 +11,7 @@ package com.bryzek.dependency.v0.anorm {
           case util.Config.Prefix(prefix) => parser(
             guid = s"${prefix}_guid",
             name = s"${prefix}_name",
-            audit = util.Config.Prefix(s"${prefix}_audit")
+            audit = s"${prefix}_audit"
           )
         }
       }
@@ -102,7 +82,7 @@ package com.bryzek.dependency.v0.anorm {
           case util.Config.Prefix(prefix) => parser(
             guid = s"${prefix}_guid",
             version = s"${prefix}_version",
-            audit = util.Config.Prefix(s"${prefix}_audit")
+            audit = s"${prefix}_audit"
           )
         }
       }
@@ -142,7 +122,7 @@ package com.bryzek.dependency.v0.anorm {
             resolvers = s"${prefix}_resolvers",
             groupId = s"${prefix}_groupId",
             artifactId = s"${prefix}_artifactId",
-            audit = util.Config.Prefix(s"${prefix}_audit")
+            audit = s"${prefix}_audit"
           )
         }
       }
@@ -231,7 +211,7 @@ package com.bryzek.dependency.v0.anorm {
           case util.Config.Prefix(prefix) => parser(
             guid = s"${prefix}_guid",
             version = s"${prefix}_version",
-            audit = util.Config.Prefix(s"${prefix}_audit")
+            audit = s"${prefix}_audit"
           )
         }
       }
@@ -336,7 +316,7 @@ package com.bryzek.dependency.v0.anorm {
             guid = s"${prefix}_guid",
             scms = s"${prefix}_scms",
             name = s"${prefix}_name",
-            audit = util.Config.Prefix(s"${prefix}_audit")
+            audit = s"${prefix}_audit"
           )
         }
       }
@@ -416,8 +396,8 @@ package com.bryzek.dependency.v0.anorm {
           case util.Config.Prefix(prefix) => parser(
             guid = s"${prefix}_guid",
             email = s"${prefix}_email",
-            name = util.Config.Prefix(s"${prefix}_name"),
-            audit = util.Config.Prefix(s"${prefix}_audit")
+            name = s"${prefix}_name",
+            audit = s"${prefix}_audit"
           )
         }
       }
@@ -459,7 +439,7 @@ package com.bryzek.dependency.v0.anorm {
           case util.Config.Prefix(prefix) => parser(
             guid = s"${prefix}_guid",
             email = s"${prefix}_email",
-            name = util.Config.Prefix(s"${prefix}_name")
+            name = s"${prefix}_name"
           )
         }
       }
@@ -492,7 +472,7 @@ package com.bryzek.dependency.v0.anorm {
 
   }
 
-  package util {
+  package com.bryzek.dependency.v0.anorm.util {
 
     sealed trait Config {
       def name(column: String): String
