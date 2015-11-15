@@ -143,38 +143,32 @@ package com.bryzek.dependency.v0.anorm {
 
     object Library {
 
-      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
-        config match {
-          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
-            guid = s"${prefix}_guid",
-            resolvers = s"${prefix}_resolvers",
-            groupId = s"${prefix}_group_id",
-            artifactId = s"${prefix}_artifact_id",
-            audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_audit")
-          )
-        }
-      }
-
-      def parserByTable(table: String) = parser(
-        guid = s"$table.guid",
-        resolvers = s"$table.resolvers",
-        groupId = s"$table.group_id",
-        artifactId = s"$table.artifact_id",
-        audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_audit")
+      case class Mapping(
+        guid: String = "guid",
+        resolvers: String = "resolvers",
+        groupId: String = "group_id",
+        artifactId: String = "artifact_id",
+        audit: me.apidoc.lib.anorm.parsers.util.Config = me.apidoc.lib.anorm.parsers.util.Config.Prefix("audit")
       )
 
-      def parser(
-        guid: String,
-        resolvers: String,
-        groupId: String,
-        artifactId: String,
-        audit: me.apidoc.lib.anorm.parsers.util.Config
-      ): RowParser[com.bryzek.dependency.v0.models.Library] = {
-        SqlParser.get[_root_.java.util.UUID](guid) ~
-        SqlParser.list[String](resolvers) ~
-        SqlParser.str(groupId) ~
-        SqlParser.str(artifactId) ~
-        io.flow.common.v0.anorm.parsers.Audit.newParser(audit) map {
+      object Mapping {
+
+        def table(table: String) = Mapping(
+          guid = s"$table.guid",
+          resolvers = s"$table.resolvers",
+          groupId = s"$table.group_id",
+          artifactId = s"$table.artifact_id",
+          audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_audit")
+        )
+
+      }
+
+      def parser(mapping: Mapping): RowParser[com.bryzek.dependency.v0.models.Library] = {
+        SqlParser.get[_root_.java.util.UUID](mapping.guid) ~
+        SqlParser.list[String](mapping.resolvers) ~
+        SqlParser.str(mapping.groupId) ~
+        SqlParser.str(mapping.artifactId) ~
+        io.flow.common.v0.anorm.parsers.Audit.newParser(mapping.audit) map {
           case guid ~ resolvers ~ groupId ~ artifactId ~ audit => {
             com.bryzek.dependency.v0.models.Library(
               guid = guid,
