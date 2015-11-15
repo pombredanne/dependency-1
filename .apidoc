@@ -3,6 +3,7 @@ code:
     dependency:
       version: latest
       generators:
+        apidoc_0_x_libs: generated/app
         play_2_4_client: generated/app
         play_2_x_routes: api/conf/routes
         anorm_2_x_parsers: api/app/generated
@@ -11,6 +12,7 @@ code:
       version: latest
       generators:
         play_2_x_json: generated/app
+        anorm_2_x_parsers: api/app/generated
     github:
       version: latest
       generators:

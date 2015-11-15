@@ -4,14 +4,42 @@ package com.bryzek.dependency.v0.anorm {
 
   package parsers {
 
+    object ProgrammingLanguage {
+
+      def newParser(name: String) = parser(name)
+
+      def parserByTable(table: String) = parser(s"$table.programming_language")
+
+      def parser(name: String): RowParser[com.bryzek.dependency.v0.models.ProgrammingLanguage] = {
+        SqlParser.str(name) map {
+          case value => com.bryzek.dependency.v0.models.ProgrammingLanguage(value)
+        }
+      }
+
+    }
+
+    object Scms {
+
+      def newParser(name: String) = parser(name)
+
+      def parserByTable(table: String) = parser(s"$table.scms")
+
+      def parser(name: String): RowParser[com.bryzek.dependency.v0.models.Scms] = {
+        SqlParser.str(name) map {
+          case value => com.bryzek.dependency.v0.models.Scms(value)
+        }
+      }
+
+    }
+
     object Language {
 
-      def newParser(config: util.Config) = {
+      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
         config match {
-          case util.Config.Prefix(prefix) => parser(
+          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
             guid = s"${prefix}_guid",
             name = s"${prefix}_name",
-            audit = s"${prefix}_audit"
+            audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_audit")
           )
         }
       }
@@ -19,17 +47,17 @@ package com.bryzek.dependency.v0.anorm {
       def parserByTable(table: String) = parser(
         guid = s"$table.guid",
         name = s"$table.name",
-        audit = util.Config.Prefix(s"${table}_audit")
+        audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_audit")
       )
 
       def parser(
         guid: String,
         name: String,
-        audit: util.Config
+        audit: me.apidoc.lib.anorm.parsers.util.Config
       ): RowParser[com.bryzek.dependency.v0.models.Language] = {
         SqlParser.get[_root_.java.util.UUID](guid) ~
         com.bryzek.dependency.v0.anorm.parsers.ProgrammingLanguage.newParser(name) ~
-        com.bryzek.dependency.v0.anorm.parsers.Audit.newParser(audit) map {
+        io.flow.common.v0.anorm.parsers.Audit.newParser(audit) map {
           case guid ~ name ~ audit => {
             com.bryzek.dependency.v0.models.Language(
               guid = guid,
@@ -44,9 +72,9 @@ package com.bryzek.dependency.v0.anorm {
 
     object LanguageForm {
 
-      def newParser(config: util.Config) = {
+      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
         config match {
-          case util.Config.Prefix(prefix) => parser(
+          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
             name = s"${prefix}_name",
             version = s"${prefix}_version"
           )
@@ -77,12 +105,12 @@ package com.bryzek.dependency.v0.anorm {
 
     object LanguageVersion {
 
-      def newParser(config: util.Config) = {
+      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
         config match {
-          case util.Config.Prefix(prefix) => parser(
+          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
             guid = s"${prefix}_guid",
             version = s"${prefix}_version",
-            audit = s"${prefix}_audit"
+            audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_audit")
           )
         }
       }
@@ -90,17 +118,17 @@ package com.bryzek.dependency.v0.anorm {
       def parserByTable(table: String) = parser(
         guid = s"$table.guid",
         version = s"$table.version",
-        audit = util.Config.Prefix(s"${table}_audit")
+        audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_audit")
       )
 
       def parser(
         guid: String,
         version: String,
-        audit: util.Config
+        audit: me.apidoc.lib.anorm.parsers.util.Config
       ): RowParser[com.bryzek.dependency.v0.models.LanguageVersion] = {
         SqlParser.get[_root_.java.util.UUID](guid) ~
         SqlParser.str(version) ~
-        com.bryzek.dependency.v0.anorm.parsers.Audit.newParser(audit) map {
+        io.flow.common.v0.anorm.parsers.Audit.newParser(audit) map {
           case guid ~ version ~ audit => {
             com.bryzek.dependency.v0.models.LanguageVersion(
               guid = guid,
@@ -115,14 +143,14 @@ package com.bryzek.dependency.v0.anorm {
 
     object Library {
 
-      def newParser(config: util.Config) = {
+      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
         config match {
-          case util.Config.Prefix(prefix) => parser(
+          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
             guid = s"${prefix}_guid",
             resolvers = s"${prefix}_resolvers",
             groupId = s"${prefix}_groupId",
             artifactId = s"${prefix}_artifactId",
-            audit = s"${prefix}_audit"
+            audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_audit")
           )
         }
       }
@@ -132,7 +160,7 @@ package com.bryzek.dependency.v0.anorm {
         resolvers = s"$table.resolvers",
         groupId = s"$table.groupId",
         artifactId = s"$table.artifactId",
-        audit = util.Config.Prefix(s"${table}_audit")
+        audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_audit")
       )
 
       def parser(
@@ -140,13 +168,13 @@ package com.bryzek.dependency.v0.anorm {
         resolvers: String,
         groupId: String,
         artifactId: String,
-        audit: util.Config
+        audit: me.apidoc.lib.anorm.parsers.util.Config
       ): RowParser[com.bryzek.dependency.v0.models.Library] = {
         SqlParser.get[_root_.java.util.UUID](guid) ~
         SqlParser.get[String].list(resolvers) ~
         SqlParser.str(groupId) ~
         SqlParser.str(artifactId) ~
-        com.bryzek.dependency.v0.anorm.parsers.Audit.newParser(audit) map {
+        io.flow.common.v0.anorm.parsers.Audit.newParser(audit) map {
           case guid ~ resolvers ~ groupId ~ artifactId ~ audit => {
             com.bryzek.dependency.v0.models.Library(
               guid = guid,
@@ -163,9 +191,9 @@ package com.bryzek.dependency.v0.anorm {
 
     object LibraryForm {
 
-      def newParser(config: util.Config) = {
+      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
         config match {
-          case util.Config.Prefix(prefix) => parser(
+          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
             groupId = s"${prefix}_groupId",
             resolvers = s"${prefix}_resolvers",
             artifactId = s"${prefix}_artifactId",
@@ -206,12 +234,12 @@ package com.bryzek.dependency.v0.anorm {
 
     object LibraryVersion {
 
-      def newParser(config: util.Config) = {
+      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
         config match {
-          case util.Config.Prefix(prefix) => parser(
+          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
             guid = s"${prefix}_guid",
             version = s"${prefix}_version",
-            audit = s"${prefix}_audit"
+            audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_audit")
           )
         }
       }
@@ -219,17 +247,17 @@ package com.bryzek.dependency.v0.anorm {
       def parserByTable(table: String) = parser(
         guid = s"$table.guid",
         version = s"$table.version",
-        audit = util.Config.Prefix(s"${table}_audit")
+        audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_audit")
       )
 
       def parser(
         guid: String,
         version: String,
-        audit: util.Config
+        audit: me.apidoc.lib.anorm.parsers.util.Config
       ): RowParser[com.bryzek.dependency.v0.models.LibraryVersion] = {
         SqlParser.get[_root_.java.util.UUID](guid) ~
         SqlParser.str(version) ~
-        com.bryzek.dependency.v0.anorm.parsers.Audit.newParser(audit) map {
+        io.flow.common.v0.anorm.parsers.Audit.newParser(audit) map {
           case guid ~ version ~ audit => {
             com.bryzek.dependency.v0.models.LibraryVersion(
               guid = guid,
@@ -244,9 +272,9 @@ package com.bryzek.dependency.v0.anorm {
 
     object Name {
 
-      def newParser(config: util.Config) = {
+      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
         config match {
-          case util.Config.Prefix(prefix) => parser(
+          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
             first = s"${prefix}_first",
             last = s"${prefix}_last"
           )
@@ -277,9 +305,9 @@ package com.bryzek.dependency.v0.anorm {
 
     object NameForm {
 
-      def newParser(config: util.Config) = {
+      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
         config match {
-          case util.Config.Prefix(prefix) => parser(
+          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
             first = s"${prefix}_first",
             last = s"${prefix}_last"
           )
@@ -310,13 +338,13 @@ package com.bryzek.dependency.v0.anorm {
 
     object Project {
 
-      def newParser(config: util.Config) = {
+      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
         config match {
-          case util.Config.Prefix(prefix) => parser(
+          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
             guid = s"${prefix}_guid",
             scms = s"${prefix}_scms",
             name = s"${prefix}_name",
-            audit = s"${prefix}_audit"
+            audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_audit")
           )
         }
       }
@@ -325,19 +353,19 @@ package com.bryzek.dependency.v0.anorm {
         guid = s"$table.guid",
         scms = s"$table.scms",
         name = s"$table.name",
-        audit = util.Config.Prefix(s"${table}_audit")
+        audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_audit")
       )
 
       def parser(
         guid: String,
         scms: String,
         name: String,
-        audit: util.Config
+        audit: me.apidoc.lib.anorm.parsers.util.Config
       ): RowParser[com.bryzek.dependency.v0.models.Project] = {
         SqlParser.get[_root_.java.util.UUID](guid) ~
         com.bryzek.dependency.v0.anorm.parsers.Scms.newParser(scms) ~
         SqlParser.str(name) ~
-        com.bryzek.dependency.v0.anorm.parsers.Audit.newParser(audit) map {
+        io.flow.common.v0.anorm.parsers.Audit.newParser(audit) map {
           case guid ~ scms ~ name ~ audit => {
             com.bryzek.dependency.v0.models.Project(
               guid = guid,
@@ -353,9 +381,9 @@ package com.bryzek.dependency.v0.anorm {
 
     object ProjectForm {
 
-      def newParser(config: util.Config) = {
+      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
         config match {
-          case util.Config.Prefix(prefix) => parser(
+          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
             name = s"${prefix}_name",
             scms = s"${prefix}_scms",
             uri = s"${prefix}_uri"
@@ -391,13 +419,13 @@ package com.bryzek.dependency.v0.anorm {
 
     object User {
 
-      def newParser(config: util.Config) = {
+      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
         config match {
-          case util.Config.Prefix(prefix) => parser(
+          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
             guid = s"${prefix}_guid",
             email = s"${prefix}_email",
-            name = s"${prefix}_name",
-            audit = s"${prefix}_audit"
+            name = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_name"),
+            audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_audit")
           )
         }
       }
@@ -405,20 +433,20 @@ package com.bryzek.dependency.v0.anorm {
       def parserByTable(table: String) = parser(
         guid = s"$table.guid",
         email = s"$table.email",
-        name = util.Config.Prefix(s"${table}_name"),
-        audit = util.Config.Prefix(s"${table}_audit")
+        name = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_name"),
+        audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_audit")
       )
 
       def parser(
         guid: String,
         email: String,
-        name: util.Config,
-        audit: util.Config
+        name: me.apidoc.lib.anorm.parsers.util.Config,
+        audit: me.apidoc.lib.anorm.parsers.util.Config
       ): RowParser[com.bryzek.dependency.v0.models.User] = {
         SqlParser.get[_root_.java.util.UUID](guid) ~
         SqlParser.str(email) ~
         com.bryzek.dependency.v0.anorm.parsers.Name.newParser(name).? ~
-        com.bryzek.dependency.v0.anorm.parsers.Audit.newParser(audit) map {
+        io.flow.common.v0.anorm.parsers.Audit.newParser(audit) map {
           case guid ~ email ~ name ~ audit => {
             com.bryzek.dependency.v0.models.User(
               guid = guid,
@@ -434,12 +462,12 @@ package com.bryzek.dependency.v0.anorm {
 
     object UserForm {
 
-      def newParser(config: util.Config) = {
+      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
         config match {
-          case util.Config.Prefix(prefix) => parser(
+          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
             guid = s"${prefix}_guid",
             email = s"${prefix}_email",
-            name = s"${prefix}_name"
+            name = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_name")
           )
         }
       }
@@ -447,13 +475,13 @@ package com.bryzek.dependency.v0.anorm {
       def parserByTable(table: String) = parser(
         guid = s"$table.guid",
         email = s"$table.email",
-        name = util.Config.Prefix(s"${table}_name")
+        name = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_name")
       )
 
       def parser(
         guid: String,
         email: String,
-        name: util.Config
+        name: me.apidoc.lib.anorm.parsers.util.Config
       ): RowParser[com.bryzek.dependency.v0.models.UserForm] = {
         SqlParser.get[_root_.java.util.UUID](guid) ~
         SqlParser.str(email) ~
@@ -468,20 +496,6 @@ package com.bryzek.dependency.v0.anorm {
         }
       }
 
-    }
-
-  }
-
-  package com.bryzek.dependency.v0.anorm.util {
-
-    sealed trait Config {
-      def name(column: String): String
-    }
-
-    object Config {
-      case class Prefix(prefix: String) extends Config {
-        override def name(column: String): String = s"${prefix}_$column"
-      }
     }
 
   }
