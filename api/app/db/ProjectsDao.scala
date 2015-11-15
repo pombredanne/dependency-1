@@ -188,6 +188,7 @@ object ProjectsDao {
 
   def findAll(
     guid: Option[UUID] = None,
+    guids: Option[Seq[UUID]] = None,
     name: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
@@ -195,6 +196,8 @@ object ProjectsDao {
   ): Seq[Project] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      guid.map { v => "and projects.guid = {guid}::uuid" },
+      guids.map { Filters.multipleGuids("projects.guid", _) },
       name.map { v => "and lower(projects.name) = lower(trim({name}))" },
       isDeleted.map(Filters.isDeleted("projects", _)),
       Some(s"order by projects.created_at limit ${limit} offset ${offset}")
@@ -207,7 +210,7 @@ object ProjectsDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.Project.parserByTable("users").*
+        com.bryzek.dependency.v0.anorm.parsers.Project.parserByTable("projects").*
       )
     }
   }

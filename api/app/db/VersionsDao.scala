@@ -73,6 +73,7 @@ trait VersionsDao[T] {
 
   def findAll(
     guid: Option[UUID] = None,
+    guids: Option[Seq[UUID]] = None,
     objectGuid: Option[UUID] = None,
     version: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -81,6 +82,8 @@ trait VersionsDao[T] {
   ): Seq[T] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      guid.map { v => s"and $tableName.guid = {guid}::uuid" },
+      guids.map { Filters.multipleGuids(s"$tableName.guid", _) },
       objectGuid.map { v => s"and $tableName.$columnName = {object_guid}" },
       version.map { v => "and lower($tableName.version) = lower(trim({version}))" },
       isDeleted.map(Filters.isDeleted(tableName, _)),

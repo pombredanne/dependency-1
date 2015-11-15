@@ -116,6 +116,7 @@ object LibrariesDao {
 
   def findAll(
     guid: Option[UUID] = None,
+    guids: Option[Seq[UUID]] = None,
     projectGuid: Option[UUID] = None,
     resolvers: Option[Seq[String]] = None,
     groupId: Option[String] = None,
@@ -126,6 +127,8 @@ object LibrariesDao {
   ): Seq[Library] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      guid.map { v => "and libraries.guid = {guid}::uuid" },
+      guids.map { Filters.multipleGuids("libraries.guid", _) },
       projectGuid.map { v => "and libraries.guid in (select library_guid from project_libraries where project_guid = {project_guid}::uuid and deleted_at is null" },
       resolvers.map { v => "and libraries.resolvers = {resolvers}" },
       groupId.map { v => "and lower(libraries.group_id) = lower(trim({group_id}))" },
@@ -144,7 +147,11 @@ object LibrariesDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.Library.parserByTable("languages").*
+        com.bryzek.dependency.v0.anorm.parsers.Library.parser(
+          com.bryzek.dependency.v0.anorm.parsers.Library.Mapping.table("libraries").copy(
+            resolvers = "resolvers"
+          )
+        ).*
       )
     }
   }
