@@ -15,7 +15,7 @@ object LanguagesDao {
   private[this] val BaseQuery = s"""
     select languages.guid,
            languages.name,
-           ${AuditsDao.query("languages")}
+           ${AuditsDao.all("languages")}
       from languages
      where true
   """
@@ -100,6 +100,7 @@ object LanguagesDao {
   ): Seq[Language] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      guid.map { v => "and languages.guid = {guid}::uuid" },
       projectGuid.map { v => "and languages.guid in (select language_guid from project_languages where project_guid = {project_guid}::uuid and deleted_at is null" },
       name.map { v => "and lower(languages.name) = lower(trim({name}))" },
       isDeleted.map(Filters.isDeleted("languages", _)),
@@ -113,18 +114,10 @@ object LanguagesDao {
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(com.bryzek.dependency.v0.anorm.parsers.Language.parserByTable("languages").*)
+      SQL(sql).on(bind: _*).as(
+        com.bryzek.dependency.v0.anorm.parsers.Language.parserByTable("languages").*
+      )
     }
-  }
-
-  private[db] def fromRow(
-    row: anorm.Row
-  ): Language = {
-    Language(
-      guid = row[UUID]("guid"),
-      name = ProgrammingLanguage(row[String]("name")),
-      audit = AuditsDao.fromRowCreation(row)
-    )
   }
 
 }

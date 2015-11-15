@@ -15,10 +15,12 @@ trait VersionsDao[T] {
 
   def columnName: String
 
+  private[db] def parser: RowParser[T]
+
   private[this] val BaseQuery = s"""
     select $tableName.guid,
            $tableName.version,
-           ${AuditsDao.query(tableName)}
+           ${AuditsDao.all(tableName)}
       from $tableName
      where true
   """
@@ -92,13 +94,9 @@ trait VersionsDao[T] {
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      SQL(sql).on(bind: _*).as(parser.*)
     }
   }
-
-  private[db] def fromRow(
-    row: anorm.Row
-  ): T
 
 }
 
@@ -106,16 +104,7 @@ object LanguageVersionsDao extends VersionsDao[LanguageVersion] {
 
   override def tableName = "language_versions"
   override def columnName = "version_guid"
-
-  private[db] override def fromRow(
-    row: anorm.Row
-  ): LanguageVersion = {
-    LanguageVersion(
-      guid = row[UUID]("guid"),
-      version = row[String]("version"),
-      audit = AuditsDao.fromRowCreation(row)
-    )
-  }
+  private[db] override def parser = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.parserByTable(tableName)
 
 }
 
@@ -123,15 +112,6 @@ object LibraryVersionsDao extends VersionsDao[LibraryVersion] {
 
   override def tableName = "library_versions"
   override def columnName = "version_guid"
-
-  private[db] override def fromRow(
-    row: anorm.Row
-  ): LibraryVersion = {
-    LibraryVersion(
-      guid = row[UUID]("guid"),
-      version = row[String]("version"),
-      audit = AuditsDao.fromRowCreation(row)
-    )
-  }
+  private[db] override def parser = com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.parserByTable(tableName)
 
 }

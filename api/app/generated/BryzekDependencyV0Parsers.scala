@@ -148,8 +148,8 @@ package com.bryzek.dependency.v0.anorm {
           case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
             guid = s"${prefix}_guid",
             resolvers = s"${prefix}_resolvers",
-            groupId = s"${prefix}_groupId",
-            artifactId = s"${prefix}_artifactId",
+            groupId = s"${prefix}_group_id",
+            artifactId = s"${prefix}_artifact_id",
             audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_audit")
           )
         }
@@ -158,8 +158,8 @@ package com.bryzek.dependency.v0.anorm {
       def parserByTable(table: String) = parser(
         guid = s"$table.guid",
         resolvers = s"$table.resolvers",
-        groupId = s"$table.groupId",
-        artifactId = s"$table.artifactId",
+        groupId = s"$table.group_id",
+        artifactId = s"$table.artifact_id",
         audit = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_audit")
       )
 
@@ -194,18 +194,18 @@ package com.bryzek.dependency.v0.anorm {
       def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
         config match {
           case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
-            groupId = s"${prefix}_groupId",
+            groupId = s"${prefix}_group_id",
             resolvers = s"${prefix}_resolvers",
-            artifactId = s"${prefix}_artifactId",
+            artifactId = s"${prefix}_artifact_id",
             version = s"${prefix}_version"
           )
         }
       }
 
       def parserByTable(table: String) = parser(
-        groupId = s"$table.groupId",
+        groupId = s"$table.group_id",
         resolvers = s"$table.resolvers",
-        artifactId = s"$table.artifactId",
+        artifactId = s"$table.artifact_id",
         version = s"$table.version"
       )
 

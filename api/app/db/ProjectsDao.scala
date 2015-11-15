@@ -16,7 +16,7 @@ object ProjectsDao {
     select projects.guid,
            projects.scms,
            projects.name,
-           ${AuditsDao.query("projects")}
+           ${AuditsDao.all("projects")}
       from projects
      where true
   """
@@ -206,19 +206,10 @@ object ProjectsDao {
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      SQL(sql).on(bind: _*).as(
+        com.bryzek.dependency.v0.anorm.parsers.Project.parserByTable("users").*
+      )
     }
-  }
-
-  private[db] def fromRow(
-    row: anorm.Row
-  ): Project = {
-    Project(
-      guid = row[UUID]("guid"),
-      scms = Scms(row[String]("scms")),
-      name = row[String]("name"),
-      audit = AuditsDao.fromRowCreation(row)
-    )
   }
 
 }

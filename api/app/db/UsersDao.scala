@@ -31,7 +31,7 @@ object UsersDao {
            users.email,
            users.first_name,
            users.last_name,
-           ${AuditsDao.query("users")}
+           ${AuditsDao.all("users")}
       from users
      where true
   """
@@ -105,7 +105,7 @@ object UsersDao {
       Some(BaseQuery.trim),
       guid.map { v => "and users.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("users.guid", _) },
-      email.map { v => "and users.guid = (select user_guid from emails where lower(email) = lower(trim({email})) and deleted_at is null)" },
+      email.map { v => "and lower(users.email) = lower(trim({email}))" },
       isDeleted.map(Filters.isDeleted("users", _)),
       Some(s"order by $orderBy limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -116,31 +116,9 @@ object UsersDao {
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
-    }
-  }
-
-  private[db] def fromRow(
-    row: anorm.Row
-  ): User = {
-    User(
-      guid = row[UUID]("guid"),
-      email = row[String]("email"),
-      name = nameFromRow(row),
-      audit = AuditsDao.fromRowCreation(row)
-    )
-  }
-
-  private[db] def nameFromRow(
-    row: anorm.Row
-  ): Option[Name] = {
-    val name = Name(
-      first = row[Option[String]]("first_name"),
-      last = row[Option[String]]("last_name")
-    )
-    (name.first, name.last) match {
-      case (None, None) => None
-      case _ => Some(name)
+      SQL(sql).on(bind: _*).as(
+        com.bryzek.dependency.v0.anorm.parsers.User.parserByTable("users").*
+      )
     }
   }
 

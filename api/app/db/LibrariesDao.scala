@@ -17,7 +17,7 @@ object LibrariesDao {
            string_to_array(libraries.resolvers, ' ') as resolvers,
            libraries.group_id,
            libraries.artifact_id,
-           ${AuditsDao.query("libraries")}
+           ${AuditsDao.all("libraries")}
       from libraries
      where true
   """
@@ -143,28 +143,14 @@ object LibrariesDao {
     ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*)().toList.map { fromRow(_) }.toSeq
+      SQL(sql).on(bind: _*).as(
+        com.bryzek.dependency.v0.anorm.parsers.Library.parserByTable("languages").*
+      )
     }
-  }
-
- private[db] def fromRow(
-    row: anorm.Row
-  ): Library = {
-    Library(
-      guid = row[UUID]("guid"),
-      resolvers = resolversFromString(row[String]("resolvers")),
-      groupId = row[String]("group_id"),
-      artifactId = row[String]("artifact_id"),
-      audit = AuditsDao.fromRowCreation(row)
-    )
   }
 
   private[db] def resolversToString(resolvers: Seq[String]): String = {
     resolvers.map(_.trim).filter(!_.isEmpty).mkString(" ")
-  }
-
-  private[db] def resolversFromString(value: String): Seq[String] = {
-    value.trim.split("\\s+").map(_.trim).filter(!_.isEmpty)
   }
 
 }

@@ -107,19 +107,19 @@ package io.flow.common.v0.anorm {
       def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
         config match {
           case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
-            createdAt = s"${prefix}_createdAt",
-            createdBy = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_createdBy"),
-            updatedAt = s"${prefix}_updatedAt",
-            updatedBy = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_updatedBy")
+            createdAt = s"${prefix}_created_at",
+            createdBy = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_created_by"),
+            updatedAt = s"${prefix}_updated_at",
+            updatedBy = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_updated_by")
           )
         }
       }
 
       def parserByTable(table: String) = parser(
-        createdAt = s"$table.createdAt",
-        createdBy = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_createdBy"),
-        updatedAt = s"$table.updatedAt",
-        updatedBy = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_updatedBy")
+        createdAt = s"$table.created_at",
+        createdBy = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_created_by"),
+        updatedAt = s"$table.updated_at",
+        updatedBy = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_updated_by")
       )
 
       def parser(
