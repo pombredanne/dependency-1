@@ -143,7 +143,7 @@ package com.bryzek.dependency.v0.anorm {
 
     object Library {
 
-      case class Mapping(
+      case class Mappings(
         guid: String = "guid",
         resolvers: String = "resolvers",
         groupId: String = "group_id",
@@ -153,7 +153,7 @@ package com.bryzek.dependency.v0.anorm {
 
       object Mappings {
 
-        def table(table: String) = Mapping(
+        def table(table: String) = Mappings(
           guid = s"$table.guid",
           resolvers = s"$table.resolvers",
           groupId = s"$table.group_id",
@@ -169,12 +169,12 @@ package com.bryzek.dependency.v0.anorm {
           instance(Mappings.table(table))
         }
 
-        def instance(mapping: Mapping): RowParser[com.bryzek.dependency.v0.models.Library] = {
-          SqlParser.get[_root_.java.util.UUID](mapping.guid) ~
-          SqlParser.list[String](mapping.resolvers) ~
-          SqlParser.str(mapping.groupId) ~
-          SqlParser.str(mapping.artifactId) ~
-          io.flow.common.v0.anorm.parsers.Audit.newParser(mapping.audit) map {
+        def instance(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Library] = {
+          SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+          SqlParser.list[String](mappings.resolvers) ~
+          SqlParser.str(mappings.groupId) ~
+          SqlParser.str(mappings.artifactId) ~
+          io.flow.common.v0.anorm.parsers.Audit.newParser(mappings.audit) map {
             case guid ~ resolvers ~ groupId ~ artifactId ~ audit => {
               com.bryzek.dependency.v0.models.Library(
                 guid = guid,
