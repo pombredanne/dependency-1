@@ -83,7 +83,7 @@ create table libraries (
   guid                    uuid primary key,
   resolvers               text not null check(non_empty_trimmed_string(resolvers)),
   group_id                text not null check(non_empty_trimmed_string(group_id)),
-  library_id              text not null check(non_empty_trimmed_string(library_id))
+  artifact_id             text not null check(non_empty_trimmed_string(artifact_id))
 );
 
 comment on table libraries is '
@@ -99,8 +99,8 @@ comment on column libraries.resolvers is '
 
 select schema_evolution_manager.create_basic_audit_data('public', 'libraries');
 create index on libraries(group_id);
-create index on libraries(library_id);
-create unique index libraries_resolvers_group_id_library_id_not_deleted_un_idx on libraries(resolvers, group_id, library_id) where deleted_at is null;
+create index on libraries(artifact_id);
+create unique index libraries_resolvers_group_id_artifact_id_not_deleted_un_idx on libraries(resolvers, group_id, artifact_id) where deleted_at is null;
 
 create table library_versions (
   guid                    uuid primary key,

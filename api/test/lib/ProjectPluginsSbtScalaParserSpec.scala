@@ -1,6 +1,6 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm}
+import com.bryzek.dependency.v0.models.LanguageForm
 import org.specs2.mutable._
 
 class ProjectPluginsSbtScalaParserSpec extends Specification {
@@ -46,11 +46,13 @@ addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.0.1")
 
     "parse dependencies" in {
       val result = ProjectPluginsSbtScalaParser(contents)
-      result.resolvers must beEqualTo(Seq(Resolver("http://repo.typesafe.com/typesafe/releases/")))
+      result.resolvers must beEqualTo(
+        Seq(Resolver("http://repo.typesafe.com/typesafe/releases/"))
+      )
       result.plugins must beEqualTo(
         Seq(
-          LibraryForm("com.typesafe.play", "sbt-plugin", Some("2.4.3")),
-          LibraryForm("org.scoverage", "sbt-scoverage", Some("1.0.1"))
+          Artifact("com.typesafe.play", "sbt-plugin", Some("2.4.3")),
+          Artifact("org.scoverage", "sbt-scoverage", Some("1.0.1"))
         )
       )
     }

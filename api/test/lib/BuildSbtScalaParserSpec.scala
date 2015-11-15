@@ -1,6 +1,6 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm}
+import com.bryzek.dependency.v0.models.LanguageForm
 import org.specs2.mutable._
 
 class BuildSbtScalaParserSpec extends Specification {
@@ -50,8 +50,8 @@ lazy val root = project
       result.languages must beEqualTo(Seq(LanguageForm("scala", Some("2.11.7"))))
       result.libraries must beEqualTo(
         Seq(
-          LibraryForm("io.flow", "lib-play-postgresql", Some("0.0.1-SNAPSHOT")),
-          LibraryForm("org.postgresql", "postgresql", Some("9.4-1202-jdbc42"))
+          Artifact("io.flow", "lib-play-postgresql", Some("0.0.1-SNAPSHOT")),
+          Artifact("org.postgresql", "postgresql", Some("9.4-1202-jdbc42"))
         )
       )
     }
@@ -76,8 +76,8 @@ lazy val root = project
       result.languages must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
-          LibraryForm("io.flow", "lib-play-postgresql", Some("0.0.1-SNAPSHOT")),
-          LibraryForm("org.postgresql", "postgresql", Some("9.4-1202-jdbc42"))
+          Artifact("io.flow", "lib-play-postgresql", Some("0.0.1-SNAPSHOT")),
+          Artifact("org.postgresql", "postgresql", Some("9.4-1202-jdbc42"))
         )
       )
     }
@@ -111,9 +111,9 @@ lazy val www = project
       result.languages must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
-          LibraryForm("io.flow", "lib-play-postgresql", Some("0.0.1-SNAPSHOT")),
-          LibraryForm("io.flow", "lib-play-postgresql", Some("0.0.2-SNAPSHOT")),
-          LibraryForm("org.postgresql", "postgresql", Some("9.4-1202-jdbc42"))
+          Artifact("io.flow", "lib-play-postgresql", Some("0.0.1-SNAPSHOT")),
+          Artifact("io.flow", "lib-play-postgresql", Some("0.0.2-SNAPSHOT")),
+          Artifact("org.postgresql", "postgresql", Some("9.4-1202-jdbc42"))
         )
       )
     }
@@ -138,10 +138,10 @@ lazy val avro = project
     result.languages must beEqualTo(Nil)
     result.libraries must beEqualTo(
       Seq(
-        LibraryForm("com.typesafe.play", "play-json", Some("2.4.2")),
-        LibraryForm("org.apache.avro", "avro", Some("1.7.7")),
-        LibraryForm("org.apache.avro", "avro-compiler", Some("1.7.7")),
-        LibraryForm("org.scalatest", "scalatest", Some("2.2.0"))
+        Artifact("com.typesafe.play", "play-json", Some("2.4.2")),
+        Artifact("org.apache.avro", "avro", Some("1.7.7")),
+        Artifact("org.apache.avro", "avro-compiler", Some("1.7.7")),
+        Artifact("org.scalatest", "scalatest", Some("2.2.0"))
       )
     )
   }

@@ -171,7 +171,7 @@ package com.bryzek.dependency.v0.anorm {
         audit: me.apidoc.lib.anorm.parsers.util.Config
       ): RowParser[com.bryzek.dependency.v0.models.Library] = {
         SqlParser.get[_root_.java.util.UUID](guid) ~
-        SqlParser.get[String].list(resolvers) ~
+        SqlParser.list[String](resolvers) ~
         SqlParser.str(groupId) ~
         SqlParser.str(artifactId) ~
         io.flow.common.v0.anorm.parsers.Audit.newParser(audit) map {
@@ -216,7 +216,7 @@ package com.bryzek.dependency.v0.anorm {
         version: String
       ): RowParser[com.bryzek.dependency.v0.models.LibraryForm] = {
         SqlParser.str(groupId) ~
-        SqlParser.get[String].list(resolvers) ~
+        SqlParser.list[String](resolvers) ~
         SqlParser.str(artifactId) ~
         SqlParser.str(version).? map {
           case groupId ~ resolvers ~ artifactId ~ version => {
