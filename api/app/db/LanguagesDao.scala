@@ -92,6 +92,7 @@ object LanguagesDao {
 
   def findAll(
     guid: Option[UUID] = None,
+    guids: Option[Seq[UUID]] = None,
     projectGuid: Option[UUID] = None,
     name: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -101,6 +102,7 @@ object LanguagesDao {
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and languages.guid = {guid}::uuid" },
+      guids.map { Filters.multipleGuids("languages.guid", _) },
       projectGuid.map { v => "and languages.guid in (select language_guid from project_languages where project_guid = {project_guid}::uuid and deleted_at is null" },
       name.map { v => "and lower(languages.name) = lower(trim({name}))" },
       isDeleted.map(Filters.isDeleted("languages", _)),
