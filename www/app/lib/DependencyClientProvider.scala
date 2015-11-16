@@ -1,6 +1,6 @@
 package lib
 
-import lib.flow.play.util.Config
+import io.flow.play.util.Config
 import com.bryzek.dependency.v0.models.User
 import com.bryzek.dependency.v0.{Authorization, Client}
 
