@@ -84,8 +84,8 @@ trait VersionsDao[T] {
       Some(BaseQuery.trim),
       guid.map { v => s"and $tableName.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids(s"$tableName.guid", _) },
-      objectGuid.map { v => s"and $tableName.$columnName = {object_guid}" },
-      version.map { v => "and lower($tableName.version) = lower(trim({version}))" },
+      objectGuid.map { v => s"and $tableName.$columnName = {object_guid}::uuid" },
+      version.map { v => s"and lower($tableName.version) = lower(trim({version}))" },
       isDeleted.map(Filters.isDeleted(tableName, _)),
       Some(s"order by $tableName.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -106,7 +106,7 @@ trait VersionsDao[T] {
 object LanguageVersionsDao extends VersionsDao[LanguageVersion] {
 
   override def tableName = "language_versions"
-  override def columnName = "version_guid"
+  override def columnName = "language_guid"
   private[db] override def parser = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.table(tableName)
 
 }
@@ -114,7 +114,7 @@ object LanguageVersionsDao extends VersionsDao[LanguageVersion] {
 object LibraryVersionsDao extends VersionsDao[LibraryVersion] {
 
   override def tableName = "library_versions"
-  override def columnName = "version_guid"
+  override def columnName = "library_guid"
   private[db] override def parser = com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.table(tableName)
 
 }

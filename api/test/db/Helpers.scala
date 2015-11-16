@@ -22,6 +22,13 @@ object Helpers {
     version = None
   )
 
+  def createLanguageVersion(
+    language: Language = Helpers.createLanguage(),
+    version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
+  ): LanguageVersion = {
+    LanguageVersionsDao.upsert(systemUser, language.guid, version)
+  }
+
   def createLibrary(
     form: LibraryForm = createLibraryForm()
   ): Library = {
