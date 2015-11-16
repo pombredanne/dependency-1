@@ -1,6 +1,5 @@
 package db
 
-import com.bryzek.dependency.v0.models.Scms
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
