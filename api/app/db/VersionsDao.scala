@@ -107,7 +107,7 @@ object LanguageVersionsDao extends VersionsDao[LanguageVersion] {
 
   override def tableName = "language_versions"
   override def columnName = "version_guid"
-  private[db] override def parser = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.parserByTable(tableName)
+  private[db] override def parser = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.table(tableName)
 
 }
 
@@ -115,6 +115,6 @@ object LibraryVersionsDao extends VersionsDao[LibraryVersion] {
 
   override def tableName = "library_versions"
   override def columnName = "version_guid"
-  private[db] override def parser = com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.parserByTable(tableName)
+  private[db] override def parser = com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.table(tableName)
 
 }

@@ -1,11 +1,15 @@
 package db
 
-import com.bryzek.dependency.v0.models.{Language, LanguageForm, Library, LibraryForm}
+import com.bryzek.dependency.v0.models.{Language, LanguageForm, Library, LibraryForm, NameForm, User, UserForm}
 import java.util.UUID
 
 object Helpers {
 
   lazy val systemUser = UsersDao.systemUser
+
+  def createTestEmail(): String = {
+    s"z-test-${UUID.randomUUID}@test.bryzek.com"
+  }
 
   def createLanguage(
     form: LanguageForm = createLanguageForm()
@@ -29,6 +33,20 @@ object Helpers {
     groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
     artifactId = "z-test",
     version = None
+  )
+
+  def createUser(
+    form: UserForm
+  ): User = {
+    UsersDao.create(None, UsersDao.validate(form))
+  }
+
+  def createUserForm(
+    email: String = createTestEmail(),
+    name: Option[NameForm] = None
+  ) = UserForm(
+    email = email,
+    name = name
   )
 
 }

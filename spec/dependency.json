@@ -39,7 +39,6 @@
 
 	"user_form": {
 	    "fields": [
-		{ "name": "guid", "type": "uuid" },
 		{ "name": "email", "type": "string" },
 		{ "name": "name", "type": "name_form", "required": false }
 	    ]

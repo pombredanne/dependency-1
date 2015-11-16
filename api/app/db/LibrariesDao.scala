@@ -147,7 +147,7 @@ object LibrariesDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.Library.Parsers.instance(
+        com.bryzek.dependency.v0.anorm.parsers.Library.parser(
           com.bryzek.dependency.v0.anorm.parsers.Library.Mappings.table("libraries").copy(
             resolvers = "resolvers"
           )

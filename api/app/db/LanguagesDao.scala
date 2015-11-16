@@ -117,7 +117,7 @@ object LanguagesDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.Language.parserByTable("languages").*
+        com.bryzek.dependency.v0.anorm.parsers.Language.table("languages").*
       )
     }
   }

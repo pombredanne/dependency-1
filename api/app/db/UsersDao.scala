@@ -29,8 +29,8 @@ object UsersDao {
   private[this] val BaseQuery = s"""
     select users.guid,
            users.email,
-           users.first_name,
-           users.last_name,
+           users.first_name as users_name_first,
+           users.last_name as users_name_last,
            ${AuditsDao.all("users")}
       from users
      where true
@@ -117,8 +117,13 @@ object UsersDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.User.parserByTable("users").*
+        com.bryzek.dependency.v0.anorm.parsers.User.table("users").*
       )
+    } map { user =>
+      user.name match {
+        case Some(Name(None, None)) => user.copy(name = None)
+        case _ => user
+      }
     }
   }
 
