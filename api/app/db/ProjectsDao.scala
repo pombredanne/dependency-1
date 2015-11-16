@@ -67,13 +67,10 @@ object ProjectsDao {
     }
 
     val nameErrors = if (form.name.trim == "") {
-      Seq("Name address cannot be empty")
+      Seq("Name cannot be empty")
 
     } else {
-      ProjectsDao.findAll(
-        name = Some(form.name),
-        limit = 1
-      ).headOption match {
+      ProjectsDao.findByName(form.name) match {
         case None => Seq.empty
         case Some(_) => Seq("Project with this name already exists")
       }
@@ -180,6 +177,10 @@ object ProjectsDao {
   def softDelete(deletedBy: User, project: Project) {
     SoftDelete.delete("projects", deletedBy.guid, project.guid)
     MainActor.ref ! MainActor.Messages.ProjectDeleted(project.guid)
+  }
+
+  def findByName(name: String): Option[Project] = {
+    findAll(name = Some(name), limit = 1).headOption
   }
 
   def findByGuid(guid: UUID): Option[Project] = {

@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{Language, LanguageForm, Library, LibraryForm, NameForm, User, UserForm}
+import com.bryzek.dependency.v0.models._
 import java.util.UUID
 
 object Helpers {
@@ -34,6 +34,21 @@ object Helpers {
     artifactId = "z-test",
     version = None
   )
+
+  def createProject(
+    form: ProjectForm = createProjectForm()
+  ): Project = {
+    ProjectsDao.create(systemUser, ProjectsDao.validate(form))
+  }
+
+  def createProjectForm() = {
+    val name = s"z-test-${UUID.randomUUID}"
+    ProjectForm(
+      name = name,
+      scms = Scms.GitHub,
+      uri = "http://github.com/test/${name}"
+    )
+  }
 
   def createUser(
     form: UserForm
