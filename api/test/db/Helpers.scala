@@ -42,6 +42,13 @@ object Helpers {
     version = None
   )
 
+  def createLibraryVersion(
+    library: Library = Helpers.createLibrary(),
+    version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
+  ): LibraryVersion = {
+    LibraryVersionsDao.upsert(systemUser, library.guid, version)
+  }
+
   def createProject(
     form: ProjectForm = createProjectForm()
   ): Project = {
