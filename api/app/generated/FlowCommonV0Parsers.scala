@@ -1,336 +1,413 @@
 import anorm._
 
-package io.flow.common.v0.anorm {
+package io.flow.common.v0.anorm.parsers {
 
-  package parsers {
+  object Calendar {
 
-    object Calendar {
+    case class Mappings(value: String)
 
-      def newParser(name: String) = parser(name)
+    object Mappings {
 
-      def parserByTable(table: String) = parser(s"$table.calendar")
+      val base = prefix("", "")
 
-      def parser(name: String): RowParser[io.flow.common.v0.models.Calendar] = {
-        SqlParser.str(name) map {
-          case value => io.flow.common.v0.models.Calendar(value)
-        }
-      }
+      def table(table: String) = prefix(table, ".")
 
-    }
-
-    object Capability {
-
-      def newParser(name: String) = parser(name)
-
-      def parserByTable(table: String) = parser(s"$table.capability")
-
-      def parser(name: String): RowParser[io.flow.common.v0.models.Capability] = {
-        SqlParser.str(name) map {
-          case value => io.flow.common.v0.models.Capability(value)
-        }
-      }
+      def prefix(prefix: String, sep: String) = Mappings(
+        value = s"${prefix}${sep}value"
+      )
 
     }
 
-    object ScheduleExceptionStatus {
+    def table(table: String) = parser(Mappings.prefix(table, "."))
 
-      def newParser(name: String) = parser(name)
-
-      def parserByTable(table: String) = parser(s"$table.schedule_exception_status")
-
-      def parser(name: String): RowParser[io.flow.common.v0.models.ScheduleExceptionStatus] = {
-        SqlParser.str(name) map {
-          case value => io.flow.common.v0.models.ScheduleExceptionStatus(value)
-        }
+    def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.Calendar] = {
+      SqlParser.str(mappings.value) map {
+        case value => io.flow.common.v0.models.Calendar(value)
       }
+    }
+
+  }
+  object Capability {
+
+    case class Mappings(value: String)
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        value = s"${prefix}${sep}value"
+      )
 
     }
 
-    object UnitOfMeasurement {
+    def table(table: String) = parser(Mappings.prefix(table, "."))
 
-      def newParser(name: String) = parser(name)
-
-      def parserByTable(table: String) = parser(s"$table.unit_of_measurement")
-
-      def parser(name: String): RowParser[io.flow.common.v0.models.UnitOfMeasurement] = {
-        SqlParser.str(name) map {
-          case value => io.flow.common.v0.models.UnitOfMeasurement(value)
-        }
+    def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.Capability] = {
+      SqlParser.str(mappings.value) map {
+        case value => io.flow.common.v0.models.Capability(value)
       }
+    }
+
+  }
+  object ScheduleExceptionStatus {
+
+    case class Mappings(value: String)
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        value = s"${prefix}${sep}value"
+      )
 
     }
 
-    object ValueAddedService {
+    def table(table: String) = parser(Mappings.prefix(table, "."))
 
-      def newParser(name: String) = parser(name)
-
-      def parserByTable(table: String) = parser(s"$table.value_added_service")
-
-      def parser(name: String): RowParser[io.flow.common.v0.models.ValueAddedService] = {
-        SqlParser.str(name) map {
-          case value => io.flow.common.v0.models.ValueAddedService(value)
-        }
+    def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.ScheduleExceptionStatus] = {
+      SqlParser.str(mappings.value) map {
+        case value => io.flow.common.v0.models.ScheduleExceptionStatus(value)
       }
+    }
+
+  }
+  object UnitOfMeasurement {
+
+    case class Mappings(value: String)
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        value = s"${prefix}${sep}value"
+      )
 
     }
 
-    object Address {
+    def table(table: String) = parser(Mappings.prefix(table, "."))
 
-      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
-        config match {
-          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
-            address = s"${prefix}_address"
+    def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.UnitOfMeasurement] = {
+      SqlParser.str(mappings.value) map {
+        case value => io.flow.common.v0.models.UnitOfMeasurement(value)
+      }
+    }
+
+  }
+  object ValueAddedService {
+
+    case class Mappings(value: String)
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        value = s"${prefix}${sep}value"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.ValueAddedService] = {
+      SqlParser.str(mappings.value) map {
+        case value => io.flow.common.v0.models.ValueAddedService(value)
+      }
+    }
+
+  }
+
+  object Address {
+
+    case class Mappings(
+      address: String = "address"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        address = s"${prefix}${sep}address"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.Address] = {
+      SqlParser.str(mappings.address) map {
+        case address => {
+          io.flow.common.v0.models.Address(
+            address = address
           )
         }
       }
+    }
 
-      def parserByTable(table: String) = parser(
-        address = s"$table.address"
+  }
+
+  object Audit {
+
+    case class Mappings(
+      createdAt: String = "createdAt",
+      createdBy: io.flow.common.v0.anorm.parsers.Reference.Mappings,
+      updatedAt: String = "updatedAt",
+      updatedBy: io.flow.common.v0.anorm.parsers.Reference.Mappings
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        createdAt = s"${prefix}${sep}created_at",
+        createdBy = io.flow.common.v0.anorm.parsers.Reference.Mappings.prefix(Seq(prefix, "created_by").filter(!_.isEmpty).mkString("_"), "_"),
+        updatedAt = s"${prefix}${sep}updated_at",
+        updatedBy = io.flow.common.v0.anorm.parsers.Reference.Mappings.prefix(Seq(prefix, "updated_by").filter(!_.isEmpty).mkString("_"), "_")
       )
-
-      def parser(
-        address: String
-      ): RowParser[io.flow.common.v0.models.Address] = {
-        SqlParser.str(address) map {
-          case address => {
-            io.flow.common.v0.models.Address(
-              address = address
-            )
-          }
-        }
-      }
 
     }
 
-    object Audit {
+    def table(table: String) = parser(Mappings.prefix(table, "."))
 
-      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
-        config match {
-          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
-            createdAt = s"${prefix}_created_at",
-            createdBy = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_created_by"),
-            updatedAt = s"${prefix}_updated_at",
-            updatedBy = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${prefix}_updated_by")
+    def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.Audit] = {
+      SqlParser.get[_root_.org.joda.time.DateTime](mappings.createdAt) ~
+      io.flow.common.v0.anorm.parsers.Reference.parser(mappings.createdBy) ~
+      SqlParser.get[_root_.org.joda.time.DateTime](mappings.updatedAt) ~
+      io.flow.common.v0.anorm.parsers.Reference.parser(mappings.updatedBy) map {
+        case createdAt ~ createdBy ~ updatedAt ~ updatedBy => {
+          io.flow.common.v0.models.Audit(
+            createdAt = createdAt,
+            createdBy = createdBy,
+            updatedAt = updatedAt,
+            updatedBy = updatedBy
           )
         }
       }
+    }
 
-      def parserByTable(table: String) = parser(
-        createdAt = s"$table.created_at",
-        createdBy = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_created_by"),
-        updatedAt = s"$table.updated_at",
-        updatedBy = me.apidoc.lib.anorm.parsers.util.Config.Prefix(s"${table}_updated_by")
+  }
+
+  object DatetimeRange {
+
+    case class Mappings(
+      from: String = "from",
+      to: String = "to"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        from = s"${prefix}${sep}from",
+        to = s"${prefix}${sep}to"
       )
-
-      def parser(
-        createdAt: String,
-        createdBy: me.apidoc.lib.anorm.parsers.util.Config,
-        updatedAt: String,
-        updatedBy: me.apidoc.lib.anorm.parsers.util.Config
-      ): RowParser[io.flow.common.v0.models.Audit] = {
-        SqlParser.get[_root_.org.joda.time.DateTime](createdAt) ~
-        io.flow.common.v0.anorm.parsers.Reference.newParser(createdBy) ~
-        SqlParser.get[_root_.org.joda.time.DateTime](updatedAt) ~
-        io.flow.common.v0.anorm.parsers.Reference.newParser(updatedBy) map {
-          case createdAt ~ createdBy ~ updatedAt ~ updatedBy => {
-            io.flow.common.v0.models.Audit(
-              createdAt = createdAt,
-              createdBy = createdBy,
-              updatedAt = updatedAt,
-              updatedBy = updatedBy
-            )
-          }
-        }
-      }
 
     }
 
-    object DatetimeRange {
+    def table(table: String) = parser(Mappings.prefix(table, "."))
 
-      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
-        config match {
-          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
-            from = s"${prefix}_from",
-            to = s"${prefix}_to"
+    def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.DatetimeRange] = {
+      SqlParser.get[_root_.org.joda.time.DateTime](mappings.from) ~
+      SqlParser.get[_root_.org.joda.time.DateTime](mappings.to) map {
+        case from ~ to => {
+          io.flow.common.v0.models.DatetimeRange(
+            from = from,
+            to = to
           )
         }
       }
+    }
 
-      def parserByTable(table: String) = parser(
-        from = s"$table.from",
-        to = s"$table.to"
+  }
+
+  object Dimension {
+
+    case class Mappings(
+      value: String = "value",
+      units: String = "units"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        value = s"${prefix}${sep}value",
+        units = s"${prefix}${sep}units"
       )
-
-      def parser(
-        from: String,
-        to: String
-      ): RowParser[io.flow.common.v0.models.DatetimeRange] = {
-        SqlParser.get[_root_.org.joda.time.DateTime](from) ~
-        SqlParser.get[_root_.org.joda.time.DateTime](to) map {
-          case from ~ to => {
-            io.flow.common.v0.models.DatetimeRange(
-              from = from,
-              to = to
-            )
-          }
-        }
-      }
 
     }
 
-    object Dimension {
+    def table(table: String) = parser(Mappings.prefix(table, "."))
 
-      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
-        config match {
-          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
-            value = s"${prefix}_value",
-            units = s"${prefix}_units"
+    def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.Dimension] = {
+      SqlParser.get[Double](mappings.value) ~
+      io.flow.common.v0.anorm.parsers.UnitOfMeasurement.parser(io.flow.common.v0.anorm.parsers.UnitOfMeasurement.Mappings(mappings.units)) map {
+        case value ~ units => {
+          io.flow.common.v0.models.Dimension(
+            value = value,
+            units = units
           )
         }
       }
+    }
 
-      def parserByTable(table: String) = parser(
-        value = s"$table.value",
-        units = s"$table.units"
+  }
+
+  object Error {
+
+    case class Mappings(
+      code: String = "code",
+      message: String = "message"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        code = s"${prefix}${sep}code",
+        message = s"${prefix}${sep}message"
       )
-
-      def parser(
-        value: String,
-        units: String
-      ): RowParser[io.flow.common.v0.models.Dimension] = {
-        SqlParser.get[Double](value) ~
-        io.flow.common.v0.anorm.parsers.UnitOfMeasurement.newParser(units) map {
-          case value ~ units => {
-            io.flow.common.v0.models.Dimension(
-              value = value,
-              units = units
-            )
-          }
-        }
-      }
 
     }
 
-    object Error {
+    def table(table: String) = parser(Mappings.prefix(table, "."))
 
-      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
-        config match {
-          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
-            code = s"${prefix}_code",
-            message = s"${prefix}_message"
+    def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.Error] = {
+      SqlParser.str(mappings.code) ~
+      SqlParser.str(mappings.message) map {
+        case code ~ message => {
+          io.flow.common.v0.models.Error(
+            code = code,
+            message = message
           )
         }
       }
+    }
 
-      def parserByTable(table: String) = parser(
-        code = s"$table.code",
-        message = s"$table.message"
+  }
+
+  object Healthcheck {
+
+    case class Mappings(
+      status: String = "status"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        status = s"${prefix}${sep}status"
       )
-
-      def parser(
-        code: String,
-        message: String
-      ): RowParser[io.flow.common.v0.models.Error] = {
-        SqlParser.str(code) ~
-        SqlParser.str(message) map {
-          case code ~ message => {
-            io.flow.common.v0.models.Error(
-              code = code,
-              message = message
-            )
-          }
-        }
-      }
 
     }
 
-    object Healthcheck {
+    def table(table: String) = parser(Mappings.prefix(table, "."))
 
-      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
-        config match {
-          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
-            status = s"${prefix}_status"
+    def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.Healthcheck] = {
+      SqlParser.str(mappings.status) map {
+        case status => {
+          io.flow.common.v0.models.Healthcheck(
+            status = status
           )
         }
       }
+    }
 
-      def parserByTable(table: String) = parser(
-        status = s"$table.status"
+  }
+
+  object Price {
+
+    case class Mappings(
+      amount: String = "amount",
+      currency: String = "currency"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        amount = s"${prefix}${sep}amount",
+        currency = s"${prefix}${sep}currency"
       )
-
-      def parser(
-        status: String
-      ): RowParser[io.flow.common.v0.models.Healthcheck] = {
-        SqlParser.str(status) map {
-          case status => {
-            io.flow.common.v0.models.Healthcheck(
-              status = status
-            )
-          }
-        }
-      }
 
     }
 
-    object Price {
+    def table(table: String) = parser(Mappings.prefix(table, "."))
 
-      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
-        config match {
-          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
-            amount = s"${prefix}_amount",
-            currency = s"${prefix}_currency"
+    def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.Price] = {
+      SqlParser.get[BigDecimal](mappings.amount) ~
+      SqlParser.str(mappings.currency) map {
+        case amount ~ currency => {
+          io.flow.common.v0.models.Price(
+            amount = amount,
+            currency = currency
           )
         }
       }
+    }
 
-      def parserByTable(table: String) = parser(
-        amount = s"$table.amount",
-        currency = s"$table.currency"
+  }
+
+  object Reference {
+
+    case class Mappings(
+      guid: String = "guid"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        guid = s"${prefix}${sep}guid"
       )
-
-      def parser(
-        amount: String,
-        currency: String
-      ): RowParser[io.flow.common.v0.models.Price] = {
-        SqlParser.get[BigDecimal](amount) ~
-        SqlParser.str(currency) map {
-          case amount ~ currency => {
-            io.flow.common.v0.models.Price(
-              amount = amount,
-              currency = currency
-            )
-          }
-        }
-      }
 
     }
 
-    object Reference {
+    def table(table: String) = parser(Mappings.prefix(table, "."))
 
-      def newParser(config: me.apidoc.lib.anorm.parsers.util.Config) = {
-        config match {
-          case me.apidoc.lib.anorm.parsers.util.Config.Prefix(prefix) => parser(
-            guid = s"${prefix}_guid"
+    def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.Reference] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) map {
+        case guid => {
+          io.flow.common.v0.models.Reference(
+            guid = guid
           )
         }
       }
-
-      def parserByTable(table: String) = parser(
-        guid = s"$table.guid"
-      )
-
-      def parser(
-        guid: String
-      ): RowParser[io.flow.common.v0.models.Reference] = {
-        SqlParser.get[_root_.java.util.UUID](guid) map {
-          case guid => {
-            io.flow.common.v0.models.Reference(
-              guid = guid
-            )
-          }
-        }
-      }
-
     }
 
   }

@@ -74,7 +74,6 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class UserForm(
-    guid: _root_.java.util.UUID,
     email: String,
     name: _root_.scala.Option[com.bryzek.dependency.v0.models.NameForm] = None
   )
@@ -368,7 +367,6 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyUserForm: play.api.libs.json.Reads[UserForm] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "email").read[String] and
         (__ \ "name").readNullable[com.bryzek.dependency.v0.models.NameForm]
       )(UserForm.apply _)
@@ -376,7 +374,6 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyUserForm: play.api.libs.json.Writes[UserForm] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "email").write[String] and
         (__ \ "name").writeNullable[com.bryzek.dependency.v0.models.NameForm]
       )(unlift(UserForm.unapply _))
