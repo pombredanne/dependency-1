@@ -9,7 +9,8 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 
-object UsersDao {
+@javax.inject.Singleton
+class UsersDao @javax.inject.Inject() () {
 
   private[db] val SystemEmailAddress = "system@bryzek.com"
   private[db] val AnonymousEmailAddress = "anonymous@bryzek.com"
@@ -51,7 +52,7 @@ object UsersDao {
       Seq("Please enter a valid email address")
 
     } else {
-      UsersDao.findByEmail(form.email) match {
+      findByEmail(form.email) match {
         case None => Nil
         case Some(_) => Seq("Email is already registered")
       }
@@ -75,7 +76,7 @@ object UsersDao {
         'email -> valid.form.email.trim,
         'first_name -> Util.trimmedString(valid.form.name.flatMap(_.first)),
         'last_name -> Util.trimmedString(valid.form.name.flatMap(_.last)),
-        'created_by_guid -> createdBy.getOrElse(UsersDao.anonymousUser).guid
+        'created_by_guid -> createdBy.getOrElse(anonymousUser).guid
       ).execute()
     }
 

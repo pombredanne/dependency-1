@@ -2,7 +2,7 @@ package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.v0.models.Language
 import io.flow.play.postgresql.Pager
-import db.{LanguagesDao, LanguageVersionsDao}
+import db.LanguagesDao
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -16,7 +16,9 @@ object LanguageActor {
 
 }
 
-class LanguageActor extends Actor {
+class LanguageActor @javax.inject.Inject() (
+  languagesDao: LanguagesDao
+) extends Actor {
 
   var dataLanguage: Option[Language] = None
 
@@ -25,7 +27,7 @@ class LanguageActor extends Actor {
     case LanguageActor.Messages.Data(guid: UUID) => Util.withVerboseErrorHandler(
       s"LanguageActor.Messages.Data($guid)"
     ) {
-      dataLanguage = LanguagesDao.findByGuid(guid)
+      dataLanguage = languagesDao.findByGuid(guid)
       self ! LanguageActor.Messages.Sync
     }
 

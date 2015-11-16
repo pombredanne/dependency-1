@@ -3,9 +3,17 @@ package db
 import com.bryzek.dependency.v0.models._
 import java.util.UUID
 
-object Helpers {
+@javax.inject.Singleton
+class Helpers @javax.inject.Inject() (
+  usersDao: UsersDao,
+  projectsDao: ProjectsDao,
+  languagesDao: LanguagesDao,
+  languageVersionsDao: LanguageVersionsDao,
+  librariesDao: LibrariesDao,
+  libraryVersionsDao: LibraryVersionsDao
+) {
 
-  lazy val systemUser = UsersDao.systemUser
+  lazy val systemUser = usersDao.systemUser
 
   def createTestEmail(): String = {
     s"z-test-${UUID.randomUUID}@test.bryzek.com"
@@ -14,7 +22,7 @@ object Helpers {
   def createLanguage(
     form: LanguageForm = createLanguageForm()
   ): Language = {
-    LanguagesDao.create(systemUser, LanguagesDao.validate(form))
+    languagesDao.create(systemUser, languagesDao.validate(form))
   }
 
   def createLanguageForm() = LanguageForm(
@@ -23,16 +31,16 @@ object Helpers {
   )
 
   def createLanguageVersion(
-    language: Language = Helpers.createLanguage(),
+    language: Language = createLanguage(),
     version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
   ): LanguageVersion = {
-    LanguageVersionsDao.upsert(systemUser, language.guid, version)
+    languageVersionsDao.upsert(systemUser, language.guid, version)
   }
 
   def createLibrary(
     form: LibraryForm = createLibraryForm()
   ): Library = {
-    LibrariesDao.create(systemUser, LibrariesDao.validate(form))
+    librariesDao.create(systemUser, librariesDao.validate(form))
   }
 
   def createLibraryForm() = LibraryForm(
@@ -43,16 +51,16 @@ object Helpers {
   )
 
   def createLibraryVersion(
-    library: Library = Helpers.createLibrary(),
+    library: Library = createLibrary(),
     version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
   ): LibraryVersion = {
-    LibraryVersionsDao.upsert(systemUser, library.guid, version)
+    libraryVersionsDao.upsert(systemUser, library.guid, version)
   }
 
   def createProject(
     form: ProjectForm = createProjectForm()
   ): Project = {
-    ProjectsDao.create(systemUser, ProjectsDao.validate(form))
+    projectsDao.create(systemUser, projectsDao.validate(form))
   }
 
   def createProjectForm() = {
@@ -67,7 +75,7 @@ object Helpers {
   def createUser(
     form: UserForm
   ): User = {
-    UsersDao.create(None, UsersDao.validate(form))
+    usersDao.create(None, usersDao.validate(form))
   }
 
   def createUserForm(

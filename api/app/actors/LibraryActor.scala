@@ -2,7 +2,7 @@ package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.v0.models.Library
 import io.flow.play.postgresql.Pager
-import db.{LibrariesDao, LibraryVersionsDao}
+import db.LibrariesDao
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -16,7 +16,10 @@ object LibraryActor {
 
 }
 
-class LibraryActor extends Actor {
+@javax.inject.Singleton
+class LibraryActor @javax.inject.Inject() (
+  librariesDao: LibrariesDao
+) extends Actor {
 
   var dataLibrary: Option[Library] = None
 
@@ -25,7 +28,7 @@ class LibraryActor extends Actor {
     case LibraryActor.Messages.Data(guid: UUID) => Util.withVerboseErrorHandler(
       s"LibraryActor.Messages.Data($guid)"
     ) {
-      dataLibrary = LibrariesDao.findByGuid(guid)
+      dataLibrary = librariesDao.findByGuid(guid)
       self ! LibraryActor.Messages.Sync
     }
 

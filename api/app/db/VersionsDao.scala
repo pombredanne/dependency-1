@@ -103,7 +103,8 @@ trait VersionsDao[T] {
 
 }
 
-object LanguageVersionsDao extends VersionsDao[LanguageVersion] {
+@javax.inject.Singleton
+class LanguageVersionsDao @javax.inject.Inject() () extends VersionsDao[LanguageVersion] {
 
   override def tableName = "language_versions"
   override def columnName = "language_guid"
@@ -111,7 +112,8 @@ object LanguageVersionsDao extends VersionsDao[LanguageVersion] {
 
 }
 
-object LibraryVersionsDao extends VersionsDao[LibraryVersion] {
+@javax.inject.Singleton
+class LibraryVersionsDao @javax.inject.Inject() () extends VersionsDao[LibraryVersion] {
 
   override def tableName = "library_versions"
   override def columnName = "library_guid"

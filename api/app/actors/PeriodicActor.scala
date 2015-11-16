@@ -15,7 +15,11 @@ object PeriodicActor {
 
 }
 
-class PeriodicActor extends Actor {
+@javax.inject.Singleton
+class PeriodicActor @javax.inject.Inject() (
+  librariesDao: LibrariesDao,
+  projectsDao: ProjectsDao
+) extends Actor {
 
   def receive = {
 
@@ -23,7 +27,7 @@ class PeriodicActor extends Actor {
       s"PeriodicActor.Messages.SyncProjects"
     ) {
       Pager.eachPage { offset =>
-        ProjectsDao.findAll(offset = offset)
+        projectsDao.findAll(offset = offset)
       } { project =>
         sender ! MainActor.Messages.ProjectSync(project.guid)
       }
@@ -33,7 +37,7 @@ class PeriodicActor extends Actor {
       s"PeriodicActor.Messages.SyncLibraries"
     ) {
       Pager.eachPage { offset =>
-        LibrariesDao.findAll(offset = offset)
+        librariesDao.findAll(offset = offset)
       } { library =>
         sender ! MainActor.Messages.LibrarySync(library.guid)
       }

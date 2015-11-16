@@ -4,13 +4,19 @@ import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Library, LibraryForm, User}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.play.util.ValidatedForm
+import akka.actor.ActorRef
+import com.google.inject.name.Named
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-object LibrariesDao {
+@javax.inject.Singleton
+class LibrariesDao @javax.inject.Inject() (
+  @Named("mainActor") mainActor: ActorRef,
+  libraryVersionsDao: LibraryVersionsDao
+) {
 
   private[this] val BaseQuery = s"""
     select libraries.guid,
@@ -45,7 +51,7 @@ object LibrariesDao {
     }
 
     val existsErrors = if (groupIdErrors.isEmpty && artifactIdErrors.isEmpty) {
-      LibrariesDao.findByResolversAndGroupIdAndArtifactId(form.resolvers, form.groupId, form.artifactId) match {
+      findByResolversAndGroupIdAndArtifactId(form.resolvers, form.groupId, form.artifactId) match {
         case None => Nil
         case Some(_) => Seq("Library with these resolvers, group id and artifact id already exists")
       }
@@ -57,13 +63,13 @@ object LibrariesDao {
   }
 
   def upsert(createdBy: User, form: LibraryForm): Library = {
-    LibrariesDao.findByResolversAndGroupIdAndArtifactId(form.resolvers, form.groupId, form.artifactId) match {
+    findByResolversAndGroupIdAndArtifactId(form.resolvers, form.groupId, form.artifactId) match {
       case None => {
         create(createdBy, validate(form))
       }
       case Some(lib) => {
         Util.trimmedString(form.version).map { version =>
-          LibraryVersionsDao.upsert(createdBy, lib.guid, version)
+          libraryVersionsDao.upsert(createdBy, lib.guid, version)
         }
         lib
       }
@@ -85,7 +91,7 @@ object LibrariesDao {
       ).execute()
     }
 
-    MainActor.ref ! MainActor.Messages.LibraryCreated(guid)
+    mainActor ! MainActor.Messages.LibraryCreated(guid)
 
     findByGuid(guid).getOrElse {
       sys.error("Failed to create library")
@@ -94,7 +100,7 @@ object LibrariesDao {
 
   def softDelete(deletedBy: User, library: Library) {
     SoftDelete.delete("libraries", deletedBy.guid, library.guid)
-    MainActor.ref ! MainActor.Messages.LibraryDeleted(library.guid)
+    mainActor ! MainActor.Messages.LibraryDeleted(library.guid)
   }
 
   def findByResolversAndGroupIdAndArtifactId(

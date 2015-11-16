@@ -7,83 +7,86 @@ import play.api.test.Helpers._
 import org.scalatestplus.play._
 import java.util.UUID
 
-class UsersDaoSpec extends PlaySpec with OneAppPerSuite {
+class UsersDaoSpec @javax.inject.Inject() (
+  helpers: Helpers,
+  usersDao: UsersDao
+) extends PlaySpec with OneAppPerSuite {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
   "Special users" must {
     "anonymous user exists" in {
-      UsersDao.anonymousUser.email must be(
-        UsersDao.AnonymousEmailAddress
+      usersDao.anonymousUser.email must be(
+        usersDao.AnonymousEmailAddress
       )
     }
 
     "system user exists" in {
-      UsersDao.systemUser.email must be(
-        UsersDao.SystemEmailAddress
+      usersDao.systemUser.email must be(
+        usersDao.SystemEmailAddress
       )
     }
 
     "system and anonymous users are different" in {
-      UsersDao.AnonymousEmailAddress must not be(
-        UsersDao.SystemEmailAddress
+      usersDao.AnonymousEmailAddress must not be(
+        usersDao.SystemEmailAddress
       )
 
-      UsersDao.anonymousUser.guid must not be(
-        UsersDao.systemUser.guid
+      usersDao.anonymousUser.guid must not be(
+        usersDao.systemUser.guid
       )
     }
 
   }
 
   "findByEmail" in {
-    UsersDao.findByEmail(UsersDao.SystemEmailAddress).map(_.email) must be(
-      Some(UsersDao.SystemEmailAddress)
+    usersDao.findByEmail(usersDao.SystemEmailAddress).map(_.email) must be(
+      Some(usersDao.SystemEmailAddress)
     )
 
-    UsersDao.findByEmail(UUID.randomUUID.toString) must be(None)
+    usersDao.findByEmail(UUID.randomUUID.toString) must be(None)
   }
 
   "findByGuid" in {
-    UsersDao.findByGuid(UsersDao.systemUser.guid).map(_.guid) must be(
-      Some(UsersDao.systemUser.guid)
+    usersDao.findByGuid(usersDao.systemUser.guid).map(_.guid) must be(
+      Some(usersDao.systemUser.guid)
     )
 
-    UsersDao.findByGuid(UUID.randomUUID) must be(None)
+    usersDao.findByGuid(UUID.randomUUID) must be(None)
   }
 
 
   "findAll by guids" in {
-    val user1 = UsersDao.create(
+    val user1 = usersDao.create(
       createdBy = None,
-      valid = UsersDao.validate(Helpers.createUserForm())
+      valid = usersDao.validate(helpers.createUserForm())
     )
 
-    val user2 = UsersDao.create(
+    val user2 = usersDao.create(
       createdBy = None,
-      valid = UsersDao.validate(Helpers.createUserForm())
+      valid = usersDao.validate(helpers.createUserForm())
     )
 
-    UsersDao.findAll(guids = Some(Seq(user1.guid, user2.guid))).map(_.guid) must be(
+    usersDao.findAll(guids = Some(Seq(user1.guid, user2.guid))).map(_.guid) must be(
       Seq(user1.guid, user2.guid)
     )
 
-    UsersDao.findAll(guids = Some(Nil)) must be(Nil)
-    UsersDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    UsersDao.findAll(guids = Some(Seq(user1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(user1.guid))
+    usersDao.findAll(guids = Some(Nil)) must be(Nil)
+    usersDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
+    usersDao.findAll(guids = Some(Seq(user1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(user1.guid))
   }
 
   "create" must {
     "user with email and name" in {
-      val email = Helpers.createTestEmail()
+      val email = helpers.createTestEmail()
       val name = NameForm(
         first = Some("Michael"),
         last = Some("Bryzek")
       )
-      val user = UsersDao.create(
+      val user = usersDao.create(
         createdBy = None,
-        valid = UsersDao.validate(
-          Helpers.createUserForm(
+        valid = usersDao.validate(
+          helpers.createUserForm(
             email = email,
             name = Some(name)
           )
@@ -99,10 +102,10 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite {
         first = Some("  "),
         last = Some("   ")
       )
-      val user = UsersDao.create(
+      val user = usersDao.create(
         createdBy = None,
-        valid = UsersDao.validate(
-          Helpers.createUserForm().copy(name = Some(name))
+        valid = usersDao.validate(
+          helpers.createUserForm().copy(name = Some(name))
         )
       )
       user.name must be(None)

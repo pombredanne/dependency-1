@@ -9,12 +9,6 @@ import java.util.UUID
 
 object MainActor {
 
-  def props() = Props(new MainActor("main"))
-
-  lazy val ref = Akka.system.actorOf(props(), "main")
-
-  lazy val SystemUser = db.UsersDao.systemUser
-
   object Messages {
 
     case class ProjectCreated(guid: UUID)

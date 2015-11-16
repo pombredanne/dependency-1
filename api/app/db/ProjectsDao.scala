@@ -9,8 +9,15 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+import akka.actor.ActorRef
+import com.google.inject.name.Named
 
-object ProjectsDao {
+@javax.inject.Singleton
+class ProjectsDao @javax.inject.Inject() (
+  @Named("mainActor") mainActor: ActorRef,
+  languagesDao: LanguagesDao,
+  librariesDao: LibrariesDao
+) {
 
   private[this] val BaseQuery = s"""
     select projects.guid,
@@ -70,7 +77,7 @@ object ProjectsDao {
       Seq("Name cannot be empty")
 
     } else {
-      ProjectsDao.findByName(form.name) match {
+      findByName(form.name) match {
         case None => Seq.empty
         case Some(_) => Seq("Project with this name already exists")
       }
@@ -98,10 +105,10 @@ object ProjectsDao {
     languages: Seq[LanguageForm]
   ) {
     val newGuids = languages.map { language =>
-      LanguagesDao.upsert(createdBy, language).guid
+      languagesDao.upsert(createdBy, language).guid
     }
 
-    val existingGuids = LanguagesDao.findAll(projectGuid = Some(project.guid)).map(_.guid)
+    val existingGuids = languagesDao.findAll(projectGuid = Some(project.guid)).map(_.guid)
 
     val toAdd = newGuids.filter { guid => !existingGuids.contains(guid) }
     val toRemove = existingGuids.filter { guid => !newGuids.contains(guid) }
@@ -129,10 +136,10 @@ object ProjectsDao {
     libraries: Seq[LibraryForm]
   ) {
     val newGuids = libraries.map { library =>
-      LibrariesDao.upsert(createdBy, library).guid
+      librariesDao.upsert(createdBy, library).guid
     }
 
-    val existingGuids = LibrariesDao.findAll(projectGuid = Some(project.guid)).map(_.guid)
+    val existingGuids = librariesDao.findAll(projectGuid = Some(project.guid)).map(_.guid)
 
     val toAdd = newGuids.filter { guid => !existingGuids.contains(guid) }
     val toRemove = existingGuids.filter { guid => !newGuids.contains(guid) }
@@ -167,7 +174,7 @@ object ProjectsDao {
       ).execute()
     }
 
-    MainActor.ref ! MainActor.Messages.ProjectCreated(guid)
+    mainActor ! MainActor.Messages.ProjectCreated(guid)
 
     findByGuid(guid).getOrElse {
       sys.error("Failed to create project")
@@ -176,7 +183,7 @@ object ProjectsDao {
 
   def softDelete(deletedBy: User, project: Project) {
     SoftDelete.delete("projects", deletedBy.guid, project.guid)
-    MainActor.ref ! MainActor.Messages.ProjectDeleted(project.guid)
+    mainActor ! MainActor.Messages.ProjectDeleted(project.guid)
   }
 
   def findByName(name: String): Option[Project] = {

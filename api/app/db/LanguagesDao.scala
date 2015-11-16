@@ -4,13 +4,19 @@ import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Language, LanguageForm, ProgrammingLanguage, User}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.play.util.ValidatedForm
+import akka.actor.ActorRef
+import com.google.inject.name.Named
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-object LanguagesDao {
+@javax.inject.Singleton
+class LanguagesDao @javax.inject.Inject() (
+  @Named("mainActor") mainActor: ActorRef,
+  languageVersionsDao: LanguageVersionsDao
+) {
 
   private[this] val BaseQuery = s"""
     select languages.guid,
@@ -34,7 +40,7 @@ object LanguagesDao {
       Seq("Name cannot be empty")
 
     } else {
-      LanguagesDao.findByName(form.name) match {
+      findByName(form.name) match {
         case None => Seq.empty
         case Some(_) => Seq("Language with this name already exists")
       }
@@ -44,13 +50,13 @@ object LanguagesDao {
   }
 
   def upsert(createdBy: User, form: LanguageForm): Language = {
-    LanguagesDao.findByName(form.name) match {
+    findByName(form.name) match {
       case None => {
         create(createdBy, validate(form))
       }
       case Some(lang) => {
         Util.trimmedString(form.version).map { version =>
-          LanguageVersionsDao.upsert(createdBy, lang.guid, version)
+          languageVersionsDao.upsert(createdBy, lang.guid, version)
         }
         lang
       }
@@ -70,7 +76,7 @@ object LanguagesDao {
       ).execute()
     }
 
-    MainActor.ref ! MainActor.Messages.LanguageCreated(guid)
+    mainActor ! MainActor.Messages.LanguageCreated(guid)
 
     findByGuid(guid).getOrElse {
       sys.error("Failed to create language")
@@ -79,7 +85,7 @@ object LanguagesDao {
 
   def softDelete(deletedBy: User, language: Language) {
     SoftDelete.delete("languages", deletedBy.guid, language.guid)
-    MainActor.ref ! MainActor.Messages.LanguageDeleted(language.guid)
+    mainActor ! MainActor.Messages.LanguageDeleted(language.guid)
   }
 
   def findByName(name: String): Option[Language] = {
