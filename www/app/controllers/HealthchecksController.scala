@@ -1,15 +1,25 @@
 package controllers
 
+import lib.UiData
 import io.flow.common.v0.models.Healthcheck
 import io.flow.common.v0.models.json._
 
 import play.api._
+import play.api.i18n._
 import play.api.mvc._
 
-class HealthchecksController() extends Controller {
+class HealthchecksController @javax.inject.Inject() (
+  val messagesApi: MessagesApi
+) extends Controller with I18nSupport {
 
   def index() = Action { implicit request =>
-    Ok(views.html.healthchecks.index("healthy"))
+    Ok(
+      views.html.healthchecks.index(
+        UiData(requestPath = request.path),
+        "healthy"
+      )
+    )
+
   }
 
 }

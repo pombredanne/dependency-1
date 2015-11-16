@@ -1,0 +1,14 @@
+GET     /_internal_/healthcheck                 controllers.HealthchecksController.index()
+GET     /                                       controllers.ApplicationController.index()
+
+GET     /search                                 controllers.SearchController.index(q: Option[String] ?= None, page: Int ?= 0)
+
+GET     /login                                  controllers.LoginController.redirect
+GET     /login/                                 controllers.LoginController.index(return_url: Option[String] ?= None)
+POST    /login/                                 controllers.LoginController.indexPost
+GET     /logout                                 controllers.LogoutController.index
+GET     /logged_out                             controllers.LogoutController.logged_out
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET     /webjars/*file              controllers.WebJarAssets.at(file)

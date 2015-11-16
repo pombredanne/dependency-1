@@ -47,6 +47,7 @@ lazy val www = project
     routesImport += "com.bryzek.dependency.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
+      "io.flow" %% "lib-play" % "0.0.1-SNAPSHOT",
       "org.webjars" %% "webjars-play" % "2.4.0-1",
       "org.webjars" % "bootstrap" % "3.3.5",
       "org.webjars" % "jquery" % "2.1.4"

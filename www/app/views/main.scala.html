@@ -1,0 +1,60 @@
+@(
+  data: lib.UiData,
+  errorMessages: Seq[String] = Nil,
+  jsFiles: Seq[String] = Seq.empty
+)(content: Html)(implicit flash: Flash)
+
+<!DOCTYPE html>
+<html lang="en">
+  @mainHead({data.headTitle match {
+              case None => data.title
+              case Some(_) => data.headTitle
+            }})
+
+  <body data-spy="scroll" data-target=".models">
+
+    @mainNavbar(data = data)
+
+    <div class="container-fluid main-container">
+      <div class="row">
+          
+        <div class="col-sm-3 col-md-2 sidebar models">
+          <ul class="nav nav-sidebar">
+            <li><a href="#">Item 1</a>/li>
+          </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+
+          @flash.get("success").map { msg => <span class="label label-success">@msg</span> }
+          @flash.get("warning").map { msg => <span class="label label-warning">@msg</span> }
+          @flash.get("error").map { msg => <span class="label label-error">@msg</span> }
+
+          @data.title.map { t => <h2>@t</h2> }
+
+          @if(!errorMessages.isEmpty) {
+	    @if(errorMessages.size == 1) {
+              @errorMessages.map { msg => <dd class="error">@msg</dd> }
+            } else {
+              <ul>
+                @errorMessages.map { msg => <li><dd class="error">@msg</dd></li> }
+              </ul>
+            }
+          }
+
+          <p>@content</p>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="@routes.Assets.at("javascripts/jquery-1.11.0.min.js")"></script>
+    <script src="@routes.Assets.at("bootstrap-3.1.1/js/bootstrap.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/util.js")" type="text/javascript"></script>
+    @jsFiles.map { path =>
+      <script src="@routes.Assets.at(path)" type="text/javascript"></script>
+    }
+
+    <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.ico")">
+    <!-- git version @{lib.flow.play.util.Config.getRequiredString("git.version")} -->
+  </body>
+</html>

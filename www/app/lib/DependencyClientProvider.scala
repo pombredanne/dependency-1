@@ -1,16 +1,17 @@
 package lib
 
-import io.flow.user.v0.models.User
-import io.flow.dependency.v0.{Authorization, Client}
+import lib.flow.play.util.Config
+import com.bryzek.dependency.v0.models.User
+import com.bryzek.dependency.v0.{Authorization, Client}
 
-trait SplashpageClient {
+trait DependencyClientProvider {
 
   def newClient(user: Option[User]): Client
 
 }
 
 @javax.inject.Singleton
-class DefaultSplashpageClient() extends SplashpageClient {
+class DefaultDependencyClientProvider() extends DependencyClientProvider {
 
   def host: String = Config.requiredString("dependency.api.host")
   def token: String = Config.requiredString("dependency.api.token")
@@ -21,7 +22,7 @@ class DefaultSplashpageClient() extends SplashpageClient {
       auth = Some(
         Authorization.Basic(
           username = token,
-        password = None
+          password = None
         )
       )
     )
