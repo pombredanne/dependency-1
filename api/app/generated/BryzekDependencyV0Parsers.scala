@@ -518,7 +518,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.User] = {
       SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
       SqlParser.str(mappings.email) ~
-      com.bryzek.dependency.v0.anorm.parsers.Name.parser(mappings.name).? ~
+      com.bryzek.dependency.v0.anorm.parsers.Name.parser(mappings.name) ~
       io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
         case guid ~ email ~ name ~ audit => {
           com.bryzek.dependency.v0.models.User(

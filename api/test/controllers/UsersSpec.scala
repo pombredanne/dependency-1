@@ -1,7 +1,7 @@
 package controllers
 
 import com.bryzek.dependency.v0.Client
-import com.bryzek.dependency.v0.models.{AuthenticationForm, UserForm}
+import com.bryzek.dependency.v0.models.{AuthenticationForm, NameForm, UserForm}
 import io.flow.play.util.Validation
 
 import java.util.UUID
@@ -63,7 +63,7 @@ class UsersSpec extends PlaySpecification with db.Helpers {
 
   "POST /users/authenticate validates non-existent email" in new WithServer(port=port) {
     Seq(createTestEmail(), "foo").foreach { email =>
-      val response = expectMyErrors(
+      val response = expectErrors(
         client.users.postAuthenticate(AuthenticationForm(email = email))
       )
 
@@ -74,6 +74,39 @@ class UsersSpec extends PlaySpecification with db.Helpers {
         Seq("Email address not found")
       )
     }
+  }
+
+  "POST /users w/out name" in new WithServer(port=port) {
+    val email = createTestEmail()
+    val user = await(client.users.post(UserForm(email = email)))
+    user.email must beEqualTo(email)
+    user.name.first must beEqualTo(None)
+    user.name.last must beEqualTo(None)
+  }
+
+  "POST /users w/ name" in new WithServer(port=port) {
+    val email = createTestEmail()
+    val user = await(
+      client.users.post(
+        UserForm(
+          email = email,
+          name = Some(
+            NameForm(first = Some("Michael"), last = Some("Bryzek"))
+          )
+        )
+      )
+    )
+    user.email must beEqualTo(email)
+    user.name.first must beEqualTo(Some("Michael"))
+    user.name.last must beEqualTo(Some("Bryzek"))
+  }
+
+  "POST /users validates duplicate email" in new WithServer(port=port) {
+    expectErrors(
+      client.users.post(UserForm(email = user1.email))
+    ).errors.map(_.message) must beEqualTo(
+      Seq("Email is already registered")
+    )
   }
 
 }

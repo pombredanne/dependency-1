@@ -119,11 +119,6 @@ object UsersDao {
       SQL(sql).on(bind: _*).as(
         com.bryzek.dependency.v0.anorm.parsers.User.table("users").*
       )
-    } map { user =>
-      user.name match {
-        case Some(Name(None, None)) => user.copy(name = None)
-        case _ => user
-      }
     }
   }
 

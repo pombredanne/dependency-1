@@ -76,7 +76,7 @@ package com.bryzek.dependency.v0.models {
   case class User(
     guid: _root_.java.util.UUID,
     email: String,
-    name: _root_.scala.Option[com.bryzek.dependency.v0.models.Name] = None,
+    name: com.bryzek.dependency.v0.models.Name,
     audit: io.flow.common.v0.models.Audit
   )
 
@@ -368,7 +368,7 @@ package com.bryzek.dependency.v0.models {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "email").read[String] and
-        (__ \ "name").readNullable[com.bryzek.dependency.v0.models.Name] and
+        (__ \ "name").read[com.bryzek.dependency.v0.models.Name] and
         (__ \ "audit").read[io.flow.common.v0.models.Audit]
       )(User.apply _)
     }
@@ -377,7 +377,7 @@ package com.bryzek.dependency.v0.models {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "email").write[String] and
-        (__ \ "name").writeNullable[com.bryzek.dependency.v0.models.Name] and
+        (__ \ "name").write[com.bryzek.dependency.v0.models.Name] and
         (__ \ "audit").write[io.flow.common.v0.models.Audit]
       )(unlift(User.unapply _))
     }

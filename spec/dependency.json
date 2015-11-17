@@ -25,7 +25,7 @@
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
 		{ "name": "email", "type": "string" },
-		{ "name": "name", "type": "name", "required": false },
+		{ "name": "name", "type": "name", "required": true },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},

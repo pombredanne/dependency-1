@@ -85,7 +85,7 @@ trait Helpers {
     name = name
   )
 
-  def expectMyErrors[T](
+  def expectErrors[T](
     f: => Future[T],
     duration: Duration = DefaultDuration
   ): ErrorsResponse = {

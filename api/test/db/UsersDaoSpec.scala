@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{NameForm, UserForm}
+import com.bryzek.dependency.v0.models.{Name, NameForm, UserForm}
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -90,8 +90,8 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
         )
       )
       user.email must be(email)
-      user.name.flatMap(_.first) must be(name.first)
-      user.name.flatMap(_.last) must be(name.last)
+      user.name.first must be(name.first)
+      user.name.last must be(name.last)
     }
 
     "processes empty name" in {
@@ -105,7 +105,7 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
           createUserForm().copy(name = Some(name))
         )
       )
-      user.name must be(None)
+      user.name must be(Name(first = None, last = None))
     }
 
   }
