@@ -1,4 +1,4 @@
-package lib
+package com.bryzek.dependency.lib
 
 import com.bryzek.dependency.v0.models.User
 

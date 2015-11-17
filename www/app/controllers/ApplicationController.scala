@@ -1,6 +1,6 @@
 package controllers
 
-import lib.UiData
+import com.bryzek.dependency.lib.UiData
 import play.api._
 import play.api.i18n._
 import play.api.mvc._

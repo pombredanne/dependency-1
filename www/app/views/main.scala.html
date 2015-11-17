@@ -1,5 +1,5 @@
 @(
-  data: lib.UiData,
+  data: com.bryzek.dependency.lib.UiData,
   errorMessages: Seq[String] = Nil,
   jsFiles: Seq[String] = Seq.empty
 )(content: Html)(implicit flash: Flash)
@@ -10,24 +10,24 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@data.headTitle.getOrElse(data.title.getOrElse("dependency"))</title>
-  <link rel="stylesheet" media="screen" href="@routes.Assets.at("bootstrap-3.3.1/css/bootstrap.min.css")">
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("css/main.css")">
+  <link rel="stylesheet" media="screen" href="@routes.Assets.at("lib/bootstrap/css/bootstrap.min.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
     <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.ico")">
   </head>
 
-  <body data-spy="scroll" data-target=".models">
+  <body data-spy="scroll" data-target=".sidebar">
 
     @mainNavbar(data)
 
     <div class="container-fluid">
       <div class="row">
 
-        <div class="col-sm-3 col-md-2 sidebar models">
+        <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
-            <li><a@if(data.section == Some(lib.Section.Dashboard)) { class="active" } href="@routes.ApplicationController.index()">Dashboard</a></li>
-            <li><a@if(data.section == Some(lib.Section.Projects)) { class="active" } href="#">Projects</a></li>
-            <li><a@if(data.section == Some(lib.Section.Libraries)) { class="active" } href="#">Libraries</a></li>
-            <li><a@if(data.section == Some(lib.Section.Languages)) { class="active" } href="#">Languages</a></li>
+            <li><a@if(data.section == Some(com.bryzek.dependency.lib.Section.Dashboard)) { class="active" } href="@routes.ApplicationController.index()">Dashboard</a></li>
+            <li><a@if(data.section == Some(com.bryzek.dependency.lib.Section.Projects)) { class="active" } href="#">Projects</a></li>
+            <li><a@if(data.section == Some(com.bryzek.dependency.lib.Section.Libraries)) { class="active" } href="#">Libraries</a></li>
+            <li><a@if(data.section == Some(com.bryzek.dependency.lib.Section.Languages)) { class="active" } href="#">Languages</a></li>
           </ul>
         </div>
 
@@ -56,9 +56,9 @@
     </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="@routes.Assets.at("bootstrap-3.3.1/js/bootstrap.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("lib/bootstrap/js/bootstrap.min.js")" type="text/javascript"></script>
     @jsFiles.map { js =>
-      <script src="@routes.Assets.at(s"js/$js")" type="text/javascript"></script>
+      <script src="@routes.Assets.at(s"javascripts/$js")" type="text/javascript"></script>
     }
   </body>
 </html>

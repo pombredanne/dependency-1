@@ -1,27 +1,6 @@
 body {
   min-height: 2000px;
-}
-
-ul.dropdown-menu {
-  z-index: 1001;
-}
-
-body .main-container {
-  margin-top: 71px;
-}
-
-body .sidebar {
-  top: 51px;
-  padding-top: 0px;
-}
-
-.apidoc {
-  font-weight: bold;
-  font-size: 150%;
-}
-
-body .container {
-  width: 100%;
+  padding-top: 40px;
 }
 
 /*
@@ -34,10 +13,6 @@ body .container {
 
 .nowrap {
     white-space: nowrap;
-}
-
-.main-navbar .logo {
-  margin-right: 100px;
 }
 
 /*
@@ -71,8 +46,7 @@ body .container {
   margin-left: -20px;
 }
 .nav-sidebar > li > a {
-  padding-right: 20px;
-  padding-left: 20px;
+  padding: auto 20px;
 }
 .nav-sidebar > .active > a {
   color: #fff;
@@ -84,38 +58,54 @@ body .container {
  * Main content
  */
 
+.main {
+  padding: 20px;
+}
 @media (min-width: 768px) {
   .main {
     padding-right: 20px;
     padding-left: 20px;
   }
 }
+.main .page-header {
+  margin-top: 0;
+}
 
-dd.error {
+.version_resource {
+  padding-top: 50px;
+}
+
+.error {
   color: #cc3333;
 }
 
-span.error {
-  color: #cc3333;
+.markdown {
+  border: 1px solid;
+  border-color: #ddd;
+  background: #eee;
+  padding: 1px 10px;
 }
 
-body h2 {
-  margin-top: 0px;
+.markdown h1 {
+  font-size: 125%;
+  font-weight: bold;
 }
 
-body .modal-body .well {
-  background-color: #fff;
-  width: 400px;
+.markdown h2 {
+  font-size: 115%;
 }
 
-.forgot_password {
-  float: right;
-  padding: 20px;
-  font-style: italic;
+.cta-wrapper {
+  margin-left: 140px;
 }
 
-.versions-show {
-  border-top: 1px solid #aeaeae;
-  margin-top: 25px;
-  padding-top: 15px;
+.filter-label {
+  min-width: 140px;
+  padding: 5px 0px;
+  font-weight: normal;
+}
+
+.input-fields-wrapper label {
+  font-weight: normal;
+  margin-right: 15px;
 }

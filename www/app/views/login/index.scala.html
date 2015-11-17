@@ -1,0 +1,47 @@
+@(data: com.bryzek.dependency.lib.UiData,
+  loginForm: Form[controllers.LoginController.LoginData],
+  errorMessages: Seq[String] = Nil
+)(implicit flash: Flash, messages: Messages)
+
+@main(data.copy(title = Some("Login")), errorMessages = errorMessages) {
+
+  <div class="container">
+
+    <div class="row">
+      <div class="span12">
+        <div class="" id="loginModal">
+          <div class="modal-body">
+            <div class="well">
+              <div class="tab-content">
+
+                <div id="login" class="tab-pane active in">
+
+                  @helper.form(action = routes.LoginController.indexPost()) {
+
+                    <input type="hidden" name="return_url" value='@loginForm("return_url").value'/>
+
+                    @loginForm.globalErrors.map(_.message).map { msg =>
+                      <p><span class="error">@msg</span></p>
+                    }
+
+                    <fieldset>
+                        @helper.inputText(
+                            loginForm("email"),
+                            '_label -> "Email address",
+                            '_error -> loginForm.error("email")
+                        )
+                    </fieldset>
+
+                    <button class="btn btn-large btn-primary" type="submit">Login</button>
+
+                  }
+
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+}
