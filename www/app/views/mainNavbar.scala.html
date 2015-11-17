@@ -8,7 +8,7 @@
     <div class="navbar-collapse collapse">
       @if(data.user.isEmpty) {
         <ul class="nav navbar-nav navbar-right">
-          <li><a href="/login">Login/Register</a></li>
+          <li><a href="@routes.LoginController.index(return_url = Some(data.requestPath))">Login/Register</a></li>
         </ul>
       } else {
         <div class="dropdown nav navbar-nav navbar-right">
