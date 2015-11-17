@@ -3,6 +3,7 @@ package controllers
 import com.bryzek.dependency.v0.errors.ErrorsResponse
 import com.bryzek.dependency.v0.models.{AuthenticationForm, UserForm}
 import com.bryzek.dependency.lib.{DependencyClientProvider, UiData}
+import io.flow.play.util.Validation
 import play.api._
 import play.api.i18n._
 import play.api.mvc._
@@ -44,22 +45,28 @@ class LoginController @javax.inject.Inject() (
           Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
         }.recover {
           case r: ErrorsResponse => {
-            // For now, just auto-register the user if the email is valid
-            try {
-              val user = Await.result(
-                client.users.post(UserForm(email = validForm.email.trim)),
-                1000.millis
-              )
-              Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
-            } catch {
-              case r: ErrorsResponse => {
+            r.errors.map(_.code).toList match {
+              case Validation.Codes.UserAuthorizationFailed :: Nil => {
+                // For now, just auto-register the user if the email is valid
+                try {
+                  val user = Await.result(
+                    client.users.post(UserForm(email = validForm.email.trim)),
+                    1000.millis
+                  )
+                  Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
+                } catch {
+                  case r: ErrorsResponse => {
+                    Ok(views.html.login.index(UiData(requestPath = request.path), form, r.errors.map(_.message)))
+                  }
+                }
+              }
+              case _ => {
                 Ok(views.html.login.index(UiData(requestPath = request.path), form, r.errors.map(_.message)))
               }
             }
           }
         }
       }
-
     )
   }
 }

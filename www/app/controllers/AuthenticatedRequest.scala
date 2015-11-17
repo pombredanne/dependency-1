@@ -45,6 +45,7 @@ case class RequestHelper[A](
         None
       }
       case Some(guid) => {
+        println(s"GUID[$guid]")
         provider.newClient(user = None).users.getByGuid(UUID.fromString(guid)).map { Some(_) }.recover {
           case UnitResponse(404) => None
         }
