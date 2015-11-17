@@ -1,6 +1,7 @@
 package controllers
 
 import db.ProjectsDao
+import io.flow.play.clients.UserTokenClient
 import io.flow.common.v0.models.Error
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.{Validation, ValidatedForm}
@@ -11,7 +12,10 @@ import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
 
-class Projects @javax.inject.Inject() () extends Controller with IdentifiedRestController {
+@javax.inject.Singleton
+class Projects @javax.inject.Inject() (
+  val userTokensClient: UserTokenClient
+) extends Controller with IdentifiedRestController {
 
   def get(
     guid: Option[UUID],

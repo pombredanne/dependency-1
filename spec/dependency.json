@@ -2,7 +2,8 @@
     "name": "dependency",
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/flow/common/0.0.1-dev/service.json" }
+	{ "uri": "http://www.apidoc.me/flow/common/0.0.1-dev/service.json" },
+	{ "uri": "http://www.apidoc.me/flow/user/0.0.1-dev/service.json" }
     ],
 
     "enums": {
@@ -21,41 +22,11 @@
 
     "models": {
 	    
-	"user": {
-	    "fields": [
-		{ "name": "guid", "type": "uuid" },
-		{ "name": "email", "type": "string" },
-		{ "name": "name", "type": "name", "required": true },
-		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
-	    ]
-	},
-
-	"name": {
-	    "fields": [
-		{ "name": "first", "type": "string", "required": false },
-		{ "name": "last", "type": "string", "required": false }
-	    ]
-	},
-
         "authentication_form": {
 	    "description": "Used to authenticate user. For first iteration just requires email",
 	    "fields": [
                 { "name": "email", "type": "string" }
             ]
-	},
-
-	"user_form": {
-	    "fields": [
-		{ "name": "email", "type": "string" },
-		{ "name": "name", "type": "name_form", "required": false }
-	    ]
-	},
-
-	"name_form": {
-	    "fields": [
-		{ "name": "first", "type": "string", "required": false },
-		{ "name": "last", "type": "string", "required": false }
-	    ]
 	},
 
 	"language": {
@@ -142,7 +113,7 @@
 	    ]
 	},
 
-	"user": {
+	"io.flow.user.v0.models.user": {
             "operations": [
                 {
                     "method": "GET",
@@ -152,7 +123,7 @@
                         { "name": "email", "type": "string", "description": "Find user with this email address. Case in-sensitive. Exact match", "required": false }
                     ],
                     "responses": {
-                        "200": { "type": "[user]" }
+                        "200": { "type": "[io.flow.user.v0.models.user]" }
                     }
                 },
 
@@ -161,7 +132,7 @@
                     "description": "Returns information about the user with this guid.",
                     "path": "/:guid",
                     "responses": {
-                        "200": { "type": "user" },
+                        "200": { "type": "io.flow.user.v0.models.user" },
                         "404": { "type": "unit" }
                     }
                 },
@@ -172,7 +143,7 @@
 		    "description": "Used to authenticate a user with an email address and password. Successful authentication returns an instance of the user model. Failed authorizations of any kind are returned as a generic error with code user_authorization_failed.",
 		    "body": { "type": "authentication_form" },
                     "responses": {
-                        "200": { "type": "user" },
+                        "200": { "type": "io.flow.user.v0.models.user" },
                         "409": { "type": "[io.flow.common.v0.models.error]" }
 		    }
 		},
@@ -180,9 +151,9 @@
                 {
                     "method": "POST",
                     "description": "Create a new user.",
-                    "body": { "type": "user_form" },
+                    "body": { "type": "io.flow.user.v0.models.user_form" },
                     "responses": {
-                        "201": { "type": "user" },
+                        "201": { "type": "io.flow.user.v0.models.user" },
                         "409": { "type": "[io.flow.common.v0.models.error]" }
                     }
                 }

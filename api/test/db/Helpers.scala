@@ -2,6 +2,7 @@ package db
 
 import com.bryzek.dependency.v0.models._
 import com.bryzek.dependency.v0.errors.{ErrorsResponse, UnitResponse}
+import io.flow.user.v0.models.{NameForm, User, UserForm}
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import scala.concurrent.{Await, Future}
@@ -81,7 +82,7 @@ trait Helpers {
     email: String = createTestEmail(),
     name: Option[NameForm] = None
   ) = UserForm(
-    email = email,
+    email = Some(email),
     name = name
   )
 

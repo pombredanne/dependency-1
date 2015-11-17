@@ -3,14 +3,16 @@ package controllers
 import db.UsersDao
 import io.flow.common.v0.models.Error
 import io.flow.play.util.{Validation, ValidatedForm}
-import com.bryzek.dependency.v0.models.{AuthenticationForm, User, UserForm}
+import io.flow.user.v0.models.{User, UserForm}
+import io.flow.user.v0.models.json._
+import com.bryzek.dependency.v0.models.AuthenticationForm
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
 
-class Users @javax.inject.Inject() () extends Controller {
+class IoFlowUserV0ModelsUsers @javax.inject.Inject() () extends Controller {
 
   def get(
     guid: Option[UUID],

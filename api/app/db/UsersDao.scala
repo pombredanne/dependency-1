@@ -1,9 +1,9 @@
 package db
 
-import com.bryzek.dependency.v0.models.{Name, User, UserForm}
 import io.flow.common.v0.models.Audit
 import io.flow.play.postgresql.{AuditsDao, Filters, OrderBy}
 import io.flow.play.util.ValidatedForm
+import io.flow.user.v0.models.{Name, User, UserForm}
 import java.util.UUID
 import anorm._
 import play.api.db._
@@ -44,16 +44,23 @@ object UsersDao {
   """
 
   def validate(form: UserForm): ValidatedForm[UserForm] = {
-    val emailErrors = if (form.email.trim == "") {
-      Seq("Email address cannot be empty")
+    val emailErrors = form.email match {
+      case None => {
+        Seq("Please provide an email address")
+      }
+      case Some(email) => {
+        if (email.trim == "") {
+          Seq("Email address cannot be empty")
 
-    } else if (!isValidEmail(form.email)) {
-      Seq("Please enter a valid email address")
+        } else if (!isValidEmail(email)) {
+          Seq("Please enter a valid email address")
 
-    } else {
-      UsersDao.findByEmail(form.email) match {
-        case None => Nil
-        case Some(_) => Seq("Email is already registered")
+        } else {
+          UsersDao.findByEmail(email) match {
+            case None => Nil
+            case Some(_) => Seq("Email is already registered")
+          }
+        }
       }
     }
 
@@ -72,7 +79,7 @@ object UsersDao {
     DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> userGuid,
-        'email -> valid.form.email.trim,
+        'email -> valid.form.email.getOrElse("").trim,
         'first_name -> Util.trimmedString(valid.form.name.flatMap(_.first)),
         'last_name -> Util.trimmedString(valid.form.name.flatMap(_.last)),
         'created_by_guid -> createdBy.getOrElse(UsersDao.anonymousUser).guid
@@ -117,7 +124,7 @@ object UsersDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.User.table("users").*
+        io.flow.user.v0.anorm.parsers.User.table("users").*
       )
     }
   }

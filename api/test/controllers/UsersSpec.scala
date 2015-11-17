@@ -1,7 +1,8 @@
 package controllers
 
 import com.bryzek.dependency.v0.Client
-import com.bryzek.dependency.v0.models.{AuthenticationForm, NameForm, UserForm}
+import com.bryzek.dependency.v0.models.AuthenticationForm
+import io.flow.user.v0.models.{NameForm, UserForm}
 import io.flow.play.util.Validation
 
 import java.util.UUID
@@ -21,13 +22,13 @@ class UsersSpec extends PlaySpecification with db.Helpers {
   "GET /users by guid" in new WithServer(port=port) {
 
     await(
-      client.users.get(guid = Some(user1.guid))
+      client.ioFlowUserV0ModelsUsers.get(guid = Some(user1.guid))
     ).map(_.guid) must beEqualTo(
       Seq(user1.guid)
     )
 
     await(
-      client.users.get(guid = Some(UUID.randomUUID))
+      client.ioFlowUserV0ModelsUsers.get(guid = Some(UUID.randomUUID))
     ).map(_.guid) must be(
       Nil
     )
@@ -35,36 +36,36 @@ class UsersSpec extends PlaySpecification with db.Helpers {
 
   "GET /users by email" in new WithServer(port=port) {
     await(
-      client.users.get(email = Some(user1.email))
+      client.ioFlowUserV0ModelsUsers.get(email = user1.email)
     ).map(_.email) must beEqualTo(
       Seq(user1.email)
     )
 
     await(
-      client.users.get(email = Some(UUID.randomUUID.toString))
-    ).map(_.email) must be(
+      client.ioFlowUserV0ModelsUsers.get(email = Some(UUID.randomUUID.toString))
+    ) must be(
       Nil
     )
   }
 
   "GET /users/:guid" in new WithServer(port=port) {
-    await(client.users.getByGuid(user1.guid)).guid must beEqualTo(user1.guid)
-    await(client.users.getByGuid(user2.guid)).guid must beEqualTo(user2.guid)
+    await(client.ioFlowUserV0ModelsUsers.getByGuid(user1.guid)).guid must beEqualTo(user1.guid)
+    await(client.ioFlowUserV0ModelsUsers.getByGuid(user2.guid)).guid must beEqualTo(user2.guid)
 
     expectNotFound {
-      client.users.getByGuid(UUID.randomUUID)
+      client.ioFlowUserV0ModelsUsers.getByGuid(UUID.randomUUID)
     }
   }
 
   "POST /users/authenticate with valid email" in new WithServer(port=port) {
-    await(client.users.postAuthenticate(AuthenticationForm(email = user1.email))).guid must beEqualTo(user1.guid)
-    await(client.users.postAuthenticate(AuthenticationForm(email = user2.email))).guid must beEqualTo(user2.guid)
+    await(client.ioFlowUserV0ModelsUsers.postAuthenticate(AuthenticationForm(email = user1.email.get))).guid must beEqualTo(user1.guid)
+    await(client.ioFlowUserV0ModelsUsers.postAuthenticate(AuthenticationForm(email = user2.email.get))).guid must beEqualTo(user2.guid)
   }
 
   "POST /users/authenticate validates non-existent email" in new WithServer(port=port) {
     Seq(createTestEmail(), "foo").foreach { email =>
       val response = expectErrors(
-        client.users.postAuthenticate(AuthenticationForm(email = email))
+        client.ioFlowUserV0ModelsUsers.postAuthenticate(AuthenticationForm(email = email))
       )
 
       response.errors.map(_.code) must beEqualTo(
@@ -78,8 +79,8 @@ class UsersSpec extends PlaySpecification with db.Helpers {
 
   "POST /users w/out name" in new WithServer(port=port) {
     val email = createTestEmail()
-    val user = await(client.users.post(UserForm(email = email)))
-    user.email must beEqualTo(email)
+    val user = await(client.ioFlowUserV0ModelsUsers.post(UserForm(email = Some(email))))
+    user.email must beEqualTo(Some(email))
     user.name.first must beEqualTo(None)
     user.name.last must beEqualTo(None)
   }
@@ -87,23 +88,23 @@ class UsersSpec extends PlaySpecification with db.Helpers {
   "POST /users w/ name" in new WithServer(port=port) {
     val email = createTestEmail()
     val user = await(
-      client.users.post(
+      client.ioFlowUserV0ModelsUsers.post(
         UserForm(
-          email = email,
+          email = Some(email),
           name = Some(
             NameForm(first = Some("Michael"), last = Some("Bryzek"))
           )
         )
       )
     )
-    user.email must beEqualTo(email)
+    user.email must beEqualTo(Some(email))
     user.name.first must beEqualTo(Some("Michael"))
     user.name.last must beEqualTo(Some("Bryzek"))
   }
 
   "POST /users validates duplicate email" in new WithServer(port=port) {
     expectErrors(
-      client.users.post(UserForm(email = user1.email))
+      client.ioFlowUserV0ModelsUsers.post(UserForm(email = Some(user1.email.get)))
     ).errors.map(_.message) must beEqualTo(
       Seq("Email is already registered")
     )
@@ -111,7 +112,7 @@ class UsersSpec extends PlaySpecification with db.Helpers {
 
   "POST /users validates empty email" in new WithServer(port=port) {
     expectErrors(
-      client.users.post(UserForm(email = "   "))
+      client.ioFlowUserV0ModelsUsers.post(UserForm(email = Some("   ")))
     ).errors.map(_.message) must beEqualTo(
       Seq("Email address cannot be empty")
     )
@@ -119,7 +120,7 @@ class UsersSpec extends PlaySpecification with db.Helpers {
 
   "POST /users validates email address format" in new WithServer(port=port) {
     expectErrors(
-      client.users.post(UserForm(email = "mbfoo.com"))
+      client.ioFlowUserV0ModelsUsers.post(UserForm(email = Some("mbfoo.com")))
     ).errors.map(_.message) must beEqualTo(
       Seq("Please enter a valid email address")
     )

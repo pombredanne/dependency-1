@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{Name, NameForm, UserForm}
+import io.flow.user.v0.models.{Name, NameForm, UserForm}
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -14,13 +14,13 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "Special users" must {
     "anonymous user exists" in {
       UsersDao.anonymousUser.email must be(
-        UsersDao.AnonymousEmailAddress
+        Some(UsersDao.AnonymousEmailAddress)
       )
     }
 
     "system user exists" in {
       UsersDao.systemUser.email must be(
-        UsersDao.SystemEmailAddress
+        Some(UsersDao.SystemEmailAddress)
       )
     }
 
@@ -37,7 +37,7 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findByEmail" in {
-    UsersDao.findByEmail(UsersDao.SystemEmailAddress).map(_.email) must be(
+    UsersDao.findByEmail(UsersDao.SystemEmailAddress).flatMap(_.email) must be(
       Some(UsersDao.SystemEmailAddress)
     )
 
@@ -89,7 +89,7 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
           )
         )
       )
-      user.email must be(email)
+      user.email must be(Some(email))
       user.name.first must be(name.first)
       user.name.last must be(name.last)
     }

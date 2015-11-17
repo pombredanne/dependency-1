@@ -50,16 +50,6 @@ package com.bryzek.dependency.v0.models {
     audit: io.flow.common.v0.models.Audit
   )
 
-  case class Name(
-    first: _root_.scala.Option[String] = None,
-    last: _root_.scala.Option[String] = None
-  )
-
-  case class NameForm(
-    first: _root_.scala.Option[String] = None,
-    last: _root_.scala.Option[String] = None
-  )
-
   case class Project(
     guid: _root_.java.util.UUID,
     scms: com.bryzek.dependency.v0.models.Scms,
@@ -71,18 +61,6 @@ package com.bryzek.dependency.v0.models {
     name: String,
     scms: com.bryzek.dependency.v0.models.Scms,
     uri: String
-  )
-
-  case class User(
-    guid: _root_.java.util.UUID,
-    email: String,
-    name: com.bryzek.dependency.v0.models.Name,
-    audit: io.flow.common.v0.models.Audit
-  )
-
-  case class UserForm(
-    email: String,
-    name: _root_.scala.Option[com.bryzek.dependency.v0.models.NameForm] = None
   )
 
   sealed trait ProgrammingLanguage
@@ -162,6 +140,7 @@ package com.bryzek.dependency.v0.models {
     import play.api.libs.functional.syntax._
     import com.bryzek.dependency.v0.models.json._
     import io.flow.common.v0.models.json._
+    import io.flow.user.v0.models.json._
 
     private[v0] implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
 
@@ -302,34 +281,6 @@ package com.bryzek.dependency.v0.models {
       )(unlift(LibraryVersion.unapply _))
     }
 
-    implicit def jsonReadsDependencyName: play.api.libs.json.Reads[Name] = {
-      (
-        (__ \ "first").readNullable[String] and
-        (__ \ "last").readNullable[String]
-      )(Name.apply _)
-    }
-
-    implicit def jsonWritesDependencyName: play.api.libs.json.Writes[Name] = {
-      (
-        (__ \ "first").writeNullable[String] and
-        (__ \ "last").writeNullable[String]
-      )(unlift(Name.unapply _))
-    }
-
-    implicit def jsonReadsDependencyNameForm: play.api.libs.json.Reads[NameForm] = {
-      (
-        (__ \ "first").readNullable[String] and
-        (__ \ "last").readNullable[String]
-      )(NameForm.apply _)
-    }
-
-    implicit def jsonWritesDependencyNameForm: play.api.libs.json.Writes[NameForm] = {
-      (
-        (__ \ "first").writeNullable[String] and
-        (__ \ "last").writeNullable[String]
-      )(unlift(NameForm.unapply _))
-    }
-
     implicit def jsonReadsDependencyProject: play.api.libs.json.Reads[Project] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
@@ -362,38 +313,6 @@ package com.bryzek.dependency.v0.models {
         (__ \ "scms").write[com.bryzek.dependency.v0.models.Scms] and
         (__ \ "uri").write[String]
       )(unlift(ProjectForm.unapply _))
-    }
-
-    implicit def jsonReadsDependencyUser: play.api.libs.json.Reads[User] = {
-      (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "email").read[String] and
-        (__ \ "name").read[com.bryzek.dependency.v0.models.Name] and
-        (__ \ "audit").read[io.flow.common.v0.models.Audit]
-      )(User.apply _)
-    }
-
-    implicit def jsonWritesDependencyUser: play.api.libs.json.Writes[User] = {
-      (
-        (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "email").write[String] and
-        (__ \ "name").write[com.bryzek.dependency.v0.models.Name] and
-        (__ \ "audit").write[io.flow.common.v0.models.Audit]
-      )(unlift(User.unapply _))
-    }
-
-    implicit def jsonReadsDependencyUserForm: play.api.libs.json.Reads[UserForm] = {
-      (
-        (__ \ "email").read[String] and
-        (__ \ "name").readNullable[com.bryzek.dependency.v0.models.NameForm]
-      )(UserForm.apply _)
-    }
-
-    implicit def jsonWritesDependencyUserForm: play.api.libs.json.Writes[UserForm] = {
-      (
-        (__ \ "email").write[String] and
-        (__ \ "name").writeNullable[com.bryzek.dependency.v0.models.NameForm]
-      )(unlift(UserForm.unapply _))
     }
   }
 }
@@ -469,6 +388,7 @@ package com.bryzek.dependency.v0 {
   ) {
     import com.bryzek.dependency.v0.models.json._
     import io.flow.common.v0.models.json._
+    import io.flow.user.v0.models.json._
 
     private[this] val logger = play.api.Logger("com.bryzek.dependency.v0.Client")
 
@@ -476,15 +396,66 @@ package com.bryzek.dependency.v0 {
 
     def ioFlowCommonV0ModelsHealthchecks: IoFlowCommonV0ModelsHealthchecks = IoFlowCommonV0ModelsHealthchecks
 
-    def projects: Projects = Projects
+    def ioFlowUserV0ModelsUsers: IoFlowUserV0ModelsUsers = IoFlowUserV0ModelsUsers
 
-    def users: Users = Users
+    def projects: Projects = Projects
 
     object IoFlowCommonV0ModelsHealthchecks extends IoFlowCommonV0ModelsHealthchecks {
       override def getInternalAndHealthcheck()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.common.v0.models.Healthcheck] = {
         _executeRequest("GET", s"/_internal_/healthcheck").map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("io.flow.common.v0.models.Healthcheck", r, _.validate[io.flow.common.v0.models.Healthcheck])
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+        }
+      }
+    }
+
+    object IoFlowUserV0ModelsUsers extends IoFlowUserV0ModelsUsers {
+      override def get(
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        email: _root_.scala.Option[String] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.user.v0.models.User]] = {
+        val queryParameters = Seq(
+          guid.map("guid" -> _.toString),
+          email.map("email" -> _)
+        ).flatten
+
+        _executeRequest("GET", s"/", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[io.flow.user.v0.models.User]", r, _.validate[Seq[io.flow.user.v0.models.User]])
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+        }
+      }
+
+      override def getByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User] = {
+        _executeRequest("GET", s"/${guid}").map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("io.flow.user.v0.models.User", r, _.validate[io.flow.user.v0.models.User])
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
+        }
+      }
+
+      override def postAuthenticate(
+        authenticationForm: com.bryzek.dependency.v0.models.AuthenticationForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User] = {
+        val payload = play.api.libs.json.Json.toJson(authenticationForm)
+
+        _executeRequest("POST", s"/authenticate", body = Some(payload)).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("io.flow.user.v0.models.User", r, _.validate[io.flow.user.v0.models.User])
+          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
+        }
+      }
+
+      override def post(
+        userForm: io.flow.user.v0.models.UserForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User] = {
+        val payload = play.api.libs.json.Json.toJson(userForm)
+
+        _executeRequest("POST", s"/", body = Some(payload)).map {
+          case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("io.flow.user.v0.models.User", r, _.validate[io.flow.user.v0.models.User])
+          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 409")
         }
       }
     }
@@ -541,57 +512,6 @@ package com.bryzek.dependency.v0 {
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
-        }
-      }
-    }
-
-    object Users extends Users {
-      override def get(
-        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        email: _root_.scala.Option[String] = None
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.User]] = {
-        val queryParameters = Seq(
-          guid.map("guid" -> _.toString),
-          email.map("email" -> _)
-        ).flatten
-
-        _executeRequest("GET", s"/users", queryParameters = queryParameters).map {
-          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.User]", r, _.validate[Seq[com.bryzek.dependency.v0.models.User]])
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
-        }
-      }
-
-      override def getByGuid(
-        guid: _root_.java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.User] = {
-        _executeRequest("GET", s"/users/${guid}").map {
-          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.User", r, _.validate[com.bryzek.dependency.v0.models.User])
-          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
-        }
-      }
-
-      override def postAuthenticate(
-        authenticationForm: com.bryzek.dependency.v0.models.AuthenticationForm
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.User] = {
-        val payload = play.api.libs.json.Json.toJson(authenticationForm)
-
-        _executeRequest("POST", s"/users/authenticate", body = Some(payload)).map {
-          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.User", r, _.validate[com.bryzek.dependency.v0.models.User])
-          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
-        }
-      }
-
-      override def post(
-        userForm: com.bryzek.dependency.v0.models.UserForm
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.User] = {
-        val payload = play.api.libs.json.Json.toJson(userForm)
-
-        _executeRequest("POST", s"/users", body = Some(payload)).map {
-          case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.User", r, _.validate[com.bryzek.dependency.v0.models.User])
-          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 409")
         }
       }
     }
@@ -687,6 +607,40 @@ package com.bryzek.dependency.v0 {
     def getInternalAndHealthcheck()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.common.v0.models.Healthcheck]
   }
 
+  trait IoFlowUserV0ModelsUsers {
+    /**
+     * Search for a specific user. You must specify at least 1 parameter - either a
+     * guid or email - and will receive back either 0 or 1 users.
+     */
+    def get(
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      email: _root_.scala.Option[String] = None
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.user.v0.models.User]]
+
+    /**
+     * Returns information about the user with this guid.
+     */
+    def getByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User]
+
+    /**
+     * Used to authenticate a user with an email address and password. Successful
+     * authentication returns an instance of the user model. Failed authorizations of
+     * any kind are returned as a generic error with code user_authorization_failed.
+     */
+    def postAuthenticate(
+      authenticationForm: com.bryzek.dependency.v0.models.AuthenticationForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User]
+
+    /**
+     * Create a new user.
+     */
+    def post(
+      userForm: io.flow.user.v0.models.UserForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User]
+  }
+
   trait Projects {
     /**
      * Search projects. Results are paginated
@@ -718,44 +672,11 @@ package com.bryzek.dependency.v0 {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
-  trait Users {
-    /**
-     * Search for a specific user. You must specify at least 1 parameter - either a
-     * guid or email - and will receive back either 0 or 1 users.
-     */
-    def get(
-      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      email: _root_.scala.Option[String] = None
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.User]]
-
-    /**
-     * Returns information about the user with this guid.
-     */
-    def getByGuid(
-      guid: _root_.java.util.UUID
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.User]
-
-    /**
-     * Used to authenticate a user with an email address and password. Successful
-     * authentication returns an instance of the user model. Failed authorizations of
-     * any kind are returned as a generic error with code user_authorization_failed.
-     */
-    def postAuthenticate(
-      authenticationForm: com.bryzek.dependency.v0.models.AuthenticationForm
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.User]
-
-    /**
-     * Create a new user.
-     */
-    def post(
-      userForm: com.bryzek.dependency.v0.models.UserForm
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.User]
-  }
-
   package errors {
 
     import com.bryzek.dependency.v0.models.json._
     import io.flow.common.v0.models.json._
+    import io.flow.user.v0.models.json._
 
     case class ErrorsResponse(
       response: play.api.libs.ws.WSResponse,
