@@ -45,7 +45,6 @@ case class RequestHelper[A](
         None
       }
       case Some(guid) => {
-        println(s"GUID[$guid]")
         provider.newClient(user = None).users.getByGuid(UUID.fromString(guid)).map { Some(_) }.recover {
           case UnitResponse(404) => None
         }
@@ -60,8 +59,6 @@ class AuthenticatedRequest[A](
   val user: User,
   request: Request[A]
 ) extends WrappedRequest[A](request) {
-
-  println("USER: " + user)
 
   def uiData(
     title: Option[String] = None
