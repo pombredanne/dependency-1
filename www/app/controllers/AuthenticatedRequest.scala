@@ -19,23 +19,16 @@ case class RequestHelper[A](
 
   private val pathParts = request.path.split("/").drop(1)
 
-  lazy val project: Option[Project] = None
+  lazy val project: Future[Option[Project]] = Future { None }
 
-  lazy val library: Option[Library] = {
+  lazy val library: Future[Option[Library]] = {
     if (pathParts.length >= 2 && pathParts(0) == "libraries") {
       val key = pathParts(1)
       println(s"library key[$key]")
-      None
-/*
-      Await.result(
-        api.libraries.get(teamKey).map { Some(_) }.recover {
-          case UnitResponse(404) => None
-        },
-        1000.millis
-      )
- */
+      // provider.newClient(user = None).libraries.get(key = Some(key), limit = 1).map { _.headOption }
+      Future { None }
     } else {
-      None
+      Future { None }
     }
   }
 
