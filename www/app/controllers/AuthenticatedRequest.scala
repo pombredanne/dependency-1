@@ -61,6 +61,8 @@ class AuthenticatedRequest[A](
   request: Request[A]
 ) extends WrappedRequest[A](request) {
 
+  println("USER: " + user)
+
   def uiData(
     title: Option[String] = None
   ) = com.bryzek.dependency.lib.UiData(
@@ -72,11 +74,9 @@ class AuthenticatedRequest[A](
 }
 
 
-case class AuthenticatedAction @javax.inject.Inject() (
+case class Authenticated(
   provider: DependencyClientProvider
-) extends ActionBuilder[AuthenticatedRequest] {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
+)(implicit ec: scala.concurrent.ExecutionContext) extends ActionBuilder[AuthenticatedRequest] {
 
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
     RequestHelper(provider, request).user flatMap { result =>
