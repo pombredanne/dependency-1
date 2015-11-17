@@ -7,7 +7,7 @@ import play.api.test.Helpers._
 import org.scalatestplus.play._
 import java.util.UUID
 
-class UsersDaoSpec extends PlaySpec with OneAppPerSuite {
+class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -56,12 +56,12 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite {
   "findAll by guids" in {
     val user1 = UsersDao.create(
       createdBy = None,
-      valid = UsersDao.validate(Helpers.createUserForm())
+      valid = UsersDao.validate(createUserForm())
     )
 
     val user2 = UsersDao.create(
       createdBy = None,
-      valid = UsersDao.validate(Helpers.createUserForm())
+      valid = UsersDao.validate(createUserForm())
     )
 
     UsersDao.findAll(guids = Some(Seq(user1.guid, user2.guid))).map(_.guid) must be(
@@ -75,7 +75,7 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite {
 
   "create" must {
     "user with email and name" in {
-      val email = Helpers.createTestEmail()
+      val email = createTestEmail()
       val name = NameForm(
         first = Some("Michael"),
         last = Some("Bryzek")
@@ -83,7 +83,7 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite {
       val user = UsersDao.create(
         createdBy = None,
         valid = UsersDao.validate(
-          Helpers.createUserForm(
+          createUserForm(
             email = email,
             name = Some(name)
           )
@@ -102,7 +102,7 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite {
       val user = UsersDao.create(
         createdBy = None,
         valid = UsersDao.validate(
-          Helpers.createUserForm().copy(name = Some(name))
+          createUserForm().copy(name = Some(name))
         )
       )
       user.name must be(None)

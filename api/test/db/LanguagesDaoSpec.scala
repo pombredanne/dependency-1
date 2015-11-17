@@ -6,12 +6,12 @@ import play.api.test.Helpers._
 import org.scalatestplus.play._
 import java.util.UUID
 
-class LanguagesDaoSpec extends PlaySpec with OneAppPerSuite {
+class LanguagesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
   "findByName" in {
-    val lang = Helpers.createLanguage()
+    val lang = createLanguage()
     LanguagesDao.findByName(lang.name.toString).map(_.name) must be(
       Some(lang.name)
     )
@@ -20,7 +20,7 @@ class LanguagesDaoSpec extends PlaySpec with OneAppPerSuite {
   }
 
   "findByGuid" in {
-    val lang = Helpers.createLanguage()
+    val lang = createLanguage()
     LanguagesDao.findByGuid(lang.guid).map(_.guid) must be(
       Some(lang.guid)
     )
@@ -29,8 +29,8 @@ class LanguagesDaoSpec extends PlaySpec with OneAppPerSuite {
   }
 
   "findAll by guids" in {
-    val language1 = Helpers.createLanguage()
-    val language2 = Helpers.createLanguage()
+    val language1 = createLanguage()
+    val language2 = createLanguage()
 
     LanguagesDao.findAll(guids = Some(Seq(language1.guid, language2.guid))).map(_.guid) must be(
       Seq(language1.guid, language2.guid)
@@ -43,15 +43,15 @@ class LanguagesDaoSpec extends PlaySpec with OneAppPerSuite {
 
   "create" must {
     "validates empty name" in {
-      val form = Helpers.createLanguageForm().copy(name = "   ")
+      val form = createLanguageForm().copy(name = "   ")
       LanguagesDao.validate(form).errors.map(_.message) must be(
         Seq("Name cannot be empty")
       )
     }
 
     "validates duplicate names" in {
-      val lang = Helpers.createLanguage()
-      val form = Helpers.createLanguageForm().copy(name = lang.name.toString.toUpperCase)
+      val lang = createLanguage()
+      val form = createLanguageForm().copy(name = lang.name.toString.toUpperCase)
       LanguagesDao.validate(form).errors.map(_.message) must be(
         Seq("Language with this name already exists")
       )

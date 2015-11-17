@@ -6,12 +6,12 @@ import play.api.test.Helpers._
 import org.scalatestplus.play._
 import java.util.UUID
 
-class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite {
+class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
   "findByResolversAndGroupIdAndArtifactId" in {
-    val library = Helpers.createLibrary()
+    val library = createLibrary()
     LibrariesDao.findByResolversAndGroupIdAndArtifactId(
       library.resolvers,
       library.groupId,
@@ -38,7 +38,7 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite {
   }
 
   "findByGuid" in {
-    val library = Helpers.createLibrary()
+    val library = createLibrary()
     LibrariesDao.findByGuid(library.guid).map(_.guid) must be(
       Some(library.guid)
     )
@@ -47,8 +47,8 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite {
   }
 
   "findAll by guids" in {
-    val library1 = Helpers.createLibrary()
-    val library2 = Helpers.createLibrary()
+    val library1 = createLibrary()
+    val library2 = createLibrary()
 
     LibrariesDao.findAll(guids = Some(Seq(library1.guid, library2.guid))).map(_.guid) must be(
       Seq(library1.guid, library2.guid)
@@ -61,22 +61,22 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite {
 
   "create" must {
     "validates empty group id" in {
-      val form = Helpers.createLibraryForm().copy(groupId = "   ")
+      val form = createLibraryForm().copy(groupId = "   ")
       LibrariesDao.validate(form).errors.map(_.message) must be(
         Seq("Group ID cannot be empty")
       )
     }
 
     "validates empty artifact id" in {
-      val form = Helpers.createLibraryForm().copy(artifactId = "   ")
+      val form = createLibraryForm().copy(artifactId = "   ")
       LibrariesDao.validate(form).errors.map(_.message) must be(
         Seq("Artifact ID cannot be empty")
       )
     }
 
     "validates duplicates" in {
-      val library = Helpers.createLibrary()
-      val form = Helpers.createLibraryForm().copy(
+      val library = createLibrary()
+      val form = createLibraryForm().copy(
         resolvers = library.resolvers,
         groupId = library.groupId,
         artifactId = library.artifactId

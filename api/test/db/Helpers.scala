@@ -1,9 +1,16 @@
 package db
 
 import com.bryzek.dependency.v0.models._
+import com.bryzek.dependency.v0.errors.{ErrorsResponse, UnitResponse}
 import java.util.UUID
+import java.util.concurrent.TimeUnit
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration.Duration
+import scala.util.{Failure, Success, Try}
 
-object Helpers {
+trait Helpers {
+
+  val DefaultDuration = Duration(5, TimeUnit.SECONDS)
 
   lazy val systemUser = UsersDao.systemUser
 
@@ -23,7 +30,7 @@ object Helpers {
   )
 
   def createLanguageVersion(
-    language: Language = Helpers.createLanguage(),
+    language: Language = createLanguage(),
     version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
   ): LanguageVersion = {
     LanguageVersionsDao.upsert(systemUser, language.guid, version)
@@ -43,7 +50,7 @@ object Helpers {
   )
 
   def createLibraryVersion(
-    library: Library = Helpers.createLibrary(),
+    library: Library = createLibrary(),
     version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
   ): LibraryVersion = {
     LibraryVersionsDao.upsert(systemUser, library.guid, version)
@@ -65,7 +72,7 @@ object Helpers {
   }
 
   def createUser(
-    form: UserForm
+    form: UserForm = createUserForm()
   ): User = {
     UsersDao.create(None, UsersDao.validate(form))
   }
@@ -78,4 +85,53 @@ object Helpers {
     name = name
   )
 
+  def expectMyErrors[T](
+    f: => Future[T],
+    duration: Duration = DefaultDuration
+  ): ErrorsResponse = {
+    Try(
+      Await.result(f, duration)
+    ) match {
+      case Success(response) => {
+        sys.error("Expected function to fail but it succeeded with: " + response)
+      }
+      case Failure(ex) =>  ex match {
+        case e: ErrorsResponse => {
+          e
+        }
+        case e => {
+          sys.error(s"Expected an exception of type[ErrorsResponse] but got[$e]")
+        }
+      }
+    }
+  }
+
+  def expectNotFound[T](
+    f: => Future[T],
+    duration: Duration = DefaultDuration
+  ) {
+    expectStatus(404) {
+      Await.result(f, duration)
+    }
+  }
+
+  def expectStatus(code: Int)(f: => Unit) {
+    assert(code >= 400, s"code[$code] must be >= 400")
+
+    Try(
+      f
+    ) match {
+      case Success(response) => {
+        org.specs2.execute.Failure(s"Expected HTTP[$code] but got HTTP 2xx")
+      }
+      case Failure(ex) => ex match {
+        case UnitResponse(code) => {
+          org.specs2.execute.Success()
+        }
+        case e => {
+          org.specs2.execute.Failure(s"Unexpected error: $e")
+        }
+      }
+    }
+  }
 }

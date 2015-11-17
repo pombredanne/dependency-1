@@ -7,12 +7,12 @@ import play.api.test.Helpers._
 import org.scalatestplus.play._
 import java.util.UUID
 
-class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite {
+class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
   "findByName" in {
-    val project = Helpers.createProject()
+    val project = createProject()
     ProjectsDao.findByName(project.name).map(_.guid) must be(
       Some(project.guid)
     )
@@ -21,7 +21,7 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite {
   }
 
   "findByGuid" in {
-    val project = Helpers.createProject()
+    val project = createProject()
     ProjectsDao.findByGuid(project.guid).map(_.guid) must be(
       Some(project.guid)
     )
@@ -30,8 +30,8 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite {
   }
 
   "findAll by guids" in {
-    val project1 = Helpers.createProject()
-    val project2 = Helpers.createProject()
+    val project1 = createProject()
+    val project2 = createProject()
 
     ProjectsDao.findAll(guids = Some(Seq(project1.guid, project2.guid))).map(_.guid) must be(
       Seq(project1.guid, project2.guid)
@@ -44,22 +44,22 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite {
 
   "create" must {
     "validates SCMS" in {
-      val form = Helpers.createProjectForm().copy(scms = Scms.UNDEFINED("other"))
+      val form = createProjectForm().copy(scms = Scms.UNDEFINED("other"))
       ProjectsDao.validate(form).errors.map(_.message) must be(
         Seq("Scms not found")
       )
     }
 
     "validates empty name" in {
-      val form = Helpers.createProjectForm().copy(name = "   ")
+      val form = createProjectForm().copy(name = "   ")
       ProjectsDao.validate(form).errors.map(_.message) must be(
         Seq("Name cannot be empty")
       )
     }
 
     "validates duplicate names" in {
-      val project = Helpers.createProject()
-      val form = Helpers.createProjectForm().copy(name = project.name.toString.toUpperCase)
+      val project = createProject()
+      val form = createProjectForm().copy(name = project.name.toString.toUpperCase)
       ProjectsDao.validate(form).errors.map(_.message) must be(
         Seq("Project with this name already exists")
       )

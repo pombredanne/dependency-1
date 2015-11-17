@@ -6,22 +6,22 @@ import play.api.test.Helpers._
 import org.scalatestplus.play._
 import java.util.UUID
 
-class LanguageVersionsDaoSpec extends PlaySpec with OneAppPerSuite {
+class LanguageVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
   "upsert" in {
-    val language = Helpers.createLanguage()
-    val version1 = LanguageVersionsDao.upsert(Helpers.systemUser, language.guid, "1.0")
-    val version2 = LanguageVersionsDao.upsert(Helpers.systemUser, language.guid, "1.0")
-    val version3 = LanguageVersionsDao.upsert(Helpers.systemUser, language.guid, "1.1")
+    val language = createLanguage()
+    val version1 = LanguageVersionsDao.upsert(systemUser, language.guid, "1.0")
+    val version2 = LanguageVersionsDao.upsert(systemUser, language.guid, "1.0")
+    val version3 = LanguageVersionsDao.upsert(systemUser, language.guid, "1.1")
 
     version1.guid must be(version2.guid)
     version2.guid must not be(version3.guid)
   }
 
   "findByGuid" in {
-    val version = Helpers.createLanguageVersion()
+    val version = createLanguageVersion()
     LanguageVersionsDao.findByGuid(version.guid).map(_.guid) must be(
       Some(version.guid)
     )
@@ -30,8 +30,8 @@ class LanguageVersionsDaoSpec extends PlaySpec with OneAppPerSuite {
   }
 
   "findAll by guids" in {
-    val version1 = Helpers.createLanguageVersion()
-    val version2 = Helpers.createLanguageVersion()
+    val version1 = createLanguageVersion()
+    val version2 = createLanguageVersion()
 
     LanguageVersionsDao.findAll(guids = Some(Seq(version1.guid, version2.guid))).map(_.guid) must be(
       Seq(version1.guid, version2.guid)
@@ -43,11 +43,11 @@ class LanguageVersionsDaoSpec extends PlaySpec with OneAppPerSuite {
   }
 
   "softDelete" in {
-    val language = Helpers.createLanguage()
-    val version1 = LanguageVersionsDao.upsert(Helpers.systemUser, language.guid, "1.0")
-    LanguageVersionsDao.softDelete(Helpers.systemUser, version1.guid)
-    val version2 = LanguageVersionsDao.upsert(Helpers.systemUser, language.guid, "1.0")
-    val version3 = LanguageVersionsDao.upsert(Helpers.systemUser, language.guid, "1.0")
+    val language = createLanguage()
+    val version1 = LanguageVersionsDao.upsert(systemUser, language.guid, "1.0")
+    LanguageVersionsDao.softDelete(systemUser, version1.guid)
+    val version2 = LanguageVersionsDao.upsert(systemUser, language.guid, "1.0")
+    val version3 = LanguageVersionsDao.upsert(systemUser, language.guid, "1.0")
 
     version1.guid must not be(version2.guid)
     version2.guid must be(version3.guid)
