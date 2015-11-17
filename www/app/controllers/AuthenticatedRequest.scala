@@ -65,8 +65,9 @@ class AuthenticatedRequest[A](
 
 
 case class Authenticated(
-  provider: DependencyClientProvider
-)(implicit ec: scala.concurrent.ExecutionContext) extends ActionBuilder[AuthenticatedRequest] {
+  implicit val provider: DependencyClientProvider,
+  implicit val ec: scala.concurrent.ExecutionContext
+) extends ActionBuilder[AuthenticatedRequest] {
 
   def invokeBlock[A](request: Request[A], block: (AuthenticatedRequest[A]) => Future[Result]) = {
     RequestHelper(provider, request).user flatMap { result =>
