@@ -476,6 +476,8 @@ package com.bryzek.dependency.v0 {
 
     def ioFlowCommonV0ModelsHealthchecks: IoFlowCommonV0ModelsHealthchecks = IoFlowCommonV0ModelsHealthchecks
 
+    def projects: Projects = Projects
+
     def users: Users = Users
 
     object IoFlowCommonV0ModelsHealthchecks extends IoFlowCommonV0ModelsHealthchecks {
@@ -483,6 +485,62 @@ package com.bryzek.dependency.v0 {
         _executeRequest("GET", s"/_internal_/healthcheck").map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("io.flow.common.v0.models.Healthcheck", r, _.validate[io.flow.common.v0.models.Healthcheck])
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+        }
+      }
+    }
+
+    object Projects extends Projects {
+      override def get(
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+        name: _root_.scala.Option[String] = None,
+        limit: Long = 25,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Project]] = {
+        val queryParameters = Seq(
+          guid.map("guid" -> _.toString),
+          name.map("name" -> _),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten ++
+          guids.getOrElse(Nil).map("guids" -> _.toString)
+
+        _executeRequest("GET", s"/projects", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Project]", r, _.validate[Seq[com.bryzek.dependency.v0.models.Project]])
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+        }
+      }
+
+      override def getByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Project] = {
+        _executeRequest("GET", s"/projects/${guid}").map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Project", r, _.validate[com.bryzek.dependency.v0.models.Project])
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
+        }
+      }
+
+      override def post(
+        projectForm: com.bryzek.dependency.v0.models.ProjectForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Project] = {
+        val payload = play.api.libs.json.Json.toJson(projectForm)
+
+        _executeRequest("POST", s"/projects", body = Some(payload)).map {
+          case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Project", r, _.validate[com.bryzek.dependency.v0.models.Project])
+          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 409")
+        }
+      }
+
+      override def deleteByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
+        _executeRequest("DELETE", s"/projects/${guid}").map {
+          case r if r.status == 204 => ()
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -627,6 +685,37 @@ package com.bryzek.dependency.v0 {
 
   trait IoFlowCommonV0ModelsHealthchecks {
     def getInternalAndHealthcheck()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.common.v0.models.Healthcheck]
+  }
+
+  trait Projects {
+    /**
+     * Search projects. Results are paginated
+     */
+    def get(
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+      name: _root_.scala.Option[String] = None,
+      limit: Long = 25,
+      offset: Long = 0
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Project]]
+
+    /**
+     * Returns information about the project with this guid.
+     */
+    def getByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Project]
+
+    /**
+     * Create a new project.
+     */
+    def post(
+      projectForm: com.bryzek.dependency.v0.models.ProjectForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Project]
+
+    def deleteByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
   trait Users {
