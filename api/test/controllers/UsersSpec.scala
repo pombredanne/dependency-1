@@ -109,4 +109,20 @@ class UsersSpec extends PlaySpecification with db.Helpers {
     )
   }
 
+  "POST /users validates empty email" in new WithServer(port=port) {
+    expectErrors(
+      client.users.post(UserForm(email = "   "))
+    ).errors.map(_.message) must beEqualTo(
+      Seq("Email address cannot be empty")
+    )
+  }
+
+  "POST /users validates email address format" in new WithServer(port=port) {
+    expectErrors(
+      client.users.post(UserForm(email = "mbfoo.com"))
+    ).errors.map(_.message) must beEqualTo(
+      Seq("Please enter a valid email address")
+    )
+  }
+
 }
