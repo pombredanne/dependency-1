@@ -5,6 +5,18 @@
  */
 package com.bryzek.dependency.v0.models {
 
+  /**
+   * Used to authenticate user. For first iteration just requires email
+   */
+  case class AuthenticationForm(
+    email: String
+  )
+
+  case class Error(
+    code: String,
+    message: String
+  )
+
   case class Language(
     guid: _root_.java.util.UUID,
     name: com.bryzek.dependency.v0.models.ProgrammingLanguage,
@@ -183,6 +195,30 @@ package com.bryzek.dependency.v0.models {
     implicit val jsonReadsDependencyScms = __.read[String].map(Scms.apply)
     implicit val jsonWritesDependencyScms = new Writes[Scms] {
       def writes(x: Scms) = JsString(x.toString)
+    }
+
+    implicit def jsonReadsDependencyAuthenticationForm: play.api.libs.json.Reads[AuthenticationForm] = {
+      (__ \ "email").read[String].map { x => new AuthenticationForm(email = x) }
+    }
+
+    implicit def jsonWritesDependencyAuthenticationForm: play.api.libs.json.Writes[AuthenticationForm] = new play.api.libs.json.Writes[AuthenticationForm] {
+      def writes(x: AuthenticationForm) = play.api.libs.json.Json.obj(
+        "email" -> play.api.libs.json.Json.toJson(x.email)
+      )
+    }
+
+    implicit def jsonReadsDependencyError: play.api.libs.json.Reads[Error] = {
+      (
+        (__ \ "code").read[String] and
+        (__ \ "message").read[String]
+      )(Error.apply _)
+    }
+
+    implicit def jsonWritesDependencyError: play.api.libs.json.Writes[Error] = {
+      (
+        (__ \ "code").write[String] and
+        (__ \ "message").write[String]
+      )(unlift(Error.unapply _))
     }
 
     implicit def jsonReadsDependencyLanguage: play.api.libs.json.Reads[Language] = {
@@ -459,11 +495,64 @@ package com.bryzek.dependency.v0 {
 
     def ioFlowCommonV0ModelsHealthchecks: IoFlowCommonV0ModelsHealthchecks = IoFlowCommonV0ModelsHealthchecks
 
+    def users: Users = Users
+
     object IoFlowCommonV0ModelsHealthchecks extends IoFlowCommonV0ModelsHealthchecks {
       override def getInternalAndHealthcheck()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.common.v0.models.Healthcheck] = {
         _executeRequest("GET", s"/_internal_/healthcheck").map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("io.flow.common.v0.models.Healthcheck", r, _.validate[io.flow.common.v0.models.Healthcheck])
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+        }
+      }
+    }
+
+    object Users extends Users {
+      override def get(
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        email: _root_.scala.Option[String] = None
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.User]] = {
+        val queryParameters = Seq(
+          guid.map("guid" -> _.toString),
+          email.map("email" -> _)
+        ).flatten
+
+        _executeRequest("GET", s"/users", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.User]", r, _.validate[Seq[com.bryzek.dependency.v0.models.User]])
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+        }
+      }
+
+      override def getByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.User] = {
+        _executeRequest("GET", s"/users/${guid}").map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.User", r, _.validate[com.bryzek.dependency.v0.models.User])
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
+        }
+      }
+
+      override def postAuthenticate(
+        authenticationForm: com.bryzek.dependency.v0.models.AuthenticationForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.User] = {
+        val payload = play.api.libs.json.Json.toJson(authenticationForm)
+
+        _executeRequest("POST", s"/users/authenticate", body = Some(payload)).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.User", r, _.validate[com.bryzek.dependency.v0.models.User])
+          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
+        }
+      }
+
+      override def post(
+        userForm: com.bryzek.dependency.v0.models.UserForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.User] = {
+        val payload = play.api.libs.json.Json.toJson(userForm)
+
+        _executeRequest("POST", s"/users", body = Some(payload)).map {
+          case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.User", r, _.validate[com.bryzek.dependency.v0.models.User])
+          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 409")
         }
       }
     }
@@ -559,7 +648,53 @@ package com.bryzek.dependency.v0 {
     def getInternalAndHealthcheck()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.common.v0.models.Healthcheck]
   }
 
+  trait Users {
+    /**
+     * Search for a specific user. You must specify at least 1 parameter - either a
+     * guid or email - and will receive back either 0 or 1 users.
+     */
+    def get(
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      email: _root_.scala.Option[String] = None
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.User]]
+
+    /**
+     * Returns information about the user with this guid.
+     */
+    def getByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.User]
+
+    /**
+     * Used to authenticate a user with an email address and password. Successful
+     * authentication returns an instance of the user model. Failed authorizations of
+     * any kind are returned as a generic error with code user_authorization_failed.
+     */
+    def postAuthenticate(
+      authenticationForm: com.bryzek.dependency.v0.models.AuthenticationForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.User]
+
+    /**
+     * Create a new user.
+     */
+    def post(
+      userForm: com.bryzek.dependency.v0.models.UserForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.User]
+  }
+
   package errors {
+
+    import com.bryzek.dependency.v0.models.json._
+    import io.flow.common.v0.models.json._
+
+    case class ErrorsResponse(
+      response: play.api.libs.ws.WSResponse,
+      message: Option[String] = None
+    ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
+      lazy val errors = _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Error]", response, _.validate[Seq[com.bryzek.dependency.v0.models.Error]])
+    }
+
+    case class UnitResponse(status: Int) extends Exception(s"HTTP $status")
 
     case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends Exception(s"HTTP $responseCode: $message")
 

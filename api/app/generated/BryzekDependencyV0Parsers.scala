@@ -53,6 +53,74 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
+  object AuthenticationForm {
+
+    case class Mappings(
+      email: String = "email"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        email = s"${prefix}${sep}email"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.AuthenticationForm] = {
+      SqlParser.str(mappings.email) map {
+        case email => {
+          com.bryzek.dependency.v0.models.AuthenticationForm(
+            email = email
+          )
+        }
+      }
+    }
+
+  }
+
+  object Error {
+
+    case class Mappings(
+      code: String = "code",
+      message: String = "message"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        code = s"${prefix}${sep}code",
+        message = s"${prefix}${sep}message"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Error] = {
+      SqlParser.str(mappings.code) ~
+      SqlParser.str(mappings.message) map {
+        case code ~ message => {
+          com.bryzek.dependency.v0.models.Error(
+            code = code,
+            message = message
+          )
+        }
+      }
+    }
+
+  }
+
   object Language {
 
     case class Mappings(

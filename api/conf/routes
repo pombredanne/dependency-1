@@ -2,4 +2,8 @@
 # Service version: 0.0.1-dev
 # apidoc:0.9.44 http://localhost:9000/bryzek/dependency/0.0.1-dev/play_2_x_routes
 
-GET     /_internal_/healthcheck     controllers.IoFlowCommonV0ModelsHealthchecks.getInternalAndHealthcheck()
+GET      /_internal_/healthcheck     controllers.IoFlowCommonV0ModelsHealthchecks.getInternalAndHealthcheck()
+GET      /users                      controllers.Users.get(guid: _root_.scala.Option[_root_.java.util.UUID], email: _root_.scala.Option[String])
+GET      /users/:guid                controllers.Users.getByGuid(guid: _root_.java.util.UUID)
+POST     /users/authenticate         controllers.Users.postAuthenticate()
+POST     /users                      controllers.Users.post()
