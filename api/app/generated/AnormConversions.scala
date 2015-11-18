@@ -1,19 +1,26 @@
-import anorm.{Column, MetaDataItem, TypeDoesNotMatch}
-import play.api.libs.json.{JsArray, JsObject, JsValue}
-import scala.util.{Failure, Success, Try}
-
 package com.bryzek.dependency.v0.anorm.conversions {
 
+  import anorm.{Column, MetaDataItem, TypeDoesNotMatch}
+  import play.api.libs.json.{JsArray, JsObject, JsValue}
+  import scala.util.{Failure, Success, Try}
+
+  /**
+    * Conversions to collections of objects using JSON.
+    */
   object Json {
 
-    private[this] def parser[T, U](
-      f: org.postgresql.util.PGobject => T
+    private[this] def parser[T](
+      f: play.api.libs.json.JsValue => T
     ) = anorm.Column.nonNull1 { (value, meta) =>
       val MetaDataItem(qualified, nullable, clazz) = meta
       value match {
         case json: org.postgresql.util.PGobject => {
           Try {
-            f(json)
+            f(
+              play.api.libs.json.Json.parse(
+                json.getValue
+              )
+            )
           } match {
             case Success(result) => Right(result)
             case Failure(ex) => Left(
@@ -33,35 +40,11 @@ package com.bryzek.dependency.v0.anorm.conversions {
       }
     }
 
-    implicit val columnToSeqString: Column[Seq[String]] = parser { json =>
-      play.api.libs.json.Json.parse(
-        json.getValue
-      ).as[Seq[String]]
-    }
+    implicit val columnToSeqString: Column[Seq[String]] = parser { _.as[Seq[String]] }
+    implicit val columnToSeqJsValue: Column[Seq[JsValue]] = parser { _.as[Seq[JsValue]] }
 
-    implicit val columnToMapStringString: Column[Map[String, String]] = parser { json =>
-      play.api.libs.json.Json.parse(
-        json.getValue
-      ).as[Map[String, String]]
-    }
-
-    implicit val columnToJsValue: Column[JsValue] = parser { json =>
-      play.api.libs.json.Json.parse(
-        json.getValue
-      )
-    }
-
-    implicit val columnToJsObject: Column[JsObject] = parser { json =>
-      play.api.libs.json.Json.parse(
-        json.getValue
-      ).as[JsObject]
-    }
-
-    implicit val columnToSeqJsValue: Column[Seq[JsValue]] = parser { json =>
-      play.api.libs.json.Json.parse(
-        json.getValue
-      ).as[JsArray].value
-    }
+    // Repeat for Map[String, Type]
+    implicit val columnToMapStringString: Column[Map[String, String]] = parser { _.as[Map[String, String]] }
 
   }
 }
