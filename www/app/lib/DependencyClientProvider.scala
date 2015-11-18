@@ -1,6 +1,6 @@
 package com.bryzek.dependency.lib
 
-import io.flow.play.clients.UserTokenClient
+import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.Config
 import io.flow.user.v0.models.User
 import com.bryzek.dependency.v0.{Authorization, Client}
@@ -9,7 +9,7 @@ import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-trait DependencyClientProvider extends UserTokenClient {
+trait DependencyClientProvider extends UserTokensClient {
 
   def newClient(user: Option[User]): Client
 

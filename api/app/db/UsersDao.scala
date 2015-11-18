@@ -122,6 +122,8 @@ object UsersDao {
       email.map('email -> _.toString)
     ).flatten
 
+    println(sql)
+
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*).as(
         io.flow.user.v0.anorm.parsers.User.table("users").*

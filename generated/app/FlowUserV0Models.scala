@@ -23,7 +23,9 @@ package io.flow.user.v0.models {
     email: _root_.scala.Option[String] = None,
     name: io.flow.user.v0.models.Name,
     audit: io.flow.common.v0.models.Audit
-  )
+  ) {
+    println(s"Created user[$guid]")
+  }
 
   case class UserForm(
     email: _root_.scala.Option[String] = None,

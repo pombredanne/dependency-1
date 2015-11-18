@@ -1,14 +1,14 @@
 package com.bryzek.dependency.lib
 
 import db.UsersDao
-import io.flow.play.clients.UserTokenClient
+import io.flow.play.clients.UserTokensClient
 import io.flow.user.v0.models.User
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import java.util.UUID
 
 @javax.inject.Singleton
-class DefaultUserTokenClient() extends UserTokenClient {
+class DefaultUserTokensClient() extends UserTokensClient {
 
   override def getUserByToken(
     token: String

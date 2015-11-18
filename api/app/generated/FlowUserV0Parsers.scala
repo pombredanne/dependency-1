@@ -108,14 +108,10 @@ package io.flow.user.v0.anorm.parsers {
         case guid ~ email ~ name ~ audit => {
           println(s"guid[${guid.getClass}]")
           println(s"email[$email]")
-          println(s"name[$name]")
+          println(s"name[${name.getClass}]")
           println(s"audit[$audit] - ${audit.getClass}")
-          io.flow.user.v0.models.User(
-            guid = guid,
-            email = email,
-            name = name,
-            audit = audit
-          )
+          //_root_.io.flow.user.v0.models.User(guid, email, name, audit)
+          _root_.io.flow.user.v0.models.User(java.util.UUID.randomUUID, Some("mike@flow.io"), _root_.io.flow.user.v0.models.Name(Some("Mike"), Some("B")), audit)
         }
       }
     }
