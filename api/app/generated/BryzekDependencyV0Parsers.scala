@@ -2,6 +2,8 @@ import anorm._
 
 package com.bryzek.dependency.v0.anorm.parsers {
 
+  import com.bryzek.dependency.v0.anorm.conversions.Json._
+
   object ProgrammingLanguage {
 
     case class Mappings(value: String)
@@ -229,8 +231,6 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def table(table: String) = parser(Mappings.prefix(table, "."))
 
-    import com.bryzek.dependency.v0.anorm.conversions.Json._
-
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Library] = {
       SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
       SqlParser.get[Seq[String]](mappings.resolvers) ~
@@ -279,7 +279,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LibraryForm] = {
       SqlParser.str(mappings.groupId) ~
-      SqlParser.list[String](mappings.resolvers) ~
+      SqlParser.get[Seq[String]](mappings.resolvers) ~
       SqlParser.str(mappings.artifactId) ~
       SqlParser.str(mappings.version).? map {
         case groupId ~ resolvers ~ artifactId ~ version => {

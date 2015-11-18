@@ -2,6 +2,8 @@ import anorm._
 
 package io.flow.user.v0.anorm.parsers {
 
+  import io.flow.user.v0.anorm.conversions.Json._
+
   object Name {
 
     case class Mappings(

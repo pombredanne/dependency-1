@@ -2,6 +2,8 @@ import anorm._
 
 package io.flow.common.v0.anorm.parsers {
 
+  import io.flow.common.v0.anorm.conversions.Json._
+
   object Calendar {
 
     case class Mappings(value: String)
