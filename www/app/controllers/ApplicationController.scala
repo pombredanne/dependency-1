@@ -15,6 +15,10 @@ class ApplicationController @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  override def unauthorized[A](request: Request[A]): Result = {
+    Redirect(routes.LoginController.index(return_url = Some(request.path))).flashing("warning" -> "Please login")
+  }
+
   def index() = Identified { implicit request =>
     Ok(
       views.html.index(
