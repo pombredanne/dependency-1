@@ -6,42 +6,40 @@ package com.bryzek.dependency.v0.anorm.conversions {
 
   object Json {
 
-    implicit val columnToSeqString: Column[Seq[String]] = {
-      anorm.Column.nonNull1 { (value, meta) =>
-        val MetaDataItem(qualified, nullable, clazz) = meta
-        value match {
-          case json: org.postgresql.util.PGobject => {
-            Try(
-              play.api.libs.json.Json.parse(
-                json.getValue
-              ).as[JsArray]
-            ) match {
-              case Success(result) => {
-                Right(
-                  result.value.map { js =>
-                    js match {
-                      case play.api.libs.json.JsString(value) => value
-                      case _ => js.toString
-                    }
-                  }
-                )
-              }
-              case Failure(ex) => {
-                Left(
-                  TypeDoesNotMatch(
-                    s"Column[$qualified] error parsing json $value: $ex"
-                  )
-                )
-              }
-            }
-          }
-          case _=> {
-            Left(
+    private[this] def parser[T, U](
+      f: org.postgresql.util.PGobject => T
+    ) = anorm.Column.nonNull1 { (value, meta) =>
+      val MetaDataItem(qualified, nullable, clazz) = meta
+      value match {
+        case json: org.postgresql.util.PGobject => {
+          Try {
+            f(json)
+          } match {
+            case Success(result) => Right(result)
+            case Failure(ex) => Left(
               TypeDoesNotMatch(
-                s"Column[$qualified] error converting $value: ${value.asInstanceOf[AnyRef].getClass} to Json"
+                s"Column[$qualified] error parsing json $value: $ex"
               )
             )
           }
+        }
+        case _=> {
+          Left(
+            TypeDoesNotMatch(
+              s"Column[$qualified] error converting $value: ${value.asInstanceOf[AnyRef].getClass} to Json"
+            )
+          )
+        }
+      }
+    }
+
+    implicit val columnToSeqString: Column[Seq[String]] = parser { json =>
+      play.api.libs.json.Json.parse(
+        json.getValue
+      ).as[JsArray].value.map { js =>
+        js match {
+          case play.api.libs.json.JsString(value) => value
+          case _ => js.toString
         }
       }
     }
