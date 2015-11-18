@@ -6,6 +6,79 @@ package com.bryzek.dependency.v0.anorm.conversions {
 
   object Json {
 
+    implicit val columnToSeqString: Column[Seq[String]] = {
+      anorm.Column.nonNull1 { (value, meta) =>
+        val MetaDataItem(qualified, nullable, clazz) = meta
+        value match {
+          case json: org.postgresql.util.PGobject => {
+            Try(
+              play.api.libs.json.Json.parse(
+                json.getValue
+              ).as[JsArray]
+            ) match {
+              case Success(result) => {
+                Right(
+                  result.value.map { js =>
+                    js match {
+                      case play.api.libs.json.JsString(value) => value
+                      case _ => js.toString
+                    }
+                  }
+                )
+              }
+              case Failure(ex) => {
+                Left(
+                  TypeDoesNotMatch(
+                    s"Column[$qualified] error parsing json $value: $ex"
+                  )
+                )
+              }
+            }
+          }
+          case _=> {
+            Left(
+              TypeDoesNotMatch(
+                s"Column[$qualified] error converting $value: ${value.asInstanceOf[AnyRef].getClass} to Json"
+              )
+            )
+          }
+        }
+      }
+    }
+
+    implicit val columnToSeqJsValue: Column[Seq[JsValue]] = {
+      anorm.Column.nonNull1 { (value, meta) =>
+        val MetaDataItem(qualified, nullable, clazz) = meta
+        value match {
+          case json: org.postgresql.util.PGobject => {
+            Try(
+              play.api.libs.json.Json.parse(
+                json.getValue
+              ).as[JsArray]
+            ) match {
+              case Success(result) => {
+                Right(result.value)
+              }
+              case Failure(ex) => {
+                Left(
+                  TypeDoesNotMatch(
+                    s"Column[$qualified] error parsing json $value: $ex"
+                  )
+                )
+              }
+            }
+          }
+          case _=> {
+            Left(
+              TypeDoesNotMatch(
+                s"Column[$qualified] error converting $value: ${value.asInstanceOf[AnyRef].getClass} to Json"
+              )
+            )
+          }
+        }
+      }
+    }
+
     implicit val columnToJsValue: Column[JsValue] = {
       anorm.Column.nonNull1 { (value, meta) =>
         val MetaDataItem(qualified, nullable, clazz) = meta
