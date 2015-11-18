@@ -81,7 +81,10 @@ class IoFlowUserV0ModelsUsers @javax.inject.Inject() () extends Controller {
               )
             )
           )
-          case Some(u) => Ok(Json.toJson(u))
+          case Some(u) => {
+            println("Serializing user: "+ u)
+            Ok(Json.toJson(u))
+          }
         }
       }
     }

@@ -106,6 +106,10 @@ package io.flow.user.v0.anorm.parsers {
       io.flow.user.v0.anorm.parsers.Name.parser(mappings.name) ~
       io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
         case guid ~ email ~ name ~ audit => {
+          println(s"guid[${guid.getClass}]")
+          println(s"email[$email]")
+          println(s"name[$name]")
+          println(s"audit[$audit] - ${audit.getClass}")
           io.flow.user.v0.models.User(
             guid = guid,
             email = email,

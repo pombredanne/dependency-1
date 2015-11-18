@@ -1,9 +1,10 @@
 package controllers
 
 import com.bryzek.dependency.v0.errors.ErrorsResponse
-import com.bryzek.dependency.v0.models.{AuthenticationForm, UserForm}
+import com.bryzek.dependency.v0.models.AuthenticationForm
 import com.bryzek.dependency.lib.{DependencyClientProvider, UiData}
 import io.flow.play.util.Validation
+import io.flow.user.v0.models.UserForm
 import play.api._
 import play.api.i18n._
 import play.api.mvc._
@@ -41,7 +42,7 @@ class LoginController @javax.inject.Inject() (
       validForm => {
         val returnUrl = validForm.returnUrl.getOrElse("/")
 
-        client.users.postAuthenticate(AuthenticationForm(email = validForm.email.trim)).map { user =>
+        client.ioFlowUserV0ModelsUsers.postAuthenticate(AuthenticationForm(email = validForm.email.trim)).map { user =>
           Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
         }.recover {
           case r: ErrorsResponse => {
@@ -50,7 +51,7 @@ class LoginController @javax.inject.Inject() (
                 // For now, just auto-register the user if the email is valid
                 try {
                   val user = Await.result(
-                    client.users.post(UserForm(email = validForm.email.trim)),
+                    client.ioFlowUserV0ModelsUsers.post(UserForm(email = Some(validForm.email.trim))),
                     1000.millis
                   )
                   Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }

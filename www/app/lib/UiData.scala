@@ -1,6 +1,6 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.User
+import io.flow.user.v0.models.User
 
 sealed trait Section
 
