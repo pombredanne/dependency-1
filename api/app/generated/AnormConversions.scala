@@ -36,147 +36,32 @@ package com.bryzek.dependency.v0.anorm.conversions {
     implicit val columnToSeqString: Column[Seq[String]] = parser { json =>
       play.api.libs.json.Json.parse(
         json.getValue
-      ).as[JsArray].value.map { js =>
-        js match {
-          case play.api.libs.json.JsString(value) => value
-          case _ => js.toString
-        }
-      }
+      ).as[Seq[String]]
     }
 
-    implicit val columnToSeqJsValue: Column[Seq[JsValue]] = {
-      anorm.Column.nonNull1 { (value, meta) =>
-        val MetaDataItem(qualified, nullable, clazz) = meta
-        value match {
-          case json: org.postgresql.util.PGobject => {
-            Try(
-              play.api.libs.json.Json.parse(
-                json.getValue
-              ).as[JsArray]
-            ) match {
-              case Success(result) => {
-                Right(result.value)
-              }
-              case Failure(ex) => {
-                Left(
-                  TypeDoesNotMatch(
-                    s"Column[$qualified] error parsing json $value: $ex"
-                  )
-                )
-              }
-            }
-          }
-          case _=> {
-            Left(
-              TypeDoesNotMatch(
-                s"Column[$qualified] error converting $value: ${value.asInstanceOf[AnyRef].getClass} to Json"
-              )
-            )
-          }
-        }
-      }
+    implicit val columnToMapStringString: Column[Map[String, String]] = parser { json =>
+      play.api.libs.json.Json.parse(
+        json.getValue
+      ).as[Map[String, String]]
     }
 
-    implicit val columnToJsValue: Column[JsValue] = {
-      anorm.Column.nonNull1 { (value, meta) =>
-        val MetaDataItem(qualified, nullable, clazz) = meta
-        value match {
-          case json: org.postgresql.util.PGobject => {
-            Try(
-              play.api.libs.json.Json.parse(
-                json.getValue
-              )
-            ) match {
-              case Success(result) => {
-                Right(result)
-              }
-              case Failure(ex) => {
-                Left(
-                  TypeDoesNotMatch(
-                    s"Column[$qualified] error parsing json $value: $ex"
-                  )
-                )
-              }
-            }
-          }
-          case _=> {
-            Left(
-              TypeDoesNotMatch(
-                s"Column[$qualified] error converting $value: ${value.asInstanceOf[AnyRef].getClass} to Json"
-              )
-            )
-          }
-        }
-      }
+    implicit val columnToJsValue: Column[JsValue] = parser { json =>
+      play.api.libs.json.Json.parse(
+        json.getValue
+      )
     }
 
-    implicit val columnToJsArray: Column[JsArray] = {
-      anorm.Column.nonNull1 { (value, meta) =>
-        val MetaDataItem(qualified, nullable, clazz) = meta
-        value match {
-          case json: org.postgresql.util.PGobject => {
-            Try(
-              play.api.libs.json.Json.parse(
-                json.getValue
-              ).as[JsArray]
-            ) match {
-              case Success(result) => {
-                Right(result)
-              }
-              case Failure(ex) => {
-                Left(
-                  TypeDoesNotMatch(
-                    s"Column[$qualified] error parsing json $value: $ex"
-                  )
-                )
-              }
-            }
-          }
-          case _=> {
-            Left(
-              TypeDoesNotMatch(
-                s"Column[$qualified] error converting $value: ${value.asInstanceOf[AnyRef].getClass} to Json"
-              )
-            )
-          }
-        }
-      }
+    implicit val columnToJsObject: Column[JsObject] = parser { json =>
+      play.api.libs.json.Json.parse(
+        json.getValue
+      ).as[JsObject]
     }
 
-
-    implicit val columnToJsObject: Column[JsObject] = {
-      anorm.Column.nonNull1 { (value, meta) =>
-        val MetaDataItem(qualified, nullable, clazz) = meta
-        value match {
-          case json: org.postgresql.util.PGobject => {
-            Try(
-              play.api.libs.json.Json.parse(
-                json.getValue
-              ).as[JsObject]
-            ) match {
-              case Success(result) => {
-                Right(result)
-              }
-              case Failure(ex) => {
-                Left(
-                  TypeDoesNotMatch(
-                    s"Column[$qualified] error parsing json $value: $ex"
-                  )
-                )
-              }
-            }
-          }
-          case _=> {
-            Left(
-              TypeDoesNotMatch(
-                s"Column[$qualified] error converting $value: ${value.asInstanceOf[AnyRef].getClass} to Json"
-              )
-            )
-          }
-        }
-      }
+    implicit val columnToSeqJsValue: Column[Seq[JsValue]] = parser { json =>
+      play.api.libs.json.Json.parse(
+        json.getValue
+      ).as[JsArray].value
     }
 
   }
-
 }
