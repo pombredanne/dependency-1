@@ -70,7 +70,6 @@ class IoFlowUserV0ModelsUsers @javax.inject.Inject() () extends Controller {
       }
       case s: JsSuccess[AuthenticationForm] => {
         val form = s.get
-        println(s"VALID FORM[$form]")
         UsersDao.findByEmail(form.email) match {
           case None => Conflict(
             Json.toJson(
@@ -83,7 +82,6 @@ class IoFlowUserV0ModelsUsers @javax.inject.Inject() () extends Controller {
             )
           )
           case Some(u) => {
-            println("Serializing user: "+ u)
             Ok(Json.toJson(u))
           }
         }
