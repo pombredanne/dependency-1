@@ -15,7 +15,7 @@ object LibrariesDao {
 
   private[this] val BaseQuery = s"""
     select libraries.guid,
-           string_to_array(libraries.resolvers, ' ') as resolvers,
+           array_to_json(string_to_array(libraries.resolvers, ' ')) as resolvers,
            libraries.group_id,
            libraries.artifact_id,
            ${AuditsDao.all("libraries")}

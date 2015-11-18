@@ -229,16 +229,18 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def table(table: String) = parser(Mappings.prefix(table, "."))
 
+    import com.bryzek.dependency.v0.anorm.conversions.Json._
+
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Library] = {
       SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
-      SqlParser.list[String](mappings.resolvers) ~
+      SqlParser.get[play.api.libs.json.JsValue](mappings.resolvers) ~
       SqlParser.str(mappings.groupId) ~
       SqlParser.str(mappings.artifactId) ~
       io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
         case guid ~ resolvers ~ groupId ~ artifactId ~ audit => {
           com.bryzek.dependency.v0.models.Library(
             guid = guid,
-            resolvers = resolvers,
+            resolvers = Seq(resolvers.toString), // todo
             groupId = groupId,
             artifactId = artifactId,
             audit = audit
