@@ -124,7 +124,8 @@
                         { "name": "email", "type": "string", "description": "Find user with this email address. Case in-sensitive. Exact match", "required": false }
                     ],
                     "responses": {
-                        "200": { "type": "[io.flow.user.v0.models.user]" }
+                        "200": { "type": "[io.flow.user.v0.models.user]" },
+                        "401": { "type": "unit" }
                     }
                 },
 
@@ -134,6 +135,7 @@
                     "path": "/:guid",
                     "responses": {
                         "200": { "type": "io.flow.user.v0.models.user" },
+                        "401": { "type": "unit" },
                         "404": { "type": "unit" }
                     }
                 },
@@ -174,7 +176,8 @@
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
                     "responses": {
-                        "200": { "type": "[project]" }
+                        "200": { "type": "[project]" },
+                        "401": { "type": "unit" }
                     }
                 },
 
@@ -184,6 +187,7 @@
                     "path": "/:guid",
                     "responses": {
                         "200": { "type": "project" },
+                        "401": { "type": "unit" },
                         "404": { "type": "unit" }
                     }
                 },
@@ -194,6 +198,7 @@
                     "body": { "type": "project_form" },
                     "responses": {
                         "201": { "type": "project" },
+                        "401": { "type": "unit" },
                         "409": { "type": "[io.flow.common.v0.models.error]" }
                     }
                 },
