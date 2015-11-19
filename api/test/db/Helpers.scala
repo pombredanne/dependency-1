@@ -1,22 +1,19 @@
 package db
 
 import com.bryzek.dependency.v0.models._
-import com.bryzek.dependency.v0.errors.{ErrorsResponse, UnitResponse}
 import io.flow.user.v0.models.{NameForm, User, UserForm}
 import java.util.UUID
-import java.util.concurrent.TimeUnit
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration.Duration
-import scala.util.{Failure, Success, Try}
 
 trait Helpers {
-
-  val DefaultDuration = Duration(5, TimeUnit.SECONDS)
 
   lazy val systemUser = UsersDao.systemUser
 
   def createTestEmail(): String = {
     s"z-test-${UUID.randomUUID}@test.bryzek.com"
+  }
+
+  def createTestName(): String = {
+    s"Z Test ${UUID.randomUUID}"
   }
 
   def createLanguage(
@@ -64,11 +61,11 @@ trait Helpers {
   }
 
   def createProjectForm() = {
-    val name = s"z-test-${UUID.randomUUID}"
+    val name = createTestName()
     ProjectForm(
       name = name,
       scms = Scms.GitHub,
-      uri = "http://github.com/test/${name}"
+      uri = "http://github.com/test/${UUID.randomUUID}"
     )
   }
 
@@ -86,53 +83,4 @@ trait Helpers {
     name = name
   )
 
-  def expectErrors[T](
-    f: => Future[T],
-    duration: Duration = DefaultDuration
-  ): ErrorsResponse = {
-    Try(
-      Await.result(f, duration)
-    ) match {
-      case Success(response) => {
-        sys.error("Expected function to fail but it succeeded with: " + response)
-      }
-      case Failure(ex) =>  ex match {
-        case e: ErrorsResponse => {
-          e
-        }
-        case e => {
-          sys.error(s"Expected an exception of type[ErrorsResponse] but got[$e]")
-        }
-      }
-    }
-  }
-
-  def expectNotFound[T](
-    f: => Future[T],
-    duration: Duration = DefaultDuration
-  ) {
-    expectStatus(404) {
-      Await.result(f, duration)
-    }
-  }
-
-  def expectStatus(code: Int)(f: => Unit) {
-    assert(code >= 400, s"code[$code] must be >= 400")
-
-    Try(
-      f
-    ) match {
-      case Success(response) => {
-        org.specs2.execute.Failure(s"Expected HTTP[$code] but got HTTP 2xx")
-      }
-      case Failure(ex) => ex match {
-        case UnitResponse(code) => {
-          org.specs2.execute.Success()
-        }
-        case e => {
-          org.specs2.execute.Failure(s"Unexpected error: $e")
-        }
-      }
-    }
-  }
 }
