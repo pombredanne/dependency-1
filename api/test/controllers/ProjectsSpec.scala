@@ -68,4 +68,19 @@ class ProjectsSpec extends PlaySpecification with MockClient {
     )
   }
 
+  "DELETE /projects" in new WithServer(port=port) {
+    val project = createProject()
+    await(
+      client.projects.deleteByGuid(project.guid)
+    ) must beEqualTo(())
+
+    expectNotFound(
+      client.projects.getByGuid(project.guid)
+    )
+
+    expectNotFound(
+      client.projects.deleteByGuid(project.guid)
+    )
+  }
+
 }
