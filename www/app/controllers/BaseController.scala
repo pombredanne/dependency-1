@@ -1,19 +1,18 @@
 package controllers
 
-import com.bryzek.dependency.lib.DependencyClientProvider
+import com.bryzek.dependency.lib.UiData
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedController
 import play.api._
-import play.api.i18n.MessagesApi
+import play.api.i18n._
 import play.api.mvc._
 
-class ApplicationController @javax.inject.Inject() (
-  val messagesApi: MessagesApi,
-  override val userTokensClient: UserTokensClient,
-  val dependencyClientProvider: DependencyClientProvider
-) extends BaseController(userTokensClient) {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
+abstract class BaseController(
+  val userTokensClient: UserTokensClient
+) extends Controller
+    with IdentifiedController
+    with I18nSupport
+{
 
   override def unauthorized[A](request: Request[A]): Result = {
     Redirect(routes.LoginController.index(return_url = Some(request.path))).flashing("warning" -> "Please login")
@@ -31,12 +30,8 @@ class ApplicationController @javax.inject.Inject() (
     }
   }
 
-  def index() = Identified { implicit request =>
-    Ok(
-      views.html.index(
-        uiData(request)
-      )
-    )
+  def uiData[T](request: IdentifiedRequest[T]): UiData = {
+    UiData(requestPath = request.path, user = Some(request.user))
   }
 
 }
