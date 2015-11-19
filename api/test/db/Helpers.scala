@@ -43,7 +43,7 @@ trait Helpers {
   def createLibraryForm() = LibraryForm(
     resolvers = Seq("http://dependencies.io.flow"),
     groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
-    artifactId = "z-test-${UUID.randomUUID}".toLowerCase,
+    artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
     version = None
   )
 
