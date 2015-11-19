@@ -42,7 +42,7 @@ class LoginController @javax.inject.Inject() (
       validForm => {
         val returnUrl = validForm.returnUrl.getOrElse("/")
 
-        client.ioFlowUserV0ModelsUsers.postAuthenticate(AuthenticationForm(email = validForm.email.trim)).map { user =>
+        client.users.postAuthenticate(AuthenticationForm(email = validForm.email.trim)).map { user =>
           Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
         }.recover {
           case r: ErrorsResponse => {
@@ -51,7 +51,7 @@ class LoginController @javax.inject.Inject() (
                 // For now, just auto-register the user if the email is valid
                 try {
                   val user = Await.result(
-                    client.ioFlowUserV0ModelsUsers.post(UserForm(email = Some(validForm.email.trim))),
+                    client.users.post(UserForm(email = Some(validForm.email.trim))),
                     1000.millis
                   )
                   Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }

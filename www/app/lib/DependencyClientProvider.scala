@@ -49,7 +49,7 @@ class DefaultDependencyClientProvider() extends DependencyClientProvider {
   )(implicit ec: ExecutionContext): Future[Option[User]] = {
     Try(UUID.fromString(token)) match {
       case Success(guid) => {
-        client.ioFlowUserV0ModelsUsers.getByGuid(guid).
+        client.users.getByGuid(guid).
           map {
             Some(_)
           }.
