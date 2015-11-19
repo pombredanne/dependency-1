@@ -12,7 +12,7 @@ import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
 
-class IoFlowUserV0ModelsUsers @javax.inject.Inject() () extends Controller {
+class Users @javax.inject.Inject() () extends Controller {
 
   def get(
     guid: Option[UUID],
