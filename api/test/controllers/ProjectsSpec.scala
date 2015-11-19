@@ -37,6 +37,12 @@ class ProjectsSpec extends PlaySpecification with MockClient {
     )
 
     await(
+      client.projects.get(name = Some(project1.name.toUpperCase))
+    ).map(_.name) must beEqualTo(
+      Seq(project1.name)
+    )
+
+    await(
       client.projects.get(name = Some(UUID.randomUUID.toString))
     ) must be(
       Nil

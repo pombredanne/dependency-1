@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.actors.MainActor
-import com.bryzek.dependency.v0.models.{Language, LanguageForm, ProgrammingLanguage}
+import com.bryzek.dependency.v0.models.{Language, LanguageForm}
 import io.flow.user.v0.models.User
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.play.util.ValidatedForm
