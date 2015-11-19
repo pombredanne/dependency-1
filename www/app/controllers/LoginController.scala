@@ -22,10 +22,6 @@ class LoginController @javax.inject.Inject() (
 
   private[this] lazy val client = provider.newClient(user = None)
 
-  def redirect = Action {
-    Redirect(routes.LoginController.index())
-  }
-
   def index(returnUrl: Option[String]) = Action { implicit request =>
     val form = LoginController.loginForm.fill(LoginController.LoginData(email = "", returnUrl = returnUrl))
     Ok(views.html.login.index(UiData(requestPath = request.path), form))

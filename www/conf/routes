@@ -1,9 +1,12 @@
 GET     /_internal_/healthcheck                 controllers.HealthchecksController.index()
 GET     /                                       controllers.ApplicationController.index()
 
+GET     /projects                               controllers.ApplicationController.redirect
+GET     /projects/                              controllers.ProjectsController.index(page: Int ?= 0)
+
 GET     /search                                 controllers.SearchController.index(q: Option[String] ?= None, page: Int ?= 0)
 
-GET     /login                                  controllers.LoginController.redirect
+GET     /login                                  controllers.ApplicationController.redirect
 GET     /login/                                 controllers.LoginController.index(return_url: Option[String] ?= None)
 POST    /login/                                 controllers.LoginController.indexPost
 GET     /logout                                 controllers.LogoutController.index

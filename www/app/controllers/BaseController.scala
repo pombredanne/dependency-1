@@ -1,6 +1,8 @@
 package controllers
 
+import com.bryzek.dependency.v0.Client
 import com.bryzek.dependency.lib.UiData
+import com.bryzek.dependency.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedController
 import play.api._
@@ -8,7 +10,8 @@ import play.api.i18n._
 import play.api.mvc._
 
 abstract class BaseController(
-  val userTokensClient: UserTokensClient
+  val userTokensClient: UserTokensClient,
+  val dependencyClientProvider: DependencyClientProvider
 ) extends Controller
     with IdentifiedController
     with I18nSupport
@@ -32,6 +35,10 @@ abstract class BaseController(
 
   def uiData[T](request: IdentifiedRequest[T]): UiData = {
     UiData(requestPath = request.path, user = Some(request.user))
+  }
+
+  def dependencyClient[T](request: IdentifiedRequest[T]): Client = {
+    dependencyClientProvider.newClient(user = Some(request.user))
   }
 
 }

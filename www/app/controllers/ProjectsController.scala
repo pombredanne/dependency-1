@@ -2,28 +2,34 @@ package controllers
 
 import com.bryzek.dependency.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
+import io.flow.play.util.{Pagination, PaginatedCollection}
+
 import play.api._
 import play.api.i18n.MessagesApi
 import play.api.mvc._
 
-class ApplicationController @javax.inject.Inject() (
+class ProjectsController @javax.inject.Inject() (
   val messagesApi: MessagesApi,
   override val userTokensClient: UserTokensClient,
   override val dependencyClientProvider: DependencyClientProvider
 ) extends BaseController(userTokensClient, dependencyClientProvider) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
- 
-  def redirect = Action { request =>
-    Redirect(request.path + "/")
-  }
 
-  def index() = Identified { implicit request =>
-    Ok(
-      views.html.index(
-        uiData(request)
+  def index(page: Int = 0) = Identified.async { implicit request =>
+    for {
+      projects <- dependencyClient(request).projects.get(
+        limit = Pagination.DefaultLimit+1,
+        offset = page * Pagination.DefaultLimit
       )
-    )
+    } yield {
+      Ok(
+        views.html.projects.index(
+          uiData(request),
+          PaginatedCollection(page, projects)
+        )
+      )
+    }
   }
 
 }

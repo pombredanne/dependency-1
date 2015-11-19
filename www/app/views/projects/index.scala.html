@@ -1,0 +1,21 @@
+@(
+  data: com.bryzek.dependency.lib.UiData,
+  projects: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Project]
+)(implicit flash: Flash, messages: Messages)
+
+@main(data.copy(title = Some("Projects"))) {
+
+  @if(projects.isEmpty) {
+    <em>No projects</em>
+
+  } else {
+    <table>
+    @projects.items.map { p =>
+      <tr>
+        <td><a href="">@{p.name}</a></td>
+      </tr>
+    }
+    </table>
+  }
+
+}
