@@ -65,7 +65,7 @@ trait Helpers {
     ProjectForm(
       name = name,
       scms = Scms.GitHub,
-      uri = "http://github.com/test/${UUID.randomUUID}"
+      uri = s"http://github.com/test/${UUID.randomUUID}"
     )
   }
 
