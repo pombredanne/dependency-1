@@ -1,6 +1,6 @@
 package controllers
 
-import com.bryzek.dependency.v0.Client
+import com.bryzek.dependency.v0.{Authorization, Client}
 import com.bryzek.dependency.v0.models.ProjectForm
 import io.flow.play.util.Validation
 
@@ -8,12 +8,9 @@ import java.util.UUID
 import play.api.libs.ws._
 import play.api.test._
 
-class ProjectsSpec extends PlaySpecification with db.Helpers {
+class ProjectsSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
-
-  private val port = 9010
-  lazy val client = new Client(s"http://localhost:$port")
 
   lazy val project1 = createProject()
   lazy val project2 = createProject()
@@ -65,9 +62,9 @@ class ProjectsSpec extends PlaySpecification with db.Helpers {
 
   "POST /projects validates duplicate name" in new WithServer(port=port) {
     expectErrors(
-      client.projects.post(createProjectForm().copy(name = Some(project1.name.get)))
+      client.projects.post(createProjectForm().copy(name = project1.name))
     ).errors.map(_.message) must beEqualTo(
-      Seq("Name is already registered")
+      Seq("Project with this name already exists")
     )
   }
 

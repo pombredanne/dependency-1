@@ -28,7 +28,7 @@ class Projects @javax.inject.Inject() (
       Json.toJson(
         ProjectsDao.findAll(
           guid = guid,
-          guids = guids,
+          guids = optionalGuids(guids),
           name = name,
           limit = limit,
           offset = offset

@@ -17,6 +17,7 @@ object ProjectsDao {
     select projects.guid,
            projects.scms,
            projects.name,
+           projects.uri,
            ${AuditsDao.all("projects")}
       from projects
      where true
@@ -24,9 +25,9 @@ object ProjectsDao {
 
   private[this] val InsertQuery = """
     insert into projects
-    (guid, scms, name, created_by_guid, updated_by_guid)
+    (guid, scms, name, uri, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {scms}, {name}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {scms}, {name}, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[this] val InsertLibraryQuery = """
@@ -77,7 +78,13 @@ object ProjectsDao {
       }
     }
 
-    ValidatedForm(form, scmsErrors ++ nameErrors)
+    val uriErrors = if (form.uri.trim == "") {
+      Seq("Uri cannot be empty")
+    } else {
+      Nil
+    }
+
+    ValidatedForm(form, scmsErrors ++ nameErrors ++ uriErrors)
   }
 
   def setDependencies(
@@ -164,6 +171,7 @@ object ProjectsDao {
         'guid -> guid,
         'scms -> valid.form.scms.toString,
         'name -> valid.form.name.trim,
+        'uri -> valid.form.uri.trim,
         'created_by_guid -> createdBy.guid
       ).execute()
     }

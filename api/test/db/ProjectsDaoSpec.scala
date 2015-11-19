@@ -64,6 +64,14 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
         Seq("Project with this name already exists")
       )
     }
+
+    "validates empty uri" in {
+      val form = createProjectForm().copy(uri = "   ")
+      ProjectsDao.validate(form).errors.map(_.message) must be(
+        Seq("Uri cannot be empty")
+      )
+    }
+
   }
 
 }

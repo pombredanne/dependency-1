@@ -13,6 +13,7 @@ class DefaultUserTokensClient() extends UserTokensClient {
   override def getUserByToken(
     token: String
   )(implicit ec: ExecutionContext): Future[Option[User]] = {
+    println(s"getUserByToken($token)")
     Future {
       Try(UUID.fromString(token)) match {
         case Success(guid) => {
