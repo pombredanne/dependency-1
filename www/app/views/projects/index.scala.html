@@ -12,10 +12,21 @@
     <table>
     @projects.items.map { p =>
       <tr>
-        <td><a href="">@{p.name}</a></td>
+        <td><a href="@routes.ProjectsController.show(p.guid)">@{p.name}</a></td>
       </tr>
     }
     </table>
+
+    @if(projects.hasPrevious || projects.hasNext) {
+      <ul class="pager">
+        @if(projects.hasPrevious) {
+          <li><a href="@routes.ProjectsController.index(projects.page - 1)">Previous</a></li>
+        }
+        @if(projects.hasNext) {
+          <li><a href="@routes.ProjectsController.index(projects.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
   }
 
 }

@@ -1,0 +1,13 @@
+@(
+  data: com.bryzek.dependency.lib.UiData,
+  project: com.bryzek.dependency.v0.models.Project
+)(implicit flash: Flash, messages: Messages)
+
+@main(data.copy(title = Some(project.name))) {
+
+  <ul>
+    <li>SCMS: @project.scms.toString</li>
+    <li>URI: <a href="@project.uri">@project.uri</a></li>
+  </ul>
+
+  }

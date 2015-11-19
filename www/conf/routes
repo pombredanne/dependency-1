@@ -3,6 +3,7 @@ GET     /                                       controllers.ApplicationControlle
 
 GET     /projects                               controllers.ApplicationController.redirect
 GET     /projects/                              controllers.ProjectsController.index(page: Int ?= 0)
+GET     /projects/:guid                         controllers.ProjectsController.show(guid: java.util.UUID)
 
 GET     /search                                 controllers.SearchController.index(q: Option[String] ?= None, page: Int ?= 0)
 
