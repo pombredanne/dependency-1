@@ -84,6 +84,7 @@
 		{ "name": "guid", "type": "uuid" },
 		{ "name": "scms", "type": "scms" },
 		{ "name": "name", "type": "string" },
+		{ "name": "uri", "type": "string" },
                 { "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},

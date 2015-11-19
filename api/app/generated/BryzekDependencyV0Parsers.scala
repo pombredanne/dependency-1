@@ -341,6 +341,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       guid: String = "guid",
       scms: String = "scms",
       name: String = "name",
+      uri: String = "uri",
       audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
     )
 
@@ -354,6 +355,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
         guid = s"${prefix}${sep}guid",
         scms = s"${prefix}${sep}scms",
         name = s"${prefix}${sep}name",
+        uri = s"${prefix}${sep}uri",
         audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
       )
 
@@ -365,12 +367,14 @@ package com.bryzek.dependency.v0.anorm.parsers {
       SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
       com.bryzek.dependency.v0.anorm.parsers.Scms.parser(com.bryzek.dependency.v0.anorm.parsers.Scms.Mappings(mappings.scms)) ~
       SqlParser.str(mappings.name) ~
+      SqlParser.str(mappings.uri) ~
       io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
-        case guid ~ scms ~ name ~ audit => {
+        case guid ~ scms ~ name ~ uri ~ audit => {
           com.bryzek.dependency.v0.models.Project(
             guid = guid,
             scms = scms,
             name = name,
+            uri = uri,
             audit = audit
           )
         }
