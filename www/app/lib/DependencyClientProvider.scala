@@ -21,17 +21,7 @@ class DefaultDependencyClientProvider() extends DependencyClientProvider {
   def host: String = Config.requiredString("dependency.api.host")
   def token: String = Config.requiredString("dependency.api.token")
 
-  private[this] lazy val client = {
-    new Client(
-      apiUrl = host,
-      auth = Some(
-        Authorization.Basic(
-          username = token,
-          password = None
-        )
-      )
-    )
-  }
+  private[this] lazy val client = new Client(host)
 
   override def newClient(user: Option[User]): Client = {
     user match {
@@ -39,7 +29,15 @@ class DefaultDependencyClientProvider() extends DependencyClientProvider {
         client
       }
       case Some(u) => {
-        client // TODO - add user guid header
+        new Client(
+          apiUrl = host,
+          auth = Some(
+            Authorization.Basic(
+              username = u.guid.toString,
+              password = None
+            )
+          )
+        )
       }
     }
   }
