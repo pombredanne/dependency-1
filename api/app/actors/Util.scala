@@ -16,7 +16,6 @@ object Util {
       f
     } catch {
       case t: Throwable => {
-        println(s"ERROR: $description: ${t}")
         Logger.error(s"$description: ${t}" , t)
       }
     }
@@ -28,7 +27,6 @@ object Util {
     f: => T
   ) {
     Logger.info(description)
-    println(description)
     withErrorHandler(description)(f)
   }
 
