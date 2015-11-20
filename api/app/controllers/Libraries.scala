@@ -19,6 +19,7 @@ class Libraries @javax.inject.Inject() (
   def get(
     guid: Option[UUID],
     guids: Option[Seq[UUID]],
+    projectGuid: Option[UUID],
     groupId: Option[String],
     artifactId: Option[String],
     limit: Long = 25,
@@ -29,6 +30,7 @@ class Libraries @javax.inject.Inject() (
         LibrariesDao.findAll(
           guid = guid,
           guids = optionalGuids(guids),
+          projectGuid = projectGuid,
           groupId = groupId,
           artifactId = artifactId,
           limit = limit,

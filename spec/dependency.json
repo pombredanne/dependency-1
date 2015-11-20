@@ -255,6 +255,7 @@
                     "parameters": [
                         { "name": "guid", "type": "uuid", "description": "Find library with this guid. Exact match", "required": false },
 			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
+                        { "name": "project_guid", "type": "uuid", "description": "Find languages associated with this project", "required": false },
                         { "name": "group_id", "type": "string", "description": "Find library with this group_id. Case sensitive. Exact match", "required": false },
                         { "name": "artifact_id", "type": "string", "description": "Find library with this artifact_id. Case sensitive. Exact match", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
@@ -308,6 +309,7 @@
                     "parameters": [
                         { "name": "guid", "type": "uuid", "description": "Find language with this guid. Exact match", "required": false },
 			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
+                        { "name": "project_guid", "type": "uuid", "description": "Find languages associated with this project", "required": false },
                         { "name": "name", "type": "string", "description": "Find project with this name. Case in-sensitive. Exact match", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }

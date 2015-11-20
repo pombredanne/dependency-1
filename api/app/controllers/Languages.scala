@@ -19,6 +19,7 @@ class Languages @javax.inject.Inject() (
   def get(
     guid: Option[UUID],
     guids: Option[Seq[UUID]],
+    projectGuid: Option[UUID],
     name: Option[String],
     limit: Long = 25,
     offset: Long = 0
@@ -28,6 +29,7 @@ class Languages @javax.inject.Inject() (
         LanguagesDao.findAll(
           guid = guid,
           guids = optionalGuids(guids),
+          projectGuid = projectGuid,
           name = name,
           limit = limit,
           offset = offset
