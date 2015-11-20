@@ -39,7 +39,9 @@ trait Helpers {
   def createLibrary(
     form: LibraryForm = createLibraryForm()
   ): Library = {
-    LibrariesDao.create(systemUser, LibrariesDao.validate(form))
+    LibrariesDao.create(systemUser, form).right.getOrElse {
+      sys.error("Failed to create library")
+    }
   }
 
   def createLibraryForm() = LibraryForm(

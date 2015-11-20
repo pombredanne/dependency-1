@@ -62,14 +62,14 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "create" must {
     "validates empty group id" in {
       val form = createLibraryForm().copy(groupId = "   ")
-      LibrariesDao.validate(form).errors.map(_.message) must be(
+      LibrariesDao.validate(form) must be(
         Seq("Group ID cannot be empty")
       )
     }
 
     "validates empty artifact id" in {
       val form = createLibraryForm().copy(artifactId = "   ")
-      LibrariesDao.validate(form).errors.map(_.message) must be(
+      LibrariesDao.validate(form) must be(
         Seq("Artifact ID cannot be empty")
       )
     }
@@ -81,7 +81,7 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
         groupId = library.groupId,
         artifactId = library.artifactId
       )
-      LibrariesDao.validate(form).errors.map(_.message) must be(
+      LibrariesDao.validate(form) must be(
         Seq("Library with these resolvers, group id and artifact id already exists")
       )
     }

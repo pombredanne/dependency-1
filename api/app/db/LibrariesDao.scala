@@ -3,7 +3,6 @@ package db
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Library, LibraryForm}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
-import io.flow.play.util.ValidatedForm
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
@@ -30,9 +29,9 @@ object LibrariesDao {
     ({guid}::uuid, {resolvers}, {group_id}, {artifact_id}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  def validate(
+  private[db] def validate(
     form: LibraryForm
-  ): ValidatedForm[LibraryForm] = {
+  ): Seq[String] = {
     val groupIdErrors = if (form.groupId.trim.isEmpty) {
       Seq("Group ID cannot be empty")
     } else {
@@ -54,42 +53,47 @@ object LibrariesDao {
       Nil
     }
 
-    ValidatedForm(form, groupIdErrors ++ artifactIdErrors ++ existsErrors)
+    groupIdErrors ++ artifactIdErrors ++ existsErrors
   }
 
-  def upsert(createdBy: User, form: LibraryForm): Library = {
+  def upsert(createdBy: User, form: LibraryForm): Either[Seq[String], Library] = {
     LibrariesDao.findByResolversAndGroupIdAndArtifactId(form.resolvers, form.groupId, form.artifactId) match {
       case None => {
-        create(createdBy, validate(form))
+        create(createdBy, form)
       }
       case Some(lib) => {
         Util.trimmedString(form.version).map { version =>
           LibraryVersionsDao.upsert(createdBy, lib.guid, version)
         }
-        lib
+        Right(lib)
       }
     }
   }
 
-  def create(createdBy: User, valid: ValidatedForm[LibraryForm]): Library = {
-    valid.assertValid()
+  def create(createdBy: User, form: LibraryForm): Either[Seq[String], Library] = {
+    validate(form) match {
+      case Nil => {
+        val guid = UUID.randomUUID
 
-    val guid = UUID.randomUUID
+        DB.withConnection { implicit c =>
+          SQL(InsertQuery).on(
+            'guid -> guid,
+            'resolvers -> resolversToString(form.resolvers),
+            'group_id -> form.groupId.trim,
+            'artifact_id -> form.artifactId.trim,
+            'created_by_guid -> createdBy.guid
+          ).execute()
+        }
 
-    DB.withConnection { implicit c =>
-      SQL(InsertQuery).on(
-        'guid -> guid,
-        'resolvers -> resolversToString(valid.form.resolvers),
-        'group_id -> valid.form.groupId.trim,
-        'artifact_id -> valid.form.artifactId.trim,
-        'created_by_guid -> createdBy.guid
-      ).execute()
-    }
+        MainActor.ref ! MainActor.Messages.LibraryCreated(guid)
 
-    MainActor.ref ! MainActor.Messages.LibraryCreated(guid)
-
-    findByGuid(guid).getOrElse {
-      sys.error("Failed to create library")
+        Right(
+          findByGuid(guid).getOrElse {
+            sys.error("Failed to create library")
+          }
+        )
+      }
+      case errors => Left(errors)
     }
   }
 

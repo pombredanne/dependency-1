@@ -155,7 +155,10 @@ object ProjectsDao {
     libraries: Seq[LibraryForm]
   ) {
     val newGuids = libraries.map { library =>
-      LibrariesDao.upsert(createdBy, library).guid
+      LibrariesDao.upsert(createdBy, library) match {
+        case Left(errors) => sys.error(errors.mkString(", n"))
+        case Right(library) => library.guid
+      }
     }
 
     val existingGuids = LibrariesDao.findAll(projectGuid = Some(project.guid)).map(_.guid)

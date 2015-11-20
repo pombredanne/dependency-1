@@ -2,9 +2,8 @@ package controllers
 
 import db.LibrariesDao
 import io.flow.play.clients.UserTokensClient
-import io.flow.common.v0.models.Error
 import io.flow.play.controllers.IdentifiedRestController
-import io.flow.play.util.{Validation, ValidatedForm}
+import io.flow.play.util.Validation
 import com.bryzek.dependency.v0.models.{AuthenticationForm, Library, LibraryForm}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
@@ -56,15 +55,9 @@ class Libraries @javax.inject.Inject() (
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[LibraryForm] => {
-        val form = s.get
-        LibrariesDao.validate(form) match {
-          case valid @ ValidatedForm(_, Nil) => {
-            val library = LibrariesDao.create(request.user, valid)
-            Created(Json.toJson(library))
-          }
-          case invalid @ ValidatedForm(_, _) => {
-            Conflict(Json.toJson(invalid.errors))
-          }
+        LibrariesDao.create(request.user, s.get) match {
+          case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+          case Right(library) => Created(Json.toJson(library))
         }
       }
     }
