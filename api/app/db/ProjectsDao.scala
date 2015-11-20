@@ -2,6 +2,7 @@ package db
 
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Scms, Language, LanguageForm, Library, LibraryForm, Project, ProjectForm}
+import com.bryzek.dependency.lib.GitHubUtil
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
@@ -72,9 +73,18 @@ object ProjectsDao {
     form: ProjectForm,
     existing: Option[Project] = None
   ): Seq[String] = {
-    val scmsErrors = form.scms match {
-      case Scms.UNDEFINED(_) => Seq("Scms not found")
-      case _ => Seq.empty
+    val uriErrors = if (form.uri.trim == "") {
+      Seq("Uri cannot be empty")
+    } else {
+      form.scms match {
+        case Scms.UNDEFINED(_) => Seq("Scms not found")
+        case Scms.GitHub => {
+          GitHubUtil.parseUri(form.uri) match {
+            case Left(error) => Seq(error)
+            case Right(_) => Nil
+          }
+        }
+      }
     }
 
     val nameErrors = if (form.name.trim == "") {
@@ -92,13 +102,7 @@ object ProjectsDao {
       }
     }
 
-    val uriErrors = if (form.uri.trim == "") {
-      Seq("Uri cannot be empty")
-    } else {
-      Nil
-    }
-
-    scmsErrors ++ nameErrors ++ uriErrors
+    nameErrors ++ uriErrors
   }
 
   def setDependencies(

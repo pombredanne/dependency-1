@@ -25,6 +25,7 @@ object Util {
     f: => Any
   ) {
     Logger.info(description)
+    println(description)
     withErrorHandler(description)(f)
   }
 

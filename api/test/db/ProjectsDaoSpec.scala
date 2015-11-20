@@ -45,8 +45,8 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "update" in {
     val form = createProjectForm()
     val project = createProject(form)
-    ProjectsDao.update(systemUser, project, form.copy(uri = "test"))
-    ProjectsDao.findByGuid(project.guid).map(_.uri) must be(Some("test"))
+    ProjectsDao.update(systemUser, project, form.copy(uri = "http://github.com/mbryzek/test"))
+    ProjectsDao.findByGuid(project.guid).map(_.uri) must be(Some("http://github.com/mbryzek/test"))
   }
 
   "update allows name change" in {
@@ -62,6 +62,13 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     "validates SCMS" in {
       val form = createProjectForm().copy(scms = Scms.UNDEFINED("other"))
       ProjectsDao.create(systemUser, form) must be(Left(Seq("Scms not found")))
+    }
+
+    "validates SCMS URI" in {
+      val form = createProjectForm().copy(scms = Scms.GitHub, uri = "http://github.com/mbryzek")
+      ProjectsDao.create(systemUser, form) must be(
+        Left(Seq("Invalid uri path[http://github.com/mbryzek] missing project name"))
+      )
     }
 
     "validates empty name" in {

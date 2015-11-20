@@ -8,6 +8,8 @@ import io.flow.play.util.Config
 import org.apache.commons.codec.binary.Base64
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
+import java.net.URI
 
 object GitHubClient {
 
@@ -29,14 +31,32 @@ object GitHubClient {
 
 object GitHubUtil {
 
-  case class FullName(owner: String, repository: String)
-
-  def parseFullName(fullName: String): Either[String, FullName] = {
-    fullName.split("/").toList match {
-      case Nil => Left(s"Invalid full name[$fullName]")
-      case owner :: Nil => Left(s"Invalid full name[$fullName] - missing /")
-      case owner :: repo :: Nil => Right(FullName(owner, repo))
-      case multiple => Left(s"Invalid full name[$fullName] - expected exactly one /")
+  case class Repository(
+    owner: String,
+    project: String
+  )
+  
+  def parseUri(uri: String): Either[String, Repository] = {
+    uri.trim match {
+      case "" => Left(s"URI cannot be an empty string")
+      case trimmed => {
+        Try(URI.create(trimmed)) match {
+          case Failure(error) => Left(s"Could not parse uri[$trimmed]: $error")
+          case Success(u) => {
+            val path = if (u.getPath.startsWith("/")) {
+              u.getPath.substring(1)
+            } else {
+              u.getPath
+            }.trim
+            path.split("/").filter(!_.isEmpty).toList match {
+              case Nil => Left(s"URI path cannot be empty for uri[$trimmed]")
+              case owner :: Nil => Left(s"Invalid uri path[$trimmed] missing project name")
+              case owner :: project :: Nil => Right(Repository(owner, project))
+              case multiple => Left(s"Invalid uri path[$u] - expected exactly two path components")
+            }
+          }
+        }
+      }
     }
   }
 
@@ -70,14 +90,14 @@ private[lib] case class GitHubDependencyProvider(githubToken: String) extends De
   )
 
   override def dependencies(project: Project)(implicit ec: ExecutionContext): Future[Option[Dependencies]] = {
-    GitHubUtil.parseFullName(project.name) match {
+    GitHubUtil.parseUri(project.uri) match {
       case Left(error) => {
         sys.error(error)
       }
-      case Right(parsed) => {
+      case Right(repo) => {
         for {
-          build <- getBuildDependencies(parsed)
-          plugins <- getPluginsDependencies(parsed)
+          build <- getBuildDependencies(repo)
+          plugins <- getPluginsDependencies(repo)
         } yield {
           (build, plugins) match {
             case (None, None) => None
@@ -98,13 +118,13 @@ private[lib] case class GitHubDependencyProvider(githubToken: String) extends De
   }
 
   private[this] def getBuildDependencies(
-    parsed: GitHubUtil.FullName
+    repo: GitHubUtil.Repository
   ) (
     implicit ec: ExecutionContext
   ): Future[Option[Dependencies]] = {
     client.contents.getReposByOwnerAndRepoAndPath(
-      owner = parsed.owner,
-      repo = parsed.repository,
+      owner = repo.owner,
+      repo = repo.project,
       path = BuildSbtFilename
     ).map { contents =>
       val result = BuildSbtScalaParser(
@@ -122,13 +142,13 @@ private[lib] case class GitHubDependencyProvider(githubToken: String) extends De
   }
 
   private[this] def getPluginsDependencies(
-    parsed: GitHubUtil.FullName
+    repo: GitHubUtil.Repository
   ) (
     implicit ec: ExecutionContext
   ): Future[Option[Dependencies]] = {
     client.contents.getReposByOwnerAndRepoAndPath(
-      owner = parsed.owner,
-      repo = parsed.repository,
+      owner = repo.owner,
+      repo = repo.project,
       path = ProjectPluginsSbtFilename
     ).map { contents =>
       val result = ProjectPluginsSbtScalaParser(
