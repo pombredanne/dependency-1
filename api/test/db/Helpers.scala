@@ -78,7 +78,9 @@ trait Helpers {
   def createUser(
     form: UserForm = createUserForm()
   ): User = {
-    UsersDao.create(None, UsersDao.validate(form))
+    UsersDao.create(None, form).right.getOrElse {
+      sys.error("Failed to create user")
+    }
   }
 
   def createUserForm(

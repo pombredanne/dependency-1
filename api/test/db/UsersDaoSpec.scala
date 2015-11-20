@@ -54,15 +54,13 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
 
   "findAll by guids" in {
-    val user1 = UsersDao.create(
-      createdBy = None,
-      valid = UsersDao.validate(createUserForm())
-    )
+    val user1 = UsersDao.create(None, createUserForm()).right.getOrElse {
+      sys.error("Failed to create user")
+    }
 
-    val user2 = UsersDao.create(
-      createdBy = None,
-      valid = UsersDao.validate(createUserForm())
-    )
+    val user2 = UsersDao.create(None, createUserForm()).right.getOrElse {
+      sys.error("Failed to create user")
+    }
 
     UsersDao.findAll(guids = Some(Seq(user1.guid, user2.guid))).map(_.guid) must be(
       Seq(user1.guid, user2.guid)
@@ -80,18 +78,20 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
         first = Some("Michael"),
         last = Some("Bryzek")
       )
-      val user = UsersDao.create(
+      UsersDao.create(
         createdBy = None,
-        valid = UsersDao.validate(
-          createUserForm(
-            email = email,
-            name = Some(name)
-          )
+        form = createUserForm(
+          email = email,
+          name = Some(name)
         )
-      )
-      user.email must be(Some(email))
-      user.name.first must be(name.first)
-      user.name.last must be(name.last)
+      ) match {
+        case Left(errors) => fail(errors.mkString(", "))
+        case Right(user) => {
+          user.email must be(Some(email))
+          user.name.first must be(name.first)
+          user.name.last must be(name.last)
+        }
+      }
     }
 
     "processes empty name" in {
@@ -99,13 +99,15 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
         first = Some("  "),
         last = Some("   ")
       )
-      val user = UsersDao.create(
+      UsersDao.create(
         createdBy = None,
-        valid = UsersDao.validate(
-          createUserForm().copy(name = Some(name))
-        )
-      )
-      user.name must be(Name(first = None, last = None))
+        form = createUserForm().copy(name = Some(name))
+      ) match {
+        case Left(errors) => fail(errors.mkString(", "))
+        case Right(user) => {
+          user.name must be(Name(first = None, last = None))
+        }
+      }
     }
 
   }

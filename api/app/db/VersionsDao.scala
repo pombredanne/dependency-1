@@ -2,7 +2,6 @@ package db
 
 import com.bryzek.dependency.v0.models.{LanguageVersion, LibraryVersion}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
-import io.flow.play.util.ValidatedForm
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._

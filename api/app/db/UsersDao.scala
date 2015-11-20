@@ -2,7 +2,6 @@ package db
 
 import io.flow.common.v0.models.Audit
 import io.flow.play.postgresql.{AuditsDao, Filters, OrderBy}
-import io.flow.play.util.ValidatedForm
 import io.flow.user.v0.models.{Name, User, UserForm}
 import java.util.UUID
 import anorm._
@@ -43,8 +42,8 @@ object UsersDao {
     ({guid}::uuid, {email}, {first_name}, {last_name}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  def validate(form: UserForm): ValidatedForm[UserForm] = {
-    val emailErrors = form.email match {
+  def validate(form: UserForm): Seq[String] = {
+    form.email match {
       case None => {
         Seq("Please provide an email address")
       }
@@ -63,31 +62,34 @@ object UsersDao {
         }
       }
     }
-
-    ValidatedForm(form, emailErrors)
   }
 
   private def isValidEmail(email: String): Boolean = {
     email.indexOf("@") >= 0
   }
 
-  def create(createdBy: Option[User], valid: ValidatedForm[UserForm]): User = {
-    valid.assertValid()
+  def create(createdBy: Option[User], form: UserForm): Either[Seq[String], User] = {
+    validate(form) match {
+      case Nil => {
+        val userGuid = UUID.randomUUID
 
-    val userGuid = UUID.randomUUID
+        DB.withConnection { implicit c =>
+          SQL(InsertQuery).on(
+            'guid -> userGuid,
+            'email -> form.email.getOrElse("").trim,
+            'first_name -> Util.trimmedString(form.name.flatMap(_.first)),
+            'last_name -> Util.trimmedString(form.name.flatMap(_.last)),
+            'created_by_guid -> createdBy.getOrElse(UsersDao.anonymousUser).guid
+          ).execute()
+        }
 
-    DB.withConnection { implicit c =>
-      SQL(InsertQuery).on(
-        'guid -> userGuid,
-        'email -> valid.form.email.getOrElse("").trim,
-        'first_name -> Util.trimmedString(valid.form.name.flatMap(_.first)),
-        'last_name -> Util.trimmedString(valid.form.name.flatMap(_.last)),
-        'created_by_guid -> createdBy.getOrElse(UsersDao.anonymousUser).guid
-      ).execute()
-    }
-
-    findByGuid(userGuid).getOrElse {
-      sys.error("Failed to create user")
+        Right(
+          findByGuid(userGuid).getOrElse {
+            sys.error("Failed to create user")
+          }
+        )
+      }
+      case errors => Left(errors)
     }
   }
 

@@ -2,7 +2,7 @@ package controllers
 
 import db.UsersDao
 import io.flow.common.v0.models.Error
-import io.flow.play.util.{Validation, ValidatedForm}
+import io.flow.play.util.Validation
 import io.flow.user.v0.models.{User, UserForm}
 import io.flow.user.v0.models.json._
 import com.bryzek.dependency.v0.models.AuthenticationForm
@@ -43,21 +43,16 @@ class Users @javax.inject.Inject() () extends Controller {
     }
   }
 
+  // TODO: Pass in user
   def post() = Action(parse.json) { request =>
     request.body.validate[UserForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[UserForm] => {
-        val form = s.get
-        UsersDao.validate(form) match {
-          case valid @ ValidatedForm(_, Nil) => {
-            val user = UsersDao.create(None, valid) // TODO: Pass in user
-            Created(Json.toJson(user))
-          }
-          case invalid @ ValidatedForm(_, _) => {
-            Conflict(Json.toJson(invalid.errors))
-          }
+        UsersDao.create(None, s.get) match {
+          case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+          case Right(user) => Created(Json.toJson(user))
         }
       }
     }
