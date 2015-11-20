@@ -1,14 +1,18 @@
 package controllers
 
 import com.bryzek.dependency.v0.errors.UnitResponse
+import com.bryzek.dependency.v0.models.{ProjectForm, Scms}
 import com.bryzek.dependency.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
 import java.util.UUID
+import scala.concurrent.Future
 
 import play.api._
 import play.api.i18n.MessagesApi
 import play.api.mvc._
+import play.api.data._
+import play.api.data.Forms._
 
 class ProjectsController @javax.inject.Inject() (
   val messagesApi: MessagesApi,
@@ -48,5 +52,57 @@ class ProjectsController @javax.inject.Inject() (
       }
     }
   }
+
+  def create() = Identified { implicit request =>
+    Ok(
+      views.html.projects.create(
+        uiData(request), ProjectsController.uiForm
+      )
+    )
+  }
+
+  def postCreate() = Identified.async { implicit request =>
+    val boundForm = ProjectsController.uiForm.bindFromRequest
+    boundForm.fold (
+
+      formWithErrors => Future {
+        Ok(views.html.projects.create(uiData(request), formWithErrors))
+      },
+
+      uiForm => {
+        dependencyClient(request).projects.post(
+          projectForm = ProjectForm(
+            name = uiForm.name,
+            scms = Scms(uiForm.scms),
+            uri = uiForm.uri
+          )
+        ).map { project =>
+          Redirect(routes.ProjectsController.show(project.guid)).flashing("success" -> "Project created")
+        }.recover {
+          case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
+            Ok(views.html.projects.create(uiData(request), boundForm, response.errors.map(_.message)))
+          }
+        }
+      }
+    )
+  }
+
+}
+
+object ProjectsController {
+
+  case class UiForm(
+    name: String,
+    scms: String,
+    uri: String
+  )
+
+  private val uiForm = Form(
+    mapping(
+      "name" -> nonEmptyText,
+      "scms" -> nonEmptyText,
+      "uri" -> nonEmptyText
+    )(UiForm.apply)(UiForm.unapply)
+  )
 
 }

@@ -1,0 +1,19 @@
+@(
+  data: com.bryzek.dependency.lib.UiData,
+  form: Form[controllers.ProjectsController.UiForm],
+  errorMessages: Seq[String] = Nil
+)(implicit flash: Flash, messages: Messages)
+
+@main(data.copy(title = Some("Add project")), errorMessages = errorMessages) {
+
+  <div class="container">
+
+    @helper.form(action = routes.ProjectsController.postCreate()) {
+
+      @projectForm(form, routes.ProjectsController.index())
+
+    }
+
+  </div>
+
+}
