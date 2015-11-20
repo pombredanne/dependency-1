@@ -74,6 +74,14 @@ class ProjectsSpec extends PlaySpecification with MockClient {
     )
   }
 
+  "PUT /projects/:guid" in new WithServer(port=port) {
+    val form = createProjectForm()
+    val project = createProject(form)
+    val newUri = "test"
+    await(client.projects.putByGuid(project.guid, form.copy(uri = newUri)))
+    await(client.projects.getByGuid(project.guid)).uri must beEqualTo(newUri)
+  }
+
   "DELETE /projects" in new WithServer(port=port) {
     val project = createProject()
     await(

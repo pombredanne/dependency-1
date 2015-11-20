@@ -423,4 +423,44 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
+  object ProjectPatchForm {
+
+    case class Mappings(
+      name: String = "name",
+      scms: String = "scms",
+      uri: String = "uri"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        name = s"${prefix}${sep}name",
+        scms = s"${prefix}${sep}scms",
+        uri = s"${prefix}${sep}uri"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ProjectPatchForm] = {
+      SqlParser.str(mappings.name).? ~
+      com.bryzek.dependency.v0.anorm.parsers.Scms.parser(com.bryzek.dependency.v0.anorm.parsers.Scms.Mappings(mappings.scms)).? ~
+      SqlParser.str(mappings.uri).? map {
+        case name ~ scms ~ uri => {
+          com.bryzek.dependency.v0.models.ProjectPatchForm(
+            name = name,
+            scms = scms,
+            uri = uri
+          )
+        }
+      }
+    }
+
+  }
+
 }

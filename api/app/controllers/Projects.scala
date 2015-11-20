@@ -38,13 +38,8 @@ class Projects @javax.inject.Inject() (
   }
 
   def getByGuid(guid: UUID) = Identified { request =>
-    ProjectsDao.findByGuid(guid) match {
-      case None => {
-        NotFound
-      }
-      case Some(project) => {
-        Ok(Json.toJson(project))
-      }
+    withProject(guid) { project =>
+      Ok(Json.toJson(project))
     }
   }
 
@@ -68,14 +63,46 @@ class Projects @javax.inject.Inject() (
     }
   }
 
+  def patchByGuid(guid: UUID) = TODO
+
+  def putByGuid(guid: UUID) = Identified(parse.json) { request =>
+    withProject(guid) { project =>
+      request.body.validate[ProjectForm] match {
+        case e: JsError => {
+          Conflict(Json.toJson(Validation.invalidJson(e)))
+        }
+        case s: JsSuccess[ProjectForm] => {
+          val form = s.get
+          ProjectsDao.validate(form, Some(project)) match {
+            case valid @ ValidatedForm(_, Nil) => {
+              val updated = ProjectsDao.update(request.user, project, valid)
+              Ok(Json.toJson(updated))
+            }
+            case invalid @ ValidatedForm(_, _) => {
+              Conflict(Json.toJson(invalid.errors))
+            }
+          }
+        }
+      }
+    }
+  }
+
   def deleteByGuid(guid: UUID) = Identified { request =>
+    withProject(guid) { project =>
+      ProjectsDao.softDelete(request.user, project)
+      NoContent
+    }
+  }
+
+  def withProject(guid: UUID)(
+    f: Project => Result
+  ): Result = {
     ProjectsDao.findByGuid(guid) match {
       case None => {
         NotFound
       }
       case Some(project) => {
-        ProjectsDao.softDelete(request.user, project)
-        NoContent
+        f(project)
       }
     }
   }

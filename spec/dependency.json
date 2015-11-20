@@ -95,6 +95,14 @@
 		{ "name": "scms", "type": "scms" },
 		{ "name": "uri", "type": "string" }
 	    ]
+	},
+	
+	"project_patch_form": {
+	    "fields": [
+		{ "name": "name", "type": "string", "required": false },
+		{ "name": "scms", "type": "scms", "required": false },
+		{ "name": "uri", "type": "string", "required": false }
+	    ]
 	}
 	
     },
@@ -196,6 +204,30 @@
                     "method": "POST",
                     "description": "Create a new project.",
                     "body": { "type": "project_form" },
+                    "responses": {
+                        "201": { "type": "project" },
+                        "401": { "type": "unit" },
+                        "409": { "type": "[io.flow.common.v0.models.error]" }
+                    }
+                },
+
+                {
+                    "method": "PUT",
+		    "path": "/:guid",
+                    "description": "Update an existing project.",
+                    "body": { "type": "project_form" },
+                    "responses": {
+                        "200": { "type": "project", "description": "Project successfully updated" },
+                        "401": { "type": "unit" },
+                        "409": { "type": "[io.flow.common.v0.models.error]" }
+                    }
+                },
+
+                {
+                    "method": "PATCH",
+		    "path": "/:guid",
+                    "description": "Patch an existing project",
+                    "body": { "type": "project_patch_form" },
                     "responses": {
                         "201": { "type": "project" },
                         "401": { "type": "unit" },

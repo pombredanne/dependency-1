@@ -18,6 +18,7 @@ object MainActor {
   object Messages {
 
     case class ProjectCreated(guid: UUID)
+    case class ProjectUpdated(guid: UUID)
     case class ProjectDeleted(guid: UUID)
     case class ProjectSync(guid: UUID)
 
@@ -49,6 +50,12 @@ class MainActor(name: String) extends Actor with ActorLogging {
 
     case MainActor.Messages.ProjectCreated(guid) => Util.withVerboseErrorHandler(
       s"MainActor.Messages.ProjectCreated($guid)"
+    ) {
+      upsertProjectActor(guid) ! ProjectActor.Messages.Sync
+    }
+
+    case MainActor.Messages.ProjectUpdated(guid) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.ProjectUpdated($guid)"
     ) {
       upsertProjectActor(guid) ! ProjectActor.Messages.Sync
     }

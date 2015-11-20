@@ -64,6 +64,12 @@ package com.bryzek.dependency.v0.models {
     uri: String
   )
 
+  case class ProjectPatchForm(
+    name: _root_.scala.Option[String] = None,
+    scms: _root_.scala.Option[com.bryzek.dependency.v0.models.Scms] = None,
+    uri: _root_.scala.Option[String] = None
+  )
+
   sealed trait ProgrammingLanguage
 
   object ProgrammingLanguage {
@@ -316,6 +322,22 @@ package com.bryzek.dependency.v0.models {
         (__ \ "scms").write[com.bryzek.dependency.v0.models.Scms] and
         (__ \ "uri").write[String]
       )(unlift(ProjectForm.unapply _))
+    }
+
+    implicit def jsonReadsDependencyProjectPatchForm: play.api.libs.json.Reads[ProjectPatchForm] = {
+      (
+        (__ \ "name").readNullable[String] and
+        (__ \ "scms").readNullable[com.bryzek.dependency.v0.models.Scms] and
+        (__ \ "uri").readNullable[String]
+      )(ProjectPatchForm.apply _)
+    }
+
+    implicit def jsonWritesDependencyProjectPatchForm: play.api.libs.json.Writes[ProjectPatchForm] = {
+      (
+        (__ \ "name").writeNullable[String] and
+        (__ \ "scms").writeNullable[com.bryzek.dependency.v0.models.Scms] and
+        (__ \ "uri").writeNullable[String]
+      )(unlift(ProjectPatchForm.unapply _))
     }
   }
 }
@@ -583,6 +605,34 @@ package com.bryzek.dependency.v0 {
         }
       }
 
+      override def putByGuid(
+        guid: _root_.java.util.UUID,
+        projectForm: com.bryzek.dependency.v0.models.ProjectForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Project] = {
+        val payload = play.api.libs.json.Json.toJson(projectForm)
+
+        _executeRequest("PUT", s"/projects/${guid}", body = Some(payload)).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Project", r, _.validate[com.bryzek.dependency.v0.models.Project])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 409")
+        }
+      }
+
+      override def patchByGuid(
+        guid: _root_.java.util.UUID,
+        projectPatchForm: com.bryzek.dependency.v0.models.ProjectPatchForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Project] = {
+        val payload = play.api.libs.json.Json.toJson(projectPatchForm)
+
+        _executeRequest("PATCH", s"/projects/${guid}", body = Some(payload)).map {
+          case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Project", r, _.validate[com.bryzek.dependency.v0.models.Project])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 409")
+        }
+      }
+
       override def deleteByGuid(
         guid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
@@ -826,6 +876,22 @@ package com.bryzek.dependency.v0 {
      */
     def post(
       projectForm: com.bryzek.dependency.v0.models.ProjectForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Project]
+
+    /**
+     * Update an existing project.
+     */
+    def putByGuid(
+      guid: _root_.java.util.UUID,
+      projectForm: com.bryzek.dependency.v0.models.ProjectForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Project]
+
+    /**
+     * Patch an existing project
+     */
+    def patchByGuid(
+      guid: _root_.java.util.UUID,
+      projectPatchForm: com.bryzek.dependency.v0.models.ProjectPatchForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Project]
 
     def deleteByGuid(

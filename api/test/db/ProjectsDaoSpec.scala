@@ -42,6 +42,22 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     ProjectsDao.findAll(guids = Some(Seq(project1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(project1.guid))
   }
 
+  "update" in {
+    val form = createProjectForm()
+    val project = createProject(form)
+    ProjectsDao.update(systemUser, project, ProjectsDao.validate(form.copy(uri = "test"), Some(project)))
+    ProjectsDao.findByGuid(project.guid).map(_.uri) must be(Some("test"))
+  }
+
+  "update allows name change" in {
+    val form = createProjectForm()
+    val project = createProject(form)
+    val newName = project.name + "2"
+    val updated = ProjectsDao.update(systemUser, project, ProjectsDao.validate(form.copy(name = newName), Some(project)))
+    updated.guid must be(project.guid)
+    updated.name must be(newName)
+  }
+
   "create" must {
     "validates SCMS" in {
       val form = createProjectForm().copy(scms = Scms.UNDEFINED("other"))

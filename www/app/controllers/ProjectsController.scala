@@ -130,8 +130,9 @@ class ProjectsController @javax.inject.Inject() (
         },
 
         uiForm => {
-          dependencyClient(request).projects.post(
-            projectForm = ProjectForm(
+          dependencyClient(request).projects.putByGuid(
+            project.guid,
+            ProjectForm(
               name = uiForm.name,
               scms = Scms(uiForm.scms),
               uri = uiForm.uri

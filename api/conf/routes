@@ -17,5 +17,7 @@ DELETE     /libraries/:guid            controllers.Libraries.deleteByGuid(guid: 
 GET        /projects                   controllers.Projects.get(guid: _root_.scala.Option[_root_.java.util.UUID], guids: _root_.scala.Option[List[_root_.java.util.UUID]], name: _root_.scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)
 GET        /projects/:guid             controllers.Projects.getByGuid(guid: _root_.java.util.UUID)
 POST       /projects                   controllers.Projects.post()
+PUT        /projects/:guid             controllers.Projects.putByGuid(guid: _root_.java.util.UUID)
+PATCH      /projects/:guid             controllers.Projects.patchByGuid(guid: _root_.java.util.UUID)
 DELETE     /projects/:guid             controllers.Projects.deleteByGuid(guid: _root_.java.util.UUID)
 GET        /:guid                      controllers.Users.getByGuid(guid: _root_.java.util.UUID)

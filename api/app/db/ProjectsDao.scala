@@ -30,6 +30,15 @@ object ProjectsDao {
     ({guid}::uuid, {scms}, {name}, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
+  private[this] val UpdateQuery = """
+    update projects
+       set scms = {scms},
+           name = {name},
+           uri = {uri},
+           updated_by_guid = {updated_by_guid}::uuid
+     where guid = {guid}::uuid
+  """
+
   private[this] val InsertLibraryQuery = """
     insert into project_libraries
     (guid, project_guid, library_guid, created_by_guid, updated_by_guid)
@@ -61,7 +70,8 @@ object ProjectsDao {
   """
 
   def validate(
-    form: ProjectForm
+    form: ProjectForm,
+    existing: Option[Project] = None
   ): ValidatedForm[ProjectForm] = {
     val scmsErrors = form.scms match {
       case Scms.UNDEFINED(_) => Seq("Scms not found")
@@ -74,7 +84,12 @@ object ProjectsDao {
     } else {
       ProjectsDao.findByName(form.name) match {
         case None => Seq.empty
-        case Some(_) => Seq("Project with this name already exists")
+        case Some(p) => {
+          Some(p.guid) == existing.map(_.guid) match {
+            case true => Nil
+            case false => Seq("Project with this name already exists")
+          }
+        }
       }
     }
 
@@ -179,6 +194,26 @@ object ProjectsDao {
     MainActor.ref ! MainActor.Messages.ProjectCreated(guid)
 
     findByGuid(guid).getOrElse {
+      sys.error("Failed to create project")
+    }
+  }
+
+  def update(createdBy: User, project: Project, valid: ValidatedForm[ProjectForm]): Project = {
+    valid.assertValid()
+
+    DB.withConnection { implicit c =>
+      SQL(UpdateQuery).on(
+        'guid -> project.guid,
+        'scms -> valid.form.scms.toString,
+        'name -> valid.form.name.trim,
+        'uri -> valid.form.uri.trim,
+        'updated_by_guid -> createdBy.guid
+      ).execute()
+    }
+
+    MainActor.ref ! MainActor.Messages.ProjectUpdated(project.guid)
+
+    findByGuid(project.guid).getOrElse {
       sys.error("Failed to create project")
     }
   }
