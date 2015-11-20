@@ -34,14 +34,11 @@ class ProjectActor extends Actor {
     case ProjectActor.Messages.Sync => Util.withVerboseErrorHandler(
       s"ProjectActor.Messages.Sync"
     ) {
-      println(s"Sync dataProject[$dataProject]")
       dataProject.foreach { project =>
-        println(s"Sync: project[${project.guid}] name[${project.name}]")
         GitHubClient.instance.dependencies(project).map { result =>
-          println("RESULT:  "+ result)
           result match {
             case None => {
-              println(" - project build file not found")
+              Logger.warn(s"project[${project.guid}] name[${project.name}]: no build file found")
             }
             case Some(dependencies) => {
               println(s" - dependencies: $dependencies")
@@ -56,7 +53,7 @@ class ProjectActor extends Actor {
           this.dataDependencies = result
         }.recover {
           case e => {
-            println(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")
+            Logger.error(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")
           }
         }
       }
