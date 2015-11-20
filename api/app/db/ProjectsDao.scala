@@ -43,30 +43,14 @@ object ProjectsDao {
     insert into project_libraries
     (guid, project_guid, library_guid, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {project_guid}:uuid, library_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
-  """
-
-  private[this] val SoftDeleteLibraryQuery = """
-    update project_libraries
-       set deleted_at = now(),
-           deleted_by_guid = {deleted_by_guid}::uuid
-     where project_guid = {project_guid}::uuid
-       and library_guid = {library_guid}::uuid
+    ({guid}::uuid, {project_guid}::uuid, {library_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[this] val InsertLanguageQuery = """
-    insert into project_libraries
+    insert into project_languages
     (guid, project_guid, language_guid, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {project_guid}:uuid, language_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
-  """
-
-  private[this] val SoftDeleteLanguageQuery = """
-    update project_libraries
-       set deleted_at = now(),
-           deleted_by_guid = {deleted_by_guid}::uuid
-     where project_guid = {project_guid}::uuid
-       and language_guid = {language_guid}::uuid
+    ({guid}::uuid, {project_guid}::uuid, {language_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[db] def validate(
@@ -142,13 +126,12 @@ object ProjectsDao {
         'language_guid -> guid,
         'created_by_guid -> createdBy.guid
       ).execute()
-
-      SQL(SoftDeleteLanguageQuery).on(
-        'project_guid -> project.guid,
-        'language_guid -> guid,
-        'deleted_by_guid -> createdBy.guid
-      ).execute()
     }
+
+    toRemove.foreach { guid =>
+      SoftDelete.delete("project_languages", createdBy.guid, guid)
+    }
+    println("done")
   }
 
   private[this] def setLibraries(
@@ -176,12 +159,10 @@ object ProjectsDao {
         'library_guid -> guid,
         'created_by_guid -> createdBy.guid
       ).execute()
+    }
 
-      SQL(SoftDeleteLibraryQuery).on(
-        'project_guid -> project.guid,
-        'library_guid -> guid,
-        'deleted_by_guid -> createdBy.guid
-      ).execute()
+    toRemove.foreach { guid =>
+      SoftDelete.delete("project_libraries", createdBy.guid, guid)
     }
   }
 

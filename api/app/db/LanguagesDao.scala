@@ -119,7 +119,6 @@ object LanguagesDao {
     ).flatten
 
     DB.withConnection { implicit c =>
-      println(sql)
       SQL(sql).on(bind: _*).as(
         com.bryzek.dependency.v0.anorm.parsers.Language.table("languages").*
       )

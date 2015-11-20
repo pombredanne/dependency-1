@@ -94,7 +94,20 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       val project = createProject()
       val language = createLanguageForm()
       ProjectsDao.setDependencies(systemUser, project, languages = Some(Seq(language)))
-      LanguagesDao.findAll(projectGuid = Some(project.guid)).map(_.name) must be(Seq(language.name))
+      LanguagesDao.findAll(projectGuid = Some(project.guid)).map(_.name.toString) must be(Seq(language.name.toString))
+    }
+
+    "libraries" in {
+      val project = createProject()
+      val library = createLibraryForm()
+      ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(library)))
+      val fetched = LibrariesDao.findAll(projectGuid = Some(project.guid)) match {
+        case one :: Nil => one
+        case _ => sys.error("Expected one library")
+      }
+      fetched.resolvers must be(library.resolvers)
+      fetched.groupId must be(library.groupId)
+      fetched.artifactId must be(library.artifactId)
     }
   }
 
