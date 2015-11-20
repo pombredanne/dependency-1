@@ -39,13 +39,8 @@ class Libraries @javax.inject.Inject() (
   }
 
   def getByGuid(guid: UUID) = Identified { request =>
-    LibrariesDao.findByGuid(guid) match {
-      case None => {
-        NotFound
-      }
-      case Some(library) => {
-        Ok(Json.toJson(library))
-      }
+    withLibrary(guid) { library =>
+      Ok(Json.toJson(library))
     }
   }
 
@@ -64,15 +59,22 @@ class Libraries @javax.inject.Inject() (
   }
 
   def deleteByGuid(guid: UUID) = Identified { request =>
+    withLibrary(guid) { library =>
+      LibrariesDao.softDelete(request.user, library)
+      NoContent
+    }
+  }
+
+  def withLibrary(guid: UUID)(
+    f: Library => Result
+  ): Result = {
     LibrariesDao.findByGuid(guid) match {
       case None => {
         NotFound
       }
       case Some(library) => {
-        LibrariesDao.softDelete(request.user, library)
-        NoContent
+        f(library)
       }
     }
   }
-
 }
