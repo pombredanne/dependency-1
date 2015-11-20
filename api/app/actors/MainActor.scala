@@ -43,7 +43,7 @@ class MainActor(name: String) extends Actor with ActorLogging {
   private[this] val libraryActors = scala.collection.mutable.Map[UUID, ActorRef]()
   private[this] val languageActors = scala.collection.mutable.Map[UUID, ActorRef]()
 
-  Akka.system.scheduler.schedule(12.hours, 1.day, periodicActor, PeriodicActor.Messages.SyncProjects)
+  Akka.system.scheduler.schedule(1.second, 1.day, periodicActor, PeriodicActor.Messages.SyncProjects)
   Akka.system.scheduler.schedule(12.hours, 1.day, periodicActor, PeriodicActor.Messages.SyncLibraries)
 
   def receive = akka.event.LoggingReceive {
@@ -117,6 +117,7 @@ class MainActor(name: String) extends Actor with ActorLogging {
   def upsertProjectActor(guid: UUID): ActorRef = {
     projectActors.lift(guid).getOrElse {
       val ref = Akka.system.actorOf(Props[ProjectActor], name = s"$name:projectActor:$guid")
+      ref ! ProjectActor.Messages.Data(guid)
       projectActors += (guid -> ref)
       ref
     }
@@ -125,6 +126,7 @@ class MainActor(name: String) extends Actor with ActorLogging {
   def upsertLibraryActor(guid: UUID): ActorRef = {
     libraryActors.lift(guid).getOrElse {
       val ref = Akka.system.actorOf(Props[LibraryActor], name = s"$name:libraryActor:$guid")
+      ref ! LibraryActor.Messages.Data(guid)
       libraryActors += (guid -> ref)
       ref
     }
@@ -133,6 +135,7 @@ class MainActor(name: String) extends Actor with ActorLogging {
   def upsertLanguageActor(guid: UUID): ActorRef = {
     languageActors.lift(guid).getOrElse {
       val ref = Akka.system.actorOf(Props[LanguageActor], name = s"$name:languageActor:$guid")
+      ref ! LanguageActor.Messages.Data(guid)
       languageActors += (guid -> ref)
       ref
     }

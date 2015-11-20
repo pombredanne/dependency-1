@@ -34,13 +34,16 @@ class ProjectActor extends Actor {
     case ProjectActor.Messages.Sync => Util.withVerboseErrorHandler(
       s"ProjectActor.Messages.Sync"
     ) {
+      println(s"Sync dataProject[$dataProject]")
       dataProject.foreach { project =>
+        println(s"Sync: project[${project.guid}] name[${project.name}]")
         GitHubClient.instance.dependencies(project).map { result =>
           result match {
             case None => {
               println(" - project build file not found")
             }
             case Some(dependencies) => {
+              println(" - dependencies: $dependencies")
               ProjectsDao.setDependencies(
                 createdBy = MainActor.SystemUser,
                 project = project,

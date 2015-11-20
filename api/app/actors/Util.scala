@@ -15,7 +15,10 @@ object Util {
     try {
       f
     } catch {
-      case t: Throwable => Logger.error(s"$description: ${t}" , t)
+      case t: Throwable => {
+        println(s"ERROR: $description: ${t}")
+        Logger.error(s"$description: ${t}" , t)
+      }
     }
   }
 
