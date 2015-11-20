@@ -44,7 +44,7 @@ class LanguagesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "create" must {
     "validates empty name" in {
       val form = createLanguageForm().copy(name = "   ")
-      LanguagesDao.validate(form).errors.map(_.message) must be(
+      LanguagesDao.validate(form) must be(
         Seq("Name cannot be empty")
       )
     }
@@ -52,7 +52,7 @@ class LanguagesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     "validates duplicate names" in {
       val lang = createLanguage()
       val form = createLanguageForm().copy(name = lang.name.toString.toUpperCase)
-      LanguagesDao.validate(form).errors.map(_.message) must be(
+      LanguagesDao.validate(form) must be(
         Seq("Language with this name already exists")
       )
     }

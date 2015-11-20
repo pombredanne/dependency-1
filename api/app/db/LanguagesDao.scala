@@ -4,7 +4,6 @@ import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Language, LanguageForm}
 import io.flow.user.v0.models.User
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
-import io.flow.play.util.ValidatedForm
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -28,10 +27,10 @@ object LanguagesDao {
     ({guid}::uuid, {name}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  def validate(
+  private[db] def validate(
     form: LanguageForm
-  ): ValidatedForm[LanguageForm] = {
-    val nameErrors = if (form.name.trim == "") {
+  ): Seq[String] = {
+    if (form.name.trim == "") {
       Seq("Name cannot be empty")
 
     } else {
@@ -40,41 +39,44 @@ object LanguagesDao {
         case Some(_) => Seq("Language with this name already exists")
       }
     }
-
-    ValidatedForm(form, nameErrors)
   }
 
-  def upsert(createdBy: User, form: LanguageForm): Language = {
+  def upsert(createdBy: User, form: LanguageForm): Either[Seq[String], Language] = {
     LanguagesDao.findByName(form.name) match {
       case None => {
-        create(createdBy, validate(form))
+        create(createdBy, form)
       }
       case Some(lang) => {
         Util.trimmedString(form.version).map { version =>
           LanguageVersionsDao.upsert(createdBy, lang.guid, version)
         }
-        lang
+        Right(lang)
       }
     }
   }
 
-  def create(createdBy: User, valid: ValidatedForm[LanguageForm]): Language = {
-    valid.assertValid()
+  def create(createdBy: User, form: LanguageForm): Either[Seq[String], Language] = {
+    validate(form) match {
+      case Nil => {
+        val guid = UUID.randomUUID
 
-    val guid = UUID.randomUUID
+        DB.withConnection { implicit c =>
+          SQL(InsertQuery).on(
+            'guid -> guid,
+            'name -> form.name.trim,
+            'created_by_guid -> createdBy.guid
+          ).execute()
+        }
 
-    DB.withConnection { implicit c =>
-      SQL(InsertQuery).on(
-        'guid -> guid,
-        'name -> valid.form.name.trim,
-        'created_by_guid -> createdBy.guid
-      ).execute()
-    }
+        MainActor.ref ! MainActor.Messages.LanguageCreated(guid)
 
-    MainActor.ref ! MainActor.Messages.LanguageCreated(guid)
-
-    findByGuid(guid).getOrElse {
-      sys.error("Failed to create language")
+        Right(
+          findByGuid(guid).getOrElse {
+            sys.error("Failed to create language")
+          }
+        )
+      }
+      case errors => Left(errors)
     }
   }
 

@@ -121,7 +121,10 @@ object ProjectsDao {
     languages: Seq[LanguageForm]
   ) {
     val newGuids = languages.map { language =>
-      LanguagesDao.upsert(createdBy, language).guid
+      LanguagesDao.upsert(createdBy, language) match {
+        case Left(errors) => sys.error(errors.mkString(", n"))
+        case Right(lang) => lang.guid
+      }
     }
 
     val existingGuids = LanguagesDao.findAll(projectGuid = Some(project.guid)).map(_.guid)

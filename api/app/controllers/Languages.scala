@@ -2,9 +2,8 @@ package controllers
 
 import db.LanguagesDao
 import io.flow.play.clients.UserTokensClient
-import io.flow.common.v0.models.Error
 import io.flow.play.controllers.IdentifiedRestController
-import io.flow.play.util.{Validation, ValidatedForm}
+import io.flow.play.util.Validation
 import com.bryzek.dependency.v0.models.{AuthenticationForm, Language, LanguageForm}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
@@ -38,13 +37,8 @@ class Languages @javax.inject.Inject() (
   }
 
   def getByGuid(guid: UUID) = Identified { request =>
-    LanguagesDao.findByGuid(guid) match {
-      case None => {
-        NotFound
-      }
-      case Some(language) => {
-        Ok(Json.toJson(language))
-      }
+    withLanguage(guid) { language =>
+      Ok(Json.toJson(language))
     }
   }
 
@@ -55,29 +49,34 @@ class Languages @javax.inject.Inject() (
       }
       case s: JsSuccess[LanguageForm] => {
         val form = s.get
-        LanguagesDao.validate(form) match {
-          case valid @ ValidatedForm(_, Nil) => {
-            val language = LanguagesDao.create(request.user, valid)
-            Created(Json.toJson(language))
-          }
-          case invalid @ ValidatedForm(_, _) => {
-            Conflict(Json.toJson(invalid.errors))
-          }
+        LanguagesDao.create(request.user, form) match {
+          case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+          case Right(language) => Created(Json.toJson(language))
         }
       }
     }
   }
 
   def deleteByGuid(guid: UUID) = Identified { request =>
+    withLanguage(guid) { language =>
+      LanguagesDao.softDelete(request.user, language)
+      NoContent
+    }
+  }
+
+  def withLanguage(guid: UUID)(
+    f: Language => Result
+  ): Result = {
     LanguagesDao.findByGuid(guid) match {
       case None => {
         NotFound
       }
       case Some(language) => {
-        LanguagesDao.softDelete(request.user, language)
-        NoContent
+        f(language)
       }
     }
   }
+
+
 
 }

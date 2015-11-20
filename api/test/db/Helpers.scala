@@ -19,7 +19,9 @@ trait Helpers {
   def createLanguage(
     form: LanguageForm = createLanguageForm()
   ): Language = {
-    LanguagesDao.create(systemUser, LanguagesDao.validate(form))
+    LanguagesDao.create(systemUser, form).right.getOrElse {
+      sys.error("Failed to create language")
+    }
   }
 
   def createLanguageForm() = LanguageForm(
@@ -57,9 +59,8 @@ trait Helpers {
   def createProject(
     form: ProjectForm = createProjectForm()
   ): Project = {
-    ProjectsDao.create(systemUser, form) match {
-      case Left(errors) => sys.error(errors.mkString(", "))
-      case Right(project) => project
+    ProjectsDao.create(systemUser, form).right.getOrElse {
+      sys.error("Failed to create projet")
     }
   }
 
