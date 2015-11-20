@@ -6,6 +6,8 @@ GET     /projects/                              controllers.ProjectsController.i
 GET     /projects/create                        controllers.ProjectsController.create()
 POST    /projects/postCreate                    controllers.ProjectsController.postCreate()
 GET     /projects/:guid                         controllers.ProjectsController.show(guid: java.util.UUID)
+GET     /projects/:guid/edit                    controllers.ProjectsController.edit(guid: java.util.UUID)
+POST    /projects/:guid/postEdit                controllers.ProjectsController.postEdit(guid: java.util.UUID)
 
 GET     /search                                 controllers.SearchController.index(q: Option[String] ?= None, page: Int ?= 0)
 

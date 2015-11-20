@@ -1,7 +1,7 @@
 package controllers
 
 import com.bryzek.dependency.v0.errors.UnitResponse
-import com.bryzek.dependency.v0.models.{ProjectForm, Scms}
+import com.bryzek.dependency.v0.models.{Project, ProjectForm, Scms}
 import com.bryzek.dependency.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
@@ -21,6 +21,21 @@ class ProjectsController @javax.inject.Inject() (
 ) extends BaseController(userTokensClient, dependencyClientProvider) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
+
+  def withProject[T](
+    request: IdentifiedRequest[T],
+    guid: UUID
+  )(
+    f: Project => Future[Result]
+  ) = {
+    dependencyClient(request).projects.getByGuid(guid).flatMap { project =>
+      f(project)
+    }.recover {
+      case UnitResponse(404) => {
+        Redirect(routes.ProjectsController.index()).flashing("warning" -> s"Project not found")
+      }
+    }
+  }
 
   def index(page: Int = 0) = Identified.async { implicit request =>
     for {
@@ -85,6 +100,52 @@ class ProjectsController @javax.inject.Inject() (
         }
       }
     )
+  }
+
+  def edit(guid: UUID) = Identified.async { implicit request =>
+    withProject(request, guid) { project =>
+      Future {
+        Ok(
+          views.html.projects.edit(
+            uiData(request), project, ProjectsController.uiForm.fill(
+              ProjectsController.UiForm(
+                name = project.name,
+                scms = project.scms.toString,
+                uri = project.uri
+              )
+            )
+          )
+        )
+      }
+    }
+  }
+
+  def postEdit(guid: UUID) = Identified.async { implicit request =>
+    withProject(request, guid) { project =>
+      val boundForm = ProjectsController.uiForm.bindFromRequest
+      boundForm.fold (
+
+        formWithErrors => Future {
+          Ok(views.html.projects.edit(uiData(request), project, formWithErrors))
+        },
+
+        uiForm => {
+          dependencyClient(request).projects.post(
+            projectForm = ProjectForm(
+              name = uiForm.name,
+              scms = Scms(uiForm.scms),
+              uri = uiForm.uri
+            )
+          ).map { project =>
+            Redirect(routes.ProjectsController.show(project.guid)).flashing("success" -> "Project updated")
+          }.recover {
+            case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
+              Ok(views.html.projects.edit(uiData(request), project, boundForm, response.errors.map(_.message)))
+            }
+          }
+        }
+      )
+    }
   }
 
 }

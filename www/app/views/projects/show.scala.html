@@ -5,9 +5,13 @@
 
 @main(data.copy(title = Some(project.name))) {
 
+  <div class="pull-right">
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.ProjectsController.edit(project.guid)">Edit</a>
+  </div>
+
   <ul>
     <li>SCMS: @project.scms.toString</li>
     <li>URI: <a href="@project.uri">@project.uri</a></li>
   </ul>
 
-  }
+}
