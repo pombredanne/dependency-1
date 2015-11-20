@@ -229,7 +229,7 @@
                     "description": "Patch an existing project",
                     "body": { "type": "project_patch_form" },
                     "responses": {
-                        "201": { "type": "project" },
+                        "200": { "type": "project", "description": "Project successfully updated" },
                         "401": { "type": "unit" },
                         "409": { "type": "[io.flow.common.v0.models.error]" }
                     }

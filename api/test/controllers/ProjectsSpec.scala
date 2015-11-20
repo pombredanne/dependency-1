@@ -1,7 +1,7 @@
 package controllers
 
 import com.bryzek.dependency.v0.{Authorization, Client}
-import com.bryzek.dependency.v0.models.ProjectForm
+import com.bryzek.dependency.v0.models.{ProjectForm, ProjectPatchForm}
 import io.flow.play.util.Validation
 
 import java.util.UUID
@@ -80,6 +80,22 @@ class ProjectsSpec extends PlaySpecification with MockClient {
     val newUri = "test"
     await(client.projects.putByGuid(project.guid, form.copy(uri = newUri)))
     await(client.projects.getByGuid(project.guid)).uri must beEqualTo(newUri)
+  }
+
+  "PATCH /projects/:guid w/ no data leaves project unchanged" in new WithServer(port=port) {
+    val project = createProject()
+    await(client.projects.patchByGuid(project.guid, ProjectPatchForm()))
+    val updated = await(client.projects.getByGuid(project.guid))
+    updated.name must beEqualTo(project.name)
+    updated.scms must beEqualTo(project.scms)
+    updated.uri must beEqualTo(project.uri)
+  }
+
+  "PATCH /projects/:guid w/ name" in new WithServer(port=port) {
+    val project = createProject()
+    val newName = project.name + "2"
+    await(client.projects.patchByGuid(project.guid, ProjectPatchForm(name = Some(newName))))
+    await(client.projects.getByGuid(project.guid)).name must beEqualTo(newName)
   }
 
   "DELETE /projects" in new WithServer(port=port) {

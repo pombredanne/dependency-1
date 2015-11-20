@@ -5,7 +5,7 @@ import io.flow.play.clients.UserTokensClient
 import io.flow.common.v0.models.Error
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.{Validation, ValidatedForm}
-import com.bryzek.dependency.v0.models.{AuthenticationForm, Project, ProjectForm}
+import com.bryzek.dependency.v0.models.{AuthenticationForm, Project, ProjectForm, ProjectPatchForm}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
@@ -63,7 +63,32 @@ class Projects @javax.inject.Inject() (
     }
   }
 
-  def patchByGuid(guid: UUID) = TODO
+  def patchByGuid(guid: UUID) = Identified(parse.json) { request =>
+    withProject(guid) { project =>
+      request.body.validate[ProjectPatchForm] match {
+        case e: JsError => {
+          Conflict(Json.toJson(Validation.invalidJson(e)))
+        }
+        case s: JsSuccess[ProjectPatchForm] => {
+          val patch = s.get
+          val form = ProjectForm(
+            name = patch.name.getOrElse(project.name),
+            scms = patch.scms.getOrElse(project.scms),
+            uri = patch.name.getOrElse(project.uri)
+          )
+          ProjectsDao.validate(form, Some(project)) match {
+            case valid @ ValidatedForm(_, Nil) => {
+              val updated = ProjectsDao.update(request.user, project, valid)
+              Ok(Json.toJson(updated))
+            }
+            case invalid @ ValidatedForm(_, _) => {
+              Conflict(Json.toJson(invalid.errors))
+            }
+          }
+        }
+      }
+    }
+  }
 
   def putByGuid(guid: UUID) = Identified(parse.json) { request =>
     withProject(guid) { project =>

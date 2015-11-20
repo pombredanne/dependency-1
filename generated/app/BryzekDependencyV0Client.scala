@@ -626,10 +626,10 @@ package com.bryzek.dependency.v0 {
         val payload = play.api.libs.json.Json.toJson(projectPatchForm)
 
         _executeRequest("PATCH", s"/projects/${guid}", body = Some(payload)).map {
-          case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Project", r, _.validate[com.bryzek.dependency.v0.models.Project])
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Project", r, _.validate[com.bryzek.dependency.v0.models.Project])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 409")
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 409")
         }
       }
 
