@@ -106,7 +106,7 @@ object LanguagesDao {
       Some(BaseQuery.trim),
       guid.map { v => "and languages.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("languages.guid", _) },
-      projectGuid.map { v => "and languages.guid in (select language_guid from project_languages where project_guid = {project_guid}::uuid and deleted_at is null" },
+      projectGuid.map { v => "and languages.guid in (select language_guid from project_languages where project_guid = {project_guid}::uuid and deleted_at is null)" },
       name.map { v => "and lower(languages.name) = lower(trim({name}))" },
       isDeleted.map(Filters.isDeleted("languages", _)),
       Some(s"order by languages.created_at limit ${limit} offset ${offset}")
@@ -119,6 +119,7 @@ object LanguagesDao {
     ).flatten
 
     DB.withConnection { implicit c =>
+      println(sql)
       SQL(sql).on(bind: _*).as(
         com.bryzek.dependency.v0.anorm.parsers.Language.table("languages").*
       )

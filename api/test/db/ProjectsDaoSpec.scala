@@ -89,4 +89,13 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   }
 
+  "setDependencies" must {
+    "languages" in {
+      val project = createProject()
+      val language = createLanguageForm()
+      ProjectsDao.setDependencies(systemUser, project, languages = Some(Seq(language)))
+      LanguagesDao.findAll(projectGuid = Some(project.guid)).map(_.name) must be(Seq(language.name))
+    }
+  }
+
 }

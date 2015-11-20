@@ -134,7 +134,7 @@ object LibrariesDao {
       Some(BaseQuery.trim),
       guid.map { v => "and libraries.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("libraries.guid", _) },
-      projectGuid.map { v => "and libraries.guid in (select library_guid from project_libraries where project_guid = {project_guid}::uuid and deleted_at is null" },
+      projectGuid.map { v => "and libraries.guid in (select library_guid from project_libraries where project_guid = {project_guid}::uuid and deleted_at is null)" },
       resolvers.map { v => "and libraries.resolvers = {resolvers}" },
       groupId.map { v => "and lower(libraries.group_id) = lower(trim({group_id}))" },
       artifactId.map { v => "and lower(libraries.artifact_id) = lower(trim({artifact_id}))" },
