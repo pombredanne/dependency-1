@@ -1,0 +1,13 @@
+@(languages: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Language])
+
+@if(languages.isEmpty) {
+  <em>No languages</em>
+} else {
+  <table>
+    @languages.items.map { lang =>
+      <tr>
+        <td><a href="#">@lang.name</a></td>
+      </tr>
+    }
+  </table>
+}

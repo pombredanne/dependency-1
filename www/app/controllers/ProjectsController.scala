@@ -53,18 +53,24 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def show(guid: UUID) = Identified.async { implicit request =>
-    dependencyClient(request).projects.getByGuid(guid).map { project =>
+  def show(guid: UUID, languagePage: Int = 0, libraryPage: Int = 0) = Identified.async { implicit request =>
+    for {
+      project <- dependencyClient(request).projects.getByGuid(guid)
+      languages <- dependencyClient(request).languages.get(projectGuid = Some(guid))
+      libraries <- dependencyClient(request).libraries.get(projectGuid = Some(guid))
+    } yield {
       Ok(
         views.html.projects.show(
           uiData(request),
-          project
+          project,
+          PaginatedCollection(languagePage, languages),
+          PaginatedCollection(libraryPage, libraries)
         )
       )
-    }.recover {
-      case UnitResponse(404) => {
-        Redirect(routes.ProjectsController.index()).flashing("warning" -> s"Project not found")
-      }
+//    }.recover {
+//      case UnitResponse(404) => {
+//        Redirect(routes.ProjectsController.index()).flashing("warning" -> s"Project not found")
+//      }
     }
   }
 

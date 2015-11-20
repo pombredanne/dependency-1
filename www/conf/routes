@@ -5,7 +5,7 @@ GET     /projects                               controllers.ApplicationControlle
 GET     /projects/                              controllers.ProjectsController.index(page: Int ?= 0)
 GET     /projects/create                        controllers.ProjectsController.create()
 POST    /projects/postCreate                    controllers.ProjectsController.postCreate()
-GET     /projects/:guid                         controllers.ProjectsController.show(guid: java.util.UUID)
+GET     /projects/:guid                         controllers.ProjectsController.show(guid: java.util.UUID, languagePage: Int ?= 0, libraryPage: Int ?= 0)
 GET     /projects/:guid/edit                    controllers.ProjectsController.edit(guid: java.util.UUID)
 POST    /projects/:guid/postEdit                controllers.ProjectsController.postEdit(guid: java.util.UUID)
 
