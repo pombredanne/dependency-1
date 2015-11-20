@@ -7,10 +7,10 @@ import play.api.Logger
   */
 object Util {
 
-  def withErrorHandler(
+  def withErrorHandler[T](
     description: String
   ) (
-    f: => Any
+    f: => T
   ) {
     try {
       f
@@ -22,10 +22,10 @@ object Util {
     }
   }
 
-  def withVerboseErrorHandler(
+  def withVerboseErrorHandler[T](
     description: String
   ) (
-    f: => Any
+    f: => T
   ) {
     Logger.info(description)
     println(description)

@@ -20,7 +20,7 @@ object GitHubClient {
     ) match {
       case (None, None) => sys.error("Missing configuration for github.api.token and github.api.token.file")
       case (Some(_), Some(_)) => sys.error("Cannot specify configuration for both github.api.token and github.api.token.file")
-      case (Some(file), None) => scala.io.Source.fromFile("/tmp/github-token.txt", "UTF-8").mkString
+      case (Some(file), None) => scala.io.Source.fromFile("/tmp/github-token.txt", "UTF-8").mkString.trim
       case (None, Some(token)) => token
     }
   }

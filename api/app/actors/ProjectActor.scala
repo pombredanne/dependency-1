@@ -38,12 +38,13 @@ class ProjectActor extends Actor {
       dataProject.foreach { project =>
         println(s"Sync: project[${project.guid}] name[${project.name}]")
         GitHubClient.instance.dependencies(project).map { result =>
+          println("RESULT:  "+ result)
           result match {
             case None => {
               println(" - project build file not found")
             }
             case Some(dependencies) => {
-              println(" - dependencies: $dependencies")
+              println(s" - dependencies: $dependencies")
               ProjectsDao.setDependencies(
                 createdBy = MainActor.SystemUser,
                 project = project,
@@ -53,6 +54,10 @@ class ProjectActor extends Actor {
             }
           }
           this.dataDependencies = result
+        }.recover {
+          case e => {
+            println(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")
+          }
         }
       }
     }
