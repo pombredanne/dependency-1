@@ -109,7 +109,7 @@ object LanguagesDao {
       projectGuid.map { v => "and languages.guid in (select language_guid from project_languages where project_guid = {project_guid}::uuid and deleted_at is null)" },
       name.map { v => "and lower(languages.name) = lower(trim({name}))" },
       isDeleted.map(Filters.isDeleted("languages", _)),
-      Some(s"order by languages.created_at limit ${limit} offset ${offset}")
+      Some(s"order by lower(languages.name), languages.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](

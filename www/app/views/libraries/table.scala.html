@@ -3,13 +3,16 @@
 @if(libraries.isEmpty) {
   <em>No libraries</em>
 } else {
-  <table>
-    @libraries.items.map { library =>
-      <tr>
-        <td><a href="#">@library.groupId</a></td>
-        <td>@library.artifactId</td>
-        <td>@library.resolvers</td>
-      </tr>
-    }
-  </table>
+  <div class="table-responsive">
+    <table class="table">
+      @libraries.items.map { library =>
+        <tr>
+          <td><a href="#">Details</a></td>
+          <td>@library.groupId</td>
+          <td>@library.artifactId</td>
+          <td>@library.resolvers</td>
+        </tr>
+      }
+    </table>
+  </div>
 }

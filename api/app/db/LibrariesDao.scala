@@ -139,7 +139,7 @@ object LibrariesDao {
       groupId.map { v => "and lower(libraries.group_id) = lower(trim({group_id}))" },
       artifactId.map { v => "and lower(libraries.artifact_id) = lower(trim({artifact_id}))" },
       isDeleted.map(Filters.isDeleted("libraries", _)),
-      Some(s"order by libraries.created_at limit ${limit} offset ${offset}")
+      Some(s"order by lower(libraries.groupId), lower(libraries.artifactId), lower(libraries.resolvers), libraries.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
