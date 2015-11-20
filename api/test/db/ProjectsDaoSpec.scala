@@ -45,7 +45,7 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "update" in {
     val form = createProjectForm()
     val project = createProject(form)
-    ProjectsDao.update(systemUser, project, ProjectsDao.validate(form.copy(uri = "test"), Some(project)))
+    ProjectsDao.update(systemUser, project, form.copy(uri = "test"))
     ProjectsDao.findByGuid(project.guid).map(_.uri) must be(Some("test"))
   }
 
@@ -53,7 +53,7 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val form = createProjectForm()
     val project = createProject(form)
     val newName = project.name + "2"
-    val updated = ProjectsDao.update(systemUser, project, ProjectsDao.validate(form.copy(name = newName), Some(project)))
+    val updated = ProjectsDao.update(systemUser, project, form.copy(name = newName)).right.get
     updated.guid must be(project.guid)
     updated.name must be(newName)
   }
@@ -61,31 +61,23 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "create" must {
     "validates SCMS" in {
       val form = createProjectForm().copy(scms = Scms.UNDEFINED("other"))
-      ProjectsDao.validate(form).errors.map(_.message) must be(
-        Seq("Scms not found")
-      )
+      ProjectsDao.create(systemUser, form) must be(Left(Seq("Scms not found")))
     }
 
     "validates empty name" in {
       val form = createProjectForm().copy(name = "   ")
-      ProjectsDao.validate(form).errors.map(_.message) must be(
-        Seq("Name cannot be empty")
-      )
+      ProjectsDao.create(systemUser, form) must be(Left(Seq("Name cannot be empty")))
     }
 
     "validates duplicate names" in {
       val project = createProject()
       val form = createProjectForm().copy(name = project.name.toString.toUpperCase)
-      ProjectsDao.validate(form).errors.map(_.message) must be(
-        Seq("Project with this name already exists")
-      )
+      ProjectsDao.create(systemUser, form) must be(Left(Seq("Project with this name already exists")))
     }
 
     "validates empty uri" in {
       val form = createProjectForm().copy(uri = "   ")
-      ProjectsDao.validate(form).errors.map(_.message) must be(
-        Seq("Uri cannot be empty")
-      )
+      ProjectsDao.create(systemUser, form) must be(Left(Seq("Uri cannot be empty")))
     }
 
   }

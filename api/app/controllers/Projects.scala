@@ -2,9 +2,8 @@ package controllers
 
 import db.ProjectsDao
 import io.flow.play.clients.UserTokensClient
-import io.flow.common.v0.models.Error
 import io.flow.play.controllers.IdentifiedRestController
-import io.flow.play.util.{Validation, ValidatedForm}
+import io.flow.play.util.Validation
 import com.bryzek.dependency.v0.models.{AuthenticationForm, Project, ProjectForm, ProjectPatchForm}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
@@ -49,15 +48,9 @@ class Projects @javax.inject.Inject() (
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[ProjectForm] => {
-        val form = s.get
-        ProjectsDao.validate(form) match {
-          case valid @ ValidatedForm(_, Nil) => {
-            val project = ProjectsDao.create(request.user, valid)
-            Created(Json.toJson(project))
-          }
-          case invalid @ ValidatedForm(_, _) => {
-            Conflict(Json.toJson(invalid.errors))
-          }
+        ProjectsDao.create(request.user, s.get) match {
+          case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+          case Right(project) => Created(Json.toJson(project))
         }
       }
     }
@@ -74,16 +67,11 @@ class Projects @javax.inject.Inject() (
           val form = ProjectForm(
             name = patch.name.getOrElse(project.name),
             scms = patch.scms.getOrElse(project.scms),
-            uri = patch.name.getOrElse(project.uri)
+            uri = patch.uri.getOrElse(project.uri)
           )
-          ProjectsDao.validate(form, Some(project)) match {
-            case valid @ ValidatedForm(_, Nil) => {
-              val updated = ProjectsDao.update(request.user, project, valid)
-              Ok(Json.toJson(updated))
-            }
-            case invalid @ ValidatedForm(_, _) => {
-              Conflict(Json.toJson(invalid.errors))
-            }
+          ProjectsDao.update(request.user, project, form) match {
+            case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+            case Right(updated) => Ok(Json.toJson(updated))
           }
         }
       }
@@ -97,15 +85,9 @@ class Projects @javax.inject.Inject() (
           Conflict(Json.toJson(Validation.invalidJson(e)))
         }
         case s: JsSuccess[ProjectForm] => {
-          val form = s.get
-          ProjectsDao.validate(form, Some(project)) match {
-            case valid @ ValidatedForm(_, Nil) => {
-              val updated = ProjectsDao.update(request.user, project, valid)
-              Ok(Json.toJson(updated))
-            }
-            case invalid @ ValidatedForm(_, _) => {
-              Conflict(Json.toJson(invalid.errors))
-            }
+          ProjectsDao.update(request.user, project, s.get) match {
+            case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+            case Right(updated) => Ok(Json.toJson(updated))
           }
         }
       }

@@ -57,7 +57,10 @@ trait Helpers {
   def createProject(
     form: ProjectForm = createProjectForm()
   ): Project = {
-    ProjectsDao.create(systemUser, ProjectsDao.validate(form))
+    ProjectsDao.create(systemUser, form) match {
+      case Left(errors) => sys.error(errors.mkString(", "))
+      case Right(project) => project
+    }
   }
 
   def createProjectForm() = {

@@ -69,10 +69,10 @@ object ProjectsDao {
        and language_guid = {language_guid}::uuid
   """
 
-  def validate(
+  private[db] def validate(
     form: ProjectForm,
     existing: Option[Project] = None
-  ): ValidatedForm[ProjectForm] = {
+  ): Seq[String] = {
     val scmsErrors = form.scms match {
       case Scms.UNDEFINED(_) => Seq("Scms not found")
       case _ => Seq.empty
@@ -99,7 +99,7 @@ object ProjectsDao {
       Nil
     }
 
-    ValidatedForm(form, scmsErrors ++ nameErrors ++ uriErrors)
+    scmsErrors ++ nameErrors ++ uriErrors
   }
 
   def setDependencies(
@@ -176,45 +176,55 @@ object ProjectsDao {
     }
   }
 
-  def create(createdBy: User, valid: ValidatedForm[ProjectForm]): Project = {
-    valid.assertValid()
+  def create(createdBy: User, form: ProjectForm): Either[Seq[String], Project] = {
+    validate(form) match {
+      case Nil => {
+        val guid = UUID.randomUUID
 
-    val guid = UUID.randomUUID
+        DB.withConnection { implicit c =>
+          SQL(InsertQuery).on(
+            'guid -> guid,
+            'scms -> form.scms.toString,
+            'name -> form.name.trim,
+            'uri -> form.uri.trim,
+            'created_by_guid -> createdBy.guid
+          ).execute()
+        }
 
-    DB.withConnection { implicit c =>
-      SQL(InsertQuery).on(
-        'guid -> guid,
-        'scms -> valid.form.scms.toString,
-        'name -> valid.form.name.trim,
-        'uri -> valid.form.uri.trim,
-        'created_by_guid -> createdBy.guid
-      ).execute()
-    }
+        MainActor.ref ! MainActor.Messages.ProjectCreated(guid)
 
-    MainActor.ref ! MainActor.Messages.ProjectCreated(guid)
-
-    findByGuid(guid).getOrElse {
-      sys.error("Failed to create project")
+        Right(
+          findByGuid(guid).getOrElse {
+            sys.error("Failed to create project")
+          }
+        )
+      }
+      case errors => Left(errors)
     }
   }
 
-  def update(createdBy: User, project: Project, valid: ValidatedForm[ProjectForm]): Project = {
-    valid.assertValid()
+  def update(createdBy: User, project: Project, form: ProjectForm): Either[Seq[String], Project] = {
+    validate(form, Some(project)) match {
+      case Nil => {
+        DB.withConnection { implicit c =>
+          SQL(UpdateQuery).on(
+            'guid -> project.guid,
+            'scms -> form.scms.toString,
+            'name -> form.name.trim,
+            'uri -> form.uri.trim,
+            'updated_by_guid -> createdBy.guid
+          ).execute()
+        }
 
-    DB.withConnection { implicit c =>
-      SQL(UpdateQuery).on(
-        'guid -> project.guid,
-        'scms -> valid.form.scms.toString,
-        'name -> valid.form.name.trim,
-        'uri -> valid.form.uri.trim,
-        'updated_by_guid -> createdBy.guid
-      ).execute()
-    }
+        MainActor.ref ! MainActor.Messages.ProjectUpdated(project.guid)
 
-    MainActor.ref ! MainActor.Messages.ProjectUpdated(project.guid)
-
-    findByGuid(project.guid).getOrElse {
-      sys.error("Failed to create project")
+        Right(
+          findByGuid(project.guid).getOrElse {
+            sys.error("Failed to create project")
+          }
+        )
+      }
+      case errors => Left(errors)
     }
   }
 
