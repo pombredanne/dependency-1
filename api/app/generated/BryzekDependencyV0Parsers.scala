@@ -151,7 +151,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LanguageForm] = {
       SqlParser.str(mappings.name) ~
-      SqlParser.str(mappings.version).? map {
+      SqlParser.str(mappings.version) map {
         case name ~ version => {
           com.bryzek.dependency.v0.models.LanguageForm(
             name = name,
@@ -281,7 +281,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       SqlParser.str(mappings.groupId) ~
       SqlParser.get[Seq[String]](mappings.resolvers) ~
       SqlParser.str(mappings.artifactId) ~
-      SqlParser.str(mappings.version).? map {
+      SqlParser.str(mappings.version) map {
         case groupId ~ resolvers ~ artifactId ~ version => {
           com.bryzek.dependency.v0.models.LibraryForm(
             groupId = groupId,

@@ -93,22 +93,17 @@ trait SimpleScalaParser {
         Left(s"Could not parse library from[$value]")
       }
       case groupId :: Nil => {
-        Left(s"Could not parse library from[$value] - only found groupId[$groupId]")
+        Left(s"Could not parse library from[$value] - only found groupId[$groupId] but missing artifactId and version")
       }
       case groupId :: artifactId :: Nil => {
-        Right(
-          Artifact(
-            groupId = interpolate(groupId),
-            artifactId = interpolate(artifactId)
-          )
-        )
+        Left(s"Could not parse library from[$value] - only found groupId[$groupId] and artifactId[$artifactId] but missing version")
       }
       case groupId :: artifactId :: version :: more => {
         Right(
           Artifact(
             groupId = interpolate(groupId),
             artifactId = interpolate(artifactId),
-            version = Some(interpolate(version))
+            version = interpolate(version)
           )
         )
       }

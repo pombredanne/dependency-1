@@ -26,14 +26,14 @@ trait Helpers {
 
   def createLanguageForm() = LanguageForm(
     name = s"z-test-language-${UUID.randomUUID}".toLowerCase,
-    version = None
+    version = "0.0.1"
   )
 
   def createLanguageVersion(
     language: Language = createLanguage(),
     version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
   ): LanguageVersion = {
-    LanguageVersionsDao.upsert(systemUser, language.guid, version)
+    LanguageVersionsDao.create(systemUser, language.guid, version)
   }
 
   def createLibrary(
@@ -48,14 +48,14 @@ trait Helpers {
     resolvers = Seq("http://dependencies.io.flow"),
     groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
     artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
-    version = None
+    version = "0.0.1"
   )
 
   def createLibraryVersion(
     library: Library = createLibrary(),
     version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
   ): LibraryVersion = {
-    LibraryVersionsDao.upsert(systemUser, library.guid, version)
+    LibraryVersionsDao.create(systemUser, library.guid, version)
   }
 
   def createProject(

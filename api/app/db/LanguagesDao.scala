@@ -47,8 +47,8 @@ object LanguagesDao {
         create(createdBy, form)
       }
       case Some(lang) => {
-        Util.trimmedString(form.version).map { version =>
-          LanguageVersionsDao.upsert(createdBy, lang.guid, version)
+        DB.withConnection { implicit c =>
+          LanguageVersionsDao.upsertWithConnection(createdBy, lang.guid, form.version)
         }
         Right(lang)
       }
@@ -60,12 +60,14 @@ object LanguagesDao {
       case Nil => {
         val guid = UUID.randomUUID
 
-        DB.withConnection { implicit c =>
+        DB.withTransaction { implicit c =>
           SQL(InsertQuery).on(
             'guid -> guid,
             'name -> form.name.trim,
             'created_by_guid -> createdBy.guid
           ).execute()
+
+          LanguageVersionsDao.upsertWithConnection(createdBy, guid, form.version)
         }
 
         MainActor.ref ! MainActor.Messages.LanguageCreated(guid)
@@ -106,7 +108,17 @@ object LanguagesDao {
       Some(BaseQuery.trim),
       guid.map { v => "and languages.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("languages.guid", _) },
-      projectGuid.map { v => "and languages.guid in (select language_guid from project_languages where project_guid = {project_guid}::uuid and deleted_at is null)" },
+      projectGuid.map { v => """
+        and languages.guid in (
+          select language_versions.language_guid
+            from language_versions
+            join project_language_versions
+              on project_language_versions.language_version_guid = language_versions.guid
+             and project_language_versions.deleted_at is null
+             and project_language_versions.project_guid = {project_guid}::uuid
+           where language_versions.deleted_at is null
+        )
+      """.trim },
       name.map { v => "and lower(languages.name) = lower(trim({name}))" },
       isDeleted.map(Filters.isDeleted("languages", _)),
       Some(s"order by lower(languages.name), languages.created_at limit ${limit} offset ${offset}")

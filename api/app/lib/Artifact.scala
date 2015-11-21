@@ -5,7 +5,7 @@ import com.bryzek.dependency.v0.models.LibraryForm
 case class Artifact(
   groupId: String,
   artifactId: String,
-  version: Option[String] = None
+  version: String
 ) {
 
   def toLibraryForm(resolvers: Seq[Resolver]): LibraryForm = {

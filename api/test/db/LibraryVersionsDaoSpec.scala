@@ -1,7 +1,7 @@
 package db
 
-import com.bryzek.dependency.v0.models.Scms
 import org.scalatest._
+import play.api.db._
 import play.api.test._
 import play.api.test.Helpers._
 import org.scalatestplus.play._
@@ -23,24 +23,28 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "findByGuid" in {
     val version = createLibraryVersion()
-    LibraryVersionsDao.findByGuid(version.guid).map(_.guid) must be(
-      Some(version.guid)
-    )
+    DB.withConnection { implicit c =>
+      LibraryVersionsDao.findByGuid(version.guid).map(_.guid) must be(
+        Some(version.guid)
+      )
 
-    LibraryVersionsDao.findByGuid(UUID.randomUUID) must be(None)
+      LibraryVersionsDao.findByGuid(UUID.randomUUID) must be(None)
+    }
   }
 
   "findAll by guids" in {
     val version1 = createLibraryVersion()
     val version2 = createLibraryVersion()
 
-    LibraryVersionsDao.findAll(guids = Some(Seq(version1.guid, version2.guid))).map(_.guid) must be(
-      Seq(version1.guid, version2.guid)
-    )
+    DB.withConnection { implicit c =>
+      LibraryVersionsDao.findAll(guids = Some(Seq(version1.guid, version2.guid))).map(_.guid) must be(
+        Seq(version1.guid, version2.guid)
+      )
 
-    LibraryVersionsDao.findAll(guids = Some(Nil)) must be(Nil)
-    LibraryVersionsDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    LibraryVersionsDao.findAll(guids = Some(Seq(version1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(version1.guid))
+      LibraryVersionsDao.findAll(guids = Some(Nil)) must be(Nil)
+      LibraryVersionsDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
+      LibraryVersionsDao.findAll(guids = Some(Seq(version1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(version1.guid))
+    }
   }
 
   "softDelete" in {

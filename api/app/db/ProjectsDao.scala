@@ -39,18 +39,18 @@ object ProjectsDao {
      where guid = {guid}::uuid
   """
 
-  private[this] val InsertLibraryQuery = """
-    insert into project_libraries
-    (guid, project_guid, library_guid, created_by_guid, updated_by_guid)
+  private[this] val InsertLibraryVersionQuery = """
+    insert into project_library_versions
+    (guid, project_guid, library_version_guid, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {project_guid}::uuid, {library_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {project_guid}::uuid, {library_version_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  private[this] val InsertLanguageQuery = """
-    insert into project_languages
-    (guid, project_guid, language_guid, created_by_guid, updated_by_guid)
+  private[this] val InsertLanguageVersionQuery = """
+    insert into project_language_versions
+    (guid, project_guid, language_version_guid, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {project_guid}::uuid, {language_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {project_guid}::uuid, {language_version_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[db] def validate(
@@ -96,73 +96,77 @@ object ProjectsDao {
     libraries: Option[Seq[LibraryForm]] = None
   ) {
     DB.withTransaction { implicit c =>
-      languages.map { setLanguages(c, createdBy, project, _) }
-      libraries.map { setLibraries(c, createdBy, project, _) }
+      languages.map { setLanguageVersions(c, createdBy, project, _) }
+      libraries.map { setLibraryVersions(c, createdBy, project, _) }
     }
   }
 
-  private[this] def setLanguages(
+  private[this] def setLanguageVersions(
     implicit c: java.sql.Connection,
     createdBy: User,
     project: Project,
     languages: Seq[LanguageForm]
   ) {
-    val newGuids = languages.map { language =>
-      LanguagesDao.upsert(createdBy, language) match {
+    val newGuids = languages.map { form =>
+      val lang = LanguagesDao.upsert(createdBy, form) match {
         case Left(errors) => sys.error(errors.mkString(", n"))
-        case Right(lang) => lang.guid
+        case Right(lang) => lang
       }
+      LanguageVersionsDao.findByObjectGuidAndVersion(lang.guid, form.version).getOrElse {
+        sys.error("Could not create language version")
+      }.guid
     }
 
     val existingGuids = LanguagesDao.findAll(projectGuid = Some(project.guid)).map(_.guid)
-
     val toAdd = newGuids.filter { guid => !existingGuids.contains(guid) }
     val toRemove = existingGuids.filter { guid => !newGuids.contains(guid) }
 
     toAdd.foreach { guid =>
-      SQL(InsertLanguageQuery).on(
+      SQL(InsertLanguageVersionQuery).on(
         'guid -> UUID.randomUUID,
         'project_guid -> project.guid,
-        'language_guid -> guid,
+        'language_version_guid -> guid,
         'created_by_guid -> createdBy.guid
       ).execute()
     }
 
     toRemove.foreach { guid =>
-      SoftDelete.delete("project_languages", createdBy.guid, guid)
+      SoftDelete.delete("project_language_versions", createdBy.guid, guid)
     }
-    println("done")
   }
 
-  private[this] def setLibraries(
+  private[this] def setLibraryVersions(
     implicit c: java.sql.Connection,
     createdBy: User,
     project: Project,
     libraries: Seq[LibraryForm]
   ) {
-    val newGuids = libraries.map { library =>
-      LibrariesDao.upsert(createdBy, library) match {
+    val newGuids = libraries.map { form =>
+      val library = LibrariesDao.upsert(createdBy, form) match {
         case Left(errors) => sys.error(errors.mkString(", n"))
-        case Right(library) => library.guid
+        case Right(library) => library
       }
+      LibraryVersionsDao.findByObjectGuidAndVersion(library.guid, form.version).getOrElse {
+        sys.error("Could not create library version")
+      }.guid
     }
 
-    val existingGuids = LibrariesDao.findAll(projectGuid = Some(project.guid)).map(_.guid)
+    val existingGuids = LibraryVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.guid)
 
     val toAdd = newGuids.filter { guid => !existingGuids.contains(guid) }
     val toRemove = existingGuids.filter { guid => !newGuids.contains(guid) }
 
     toAdd.foreach { guid =>
-      SQL(InsertLibraryQuery).on(
+      SQL(InsertLibraryVersionQuery).on(
         'guid -> UUID.randomUUID,
         'project_guid -> project.guid,
-        'library_guid -> guid,
+        'library_version_guid -> guid,
         'created_by_guid -> createdBy.guid
       ).execute()
     }
 
     toRemove.foreach { guid =>
-      SoftDelete.delete("project_libraries", createdBy.guid, guid)
+      SoftDelete.delete("project_library_versions", createdBy.guid, guid)
     }
   }
 

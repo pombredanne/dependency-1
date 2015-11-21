@@ -40,7 +40,7 @@
 	"language_form": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
-		{ "name": "version", "type": "string", "required": false, "description": "If provided, we automatically record this version of the language." }
+		{ "name": "version", "type": "string", "description": "If provided, we automatically record this version of the language." }
 	    ]
 	},
 
@@ -67,7 +67,7 @@
 		{ "name": "group_id", "type": "string" },
 		{ "name": "resolvers", "type": "[string]" },
 		{ "name": "artifact_id", "type": "string" },
-		{ "name": "version", "type": "string", "required": false, "description": "If provided, we automatically record this version of this library." }
+		{ "name": "version", "type": "string", "description": "If provided, we automatically record this version of this library." }
 	    ]
 	},
 

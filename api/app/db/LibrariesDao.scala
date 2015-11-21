@@ -62,8 +62,8 @@ object LibrariesDao {
         create(createdBy, form)
       }
       case Some(lib) => {
-        Util.trimmedString(form.version).map { version =>
-          LibraryVersionsDao.upsert(createdBy, lib.guid, version)
+        DB.withConnection { implicit c =>
+          LibraryVersionsDao.upsertWithConnection(createdBy, lib.guid, form.version)
         }
         Right(lib)
       }
@@ -75,7 +75,7 @@ object LibrariesDao {
       case Nil => {
         val guid = UUID.randomUUID
 
-        DB.withConnection { implicit c =>
+        DB.withTransaction { implicit c =>
           SQL(InsertQuery).on(
             'guid -> guid,
             'resolvers -> resolversToString(form.resolvers),
@@ -83,6 +83,7 @@ object LibrariesDao {
             'artifact_id -> form.artifactId.trim,
             'created_by_guid -> createdBy.guid
           ).execute()
+          LibraryVersionsDao.upsertWithConnection(createdBy, guid, form.version)
         }
 
         MainActor.ref ! MainActor.Messages.LibraryCreated(guid)
@@ -134,7 +135,17 @@ object LibrariesDao {
       Some(BaseQuery.trim),
       guid.map { v => "and libraries.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("libraries.guid", _) },
-      projectGuid.map { v => "and libraries.guid in (select library_guid from project_libraries where project_guid = {project_guid}::uuid and deleted_at is null)" },
+      projectGuid.map { v => """
+        and libraries.guid in (
+          select library_versions.library_guid
+            from library_versions
+            join project_library_versions
+              on project_library_versions.library_version_guid = library_versions.guid
+             and project_library_versions.deleted_at is null
+             and project_library_versions.project_guid = {project_guid}::uuid
+           where library_versions.deleted_at is null
+        )
+      """.trim },
       resolvers.map { v => "and libraries.resolvers = {resolvers}" },
       groupId.map { v => "and lower(libraries.group_id) = lower(trim({group_id}))" },
       artifactId.map { v => "and lower(libraries.artifact_id) = lower(trim({artifact_id}))" },

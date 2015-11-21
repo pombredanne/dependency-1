@@ -1,6 +1,7 @@
 package db
 
 import org.scalatest._
+import play.api.db._
 import play.api.test._
 import play.api.test.Helpers._
 import org.scalatestplus.play._
@@ -22,24 +23,28 @@ class LanguageVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
 
   "findByGuid" in {
     val version = createLanguageVersion()
-    LanguageVersionsDao.findByGuid(version.guid).map(_.guid) must be(
-      Some(version.guid)
-    )
+    DB.withConnection { implicit c =>
+      LanguageVersionsDao.findByGuid(version.guid).map(_.guid) must be(
+        Some(version.guid)
+      )
 
-    LanguageVersionsDao.findByGuid(UUID.randomUUID) must be(None)
+      LanguageVersionsDao.findByGuid(UUID.randomUUID) must be(None)
+    }
   }
 
   "findAll by guids" in {
     val version1 = createLanguageVersion()
     val version2 = createLanguageVersion()
 
-    LanguageVersionsDao.findAll(guids = Some(Seq(version1.guid, version2.guid))).map(_.guid) must be(
-      Seq(version1.guid, version2.guid)
-    )
+    DB.withConnection { implicit c =>
+      LanguageVersionsDao.findAll(guids = Some(Seq(version1.guid, version2.guid))).map(_.guid) must be(
+        Seq(version1.guid, version2.guid)
+      )
 
-    LanguageVersionsDao.findAll(guids = Some(Nil)) must be(Nil)
-    LanguageVersionsDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    LanguageVersionsDao.findAll(guids = Some(Seq(version1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(version1.guid))
+      LanguageVersionsDao.findAll(guids = Some(Nil)) must be(Nil)
+      LanguageVersionsDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
+      LanguageVersionsDao.findAll(guids = Some(Seq(version1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(version1.guid))
+    }
   }
 
   "softDelete" in {

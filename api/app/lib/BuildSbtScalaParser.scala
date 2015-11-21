@@ -17,18 +17,11 @@ case class BuildSbtScalaParser(contents: String) extends SimpleScalaParser {
       filter(_.startsWith("scalaVersion")).
       flatMap { line =>
       line.split(":=").map(_.trim).toList match {
-        case head :: Nil => {
-          Some(
-            LanguageForm(
-              name = LanguageScala
-            )
-          )
-        }
         case head :: version :: Nil => {
           Some(
             LanguageForm(
               name = LanguageScala,
-              version = Some(interpolate(version))
+              version = interpolate(version)
             )
           )
         }

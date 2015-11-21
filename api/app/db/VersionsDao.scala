@@ -12,8 +12,9 @@ import java.util.UUID
 trait VersionsDao[T] {
 
   def tableName: String
-
   def columnName: String
+  def mappingTableName: String
+  def mappingColumnName: String
 
   private[db] def parser: RowParser[T]
 
@@ -33,22 +34,30 @@ trait VersionsDao[T] {
   """
 
   def upsert(createdBy: User, objectGuid: UUID, version: String): T = {
+    DB.withConnection { implicit c =>
+      upsertWithConnection(createdBy, objectGuid, version)
+    }
+  }
+
+  private[db] def upsertWithConnection(createdBy: User, objectGuid: UUID, version: String)(
+    implicit c: java.sql.Connection
+  ): T = {
     findAll(
       objectGuid = Some(objectGuid),
       version = Some(version),
       limit = 1
     ).headOption.getOrElse {
-      create(createdBy, objectGuid, version)
+      createWithConnection(createdBy, objectGuid, version)
     }
   }
 
   def create(createdBy: User, objectGuid: UUID, version: String): T = {
     DB.withConnection { implicit c =>
-      create(c, createdBy, objectGuid, version)
+      createWithConnection(createdBy, objectGuid, version)
     }
   }
 
-  def create(implicit c: java.sql.Connection, createdBy: User, objectGuid: UUID, version: String): T = {
+  def createWithConnection(createdBy: User, objectGuid: UUID, version: String)(implicit c: java.sql.Connection): T = {
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
@@ -58,7 +67,7 @@ trait VersionsDao[T] {
       'created_by_guid -> createdBy.guid
     ).execute()
 
-    findByGuid(guid).getOrElse {
+    findByGuid(guid)(c).getOrElse {
       sys.error("Failed to create version")
     }
   }
@@ -67,7 +76,23 @@ trait VersionsDao[T] {
     SoftDelete.delete(tableName, deletedBy.guid, guid)
   }
 
-  def findByGuid(guid: UUID): Option[T] = {
+  def findByObjectGuidAndVersion(
+    objectGuid: UUID, version: String
+  ) (
+    implicit c: java.sql.Connection
+  ): Option[T] = {
+    findAll(
+      objectGuid = Some(objectGuid),
+      version = Some(version),
+      limit = 1
+    ).headOption
+  }
+
+  def findByGuid(
+    guid: UUID
+  ) (
+    implicit c: java.sql.Connection
+  ): Option[T] = {
     findAll(guid = Some(guid), limit = 1).headOption
   }
 
@@ -75,16 +100,20 @@ trait VersionsDao[T] {
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     objectGuid: Option[UUID] = None,
+    projectGuid: Option[UUID] = None,
     version: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
+  ) (
+    implicit c: java.sql.Connection
   ): Seq[T] = {
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => s"and $tableName.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids(s"$tableName.guid", _) },
       objectGuid.map { v => s"and $tableName.$columnName = {object_guid}::uuid" },
+      projectGuid.map { v => s"and $tableName.$columnName in (select $mappingColumnName from $mappingTableName where deleted_at is null and project_guid = {project_guid}::uuid)" },
       version.map { v => s"and lower($tableName.version) = lower(trim({version}))" },
       isDeleted.map(Filters.isDeleted(tableName, _)),
       Some(s"order by $tableName.created_at limit ${limit} offset ${offset}")
@@ -93,12 +122,11 @@ trait VersionsDao[T] {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       objectGuid.map('object_guid -> _.toString),
+      projectGuid.map('project_guid -> _.toString),
       version.map('version -> _.toString)
     ).flatten
 
-    DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(parser.*)
-    }
+    SQL(sql).on(bind: _*).as(parser.*)
   }
 
 }
@@ -107,6 +135,9 @@ object LanguageVersionsDao extends VersionsDao[LanguageVersion] {
 
   override def tableName = "language_versions"
   override def columnName = "language_guid"
+  override def mappingTableName = "project_language_versions"
+  override def mappingColumnName = "language_version_guid"
+
   private[db] override def parser = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.table(tableName)
 
 }
@@ -115,6 +146,8 @@ object LibraryVersionsDao extends VersionsDao[LibraryVersion] {
 
   override def tableName = "library_versions"
   override def columnName = "library_guid"
+  override def mappingTableName = "project_library_versions"
+  override def mappingColumnName = "library_version_guid"
   private[db] override def parser = com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.table(tableName)
 
 }

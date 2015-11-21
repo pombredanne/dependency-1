@@ -20,7 +20,7 @@ package com.bryzek.dependency.v0.models {
 
   case class LanguageForm(
     name: String,
-    version: _root_.scala.Option[String] = None
+    version: String
   )
 
   case class LanguageVersion(
@@ -41,7 +41,7 @@ package com.bryzek.dependency.v0.models {
     groupId: String,
     resolvers: Seq[String],
     artifactId: String,
-    version: _root_.scala.Option[String] = None
+    version: String
   )
 
   case class LibraryVersion(
@@ -207,14 +207,14 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyLanguageForm: play.api.libs.json.Reads[LanguageForm] = {
       (
         (__ \ "name").read[String] and
-        (__ \ "version").readNullable[String]
+        (__ \ "version").read[String]
       )(LanguageForm.apply _)
     }
 
     implicit def jsonWritesDependencyLanguageForm: play.api.libs.json.Writes[LanguageForm] = {
       (
         (__ \ "name").write[String] and
-        (__ \ "version").writeNullable[String]
+        (__ \ "version").write[String]
       )(unlift(LanguageForm.unapply _))
     }
 
@@ -259,7 +259,7 @@ package com.bryzek.dependency.v0.models {
         (__ \ "group_id").read[String] and
         (__ \ "resolvers").read[Seq[String]] and
         (__ \ "artifact_id").read[String] and
-        (__ \ "version").readNullable[String]
+        (__ \ "version").read[String]
       )(LibraryForm.apply _)
     }
 
@@ -268,7 +268,7 @@ package com.bryzek.dependency.v0.models {
         (__ \ "group_id").write[String] and
         (__ \ "resolvers").write[Seq[String]] and
         (__ \ "artifact_id").write[String] and
-        (__ \ "version").writeNullable[String]
+        (__ \ "version").write[String]
       )(unlift(LibraryForm.unapply _))
     }
 
