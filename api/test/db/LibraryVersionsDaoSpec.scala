@@ -23,28 +23,24 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "findByGuid" in {
     val version = createLibraryVersion()
-    DB.withConnection { implicit c =>
-      LibraryVersionsDao.findByGuid(version.guid).map(_.guid) must be(
-        Some(version.guid)
-      )
+    LibraryVersionsDao.findByGuid(version.guid).map(_.guid) must be(
+      Some(version.guid)
+    )
 
-      LibraryVersionsDao.findByGuid(UUID.randomUUID) must be(None)
-    }
+    LibraryVersionsDao.findByGuid(UUID.randomUUID) must be(None)
   }
 
   "findAll by guids" in {
     val version1 = createLibraryVersion()
     val version2 = createLibraryVersion()
 
-    DB.withConnection { implicit c =>
-      LibraryVersionsDao.findAll(guids = Some(Seq(version1.guid, version2.guid))).map(_.guid) must be(
-        Seq(version1.guid, version2.guid)
-      )
+    LibraryVersionsDao.findAll(guids = Some(Seq(version1.guid, version2.guid))).map(_.guid) must be(
+      Seq(version1.guid, version2.guid)
+    )
 
-      LibraryVersionsDao.findAll(guids = Some(Nil)) must be(Nil)
-      LibraryVersionsDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-      LibraryVersionsDao.findAll(guids = Some(Seq(version1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(version1.guid))
-    }
+    LibraryVersionsDao.findAll(guids = Some(Nil)) must be(Nil)
+    LibraryVersionsDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
+    LibraryVersionsDao.findAll(guids = Some(Seq(version1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(version1.guid))
   }
 
   "softDelete" in {

@@ -74,6 +74,7 @@
 	"library_version": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
+		{ "name": "library", "type": "library" },
 		{ "name": "version", "type": "string" },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
@@ -298,6 +299,38 @@
                         "404": { "type": "unit" }
                     }
                 }
+            ]
+        },
+
+	"library_version": {
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search library versions. Results are paginated",
+                    "parameters": [
+                        { "name": "guid", "type": "uuid", "description": "Find library version with this guid. Exact match", "required": false },
+			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
+                        { "name": "project_guid", "type": "uuid", "description": "Find languages associated with this project", "required": false },
+                        { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[library_version]" },
+                        "401": { "type": "unit" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "description": "Returns information about the library version with this guid.",
+                    "path": "/:guid",
+                    "responses": {
+                        "200": { "type": "library_version" },
+                        "401": { "type": "unit" },
+                        "404": { "type": "unit" }
+                    }
+                }
+
             ]
         },
 

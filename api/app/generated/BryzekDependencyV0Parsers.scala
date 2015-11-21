@@ -299,6 +299,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       guid: String = "guid",
+      library: com.bryzek.dependency.v0.anorm.parsers.Library.Mappings,
       version: String = "version",
       audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
     )
@@ -311,6 +312,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         guid = s"${prefix}${sep}guid",
+        library = com.bryzek.dependency.v0.anorm.parsers.Library.Mappings.prefix(Seq(prefix, "library").filter(!_.isEmpty).mkString("_"), "_"),
         version = s"${prefix}${sep}version",
         audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
       )
@@ -321,11 +323,13 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LibraryVersion] = {
       SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      com.bryzek.dependency.v0.anorm.parsers.Library.parser(mappings.library) ~
       SqlParser.str(mappings.version) ~
       io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
-        case guid ~ version ~ audit => {
+        case guid ~ library ~ version ~ audit => {
           com.bryzek.dependency.v0.models.LibraryVersion(
             guid = guid,
+            library = library,
             version = version,
             audit = audit
           )

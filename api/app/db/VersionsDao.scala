@@ -42,7 +42,7 @@ trait VersionsDao[T] {
   private[db] def upsertWithConnection(createdBy: User, objectGuid: UUID, version: String)(
     implicit c: java.sql.Connection
   ): T = {
-    findAll(
+    findAllWithConnection(
       objectGuid = Some(objectGuid),
       version = Some(version),
       limit = 1
@@ -67,7 +67,7 @@ trait VersionsDao[T] {
       'created_by_guid -> createdBy.guid
     ).execute()
 
-    findByGuid(guid)(c).getOrElse {
+    findByGuidWithConnection(guid).getOrElse {
       sys.error("Failed to create version")
     }
   }
@@ -81,7 +81,7 @@ trait VersionsDao[T] {
   ) (
     implicit c: java.sql.Connection
   ): Option[T] = {
-    findAll(
+    findAllWithConnection(
       objectGuid = Some(objectGuid),
       version = Some(version),
       limit = 1
@@ -90,13 +90,45 @@ trait VersionsDao[T] {
 
   def findByGuid(
     guid: UUID
+  ): Option[T] = {
+    DB.withConnection { implicit c =>
+      findByGuidWithConnection(guid)
+    }
+  }
+
+  def findByGuidWithConnection(
+    guid: UUID
   ) (
     implicit c: java.sql.Connection
   ): Option[T] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+    findAllWithConnection(guid = Some(guid), limit = 1).headOption
   }
 
   def findAll(
+    guid: Option[UUID] = None,
+    guids: Option[Seq[UUID]] = None,
+    objectGuid: Option[UUID] = None,
+    projectGuid: Option[UUID] = None,
+    version: Option[String] = None,
+    isDeleted: Option[Boolean] = Some(false),
+    limit: Long = 25,
+    offset: Long = 0
+  ) = {
+    DB.withConnection { implicit c =>
+      findAllWithConnection(
+        guid = guid,
+        guids = guids,
+        objectGuid = objectGuid,
+        projectGuid = projectGuid,
+        version = version,
+        isDeleted = isDeleted,
+        limit = limit,
+        offset = offset
+      )
+    }
+  }
+
+  def findAllWithConnection(
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     objectGuid: Option[UUID] = None,

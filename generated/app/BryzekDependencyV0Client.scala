@@ -46,6 +46,7 @@ package com.bryzek.dependency.v0.models {
 
   case class LibraryVersion(
     guid: _root_.java.util.UUID,
+    library: com.bryzek.dependency.v0.models.Library,
     version: String,
     audit: io.flow.common.v0.models.Audit
   )
@@ -275,6 +276,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyLibraryVersion: play.api.libs.json.Reads[LibraryVersion] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "library").read[com.bryzek.dependency.v0.models.Library] and
         (__ \ "version").read[String] and
         (__ \ "audit").read[io.flow.common.v0.models.Audit]
       )(LibraryVersion.apply _)
@@ -283,6 +285,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyLibraryVersion: play.api.libs.json.Writes[LibraryVersion] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "library").write[com.bryzek.dependency.v0.models.Library] and
         (__ \ "version").write[String] and
         (__ \ "audit").write[io.flow.common.v0.models.Audit]
       )(unlift(LibraryVersion.unapply _))
@@ -425,6 +428,8 @@ package com.bryzek.dependency.v0 {
 
     def libraries: Libraries = Libraries
 
+    def libraryVersions: LibraryVersions = LibraryVersions
+
     def projects: Projects = Projects
 
     def users: Users = Users
@@ -558,6 +563,41 @@ package com.bryzek.dependency.v0 {
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+        }
+      }
+    }
+
+    object LibraryVersions extends LibraryVersions {
+      override def get(
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+        projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        limit: Long = 25,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.LibraryVersion]] = {
+        val queryParameters = Seq(
+          guid.map("guid" -> _.toString),
+          projectGuid.map("project_guid" -> _.toString),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten ++
+          guids.getOrElse(Nil).map("guids" -> _.toString)
+
+        _executeRequest("GET", s"/library_versions", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.LibraryVersion]", r, _.validate[Seq[com.bryzek.dependency.v0.models.LibraryVersion]])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+        }
+      }
+
+      override def getByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.LibraryVersion] = {
+        _executeRequest("GET", s"/library_versions/${guid}").map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.LibraryVersion", r, _.validate[com.bryzek.dependency.v0.models.LibraryVersion])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
     }
@@ -856,6 +896,26 @@ package com.bryzek.dependency.v0 {
     def deleteByGuid(
       guid: _root_.java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+  }
+
+  trait LibraryVersions {
+    /**
+     * Search library versions. Results are paginated
+     */
+    def get(
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+      projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      limit: Long = 25,
+      offset: Long = 0
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.LibraryVersion]]
+
+    /**
+     * Returns information about the library version with this guid.
+     */
+    def getByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.LibraryVersion]
   }
 
   trait Projects {

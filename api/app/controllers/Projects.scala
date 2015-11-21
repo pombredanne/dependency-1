@@ -4,7 +4,7 @@ import db.ProjectsDao
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
-import com.bryzek.dependency.v0.models.{AuthenticationForm, Project, ProjectForm, ProjectPatchForm}
+import com.bryzek.dependency.v0.models.{Project, ProjectForm, ProjectPatchForm}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._

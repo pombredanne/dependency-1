@@ -4,7 +4,7 @@ import db.LibrariesDao
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
-import com.bryzek.dependency.v0.models.{AuthenticationForm, Library, LibraryForm}
+import com.bryzek.dependency.v0.models.{Library, LibraryForm}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
