@@ -1,0 +1,19 @@
+@(libraryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LibraryVersion])
+
+@if(libraryVersions.isEmpty) {
+  <em>No libraryVersions</em>
+} else {
+  <div class="table-responsive">
+    <table class="table">
+      @libraryVersions.items.map { version =>
+        <tr>
+          <td><a href="#">Details</a></td>
+          <td>@version.library.groupId</td>
+          <td>@version.library.artifactId</td>
+          <td>@version.version</td>
+          <td>@version.library.resolvers</td>
+        </tr>
+      }
+    </table>
+  </div>
+}

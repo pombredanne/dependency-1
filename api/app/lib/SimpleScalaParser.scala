@@ -1,5 +1,6 @@
 package com.bryzek.dependency.lib
 
+import play.api.Logger
 import com.bryzek.dependency.v0.models.LibraryForm
 
 trait SimpleScalaParser {
@@ -70,10 +71,13 @@ trait SimpleScalaParser {
       filter(_.replaceAll("%%", "%").split("%").size >= 2).
       map(_.stripSuffix(",")).
       map(_.trim).
-      map { line =>
+      flatMap { line =>
         toArtifact(line) match {
-          case Left(error) => sys.error(error)
-          case Right(library) => library
+          case Left(error) => {
+            Logger.warn(error)
+            None
+          }
+          case Right(library) => Some(library)
         }
       }.distinct.sortBy { l => (l.groupId, l.artifactId, l.version) }
   }

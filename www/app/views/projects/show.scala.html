@@ -2,7 +2,7 @@
   data: com.bryzek.dependency.lib.UiData,
   project: com.bryzek.dependency.v0.models.Project,
   languages: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Language],
-  libraries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Library]
+  libraryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LibraryVersion]
 )(implicit flash: Flash, messages: Messages)
 
 @main(data.copy(title = Some(project.name))) {
@@ -21,23 +21,23 @@
   @if(languages.hasPrevious || languages.hasNext) {
     <ul class="pager">
       @if(languages.hasPrevious) {
-        <li><a href="@routes.ProjectsController.show(project.guid, languagePage = languages.page - 1, libraryPage = libraries.page)">Previous</a></li>
+        <li><a href="@routes.ProjectsController.show(project.guid, languagePage = languages.page - 1, libraryPage = libraryVersions.page)">Previous</a></li>
       }
       @if(languages.hasNext) {
-        <li><a href="@routes.ProjectsController.show(project.guid, languagePage = languages.page + 1, libraryPage = libraries.page)">Next</a></li>
+        <li><a href="@routes.ProjectsController.show(project.guid, languagePage = languages.page + 1, libraryPage = libraryVersions.page)">Next</a></li>
       }
     </ul>
   }
 
   <h3>Libraries</h3>
-  @views.html.libraries.table(libraries)
-  @if(libraries.hasPrevious || libraries.hasNext) {
+  @views.html.libraryVersions.table(libraryVersions)
+  @if(libraryVersions.hasPrevious || libraryVersions.hasNext) {
     <ul class="pager">
-      @if(libraries.hasPrevious) {
-        <li><a href="@routes.ProjectsController.show(project.guid, languagePage = libraries.page, libraryPage = libraries.page - 1)">Previous</a></li>
+      @if(libraryVersions.hasPrevious) {
+        <li><a href="@routes.ProjectsController.show(project.guid, languagePage = libraryVersions.page, libraryPage = libraryVersions.page - 1)">Previous</a></li>
       }
-      @if(libraries.hasNext) {
-        <li><a href="@routes.ProjectsController.show(project.guid, languagePage = libraries.page, libraryPage = libraries.page + 1)">Next</a></li>
+      @if(libraryVersions.hasNext) {
+        <li><a href="@routes.ProjectsController.show(project.guid, languagePage = libraryVersions.page, libraryPage = libraryVersions.page + 1)">Next</a></li>
       }
     </ul>
   }

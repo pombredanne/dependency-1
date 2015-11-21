@@ -57,7 +57,7 @@ class ProjectsController @javax.inject.Inject() (
     for {
       project <- dependencyClient(request).projects.getByGuid(guid)
       languages <- dependencyClient(request).languages.get(projectGuid = Some(guid))
-      libraries <- dependencyClient(request).libraries.get(projectGuid = Some(guid))
+      libraries <- dependencyClient(request).libraryVersions.get(projectGuid = Some(guid))
     } yield {
       Ok(
         views.html.projects.show(

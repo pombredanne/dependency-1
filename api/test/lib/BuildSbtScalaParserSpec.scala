@@ -146,4 +146,21 @@ lazy val avro = project
     )
   }
 
+  "library for Test" in {
+    val contents = """
+  libraryDependencies ++= Seq(
+    specs2 % Test,
+    "org.scalatest" %% "scalatest" % "2.2.0" % Test
+  )
+"""
+
+    val result = BuildSbtScalaParser(contents)
+    result.languages must beEqualTo(Nil)
+    result.libraries must beEqualTo(
+      Seq(
+        Artifact("org.scalatest", "scalatest", "2.2.0")
+      )
+    )
+}
+
 }
