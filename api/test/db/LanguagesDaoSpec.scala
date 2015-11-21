@@ -33,7 +33,7 @@ class LanguagesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val language2 = createLanguage()
 
     LanguagesDao.findAll(guids = Some(Seq(language1.guid, language2.guid))).map(_.guid) must be(
-      Seq(language1.guid, language2.guid)
+      Seq(language1, language2).sortWith { (x,y) => x.name.toString < y.name.toString }.map(_.guid)
     )
 
     LanguagesDao.findAll(guids = Some(Nil)) must be(Nil)

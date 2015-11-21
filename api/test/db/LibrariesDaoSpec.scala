@@ -51,7 +51,7 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val library2 = createLibrary()
 
     LibrariesDao.findAll(guids = Some(Seq(library1.guid, library2.guid))).map(_.guid) must be(
-      Seq(library1.guid, library2.guid)
+      Seq(library1, library2).sortWith { (x,y) => x.groupId.toString < y.groupId.toString }.map(_.guid)
     )
 
     LibrariesDao.findAll(guids = Some(Nil)) must be(Nil)
