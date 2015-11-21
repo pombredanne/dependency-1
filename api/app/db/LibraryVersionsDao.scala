@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{LanguageVersion, LibraryVersion}
+import com.bryzek.dependency.v0.models.{Library, LibraryVersion}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
@@ -29,39 +29,39 @@ object LibraryVersionsDao {
     insert into library_versions
     (guid, library_guid, version, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {object_guid}::uuid, {version}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {library_guid}::uuid, {version}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  def upsert(createdBy: User, objectGuid: UUID, version: String): LibraryVersion = {
+  def upsert(createdBy: User, libraryGuid: UUID, version: String): LibraryVersion = {
     DB.withConnection { implicit c =>
-      upsertWithConnection(createdBy, objectGuid, version)
+      upsertWithConnection(createdBy, libraryGuid, version)
     }
   }
 
-  private[db] def upsertWithConnection(createdBy: User, objectGuid: UUID, version: String)(
+  private[db] def upsertWithConnection(createdBy: User, libraryGuid: UUID, version: String)(
     implicit c: java.sql.Connection
   ): LibraryVersion = {
     findAllWithConnection(
-      objectGuid = Some(objectGuid),
+      libraryGuid = Some(libraryGuid),
       version = Some(version),
       limit = 1
     ).headOption.getOrElse {
-      createWithConnection(createdBy, objectGuid, version)
+      createWithConnection(createdBy, libraryGuid, version)
     }
   }
 
-  def create(createdBy: User, objectGuid: UUID, version: String): LibraryVersion = {
+  def create(createdBy: User, libraryGuid: UUID, version: String): LibraryVersion = {
     DB.withConnection { implicit c =>
-      createWithConnection(createdBy, objectGuid, version)
+      createWithConnection(createdBy, libraryGuid, version)
     }
   }
 
-  def createWithConnection(createdBy: User, objectGuid: UUID, version: String)(implicit c: java.sql.Connection): LibraryVersion = {
+  def createWithConnection(createdBy: User, libraryGuid: UUID, version: String)(implicit c: java.sql.Connection): LibraryVersion = {
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
       'guid -> guid,
-      'object_guid -> objectGuid,
+      'library_guid -> libraryGuid,
       'version -> version,
       'created_by_guid -> createdBy.guid
     ).execute()
@@ -75,13 +75,13 @@ object LibraryVersionsDao {
     SoftDelete.delete("library_versions", deletedBy.guid, guid)
   }
 
-  def findByObjectGuidAndVersion(
-    objectGuid: UUID, version: String
+  def findByLibraryAndVersion(
+    library: Library, version: String
   ) (
     implicit c: java.sql.Connection
   ): Option[LibraryVersion] = {
     findAllWithConnection(
-      objectGuid = Some(objectGuid),
+      libraryGuid = Some(library.guid),
       version = Some(version),
       limit = 1
     ).headOption
@@ -106,7 +106,7 @@ object LibraryVersionsDao {
   def findAll(
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    objectGuid: Option[UUID] = None,
+    libraryGuid: Option[UUID] = None,
     projectGuid: Option[UUID] = None,
     version: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -117,7 +117,7 @@ object LibraryVersionsDao {
       findAllWithConnection(
         guid = guid,
         guids = guids,
-        objectGuid = objectGuid,
+        libraryGuid = libraryGuid,
         projectGuid = projectGuid,
         version = version,
         isDeleted = isDeleted,
@@ -130,7 +130,7 @@ object LibraryVersionsDao {
   def findAllWithConnection(
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    objectGuid: Option[UUID] = None,
+    libraryGuid: Option[UUID] = None,
     projectGuid: Option[UUID] = None,
     version: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -143,7 +143,7 @@ object LibraryVersionsDao {
       Some(BaseQuery.trim),
       guid.map { v => s"and library_versions.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids(s"library_versions.guid", _) },
-      objectGuid.map { v => s"and library_versions.library_guid = {object_guid}::uuid" },
+      libraryGuid.map { v => s"and library_versions.library_guid = {library_guid}::uuid" },
       projectGuid.map { v => s"and library_versions.guid in (select library_version_guid from project_library_versions where deleted_at is null and project_guid = {project_guid}::uuid)" },
       version.map { v => s"and lower(library_versions.version) = lower(trim({version}))" },
       isDeleted.map(Filters.isDeleted("library_versions", _)),
@@ -152,7 +152,7 @@ object LibraryVersionsDao {
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
-      objectGuid.map('object_guid -> _.toString),
+      libraryGuid.map('library_guid -> _.toString),
       projectGuid.map('project_guid -> _.toString),
       version.map('version -> _.toString)
     ).flatten

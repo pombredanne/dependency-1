@@ -112,7 +112,7 @@ object ProjectsDao {
         case Left(errors) => sys.error(errors.mkString(", n"))
         case Right(lang) => lang
       }
-      LanguageVersionsDao.findByObjectGuidAndVersion(lang.guid, form.version).getOrElse {
+      LanguageVersionsDao.findByLanguageAndVersion(lang, form.version).getOrElse {
         sys.error("Could not create language version")
       }.guid
     }
@@ -146,7 +146,7 @@ object ProjectsDao {
         case Left(errors) => sys.error(errors.mkString(", n"))
         case Right(library) => library
       }
-      LibraryVersionsDao.findByObjectGuidAndVersion(library.guid, form.version).getOrElse {
+      LibraryVersionsDao.findByLibraryAndVersion(library, form.version).getOrElse {
         sys.error("Could not create library version")
       }.guid
     }
