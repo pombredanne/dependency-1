@@ -34,8 +34,8 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val version1 = createLibraryVersion()
     val version2 = createLibraryVersion()
 
-    LibraryVersionsDao.findAll(guids = Some(Seq(version1.guid, version2.guid))).map(_.guid) must be(
-      Seq(version1.guid, version2.guid)
+    LibraryVersionsDao.findAll(guids = Some(Seq(version1.guid, version2.guid))).map(_.guid).sorted must be(
+      Seq(version1.guid, version2.guid).sorted
     )
 
     LibraryVersionsDao.findAll(guids = Some(Nil)) must be(Nil)

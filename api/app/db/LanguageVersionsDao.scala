@@ -1,5 +1,6 @@
 package db
 
+import com.bryzek.dependency.lib.VersionTag
 import com.bryzek.dependency.v0.models.{Language, LanguageVersion}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
@@ -25,9 +26,9 @@ object LanguageVersionsDao {
 
   private[this] val InsertQuery = s"""
     insert into language_versions
-    (guid, language_guid, version, created_by_guid, updated_by_guid)
+    (guid, language_guid, version, sort_key, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {language_guid}::uuid, {version}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {language_guid}::uuid, {version}, {sort_key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def upsert(createdBy: User, languageGuid: UUID, version: String): LanguageVersion = {
@@ -55,12 +56,14 @@ object LanguageVersionsDao {
   }
 
   def createWithConnection(createdBy: User, languageGuid: UUID, version: String)(implicit c: java.sql.Connection): LanguageVersion = {
+    assert(!version.trim.isEmpty, "Version must be non empty")
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
       'guid -> guid,
       'language_guid -> languageGuid,
-      'version -> version,
+      'version -> version.trim,
+      'sort_key -> VersionTag(version.trim).sortKey,
       'created_by_guid -> createdBy.guid
     ).execute()
 
@@ -145,7 +148,7 @@ object LanguageVersionsDao {
       projectGuid.map { v => s"and language_versions.guid in (select language_version_guid from project_language_versions where deleted_at is null and project_guid = {project_guid}::uuid)" },
       version.map { v => s"and lower(language_versions.version) = lower(trim({version}))" },
       isDeleted.map(Filters.isDeleted("language_versions", _)),
-      Some(s"order by language_versions.created_at limit ${limit} offset ${offset}")
+      Some(s"order by language_versions.sort_key, language_versions.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](

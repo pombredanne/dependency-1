@@ -34,8 +34,8 @@ class LanguageVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
     val version1 = createLanguageVersion()
     val version2 = createLanguageVersion()
 
-    LanguageVersionsDao.findAll(guids = Some(Seq(version1.guid, version2.guid))).map(_.guid) must be(
-      Seq(version1.guid, version2.guid)
+    LanguageVersionsDao.findAll(guids = Some(Seq(version1.guid, version2.guid))).map(_.guid).sorted must be(
+      Seq(version1.guid, version2.guid).sorted
     )
 
     LanguageVersionsDao.findAll(guids = Some(Nil)) must be(Nil)

@@ -106,7 +106,8 @@ create unique index libraries_resolvers_group_id_artifact_id_not_deleted_un_idx 
 create table library_versions (
   guid                    uuid primary key,
   library_guid            uuid not null references libraries,
-  version                 text not null check(non_empty_trimmed_string(version))
+  version                 text not null check(non_empty_trimmed_string(version)),
+  sort_key                text not null
 );
 
 comment on table library_versions is '
@@ -133,7 +134,8 @@ create unique index languages_name_not_deleted_un_idx on languages(name) where d
 create table language_versions (
   guid                    uuid primary key,
   language_guid           uuid not null references languages,
-  version                 text not null check(non_empty_trimmed_string(version))
+  version                 text not null check(non_empty_trimmed_string(version)),
+  sort_key                text not null
 );
 
 comment on table language_versions is '

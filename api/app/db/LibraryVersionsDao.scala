@@ -1,5 +1,6 @@
 package db
 
+import com.bryzek.dependency.lib.VersionTag
 import com.bryzek.dependency.v0.models.{Library, LibraryVersion}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
@@ -27,9 +28,9 @@ object LibraryVersionsDao {
 
   private[this] val InsertQuery = s"""
     insert into library_versions
-    (guid, library_guid, version, created_by_guid, updated_by_guid)
+    (guid, library_guid, version, sort_key, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {library_guid}::uuid, {version}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {library_guid}::uuid, {version}, {sort_key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def upsert(createdBy: User, libraryGuid: UUID, version: String): LibraryVersion = {
@@ -57,12 +58,14 @@ object LibraryVersionsDao {
   }
 
   def createWithConnection(createdBy: User, libraryGuid: UUID, version: String)(implicit c: java.sql.Connection): LibraryVersion = {
+    assert(!version.trim.isEmpty, "Version must be non empty")
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
       'guid -> guid,
       'library_guid -> libraryGuid,
-      'version -> version,
+      'version -> version.trim,
+      'sort_key -> VersionTag(version.trim).sortKey,
       'created_by_guid -> createdBy.guid
     ).execute()
 
@@ -147,7 +150,7 @@ object LibraryVersionsDao {
       projectGuid.map { v => s"and library_versions.guid in (select library_version_guid from project_library_versions where deleted_at is null and project_guid = {project_guid}::uuid)" },
       version.map { v => s"and lower(library_versions.version) = lower(trim({version}))" },
       isDeleted.map(Filters.isDeleted("library_versions", _)),
-      Some(s"order by library_versions.created_at limit ${limit} offset ${offset}")
+      Some(s"order by library_versions.sort_key, library_versions.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
@@ -163,4 +166,3 @@ object LibraryVersionsDao {
   }
 
 }
-
