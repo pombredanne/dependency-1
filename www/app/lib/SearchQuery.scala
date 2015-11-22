@@ -13,23 +13,9 @@ case class SearchQuery(
       "groupId" -> groupId,
       "artifactId" -> artifactId,
       "version" -> version
-    ).filter { case (key, value) => !value.isEmpty }.
-      map { case (key, value) => s"$key='${value.get}'" }.
+    ).filter { case (key, value) => !value.map(_.trim).getOrElse("").isEmpty }.
+      map { case (key, value) => s"$key=${value.get.trim}" }.
       mkString(" and ")
-  }
-
-}
-
-object SearchQuery {
-
-  def parse(value: String): SearchQuery = {
-    value.trim match {
-      case "" => SearchQuery()
-      case v => SearchQueryParser.parse(v) match {
-        case Left(errors) => sys.error("Error parsing query[$value]: " + errors.mkString(", "))
-        case Right(query) => query
-      }
-    }
   }
 
 }
