@@ -1,0 +1,30 @@
+@(
+  data: com.bryzek.dependency.lib.UiData,
+  libraryVersion: com.bryzek.dependency.v0.models.LibraryVersion,
+  projects: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Project]
+)(implicit flash: Flash, messages: Messages)
+
+@main(data.copy(title = Some(s"Library: ${libraryVersion.library.groupId}.${libraryVersion.library.artifactId} Version ${libraryVersion.version}"))) {
+
+  <ul>
+    <li>Group ID: @libraryVersion.library.groupId</li>
+    <li>Artifact ID: @libraryVersion.library.artifactId</li>
+    <li>Resolvers: @libraryVersion.library.resolvers</li>
+    <li>Version: @libraryVersion.version</li>
+  </ul>
+
+  <h3>Projects</h3>
+  @views.html.projects.table(projects)
+  
+  @if(projects.hasPrevious || projects.hasNext) {
+    <ul class="pager">
+      @if(projects.hasPrevious) {
+        <li><a href="@routes.LibraryVersionsController.show(libraryVersion.guid, projectsPage = projects.page - 1)">Previous</a></li>
+      }
+      @if(projects.hasNext) {
+        <li><a href="@routes.LibraryVersionsController.show(libraryVersion.guid,  projectsPage = projects.page + 1)">Next</a></li>
+      }
+    </ul>
+  }
+
+}

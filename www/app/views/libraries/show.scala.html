@@ -2,7 +2,7 @@
   data: com.bryzek.dependency.lib.UiData,
   library: com.bryzek.dependency.v0.models.Library,
   versions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LibraryVersion],
-  projects: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Project]
+  projectLibraryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectLibraryVersion]
 )(implicit flash: Flash, messages: Messages)
 
 @main(data.copy(title = Some(s"Library: ${library.groupId}.${library.artifactId}"))) {
@@ -13,26 +13,39 @@
     <li>Resolvers: @library.resolvers</li>
     <li>Versions:
       @versions.items.map { version =>
-        <a href="#">@version.version</a>
+        <a href="@routes.LibraryVersionsController.show(version.guid)">@version.version</a>
       }
       @if(versions.hasPrevious) {
-        <a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page - 1, projectsPage = projects.page)">Previous</a>
+        <a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page - 1, projectsPage = projectLibraryVersions.page)">Previous</a>
       }
       @if(versions.hasNext) {
-        <a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page + 1, projectsPage = projects.page)">Next</a>
+        <a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page + 1, projectsPage = projectLibraryVersions.page)">Next</a>
 	}
     </li>
   </ul>
 
   <h3>Projects</h3>
-  @views.html.projects.table(projects)
-  @if(projects.hasPrevious || projects.hasNext) {
-    <ul class="pager">
-      @if(projects.hasPrevious) {
-        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page, projectsPage = projects.page - 1)">Previous</a></li>
+  <div class="table-responsive">
+    <table class="table">
+      @projectLibraryVersions.items.map { rec =>
+        <tr>
+          <td><a href="@routes.ProjectsController.show(rec.project.guid)">@{rec.project.name}</a></td>
+
+          <td><a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(rec.libraryVersion.library.groupId)).query))">@rec.libraryVersion.library.groupId</td>
+          <td><a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(rec.libraryVersion.library.groupId), artifactId = Some(rec.libraryVersion.library.artifactId)).query))">@rec.libraryVersion.library.artifactId</td>
+          <td><a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(rec.libraryVersion.library.groupId), artifactId = Some(rec.libraryVersion.library.artifactId), version = Some(rec.libraryVersion.version)).query))">@rec.libraryVersion.version</td>
+        </tr>
       }
-      @if(projects.hasNext) {
-        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page, projectsPage = projects.page + 1)">Next</a></li>
+    </table>
+  </div>
+
+  @if(projectLibraryVersions.hasPrevious || projectLibraryVersions.hasNext) {
+    <ul class="pager">
+      @if(projectLibraryVersions.hasPrevious) {
+        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page, projectsPage = projectLibraryVersions.page - 1)">Previous</a></li>
+      }
+      @if(projectLibraryVersions.hasNext) {
+        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page, projectsPage = projectLibraryVersions.page + 1)">Next</a></li>
       }
     </ul>
   }

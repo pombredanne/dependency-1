@@ -30,7 +30,7 @@
   }
 
   <h3>Libraries</h3>
-  @views.html.libraryVersions.table(libraryVersions)
+  @views.html.libraries.versions.table(libraryVersions)
   @if(libraryVersions.hasPrevious || libraryVersions.hasNext) {
     <ul class="pager">
       @if(libraryVersions.hasPrevious) {

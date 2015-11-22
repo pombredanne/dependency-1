@@ -46,14 +46,14 @@ class LibrariesController @javax.inject.Inject() (
     withLibrary(request, guid) { library =>
       for {
         versions <- dependencyClient(request).libraryVersions.get(libraryGuid = Some(guid))
-        projects <- dependencyClient(request).projects.get(libraryGuid = Some(guid))
+        projectLibraryVersions <- dependencyClient(request).projectLibraryVersions.get(libraryGuid = Some(guid))
       } yield {
         Ok(
           views.html.libraries.show(
             uiData(request),
             library,
             PaginatedCollection(versionsPage, versions),
-            PaginatedCollection(projectsPage, projects)
+            PaginatedCollection(projectsPage, projectLibraryVersions)
           )
         )
       }
