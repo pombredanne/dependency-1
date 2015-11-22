@@ -20,6 +20,14 @@ class Projects @javax.inject.Inject() (
     guid: Option[UUID],
     guids: Option[Seq[UUID]],
     name: Option[String],
+    groupId: _root_.scala.Option[String],
+    artifactId: _root_.scala.Option[String],
+    version: _root_.scala.Option[String],
+    libraryGuid: _root_.scala.Option[_root_.java.util.UUID],
+    libraryVersionGuid: _root_.scala.Option[_root_.java.util.UUID],
+    language: _root_.scala.Option[String],
+    languageGuid: _root_.scala.Option[_root_.java.util.UUID],
+    languageVersionGuid: _root_.scala.Option[_root_.java.util.UUID],
     limit: Long = 25,
     offset: Long = 0
   ) = Identified { request =>
@@ -29,6 +37,14 @@ class Projects @javax.inject.Inject() (
           guid = guid,
           guids = optionalGuids(guids),
           name = name,
+          groupId = groupId,
+          artifactId = artifactId,
+          version = version,
+          libraryGuid = libraryGuid,
+          libraryVersionGuid = libraryVersionGuid,
+          language = language,
+          languageGuid = languageGuid,
+          languageVersionGuid = languageVersionGuid,
           limit = limit,
           offset = offset
         )

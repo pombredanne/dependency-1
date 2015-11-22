@@ -78,10 +78,8 @@ object LanguageVersionsDao {
 
   def findByLanguageAndVersion(
     language: Language, version: String
-  ) (
-    implicit c: java.sql.Connection
   ): Option[LanguageVersion] = {
-    findAllWithConnection(
+    findAll(
       languageGuid = Some(language.guid),
       version = Some(version),
       limit = 1

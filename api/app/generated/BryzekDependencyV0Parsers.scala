@@ -167,6 +167,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       guid: String = "guid",
+      language: com.bryzek.dependency.v0.anorm.parsers.Language.Mappings,
       version: String = "version",
       audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
     )
@@ -179,6 +180,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         guid = s"${prefix}${sep}guid",
+        language = com.bryzek.dependency.v0.anorm.parsers.Language.Mappings.prefix(Seq(prefix, "language").filter(!_.isEmpty).mkString("_"), "_"),
         version = s"${prefix}${sep}version",
         audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
       )
@@ -189,11 +191,13 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LanguageVersion] = {
       SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      com.bryzek.dependency.v0.anorm.parsers.Language.parser(mappings.language) ~
       SqlParser.str(mappings.version) ~
       io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
-        case guid ~ version ~ audit => {
+        case guid ~ language ~ version ~ audit => {
           com.bryzek.dependency.v0.models.LanguageVersion(
             guid = guid,
+            language = language,
             version = version,
             audit = audit
           )

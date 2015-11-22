@@ -80,10 +80,8 @@ object LibraryVersionsDao {
 
   def findByLibraryAndVersion(
     library: Library, version: String
-  ) (
-    implicit c: java.sql.Connection
   ): Option[LibraryVersion] = {
-    findAllWithConnection(
+    findAll(
       libraryGuid = Some(library.guid),
       version = Some(version),
       limit = 1

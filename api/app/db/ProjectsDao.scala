@@ -235,10 +235,40 @@ object ProjectsDao {
     findAll(guid = Some(guid), limit = 1).headOption
   }
 
+  private val FilterLibraryVersions = """
+    and projects.guid in (select project_library_versions.project_guid
+                            from project_library_versions
+                            join library_versions on library_versions.deleted_at is null
+                                                 and library_versions.guid = project_library_versions.library_version_guid
+                            join libraries on libraries.deleted_at is null
+                                                 and libraries.guid = library_versions.library_guid
+                           where project_library_versions.deleted_at is null
+                             and %s)
+  """.trim
+
+  private val FilterLanguageVersions = """
+    and projects.guid in (select project_language_versions.project_guid
+                            from project_language_versions
+                            join language_versions on language_versions.deleted_at is null
+                                                 and language_versions.guid = project_language_versions.language_version_guid
+                            join languages on languages.deleted_at is null
+                                                 and languages.guid = language_versions.language_guid
+                           where project_language_versions.deleted_at is null
+                             and %s)
+  """.trim
+
   def findAll(
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     name: Option[String] = None,
+    groupId: _root_.scala.Option[String] = None,
+    artifactId: _root_.scala.Option[String] = None,
+    version: _root_.scala.Option[String] = None,
+    libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+    libraryVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+    language: _root_.scala.Option[String] = None,
+    languageGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+    languageVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -248,13 +278,29 @@ object ProjectsDao {
       guid.map { v => "and projects.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("projects.guid", _) },
       name.map { v => "and lower(projects.name) = lower(trim({name}))" },
+      groupId.map { v => FilterLibraryVersions.format("libraries.group_id = trim({group_id})") },
+      artifactId.map { v => FilterLibraryVersions.format("libraries.artifact_id = trim({artifact_id})") },
+      version.map { v => FilterLibraryVersions.format("library_versions.version = trim({version})") },
+      libraryGuid.map { v => FilterLibraryVersions.format("libraries.guid = {library_guid}::uuid") },
+      libraryVersionGuid.map { v => FilterLibraryVersions.format("library_versions.guid = {library_version_guid}::uuid") },
+      language.map { v => FilterLanguageVersions.format("lower(languages.name) = lower(trim({language}))") },
+      languageGuid.map { v => FilterLanguageVersions.format("languages.guid = {language_guid}::uuid") },
+      languageVersionGuid.map { v => FilterLanguageVersions.format("language_versions.guid = {language_version_guid}::uuid") },
       isDeleted.map(Filters.isDeleted("projects", _)),
       Some(s"order by projects.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
-      name.map('name -> _.toString)
+      name.map('name -> _.toString),
+      groupId.map('group_id -> _.toString),
+      artifactId.map('artifact_id -> _.toString),
+      version.map('version -> _.toString),
+      libraryGuid.map('library_guid -> _.toString),
+      libraryVersionGuid.map('library_version_guid -> _.toString),
+      language.map('language -> _.toString),
+      languageGuid.map('language_guid -> _.toString),
+      languageVersionGuid.map('language_version_guid -> _.toString)
     ).flatten
 
     DB.withConnection { implicit c =>

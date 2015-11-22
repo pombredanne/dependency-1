@@ -47,6 +47,7 @@
 	"language_version": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
+		{ "name": "language", "type": "language" },
 		{ "name": "version", "type": "string" },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
@@ -181,7 +182,15 @@
                         { "name": "guid", "type": "uuid", "description": "Find project with this guid. Exact match", "required": false },
 			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
                         { "name": "name", "type": "string", "description": "Find project with this name. Case in-sensitive. Exact match", "required": false },
-                        { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "group_id", "type": "string", "description": "Find projects that are dependent on a library with this group ID. Exact match", "required": false },
+                        { "name": "artifact_id", "type": "string", "description": "Find projects that are dependent on a library with this artifact ID. Exact match", "required": false },
+                        { "name": "version", "type": "string", "description": "Find projects that are dependent on a library with this version number. Exact match", "required": false },
+                        { "name": "library_guid", "type": "uuid", "description": "Find projects that are dependent on a library", "required": false },
+                        { "name": "library_version_guid", "type": "uuid", "description": "Find projects that are dependent on a specific library version", "required": false },
+                        { "name": "language", "type": "string", "description": "Find projects that are dependent on this language. Case in-sensitive. Exact match", "required": false },
+                        { "name": "language_guid", "type": "uuid", "description": "Find projects that are dependent on a language", "required": false },
+                        { "name": "language_version_guid", "type": "uuid", "description": "Find projects that are dependent on a language", "required": false },
+			{ "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
                     "responses": {

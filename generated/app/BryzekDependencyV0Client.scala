@@ -25,6 +25,7 @@ package com.bryzek.dependency.v0.models {
 
   case class LanguageVersion(
     guid: _root_.java.util.UUID,
+    language: com.bryzek.dependency.v0.models.Language,
     version: String,
     audit: io.flow.common.v0.models.Audit
   )
@@ -222,6 +223,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyLanguageVersion: play.api.libs.json.Reads[LanguageVersion] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "language").read[com.bryzek.dependency.v0.models.Language] and
         (__ \ "version").read[String] and
         (__ \ "audit").read[io.flow.common.v0.models.Audit]
       )(LanguageVersion.apply _)
@@ -230,6 +232,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyLanguageVersion: play.api.libs.json.Writes[LanguageVersion] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "language").write[com.bryzek.dependency.v0.models.Language] and
         (__ \ "version").write[String] and
         (__ \ "audit").write[io.flow.common.v0.models.Audit]
       )(unlift(LanguageVersion.unapply _))
@@ -607,12 +610,28 @@ package com.bryzek.dependency.v0 {
         guid: _root_.scala.Option[_root_.java.util.UUID] = None,
         guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
         name: _root_.scala.Option[String] = None,
+        groupId: _root_.scala.Option[String] = None,
+        artifactId: _root_.scala.Option[String] = None,
+        version: _root_.scala.Option[String] = None,
+        libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        libraryVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        language: _root_.scala.Option[String] = None,
+        languageGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        languageVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Project]] = {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
           name.map("name" -> _),
+          groupId.map("group_id" -> _),
+          artifactId.map("artifact_id" -> _),
+          version.map("version" -> _),
+          libraryGuid.map("library_guid" -> _.toString),
+          libraryVersionGuid.map("library_version_guid" -> _.toString),
+          language.map("language" -> _),
+          languageGuid.map("language_guid" -> _.toString),
+          languageVersionGuid.map("language_version_guid" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
@@ -926,6 +945,14 @@ package com.bryzek.dependency.v0 {
       guid: _root_.scala.Option[_root_.java.util.UUID] = None,
       guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
       name: _root_.scala.Option[String] = None,
+      groupId: _root_.scala.Option[String] = None,
+      artifactId: _root_.scala.Option[String] = None,
+      version: _root_.scala.Option[String] = None,
+      libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      libraryVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      language: _root_.scala.Option[String] = None,
+      languageGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      languageVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Project]]
