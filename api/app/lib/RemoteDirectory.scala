@@ -6,6 +6,12 @@ import java.net.URL
 import scala.util.{Failure, Success, Try}
 import play.api.Logger
 
+/**
+  * Accepts the URI of a resolver
+  * (e.g. https://oss.sonatype.org/content/repositories/snapshots) and
+  * parsers the contents in a list of files and
+  * directories. Intentionally NOT recursive.
+  */
 object RemoteDirectory {
 
   case class Result(

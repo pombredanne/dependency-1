@@ -21,7 +21,7 @@ object RemoteVersions {
     fetchUrl(
       url = makeUrl(resolver, groupId),
       filter = { name => name == artifactId || name.startsWith(artifactId + "_") }
-    )
+    ).sortBy { _.tag }
   }
 
   private[this] def fetchUrl(
@@ -32,9 +32,7 @@ object RemoteVersions {
 
     result.directories.flatMap { dir =>
       val thisUrl = joinUrl(url, dir)
-      println(s"thisUrl[$thisUrl]")
       RemoteDirectory.fetch(thisUrl)().directories.map { d =>
-        println(s"  - d: $d")
         fetchVersionFromMavenMetadata(
           joinUrl(thisUrl, d),
           crossBuildVersion = crossBuildVersion(dir)
@@ -48,7 +46,6 @@ object RemoteVersions {
     crossBuildVersion: Option[VersionTag] = None
   ): Option[Version] = {
     val fullUrl = Seq(url, "maven-metadata.xml").mkString("/")
-    println(s"fullUrl[$fullUrl]")
 
     val cleaner = new HtmlCleaner()
     Try(cleaner.clean(new URL(fullUrl))) match {
