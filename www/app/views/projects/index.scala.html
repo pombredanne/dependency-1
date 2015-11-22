@@ -13,20 +13,18 @@
     <em>No projects</em>
 
   } else {
-    <div class="table-responsive">
-      @table(projects)
+    @table(projects)
 
-      @if(projects.hasPrevious || projects.hasNext) {
-        <ul class="pager">
-          @if(projects.hasPrevious) {
-            <li><a href="@routes.ProjectsController.index(projects.page - 1)">Previous</a></li>
-          }
-          @if(projects.hasNext) {
-            <li><a href="@routes.ProjectsController.index(projects.page + 1)">Next</a></li>
-          }
-        </ul>
-      }
-    </div>
+    @if(projects.hasPrevious || projects.hasNext) {
+      <ul class="pager">
+        @if(projects.hasPrevious) {
+          <li><a href="@routes.ProjectsController.index(projects.page - 1)">Previous</a></li>
+       }
+        @if(projects.hasNext) {
+         <li><a href="@routes.ProjectsController.index(projects.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
   }
 
 }
