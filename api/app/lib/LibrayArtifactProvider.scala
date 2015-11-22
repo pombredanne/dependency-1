@@ -3,7 +3,6 @@ package com.bryzek.dependency.lib
 import com.bryzek.dependency.v0.models.Library
 import io.flow.play.util.Config
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import java.net.URI
 
@@ -12,7 +11,7 @@ trait LibraryArtifactProvider {
   /**
     * Returns the artifacts for this library.
     */
-  def artifacts(library: Library)(implicit ec: ExecutionContext): Future[Seq[ArtifactVersion]]
+  def artifacts(library: Library): Seq[ArtifactVersion]
 
 }
 
@@ -21,16 +20,12 @@ private[lib] case class DefaultLibraryArtifactProvider() extends LibraryArtifact
 
   override def artifacts(
     library: Library
-  ) (
-    implicit ec: ExecutionContext
-  ) : Future[Seq[ArtifactVersion]] = {
+  ) : Seq[ArtifactVersion] = {
     val versions = library.resolvers.map { resolver =>
       fetchArtifactVersions(resolver, library)
     }.flatten.distinct
 
-    Future {
-      versions
-    }
+    versions
   }
 
   private[this] def fetchArtifactVersions(

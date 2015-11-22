@@ -15,7 +15,7 @@ object RemoteVersions {
     fetchUrl(
       url = makeUrl(resolver, groupId),
       filter = { name => name == artifactId || name.startsWith(artifactId + "_") }
-    ).sortBy { _.tag }
+    ).sortBy { _.tag }.reverse
   }
 
   private[this] def fetchUrl(

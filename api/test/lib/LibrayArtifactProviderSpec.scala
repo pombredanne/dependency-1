@@ -10,8 +10,6 @@ import play.api.test._
 
 class LibrayArtifactProviderSpec extends PlaySpecification {
 
-  import scala.concurrent.ExecutionContext.Implicits.global
-
   def createAudit(): Audit = {
     val reference = Reference(UUID.randomUUID())
     val now = new DateTime()
@@ -25,10 +23,10 @@ class LibrayArtifactProviderSpec extends PlaySpecification {
 
   // See https://github.com/sbt/sbt/blob/3e5449f02d082c1326da7e6319d70d5b26b84bfd/launch/src/main/resources/sbt.boot.properties0.11.3
   val DefaultResolvers = Seq(
-    "https://jcenter.bintray.com/",
-    "https://repo.typesafe.com/typesafe/ivy-releases/",
-    "https://oss.sonatype.org/content/repositories/snapshots",
-    "https://repo1.maven.org/maven2/"
+    "http://jcenter.bintray.com/",
+    "http://repo.typesafe.com/typesafe/ivy-releases/",
+    "http://oss.sonatype.org/content/repositories/snapshots",
+    "http://repo1.maven.org/maven2/"
   )
 
   def createLibrary(
@@ -49,7 +47,7 @@ class LibrayArtifactProviderSpec extends PlaySpecification {
 
   "parseUri" in {
     val library = createLibrary(groupId = "com.github.tototoshi", artifactId = "scala-csv")
-    await(provider.artifacts(library)) must beEqualTo(Nil)
+    provider.artifacts(library) must beEqualTo(Nil)
   }
 
 }
