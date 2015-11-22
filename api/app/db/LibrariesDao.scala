@@ -1,6 +1,7 @@
 package db
 
 import com.bryzek.dependency.actors.MainActor
+import com.bryzek.dependency.lib.VersionTag
 import com.bryzek.dependency.v0.models.{Library, LibraryForm}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
@@ -63,7 +64,9 @@ object LibrariesDao {
       }
       case Some(lib) => {
         DB.withConnection { implicit c =>
-          LibraryVersionsDao.upsertWithConnection(createdBy, lib.guid, form.version)
+          form.version.foreach { version =>
+            LibraryVersionsDao.upsertWithConnection(createdBy, lib.guid, version)
+          }
         }
         Right(lib)
       }
@@ -83,7 +86,9 @@ object LibrariesDao {
             'artifact_id -> form.artifactId.trim,
             'created_by_guid -> createdBy.guid
           ).execute()
-          LibraryVersionsDao.upsertWithConnection(createdBy, guid, form.version)
+          form.version.foreach { version =>
+            LibraryVersionsDao.upsertWithConnection(createdBy, guid, version)
+          }
         }
 
         MainActor.ref ! MainActor.Messages.LibraryCreated(guid)

@@ -68,7 +68,14 @@
 		{ "name": "group_id", "type": "string" },
 		{ "name": "resolvers", "type": "[string]" },
 		{ "name": "artifact_id", "type": "string" },
-		{ "name": "version", "type": "string", "description": "If provided, we automatically record this version of this library." }
+		{ "name": "version", "type": "version_form", "required": false, "description": "If provided, we automatically record this version of this library." }
+	    ]
+	},
+
+	"version_form": {
+	    "fields": [
+		{ "name": "version", "type": "string", "example": "1.0.0" },
+		{ "name": "cross_build_version", "type": "string", "example": "2.11", "required": false }
 	    ]
 	},
 

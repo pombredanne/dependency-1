@@ -10,4 +10,8 @@ object Resolvers {
     "http://repo1.maven.org/maven2/"
   )
 
+  def all(local: Seq[String]): Seq[String] = {
+    (local ++ Default).distinct
+  }
+
 }

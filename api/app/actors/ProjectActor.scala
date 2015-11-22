@@ -46,7 +46,12 @@ class ProjectActor extends Actor {
                 createdBy = MainActor.SystemUser,
                 project = project,
                 languages = dependencies.languages,
-                libraries = dependencies.librariesAndPlugins.map(_.map(_.toLibraryForm(dependencies.resolvers.getOrElse(Nil))))
+                libraries = dependencies.librariesAndPlugins.map(_.map { artifact =>
+                  artifact.toLibraryForm(
+                    resolvers = dependencies.resolvers.getOrElse(Nil),
+                    crossBuildVersion = dependencies.crossBuildVersion
+                  )
+                })
               )
             }
           }

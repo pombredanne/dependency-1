@@ -107,6 +107,7 @@ create table library_versions (
   guid                    uuid primary key,
   library_guid            uuid not null references libraries,
   version                 text not null check(non_empty_trimmed_string(version)),
+  cross_build_version     text check(trim(cross_build_version) = cross_build_version),
   sort_key                text not null
 );
 
@@ -116,7 +117,14 @@ comment on table library_versions is '
 
 select schema_evolution_manager.create_basic_audit_data('public', 'library_versions');
 create index on library_versions(library_guid);
-create unique index library_versions_library_guid_lower_version_not_deleted_un_idx on library_versions(library_guid, lower(version)) where deleted_at is null;
+
+create unique index library_versions_library_guid_lower_version_not_cross_built_not_deleted_un_idx
+    on library_versions(library_guid, lower(version))
+ where deleted_at is null and cross_build_version is null;
+
+create unique index library_versions_library_guid_lower_version_lower_cross_build_version_not_deleted_un_idx
+    on library_versions(library_guid, lower(version), lower(cross_build_version))
+ where deleted_at is null and cross_build_version is not null;
 
 create table languages (
   guid                    uuid primary key,

@@ -42,7 +42,7 @@ package com.bryzek.dependency.v0.models {
     groupId: String,
     resolvers: Seq[String],
     artifactId: String,
-    version: String
+    version: _root_.scala.Option[com.bryzek.dependency.v0.models.VersionForm] = None
   )
 
   case class LibraryVersion(
@@ -79,6 +79,11 @@ package com.bryzek.dependency.v0.models {
     name: _root_.scala.Option[String] = None,
     scms: _root_.scala.Option[com.bryzek.dependency.v0.models.Scms] = None,
     uri: _root_.scala.Option[String] = None
+  )
+
+  case class VersionForm(
+    version: String,
+    crossBuildVersion: _root_.scala.Option[String] = None
   )
 
   sealed trait ProgrammingLanguage
@@ -272,7 +277,7 @@ package com.bryzek.dependency.v0.models {
         (__ \ "group_id").read[String] and
         (__ \ "resolvers").read[Seq[String]] and
         (__ \ "artifact_id").read[String] and
-        (__ \ "version").read[String]
+        (__ \ "version").readNullable[com.bryzek.dependency.v0.models.VersionForm]
       )(LibraryForm.apply _)
     }
 
@@ -281,7 +286,7 @@ package com.bryzek.dependency.v0.models {
         (__ \ "group_id").write[String] and
         (__ \ "resolvers").write[Seq[String]] and
         (__ \ "artifact_id").write[String] and
-        (__ \ "version").write[String]
+        (__ \ "version").writeNullable[com.bryzek.dependency.v0.models.VersionForm]
       )(unlift(LibraryForm.unapply _))
     }
 
@@ -367,6 +372,20 @@ package com.bryzek.dependency.v0.models {
         (__ \ "scms").writeNullable[com.bryzek.dependency.v0.models.Scms] and
         (__ \ "uri").writeNullable[String]
       )(unlift(ProjectPatchForm.unapply _))
+    }
+
+    implicit def jsonReadsDependencyVersionForm: play.api.libs.json.Reads[VersionForm] = {
+      (
+        (__ \ "version").read[String] and
+        (__ \ "cross_build_version").readNullable[String]
+      )(VersionForm.apply _)
+    }
+
+    implicit def jsonWritesDependencyVersionForm: play.api.libs.json.Writes[VersionForm] = {
+      (
+        (__ \ "version").write[String] and
+        (__ \ "cross_build_version").writeNullable[String]
+      )(unlift(VersionForm.unapply _))
     }
   }
 }

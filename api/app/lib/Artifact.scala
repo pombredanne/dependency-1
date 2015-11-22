@@ -1,19 +1,31 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.LibraryForm
+import com.bryzek.dependency.v0.models.{LibraryForm, VersionForm}
 
 case class Artifact(
   groupId: String,
   artifactId: String,
-  version: String
+  version: String,
+  isCrossBuilt: Boolean
 ) {
 
-  def toLibraryForm(resolvers: Seq[Resolver]): LibraryForm = {
+  def toLibraryForm(
+    resolvers: Seq[Resolver],
+    crossBuildVersion: Option[VersionTag]
+  ): LibraryForm = {
     LibraryForm(
-      resolvers = resolvers.map(_.uri),
+      resolvers = Resolvers.all(resolvers.map(_.uri)),
       groupId = groupId,
       artifactId = artifactId,
-      version = version
+      version = Some(
+        VersionForm(
+          version = version,
+          crossBuildVersion = isCrossBuilt match {
+            case true => crossBuildVersion.map(_.version)
+            case false => None
+          }
+        )
+      )
     )
   }
 

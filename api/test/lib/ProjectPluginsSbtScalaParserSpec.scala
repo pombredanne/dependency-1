@@ -51,8 +51,8 @@ addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.0.1")
       )
       result.plugins must beEqualTo(
         Seq(
-          Artifact("com.typesafe.play", "sbt-plugin", "2.4.3"),
-          Artifact("org.scoverage", "sbt-scoverage", "1.0.1")
+          Artifact("com.typesafe.play", "sbt-plugin", "2.4.3", false),
+          Artifact("org.scoverage", "sbt-scoverage", "1.0.1", true)
         )
       )
     }

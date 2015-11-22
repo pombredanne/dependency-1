@@ -1,6 +1,7 @@
 package db
 
 import com.bryzek.dependency.v0.models._
+import com.bryzek.dependency.v0.models.VersionForm
 import io.flow.user.v0.models.{NameForm, User, UserForm}
 import java.util.UUID
 
@@ -48,14 +49,21 @@ trait Helpers {
     resolvers = Seq("http://dependencies.io.flow"),
     groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
     artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
-    version = "0.0.1"
+    version = Some(VersionForm("0.0.1"))
   )
 
   def createLibraryVersion(
     library: Library = createLibrary(),
-    version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
+    version: VersionForm = createVersionForm()
   ): LibraryVersion = {
     LibraryVersionsDao.create(systemUser, library.guid, version)
+  }
+
+  def createVersionForm(
+    version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase,
+    crossBuildVersion: Option[String] = None
+  ) = {
+    VersionForm(version, crossBuildVersion)
   }
 
   def createProject(
@@ -79,7 +87,7 @@ trait Helpers {
     val libraryForm = createLibraryForm().copy(
       groupId = UUID.randomUUID.toString,
       artifactId = UUID.randomUUID.toString,
-      version = UUID.randomUUID.toString
+      version = Some(createVersionForm())
     )
 
     val project = createProject()
@@ -89,7 +97,7 @@ trait Helpers {
       sys.error("Failed to find library")
     }
 
-    val libraryVersion = LibraryVersionsDao.findByLibraryAndVersion(library, libraryForm.version).getOrElse {
+    val libraryVersion = LibraryVersionsDao.findByLibraryAndVersionAndCrossBuildVersion(library, libraryForm.version.get.version, libraryForm.version.get.crossBuildVersion).getOrElse {
       sys.error("Failed to find library version")
     }
 

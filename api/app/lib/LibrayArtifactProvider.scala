@@ -15,7 +15,7 @@ trait LibraryArtifactProvider {
 
 }
 
-private[lib] case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
+case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
 
 
   override def artifacts(

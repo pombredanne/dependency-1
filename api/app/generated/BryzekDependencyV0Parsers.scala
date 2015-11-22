@@ -261,7 +261,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       groupId: String = "groupId",
       resolvers: String = "resolvers",
       artifactId: String = "artifactId",
-      version: String = "version"
+      version: com.bryzek.dependency.v0.anorm.parsers.VersionForm.Mappings
     )
 
     object Mappings {
@@ -274,7 +274,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
         groupId = s"${prefix}${sep}group_id",
         resolvers = s"${prefix}${sep}resolvers",
         artifactId = s"${prefix}${sep}artifact_id",
-        version = s"${prefix}${sep}version"
+        version = com.bryzek.dependency.v0.anorm.parsers.VersionForm.Mappings.prefix(Seq(prefix, "version").filter(!_.isEmpty).mkString("_"), "_")
       )
 
     }
@@ -285,7 +285,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       SqlParser.str(mappings.groupId) ~
       SqlParser.get[Seq[String]](mappings.resolvers) ~
       SqlParser.str(mappings.artifactId) ~
-      SqlParser.str(mappings.version) map {
+      com.bryzek.dependency.v0.anorm.parsers.VersionForm.parser(mappings.version).? map {
         case groupId ~ resolvers ~ artifactId ~ version => {
           com.bryzek.dependency.v0.models.LibraryForm(
             groupId = groupId,
@@ -500,6 +500,42 @@ package com.bryzek.dependency.v0.anorm.parsers {
             name = name,
             scms = scms,
             uri = uri
+          )
+        }
+      }
+    }
+
+  }
+
+  object VersionForm {
+
+    case class Mappings(
+      version: String = "version",
+      crossBuildVersion: String = "crossBuildVersion"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        version = s"${prefix}${sep}version",
+        crossBuildVersion = s"${prefix}${sep}cross_build_version"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.VersionForm] = {
+      SqlParser.str(mappings.version) ~
+      SqlParser.str(mappings.crossBuildVersion).? map {
+        case version ~ crossBuildVersion => {
+          com.bryzek.dependency.v0.models.VersionForm(
+            version = version,
+            crossBuildVersion = crossBuildVersion
           )
         }
       }

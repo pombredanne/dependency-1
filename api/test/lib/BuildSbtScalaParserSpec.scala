@@ -50,8 +50,8 @@ lazy val root = project
       result.languages must beEqualTo(Seq(LanguageForm("scala", "2.11.7")))
       result.libraries must beEqualTo(
         Seq(
-          Artifact("io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT"),
-          Artifact("org.postgresql", "postgresql", "9.4-1202-jdbc42")
+          Artifact("io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT", true),
+          Artifact("org.postgresql", "postgresql", "9.4-1202-jdbc42", false)
         )
       )
     }
@@ -76,8 +76,8 @@ lazy val root = project
       result.languages must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
-          Artifact("io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT"),
-          Artifact("org.postgresql", "postgresql", "9.4-1202-jdbc42")
+          Artifact("io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT", true),
+          Artifact("org.postgresql", "postgresql", "9.4-1202-jdbc42", false)
         )
       )
     }
@@ -111,9 +111,9 @@ lazy val www = project
       result.languages must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
-          Artifact("io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT"),
-          Artifact("io.flow", "lib-play-postgresql", "0.0.2-SNAPSHOT"),
-          Artifact("org.postgresql", "postgresql", "9.4-1202-jdbc42")
+          Artifact("io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT", true),
+          Artifact("io.flow", "lib-play-postgresql", "0.0.2-SNAPSHOT", true),
+          Artifact("org.postgresql", "postgresql", "9.4-1202-jdbc42", false)
         )
       )
     }
@@ -138,10 +138,10 @@ lazy val avro = project
     result.languages must beEqualTo(Nil)
     result.libraries must beEqualTo(
       Seq(
-        Artifact("com.typesafe.play", "play-json", "2.4.2"),
-        Artifact("org.apache.avro", "avro", "1.7.7"),
-        Artifact("org.apache.avro", "avro-compiler", "1.7.7"),
-        Artifact("org.scalatest", "scalatest", "2.2.0")
+        Artifact("com.typesafe.play", "play-json", "2.4.2", true),
+        Artifact("org.apache.avro", "avro", "1.7.7", false),
+        Artifact("org.apache.avro", "avro-compiler", "1.7.7", false),
+        Artifact("org.scalatest", "scalatest", "2.2.0", true)
       )
     )
   }
@@ -158,7 +158,7 @@ lazy val avro = project
     result.languages must beEqualTo(Nil)
     result.libraries must beEqualTo(
       Seq(
-        Artifact("org.scalatest", "scalatest", "2.2.0")
+        Artifact("org.scalatest", "scalatest", "2.2.0", true)
       )
     )
 }

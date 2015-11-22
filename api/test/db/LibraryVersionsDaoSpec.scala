@@ -1,5 +1,6 @@
 package db
 
+import com.bryzek.dependency.v0.models.VersionForm
 import org.scalatest._
 import play.api.db._
 import play.api.test._
@@ -13,9 +14,9 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "upsert" in {
     val library = createLibrary()
-    val version1 = LibraryVersionsDao.upsert(systemUser, library.guid, "1.0")
-    val version2 = LibraryVersionsDao.upsert(systemUser, library.guid, "1.0")
-    val version3 = LibraryVersionsDao.upsert(systemUser, library.guid, "1.1")
+    val version1 = LibraryVersionsDao.upsert(systemUser, library.guid, VersionForm("1.0", None))
+    val version2 = LibraryVersionsDao.upsert(systemUser, library.guid, VersionForm("1.0", None))
+    val version3 = LibraryVersionsDao.upsert(systemUser, library.guid, VersionForm("1.1", None))
 
     version1.guid must be(version2.guid)
     version2.guid must not be(version3.guid)
@@ -45,10 +46,10 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "softDelete" in {
     val library = createLibrary()
-    val version1 = LibraryVersionsDao.upsert(systemUser, library.guid, "1.0")
+    val version1 = LibraryVersionsDao.upsert(systemUser, library.guid, VersionForm("1.0", None))
     LibraryVersionsDao.softDelete(systemUser, version1.guid)
-    val version2 = LibraryVersionsDao.upsert(systemUser, library.guid, "1.0")
-    val version3 = LibraryVersionsDao.upsert(systemUser, library.guid, "1.0")
+    val version2 = LibraryVersionsDao.upsert(systemUser, library.guid, VersionForm("1.0", None))
+    val version3 = LibraryVersionsDao.upsert(systemUser, library.guid, VersionForm("1.0", None))
 
     version1.guid must not be(version2.guid)
     version2.guid must be(version3.guid)

@@ -141,14 +141,16 @@ object ProjectsDao {
     project: Project,
     libraries: Seq[LibraryForm]
   ) {
-    val newGuids = libraries.map { form =>
+    val newGuids = libraries.flatMap { form =>
       val library = LibrariesDao.upsert(createdBy, form) match {
         case Left(errors) => sys.error(errors.mkString(", n"))
         case Right(library) => library
       }
-      LibraryVersionsDao.findByLibraryAndVersion(library, form.version).getOrElse {
-        sys.error("Could not create library version")
-      }.guid
+      form.version.map { version =>
+        LibraryVersionsDao.findByLibraryAndVersionAndCrossBuildVersion(library, version.version, version.crossBuildVersion).getOrElse {
+          sys.error("Could not create library version")
+        }.guid
+      }
     }
 
     val existingGuids = LibraryVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.guid)

@@ -1,6 +1,7 @@
 package com.bryzek.dependency.lib
 
 import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm, Project}
+import play.api.Logger
 import scala.concurrent.{ExecutionContext, Future}
 
 case class Dependencies(
@@ -16,6 +17,24 @@ case class Dependencies(
       case (Some(lib), None) => Some(lib)
       case (None, Some(plugins)) => Some(plugins)
       case (Some(lib), Some(plugins)) => Some(lib ++ plugins)
+    }
+  }
+
+  lazy val crossBuildVersion: Option[VersionTag] = {
+    languages match {
+      case None => None
+      case Some(langs) => {
+        langs.map(_.version).distinct.map(VersionTag(_)).sorted.reverse.toList match {
+          case Nil => None
+          case one :: Nil => {
+            Some(one)
+          }
+          case multiple => {
+            Logger.warn(s"Found multiple language versions[${multiple.mkString(", ")}]. Using first")
+            multiple.headOption
+          }
+        }
+      }
     }
   }
 

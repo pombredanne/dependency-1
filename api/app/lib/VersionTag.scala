@@ -4,6 +4,7 @@ object VersionTag {
 
   val Dash = """\-"""
   val Dot = """\."""
+  val Separator = "|99999|"
 
   def isDigit(x: String) = {
     x.matches("^\\d+$")

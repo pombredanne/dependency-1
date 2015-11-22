@@ -1,8 +1,9 @@
 package com.bryzek.dependency.actors
 
-import com.bryzek.dependency.v0.models.Library
+import com.bryzek.dependency.v0.models.{Library, LibraryForm, VersionForm}
+import com.bryzek.dependency.lib.DefaultLibraryArtifactProvider
 import io.flow.play.postgresql.Pager
-import db.{LibrariesDao, LibraryVersionsDao}
+import db.{LibrariesDao, LibraryVersionsDao, UsersDao}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -34,7 +35,13 @@ class LibraryActor extends Actor {
     ) {
       dataLibrary.foreach { lib =>
         println(s"Syncing library[$lib]")
-        // TODO: fetch all versions for this library and store them
+        DefaultLibraryArtifactProvider().artifacts(lib).map { version =>
+          LibraryVersionsDao.upsert(
+            createdBy = UsersDao.systemUser,
+            libraryGuid = lib.guid,
+            form = VersionForm(version.tag.version, version.crossBuildVersion.map(_.version))
+          )
+        }
       }
     }
 

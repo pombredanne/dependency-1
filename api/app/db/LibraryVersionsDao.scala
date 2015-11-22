@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.lib.VersionTag
-import com.bryzek.dependency.v0.models.{Library, LibraryVersion}
+import com.bryzek.dependency.v0.models.{Library, LibraryVersion, VersionForm}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
@@ -33,39 +33,45 @@ object LibraryVersionsDao {
     ({guid}::uuid, {library_guid}::uuid, {version}, {sort_key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  def upsert(createdBy: User, libraryGuid: UUID, version: String): LibraryVersion = {
+  def upsert(createdBy: User, libraryGuid: UUID, form: VersionForm): LibraryVersion = {
     DB.withConnection { implicit c =>
-      upsertWithConnection(createdBy, libraryGuid, version)
+      upsertWithConnection(createdBy, libraryGuid, form)
     }
   }
 
-  private[db] def upsertWithConnection(createdBy: User, libraryGuid: UUID, version: String)(
+  private[db] def upsertWithConnection(createdBy: User, libraryGuid: UUID, form: VersionForm)(
     implicit c: java.sql.Connection
   ): LibraryVersion = {
     findAllWithConnection(
       libraryGuid = Some(libraryGuid),
-      version = Some(version),
+      version = Some(form.version),
+      crossBuildVersion = Some(form.crossBuildVersion),
       limit = 1
     ).headOption.getOrElse {
-      createWithConnection(createdBy, libraryGuid, version)
+      createWithConnection(createdBy, libraryGuid, form)
     }
   }
 
-  def create(createdBy: User, libraryGuid: UUID, version: String): LibraryVersion = {
+  def create(createdBy: User, libraryGuid: UUID, form: VersionForm): LibraryVersion = {
     DB.withConnection { implicit c =>
-      createWithConnection(createdBy, libraryGuid, version)
+      createWithConnection(createdBy, libraryGuid, form)
     }
   }
 
-  def createWithConnection(createdBy: User, libraryGuid: UUID, version: String)(implicit c: java.sql.Connection): LibraryVersion = {
-    assert(!version.trim.isEmpty, "Version must be non empty")
+  def createWithConnection(createdBy: User, libraryGuid: UUID, form: VersionForm)(implicit c: java.sql.Connection): LibraryVersion = {
     val guid = UUID.randomUUID
+
+    val sortKey = Seq(
+      Some(VersionTag(form.version).sortKey),
+      form.crossBuildVersion.map(VersionTag(_).sortKey)
+    ).flatten.mkString(VersionTag.Separator)
 
     SQL(InsertQuery).on(
       'guid -> guid,
       'library_guid -> libraryGuid,
-      'version -> version.trim,
-      'sort_key -> VersionTag(version.trim).sortKey,
+      'version -> form.version.trim,
+      'cross_build_version -> form.crossBuildVersion.map(_.trim),
+      'sort_key -> sortKey,
       'created_by_guid -> createdBy.guid
     ).execute()
 
@@ -78,12 +84,15 @@ object LibraryVersionsDao {
     SoftDelete.delete("library_versions", deletedBy.guid, guid)
   }
 
-  def findByLibraryAndVersion(
-    library: Library, version: String
+  def findByLibraryAndVersionAndCrossBuildVersion(
+    library: Library,
+    version: String,
+    crossBuildVersion: Option[String]
   ): Option[LibraryVersion] = {
     findAll(
       libraryGuid = Some(library.guid),
       version = Some(version),
+      crossBuildVersion = Some(crossBuildVersion),
       limit = 1
     ).headOption
   }
@@ -110,6 +119,7 @@ object LibraryVersionsDao {
     libraryGuid: Option[UUID] = None,
     projectGuid: Option[UUID] = None,
     version: Option[String] = None,
+    crossBuildVersion: Option[Option[String]] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -121,6 +131,7 @@ object LibraryVersionsDao {
         libraryGuid = libraryGuid,
         projectGuid = projectGuid,
         version = version,
+        crossBuildVersion = crossBuildVersion,
         isDeleted = isDeleted,
         limit = limit,
         offset = offset
@@ -134,6 +145,7 @@ object LibraryVersionsDao {
     libraryGuid: Option[UUID] = None,
     projectGuid: Option[UUID] = None,
     version: Option[String] = None,
+    crossBuildVersion: Option[Option[String]] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -147,6 +159,12 @@ object LibraryVersionsDao {
       libraryGuid.map { v => s"and library_versions.library_guid = {library_guid}::uuid" },
       projectGuid.map { v => s"and library_versions.guid in (select library_version_guid from project_library_versions where deleted_at is null and project_guid = {project_guid}::uuid)" },
       version.map { v => s"and lower(library_versions.version) = lower(trim({version}))" },
+      crossBuildVersion.map { v =>
+        v match {
+          case None => s"and library_versions.cross_build_version is null"
+          case Some(_) => s"and lower(library_versions.cross_build_version) = lower(trim({cross_build_version}))"
+        }
+      },
       isDeleted.map(Filters.isDeleted("library_versions", _)),
       Some(s"order by library_versions.sort_key, library_versions.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -155,7 +173,8 @@ object LibraryVersionsDao {
       guid.map('guid -> _.toString),
       libraryGuid.map('library_guid -> _.toString),
       projectGuid.map('project_guid -> _.toString),
-      version.map('version -> _.toString)
+      version.map('version -> _.toString),
+      crossBuildVersion.map('cross_build_version -> _.toString)
     ).flatten
 
     SQL(sql).on(bind: _*).as(

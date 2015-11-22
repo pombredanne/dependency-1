@@ -92,6 +92,8 @@ trait SimpleScalaParser {
       value
     }
 
+    val isCrossBuilt = substring.indexOf("%%") >= 0
+
     substring.replaceAll("%%", "%").split("%").map(_.trim).toList match {
       case Nil => {
         Left(s"Could not parse library from[$value]")
@@ -107,7 +109,8 @@ trait SimpleScalaParser {
           Artifact(
             groupId = interpolate(groupId),
             artifactId = interpolate(artifactId),
-            version = interpolate(version)
+            version = interpolate(version),
+            isCrossBuilt = isCrossBuilt
           )
         )
       }
