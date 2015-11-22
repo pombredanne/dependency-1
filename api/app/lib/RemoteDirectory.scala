@@ -8,10 +8,15 @@ import play.api.Logger
 
 object RemoteDirectory {
 
+  case class Version(
+    name: String, // e.g. 1.2.3
+    crossBuildVersion: Option[String]
+  )
+
   case class Result(
     url: String,
     files: Seq[String] = Nil,
-    directories: Seq[String] = Nil
+    versions: Seq[Version] = Nil
   )
 
   def fetch(
@@ -21,7 +26,15 @@ object RemoteDirectory {
   ) (
     filter: String => Boolean = { name => name == artifactId || name.startsWith(artifactId + "_") }
   ): Result = {
-    val base = Result(url = makeUrl(resolver, groupId))
+    val result = Result(url = makeUrl(resolver, groupId))
+    fetchUri(result, filter)
+  }
+
+  private[this] def fetchUri(
+    result: Result,
+    filter: String => Boolean
+  ): Result = {
+    val base = Result(url = result.url)
     println(s"==> Fetching ${base.url}")
 
     val cleaner = new HtmlCleaner()
@@ -42,12 +55,20 @@ object RemoteDirectory {
             case Some(rawHref) => {
               val text = StringEscapeUtils.unescapeHtml4(elem.getText.toString)
               val href =StringEscapeUtils.unescapeHtml4(rawHref)
-              println(s" - text[$text] href[$href]")
               filter(text) match {
-                case false => result
+                case false => {
+                  result
+                }
                 case true => {
                   text.endsWith("/") match {
-                    case true => result.copy(directories = result.directories ++ Seq(StringUtils.stripEnd(text, "/") ))
+                    case true => result.copy(
+                      versions = result.versions ++ Seq(
+                        fetchVersionFromMavenMetadata(
+                          joinUrl(result.url, text),
+                          crossBuildVersion = crossBuildVersion(text)
+                        )
+                      ).flatten
+                    )
                     case false => result.copy(files = result.files ++ Seq(text))
                   }
                 }
@@ -59,13 +80,79 @@ object RemoteDirectory {
     }
   }
 
+  def fetchVersionFromMavenMetadata(
+    url: String,
+    crossBuildVersion: Option[String] = None
+  ): Option[Version] = {
+    val fullUrl = Seq(url, "maven-metadata.xml").mkString("/")
+    println("FULL URL: " + fullUrl)
+
+    val cleaner = new HtmlCleaner()
+    Try(cleaner.clean(new URL(fullUrl))) match {
+      case Failure(ex) => ex match {
+        case e: java.io.FileNotFoundException => None
+        case _ => {
+          Logger.error("Error fetching URL[$fullUrl]: $ex")
+          None
+        }
+      }
+      case Success(rootNode) => {
+        val allVersions: Seq[Version] = rootNode.getElementsByName("metadata", true).flatMap { metadata =>
+          metadata.getElementsByName("versioning", true).flatMap { versioning =>
+            versioning.getElementsByName("versions", true).flatMap { versions =>
+              versions.getElementsByName("version", true).flatMap { version =>
+                StringEscapeUtils.unescapeHtml4(version.getText.toString).trim match {
+                  case "" => None
+                  case name => Some(Version(name = name, crossBuildVersion = crossBuildVersion))
+                }
+              }
+            }
+          }
+        }
+
+        allVersions.distinct.toList match {
+          case Nil => {
+            Logger.warn("No versions found for URL[$fullUrl]")
+            None
+          }
+          case one :: Nil => Some(one)
+          case multiple => {
+            Logger.warn("Multiple versions found for URL[$fullUrl] - returning first version")
+            multiple.headOption
+          }
+        }
+      }
+    }
+  }
+
+  // e.g. "scala-csv_2.11/" => 2.11
+  def crossBuildVersion(text: String): Option[String] = {
+    StringUtils.stripEnd(text, "/").split("_").toList match {
+      case Nil => None
+      case one :: Nil => None
+      case multiple => {
+        // Check if we can successfully parse the version tag for a
+        // major version. If so, we assume we have found a cross build
+        // version.
+        VersionTag(multiple.last).major match {
+          case None => None
+          case Some(_) => Some(multiple.last)
+        }
+      }
+    }
+  }
+
   def makeUrl(
     resolver: String,
     groupId: String
   ): String = {
-    Seq(
-      resolver,
-      groupId.replaceAll("\\.", "/")
-    ).map ( StringUtils.stripEnd(_, "/") ).mkString("/")
+    joinUrl(resolver, groupId.replaceAll("\\.", "/"))
+  }
+
+  def joinUrl(
+    a: String,
+    b: String
+  ): String = {
+    Seq(a, b).map ( StringUtils.stripEnd(_, "/") ).mkString("/")
   }
 }

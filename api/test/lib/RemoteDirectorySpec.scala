@@ -10,4 +10,15 @@ class RemoteDirectorySpec extends Specification {
     )
   }
 
+  "crossBuildVersion" in {
+    RemoteDirectory.crossBuildVersion("scala-csv_2.11/") must beEqualTo(Some("2.11"))
+    RemoteDirectory.crossBuildVersion("scala-csv_2.11") must beEqualTo(Some("2.11"))
+    RemoteDirectory.crossBuildVersion("scala-csv_2.10") must beEqualTo(Some("2.10"))
+    RemoteDirectory.crossBuildVersion("scala-csv_2.9.3") must beEqualTo(Some("2.9.3"))
+    RemoteDirectory.crossBuildVersion("scala-csv_2.9.3-dev") must beEqualTo(Some("2.9.3-dev"))
+
+    RemoteDirectory.crossBuildVersion("scala-csv") must beEqualTo(None)
+    RemoteDirectory.crossBuildVersion("scala-csv_foo") must beEqualTo(None)
+  }
+
 }
