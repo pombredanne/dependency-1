@@ -24,32 +24,32 @@ case class SearchQuery(
 object SearchQuery {
 
   def parse(value: String): SearchQuery = {
-    var q = SearchQuery()
     value.replaceAll("\\s+", " ").replaceAll("\\s*=\\s*", "=").trim match {
       case "" => {
-        // No-op
+        SearchQuery()
       }
       case v => {
-        v.split("\\s+").foreach { piece =>
+        v.split("\\s+").foldLeft(SearchQuery()) { case (q, piece) =>
           piece.split("=").toList match {
             case key :: value :: Nil => {
               key.toLowerCase match {
-                case "groupid" => q = q.copy(groupId = Some(value))
-                case "artifactid" => q = q.copy(artifactId = Some(value))
-                case "version" => q = q.copy(version = Some(value))
+                case "groupid" => q.copy(groupId = Some(value))
+                case "artifactid" => q.copy(artifactId = Some(value))
+                case "version" => q.copy(version = Some(value))
                 case _ => {
                   Logger.warn(s"Invalid query[$q] component[$v] contained unrecognized key[$key]")
+                  q
                 }
               }
             }
             case other => {
               Logger.warn(s"Invalid query[$q] component[$v] did not contain two parts")
+              q
             }
           }
         }
       }
     }
-    q
   }
 
 }
