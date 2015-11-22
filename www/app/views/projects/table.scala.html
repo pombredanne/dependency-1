@@ -1,0 +1,9 @@
+@(projects: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Project])
+
+<table class="table">
+  @projects.items.map { p =>
+    <tr>
+      <td><a href="@routes.ProjectsController.show(p.guid)">@{p.name}</a></td>
+    </tr>
+  }
+</table>

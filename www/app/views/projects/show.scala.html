@@ -21,10 +21,10 @@
   @if(languages.hasPrevious || languages.hasNext) {
     <ul class="pager">
       @if(languages.hasPrevious) {
-        <li><a href="@routes.ProjectsController.show(project.guid, languagePage = languages.page - 1, libraryPage = libraryVersions.page)">Previous</a></li>
+        <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = languages.page - 1, librariesPage = libraryVersions.page)">Previous</a></li>
       }
       @if(languages.hasNext) {
-        <li><a href="@routes.ProjectsController.show(project.guid, languagePage = languages.page + 1, libraryPage = libraryVersions.page)">Next</a></li>
+        <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = languages.page + 1, librariesPage = libraryVersions.page)">Next</a></li>
       }
     </ul>
   }
@@ -34,10 +34,10 @@
   @if(libraryVersions.hasPrevious || libraryVersions.hasNext) {
     <ul class="pager">
       @if(libraryVersions.hasPrevious) {
-        <li><a href="@routes.ProjectsController.show(project.guid, languagePage = libraryVersions.page, libraryPage = libraryVersions.page - 1)">Previous</a></li>
+        <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = libraryVersions.page, librariesPage = libraryVersions.page - 1)">Previous</a></li>
       }
       @if(libraryVersions.hasNext) {
-        <li><a href="@routes.ProjectsController.show(project.guid, languagePage = libraryVersions.page, libraryPage = libraryVersions.page + 1)">Next</a></li>
+        <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = libraryVersions.page, librariesPage = libraryVersions.page + 1)">Next</a></li>
       }
     </ul>
   }

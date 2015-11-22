@@ -14,25 +14,18 @@
 
   } else {
     <div class="table-responsive">
-      <table class="table">
-        @projects.items.map { p =>
-          <tr>
-            <td><a href="@routes.ProjectsController.show(p.guid)">@{p.name}</a></td>
-          </tr>
-        }
-        </table>
+      @table(projects)
 
-        @if(projects.hasPrevious || projects.hasNext) {
-          <ul class="pager">
-            @if(projects.hasPrevious) {
-              <li><a href="@routes.ProjectsController.index(projects.page - 1)">Previous</a></li>
-            }
-            @if(projects.hasNext) {
-              <li><a href="@routes.ProjectsController.index(projects.page + 1)">Next</a></li>
-            }
-          </ul>
-        }
-      </table>
+      @if(projects.hasPrevious || projects.hasNext) {
+        <ul class="pager">
+          @if(projects.hasPrevious) {
+            <li><a href="@routes.ProjectsController.index(projects.page - 1)">Previous</a></li>
+          }
+          @if(projects.hasNext) {
+            <li><a href="@routes.ProjectsController.index(projects.page + 1)">Next</a></li>
+          }
+        </ul>
+      }
     </div>
   }
 
