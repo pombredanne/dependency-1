@@ -11,11 +11,11 @@ class RemoteVersionsSpec extends Specification {
   }
 
   "crossBuildVersion" in {
-    RemoteVersions.crossBuildVersion("scala-csv_2.11/") must beEqualTo(Some("2.11"))
-    RemoteVersions.crossBuildVersion("scala-csv_2.11") must beEqualTo(Some("2.11"))
-    RemoteVersions.crossBuildVersion("scala-csv_2.10") must beEqualTo(Some("2.10"))
-    RemoteVersions.crossBuildVersion("scala-csv_2.9.3") must beEqualTo(Some("2.9.3"))
-    RemoteVersions.crossBuildVersion("scala-csv_2.9.3-dev") must beEqualTo(Some("2.9.3-dev"))
+    RemoteVersions.crossBuildVersion("scala-csv_2.11/").map(_.version) must beEqualTo(Some("2.11"))
+    RemoteVersions.crossBuildVersion("scala-csv_2.11").map(_.version) must beEqualTo(Some("2.11"))
+    RemoteVersions.crossBuildVersion("scala-csv_2.10").map(_.version) must beEqualTo(Some("2.10"))
+    RemoteVersions.crossBuildVersion("scala-csv_2.9.3").map(_.version) must beEqualTo(Some("2.9.3"))
+    RemoteVersions.crossBuildVersion("scala-csv_2.9.3-dev").map(_.version) must beEqualTo(Some("2.9.3-dev"))
 
     RemoteVersions.crossBuildVersion("scala-csv") must beEqualTo(None)
     RemoteVersions.crossBuildVersion("scala-csv_foo") must beEqualTo(None)
