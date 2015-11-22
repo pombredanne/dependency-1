@@ -1,23 +1,17 @@
 package com.bryzek.dependency.lib
 
-import org.htmlcleaner.HtmlCleaner
-import org.apache.commons.lang3.{StringEscapeUtils, StringUtils}
+import org.apache.commons.lang3.StringUtils
 import java.net.URL
 import scala.util.{Failure, Success, Try}
 import play.api.Logger
 
 object RemoteVersions {
 
-  case class Version(
-    tag: VersionTag,
-    crossBuildVersion: Option[VersionTag]
-  )
-
   def fetch(
     resolver: String,
     groupId: String,
     artifactId: String
-  ): Seq[Version] = {
+  ): Seq[ArtifactVersion] = {
     fetchUrl(
       url = makeUrl(resolver, groupId),
       filter = { name => name == artifactId || name.startsWith(artifactId + "_") }
@@ -27,49 +21,16 @@ object RemoteVersions {
   private[this] def fetchUrl(
     url: String,
     filter: String => Boolean
-  ): Seq[Version] = {
+  ): Seq[ArtifactVersion] = {
     val result = RemoteDirectory.fetch(url)(filter)
 
     result.directories.flatMap { dir =>
       val thisUrl = joinUrl(url, dir)
       RemoteDirectory.fetch(thisUrl)().directories.map { d =>
-        fetchVersionFromMavenMetadata(
-          joinUrl(thisUrl, d),
+        ArtifactVersion(
+          tag = VersionTag(StringUtils.stripEnd(d, "/")),
           crossBuildVersion = crossBuildVersion(dir)
         )
-      }
-    }.flatten
-  }
-
-  def fetchVersionFromMavenMetadata(
-    url: String,
-    crossBuildVersion: Option[VersionTag] = None
-  ): Option[Version] = {
-    val fullUrl = Seq(url, "maven-metadata.xml").mkString("/")
-
-    val cleaner = new HtmlCleaner()
-    Try(cleaner.clean(new URL(fullUrl))) match {
-      case Failure(ex) => ex match {
-        case e: java.io.FileNotFoundException => None
-        case _ => {
-          Logger.error("Error fetching URL[$fullUrl]: $ex")
-          None
-        }
-      }
-      case Success(rootNode) => {
-        rootNode.getElementsByName("version", true).headOption.flatMap { version =>
-          StringEscapeUtils.unescapeHtml4(version.getText.toString).trim match {
-            case "" => {
-              None
-            }
-            case name => Some(
-              Version(
-                tag = VersionTag(name),
-                crossBuildVersion = crossBuildVersion
-              )
-            )
-          }
-        }.headOption
       }
     }
   }

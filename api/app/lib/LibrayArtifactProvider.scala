@@ -12,7 +12,7 @@ trait LibraryArtifactProvider {
   /**
     * Returns the artifacts for this library.
     */
-  def artifacts(library: Library)(implicit ec: ExecutionContext): Future[Seq[Artifact]]
+  def artifacts(library: Library)(implicit ec: ExecutionContext): Future[Seq[ArtifactVersion]]
 
 }
 
@@ -23,18 +23,20 @@ private[lib] case class DefaultLibraryArtifactProvider() extends LibraryArtifact
     library: Library
   ) (
     implicit ec: ExecutionContext
-  ) : Future[Seq[Artifact]] = {
+  ) : Future[Seq[ArtifactVersion]] = {
+    val versions = library.resolvers.map { resolver =>
+      fetchArtifactVersions(resolver, library)
+    }.flatten.distinct
+
     Future {
-      library.resolvers.map { resolver =>
-        fetchArtifacts(resolver, library)
-      }.flatten.distinct
+      versions
     }
   }
 
-  private[this] def fetchArtifacts(
+  private[this] def fetchArtifactVersions(
     resolver: String,
     library: Library
-  ): Seq[Artifact] = {
+  ): Seq[ArtifactVersion] = {
     println(s"Resolver[$resolver]")
     val versions = RemoteVersions.fetch(
       resolver = resolver,

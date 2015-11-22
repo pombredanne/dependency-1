@@ -26,6 +26,7 @@ object RemoteDirectory {
   ): Result = {
     val base = Result()
     val cleaner = new HtmlCleaner()
+    println(s"Fetching URL[$url]")
 
     Try(cleaner.clean(new URL(url))) match {
       case Failure(ex) => ex match {
@@ -45,6 +46,7 @@ object RemoteDirectory {
             }
             case Some(rawHref) => {
               val text = StringEscapeUtils.unescapeHtml4(elem.getText.toString)
+              println(s"  - text[$text]")
               filter(text) match {
                 case false => {
                   result
