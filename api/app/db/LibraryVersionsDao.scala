@@ -15,6 +15,7 @@ object LibraryVersionsDao {
   private[this] val BaseQuery = s"""
     select library_versions.guid,
            library_versions.version,
+           library_versions.cross_build_version,
            ${AuditsDao.all("library_versions")},
            libraries.guid as library_versions_library_guid,
            array_to_json(string_to_array(libraries.resolvers, ' ')) as library_versions_library_resolvers,
@@ -28,9 +29,9 @@ object LibraryVersionsDao {
 
   private[this] val InsertQuery = s"""
     insert into library_versions
-    (guid, library_guid, version, sort_key, created_by_guid, updated_by_guid)
+    (guid, library_guid, version, cross_build_version, sort_key, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {library_guid}::uuid, {version}, {sort_key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {library_guid}::uuid, {version}, {cross_build_version}, {sort_key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def upsert(createdBy: User, libraryGuid: UUID, form: VersionForm): LibraryVersion = {
@@ -174,7 +175,12 @@ object LibraryVersionsDao {
       libraryGuid.map('library_guid -> _.toString),
       projectGuid.map('project_guid -> _.toString),
       version.map('version -> _.toString),
-      crossBuildVersion.map('cross_build_version -> _.toString)
+      crossBuildVersion.flatMap { optionalValue =>
+        optionalValue match {
+          case None => None
+          case Some(value) => Some('cross_build_version -> value.toString)
+        }
+      }
     ).flatten
 
     SQL(sql).on(bind: _*).as(

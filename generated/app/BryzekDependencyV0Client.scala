@@ -49,6 +49,7 @@ package com.bryzek.dependency.v0.models {
     guid: _root_.java.util.UUID,
     library: com.bryzek.dependency.v0.models.Library,
     version: String,
+    crossBuildVersion: _root_.scala.Option[String] = None,
     audit: io.flow.common.v0.models.Audit
   )
 
@@ -295,6 +296,7 @@ package com.bryzek.dependency.v0.models {
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "library").read[com.bryzek.dependency.v0.models.Library] and
         (__ \ "version").read[String] and
+        (__ \ "cross_build_version").readNullable[String] and
         (__ \ "audit").read[io.flow.common.v0.models.Audit]
       )(LibraryVersion.apply _)
     }
@@ -304,6 +306,7 @@ package com.bryzek.dependency.v0.models {
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "library").write[com.bryzek.dependency.v0.models.Library] and
         (__ \ "version").write[String] and
+        (__ \ "cross_build_version").writeNullable[String] and
         (__ \ "audit").write[io.flow.common.v0.models.Audit]
       )(unlift(LibraryVersion.unapply _))
     }

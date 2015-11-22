@@ -33,9 +33,11 @@ class LibraryActor extends Actor {
     case LibraryActor.Messages.Sync => Util.withVerboseErrorHandler(
       s"LibraryActor.Messages.Sync"
     ) {
+      /*
       dataLibrary.foreach { lib =>
         println(s"Syncing library[$lib]")
         DefaultLibraryArtifactProvider().artifacts(lib).map { version =>
+          println(s" groupId[${lib.groupId}] artifactId[${lib.artifactId}] version[${version.tag.version}] crossBuilt[${version.crossBuildVersion}]")
           LibraryVersionsDao.upsert(
             createdBy = UsersDao.systemUser,
             libraryGuid = lib.guid,
@@ -43,6 +45,7 @@ class LibraryActor extends Actor {
           )
         }
       }
+       */
     }
 
     case m: Any => {
