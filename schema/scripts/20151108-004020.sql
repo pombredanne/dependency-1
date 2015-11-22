@@ -120,7 +120,7 @@ create unique index library_versions_library_guid_lower_version_not_deleted_un_i
 
 create table languages (
   guid                    uuid primary key,
-  name                    text not null check(enum(name))
+  name                    text not null check(non_empty_trimmed_string(name))
 );
 
 comment on table languages is '
@@ -129,7 +129,7 @@ comment on table languages is '
 
 select schema_evolution_manager.create_basic_audit_data('public', 'languages');
 create index on languages(name);
-create unique index languages_name_not_deleted_un_idx on languages(name) where deleted_at is null;
+create unique index languages_lower_name_not_deleted_un_idx on languages(lower(name)) where deleted_at is null;
 
 create table language_versions (
   guid                    uuid primary key,
