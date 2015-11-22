@@ -8,12 +8,17 @@
 @main(data.copy(title = Some(s"Library: ${library.groupId}.${library.artifactId}"))) {
 
   <ul>
-    <li>Group ID: @library.groupId</li>
-    <li>Artifact ID: @library.artifactId</li>
-    <li>Resolvers: @library.resolvers</li>
+    <li>Group ID: <a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(library.groupId)).query))">@library.groupId</a></li>
+    <li>Artifact ID: <a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(artifactId = Some(library.artifactId)).query))">@library.groupId</a></li>
+    <li>Resolvers:
+      <ul>
+        @library.resolvers.map { resolver =>
+          <li> @resolver</li>
+        }
+    </li>
     <li>Versions:
       @versions.items.map { version =>
-        <a href="@routes.LibraryVersionsController.show(version.guid)">@version.version</a>
+        <a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(library.groupId), artifactId = Some(library.artifactId), version = Some(version.version)).query))">@version.version</td>
       }
       @if(versions.hasPrevious) {
         <a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page - 1, projectsPage = projectLibraryVersions.page)">Previous</a>

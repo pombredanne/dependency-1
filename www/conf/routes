@@ -1,10 +1,6 @@
 GET     /_internal_/healthcheck                 controllers.HealthchecksController.index()
 GET     /                                       controllers.ApplicationController.index()
 
-GET     /library/versions                       controllers.ApplicationController.redirect
-GET     /library/versions/                      controllers.LibraryVersionsController.index()
-GET     /library/versions/:guid                 controllers.LibraryVersionsController.show(guid: java.util.UUID, projectsPage: Int ?= 0)
-
 GET     /libraries                              controllers.ApplicationController.redirect
 GET     /libraries/                             controllers.LibrariesController.index(page: Int ?= 0)
 GET     /libraries/:guid                        controllers.LibrariesController.show(guid: java.util.UUID, versionsPage : Int ?= 0, projectsPage: Int ?= 0)
