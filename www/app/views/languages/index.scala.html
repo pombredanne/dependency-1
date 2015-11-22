@@ -1,0 +1,28 @@
+@(
+  data: com.bryzek.dependency.lib.UiData,
+  languages: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Language]
+)(implicit flash: Flash, messages: Messages)
+
+@main(data.copy(title = Some("Languages"))) {
+
+  @if(languages.isEmpty) {
+    <em>No languages</em>
+
+  } else {
+    <div class="table-responsive">
+      @table(languages)
+
+      @if(languages.hasPrevious || languages.hasNext) {
+        <ul class="pager">
+          @if(languages.hasPrevious) {
+            <li><a href="@routes.LanguagesController.index(languages.page - 1)">Previous</a></li>
+          }
+          @if(languages.hasNext) {
+            <li><a href="@routes.LanguagesController.index(languages.page + 1)">Next</a></li>
+          }
+        </ul>
+      }
+    </div>
+  }
+
+}

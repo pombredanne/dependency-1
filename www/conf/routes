@@ -5,6 +5,10 @@ GET     /libraries                              controllers.ApplicationControlle
 GET     /libraries/                             controllers.LibrariesController.index(page: Int ?= 0)
 GET     /libraries/:guid                        controllers.LibrariesController.show(guid: java.util.UUID, projectsPage: Int ?= 0)
 
+GET     /languages                              controllers.ApplicationController.redirect
+GET     /languages/                             controllers.LanguagesController.index(page: Int ?= 0)
+GET     /languages/:guid                        controllers.LanguagesController.show(guid: java.util.UUID, projectsPage: Int ?= 0)
+
 GET     /projects                               controllers.ApplicationController.redirect
 GET     /projects/                              controllers.ProjectsController.index(page: Int ?= 0)
 GET     /projects/create                        controllers.ProjectsController.create()
