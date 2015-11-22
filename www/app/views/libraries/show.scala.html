@@ -9,16 +9,10 @@
 
   <ul>
     <li>Group ID: <a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(library.groupId)).query))">@library.groupId</a></li>
-    <li>Artifact ID: <a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(artifactId = Some(library.artifactId)).query))">@library.groupId</a></li>
-    <li>Resolvers:
-      <ul>
-        @library.resolvers.map { resolver =>
-          <li> @resolver</li>
-        }
-    </li>
+    <li>Artifact ID: <a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(library.groupId), artifactId = Some(library.artifactId)).query))">@library.artifactId</a></li>
     <li>Versions:
       @versions.items.map { version =>
-        <a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(library.groupId), artifactId = Some(library.artifactId), version = Some(version.version)).query))">@version.version</td>
+        <a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(library.groupId), artifactId = Some(library.artifactId), version = Some(version.version)).query))">@version.version</a>
       }
       @if(versions.hasPrevious) {
         <a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page - 1, projectsPage = projectLibraryVersions.page)">Previous</a>
@@ -26,6 +20,13 @@
       @if(versions.hasNext) {
         <a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page + 1, projectsPage = projectLibraryVersions.page)">Next</a>
 	}
+    </li>
+    <li>Resolvers:
+      <ul>
+        @library.resolvers.map { resolver =>
+          <li> @resolver</li>
+        }
+      </ul>
     </li>
   </ul>
 
