@@ -1,7 +1,7 @@
 package com.bryzek.dependency.lib
 
 import org.htmlcleaner.HtmlCleaner
-import org.apache.commons.lang3.StringEscapeUtils
+import org.apache.commons.lang3.{StringEscapeUtils, StringUtils}
 import java.net.URL
 import scala.util.{Failure, Success, Try}
 import play.api.Logger
@@ -45,7 +45,7 @@ object RemoteDirectory {
             }
             case Some(rawHref) => {
               val text = StringEscapeUtils.unescapeHtml4(elem.getText.toString)
-              filter(text) match {
+              filter(StringUtils.stripEnd(text, "/")) match {
                 case false => {
                   result
                 }

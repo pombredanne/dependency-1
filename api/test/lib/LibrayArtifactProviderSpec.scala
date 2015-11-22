@@ -45,4 +45,13 @@ class LibrayArtifactProviderSpec extends PlaySpecification {
     }.map(_.tag.version) must beEqualTo(Some("1.2.2"))
   }
 
+  "swagger" in {
+    val library = createLibrary(groupId = "io.swagger", artifactId = "swagger-parser")
+    val versions = provider.artifacts(library).map(_.tag.version)
+    println(s"versions: " + versions.mkString(", "))
+    versions.contains("1.0.4") must beTrue
+    versions.contains("1.0.13") must beTrue
+    versions.contains("0.0.139") must beFalse
+  }
+
 }

@@ -5,8 +5,11 @@ import org.specs2.mutable._
 class RemoteVersionsSpec extends Specification {
 
   "makeUrl" in {
-    RemoteVersions.makeUrl("https://oss.sonatype.org/content/repositories/snapshots/", "com.github.tototoshi") must beEqualTo(
-      "https://oss.sonatype.org/content/repositories/snapshots/com/github/tototoshi"
+    RemoteVersions.makeUrls("https://oss.sonatype.org/content/repositories/snapshots/", "com.github.tototoshi") must beEqualTo(
+      Seq(
+        "https://oss.sonatype.org/content/repositories/snapshots/com.github.tototoshi",
+        "https://oss.sonatype.org/content/repositories/snapshots/com/github/tototoshi"
+      )
     )
   }
 

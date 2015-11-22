@@ -12,10 +12,12 @@ object RemoteVersions {
     groupId: String,
     artifactId: String
   ): Seq[ArtifactVersion] = {
-    fetchUrl(
-      url = makeUrl(resolver, groupId),
-      filter = { name => name == artifactId || name.startsWith(artifactId + "_") }
-    ).sortBy { _.tag }.reverse
+    makeUrls(resolver, groupId).map { url =>
+      fetchUrl(
+        url = url,
+        filter = { name => name == artifactId || name.startsWith(artifactId + "_") }
+      )
+    }.flatten.sortBy { _.tag }.reverse
   }
 
   private[this] def fetchUrl(
@@ -53,11 +55,16 @@ object RemoteVersions {
     }
   }
 
-  def makeUrl(
+  def makeUrls(
     resolver: String,
     groupId: String
-  ): String = {
-    joinUrl(resolver, groupId.replaceAll("\\.", "/"))
+  ): Seq[String] = {
+    Seq(
+      joinUrl(
+        resolver, groupId.replaceAll("\\.", "/")
+      ),
+      joinUrl(resolver, groupId)
+    )
   }
 
   def joinUrl(
