@@ -21,28 +21,20 @@ private[lib] case class DefaultLibraryArtifactProvider() extends LibraryArtifact
   override def artifacts(
     library: Library
   ) : Seq[ArtifactVersion] = {
-    val versions = library.resolvers.map { resolver =>
+    library.resolvers.map { resolver =>
       fetchArtifactVersions(resolver, library)
     }.flatten.distinct
-
-    versions
   }
 
   private[this] def fetchArtifactVersions(
     resolver: String,
     library: Library
   ): Seq[ArtifactVersion] = {
-    println(s"Resolver[$resolver]")
-    val versions = RemoteVersions.fetch(
+    RemoteVersions.fetch(
       resolver = resolver,
       groupId = library.groupId,
       artifactId = library.artifactId
     )
-    println(s"Versions for groupId[${library.groupId}] artifactId[${library.artifactId}]")
-    versions.foreach { v =>
-      println(s"  - $v")
-    }
-    Nil
   }
 
 }

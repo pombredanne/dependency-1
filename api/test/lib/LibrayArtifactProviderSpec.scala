@@ -21,16 +21,8 @@ class LibrayArtifactProviderSpec extends PlaySpecification {
     )
   }
 
-  // See https://github.com/sbt/sbt/blob/3e5449f02d082c1326da7e6319d70d5b26b84bfd/launch/src/main/resources/sbt.boot.properties0.11.3
-  val DefaultResolvers = Seq(
-    "http://jcenter.bintray.com/",
-    "http://repo.typesafe.com/typesafe/ivy-releases/",
-    "http://oss.sonatype.org/content/repositories/snapshots",
-    "http://repo1.maven.org/maven2/"
-  )
-
   def createLibrary(
-    resolvers: Seq[String] = DefaultResolvers,
+    resolvers: Seq[String] = Resolvers.Default,
     groupId: String = UUID.randomUUID.toString,
     artifactId: String = UUID.randomUUID.toString
   ): Library = {
@@ -47,7 +39,10 @@ class LibrayArtifactProviderSpec extends PlaySpecification {
 
   "parseUri" in {
     val library = createLibrary(groupId = "com.github.tototoshi", artifactId = "scala-csv")
-    provider.artifacts(library) must beEqualTo(Nil)
+    val versions = provider.artifacts(library)
+    versions.find { v =>
+      v.tag.version == "1.2.2" && v.crossBuildVersion.map(_.version) == Some("2.11")
+    }.map(_.tag.version) must beEqualTo(Some("1.2.2"))
   }
 
 }
