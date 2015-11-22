@@ -14,7 +14,6 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   lazy val project1 = createProject()
   lazy val project2 = createProject()
 
-/*
   "findByName" in {
     ProjectsDao.findByName(project1.name).map(_.guid) must be(
       Some(project1.guid)
@@ -101,10 +100,9 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     }
 
   }
- */
 
   "findAll" must {
-/*
+
     "guids" in {
       ProjectsDao.findAll(guids = Some(Seq(project1.guid, project2.guid))).map(_.guid) must be(
         Seq(project1.guid, project2.guid)
@@ -195,7 +193,7 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
         ProjectsDao.findAll(libraryVersionGuid = Some(UUID.randomUUID)).map(_.guid) must be(Nil)
       }
     }
- */
+
     "with language" must {
       def createProjectWithLanguage(): (Project, LanguageVersion) = {
         val languageForm = createLanguageForm().copy(

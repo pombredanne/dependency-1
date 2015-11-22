@@ -574,12 +574,14 @@ package com.bryzek.dependency.v0 {
       override def get(
         guid: _root_.scala.Option[_root_.java.util.UUID] = None,
         guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+        libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
         projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.LibraryVersion]] = {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
+          libraryGuid.map("library_guid" -> _.toString),
           projectGuid.map("project_guid" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
@@ -924,6 +926,7 @@ package com.bryzek.dependency.v0 {
     def get(
       guid: _root_.scala.Option[_root_.java.util.UUID] = None,
       guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+      libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
       projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
       limit: Long = 25,
       offset: Long = 0

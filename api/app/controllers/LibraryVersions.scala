@@ -19,6 +19,7 @@ class LibraryVersions @javax.inject.Inject() (
   def get(
     guid: Option[UUID],
     guids: Option[Seq[UUID]],
+    libraryGuid: Option[UUID],
     projectGuid: Option[UUID],
     limit: Long = 25,
     offset: Long = 0
@@ -28,6 +29,7 @@ class LibraryVersions @javax.inject.Inject() (
         LibraryVersionsDao.findAll(
           guid = guid,
           guids = optionalGuids(guids),
+          libraryGuid = libraryGuid,
           projectGuid = projectGuid,
           limit = limit,
           offset = offset
