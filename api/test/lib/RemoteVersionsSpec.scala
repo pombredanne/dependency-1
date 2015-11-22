@@ -7,8 +7,8 @@ class RemoteVersionsSpec extends Specification {
   "makeUrl" in {
     RemoteVersions.makeUrls("https://oss.sonatype.org/content/repositories/snapshots/", "com.github.tototoshi") must beEqualTo(
       Seq(
-        "https://oss.sonatype.org/content/repositories/snapshots/com.github.tototoshi",
-        "https://oss.sonatype.org/content/repositories/snapshots/com/github/tototoshi"
+        "https://oss.sonatype.org/content/repositories/snapshots/com/github/tototoshi",
+        "https://oss.sonatype.org/content/repositories/snapshots/com.github.tototoshi"
       )
     )
   }
