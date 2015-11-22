@@ -26,7 +26,7 @@
           <ul class="nav nav-sidebar">
             <li><a@if(data.section == Some(com.bryzek.dependency.lib.Section.Dashboard)) { class="active" } href="@routes.ApplicationController.index()">Dashboard</a></li>
             <li><a@if(data.section == Some(com.bryzek.dependency.lib.Section.Projects)) { class="active" } href="@routes.ProjectsController.index()">Projects</a></li>
-            <li><a@if(data.section == Some(com.bryzek.dependency.lib.Section.Libraries)) { class="active" } href="#">Libraries</a></li>
+            <li><a@if(data.section == Some(com.bryzek.dependency.lib.Section.Libraries)) { class="active" } href="@routes.LibrariesController.index()">Libraries</a></li>
             <li><a@if(data.section == Some(com.bryzek.dependency.lib.Section.Languages)) { class="active" } href="#">Languages</a></li>
           </ul>
         </div>

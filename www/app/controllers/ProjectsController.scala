@@ -22,21 +22,6 @@ class ProjectsController @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def withProject[T](
-    request: IdentifiedRequest[T],
-    guid: UUID
-  )(
-    f: Project => Future[Result]
-  ) = {
-    dependencyClient(request).projects.getByGuid(guid).flatMap { project =>
-      f(project)
-    }.recover {
-      case UnitResponse(404) => {
-        Redirect(routes.ProjectsController.index()).flashing("warning" -> s"Project not found")
-      }
-    }
-  }
-
   def index(page: Int = 0) = Identified.async { implicit request =>
     for {
       projects <- dependencyClient(request).projects.get(
@@ -54,23 +39,20 @@ class ProjectsController @javax.inject.Inject() (
   }
 
   def show(guid: UUID, languagesPage: Int = 0, librariesPage: Int = 0) = Identified.async { implicit request =>
-    for {
-      project <- dependencyClient(request).projects.getByGuid(guid)
-      languages <- dependencyClient(request).languages.get(projectGuid = Some(guid))
-      libraries <- dependencyClient(request).libraryVersions.get(projectGuid = Some(guid))
-    } yield {
-      Ok(
-        views.html.projects.show(
-          uiData(request),
-          project,
-          PaginatedCollection(languagesPage, languages),
-          PaginatedCollection(librariesPage, libraries)
+    withProject(request, guid) { project =>
+      for {
+        languages <- dependencyClient(request).languages.get(projectGuid = Some(guid))
+        libraries <- dependencyClient(request).libraryVersions.get(projectGuid = Some(guid))
+      } yield {
+        Ok(
+          views.html.projects.show(
+            uiData(request),
+            project,
+            PaginatedCollection(languagesPage, languages),
+            PaginatedCollection(librariesPage, libraries)
+          )
         )
-      )
-//    }.recover {
-//      case UnitResponse(404) => {
-//        Redirect(routes.ProjectsController.index()).flashing("warning" -> s"Project not found")
-//      }
+      }
     }
   }
 
@@ -152,6 +134,21 @@ class ProjectsController @javax.inject.Inject() (
           }
         }
       )
+    }
+  }
+
+  def withProject[T](
+    request: IdentifiedRequest[T],
+    guid: UUID
+  )(
+    f: Project => Future[Result]
+  ) = {
+    dependencyClient(request).projects.getByGuid(guid).flatMap { project =>
+      f(project)
+    }.recover {
+      case UnitResponse(404) => {
+        Redirect(routes.ProjectsController.index()).flashing("warning" -> s"Project not found")
+      }
     }
   }
 

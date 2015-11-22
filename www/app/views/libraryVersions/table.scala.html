@@ -7,7 +7,7 @@
     <table class="table">
       @libraryVersions.items.map { version =>
         <tr>
-          <td><a href="#">Details</a></td>
+          <td><a href="@routes.LibrariesController.show(version.library.guid)">Details</a></td>
           <td>@version.library.groupId</td>
           <td>@version.library.artifactId</td>
           <td>@version.version</td>

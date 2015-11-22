@@ -39,23 +39,34 @@ class LibrariesController @javax.inject.Inject() (
   }
 
   def show(guid: UUID, projectsPage: Int = 0) = Identified.async { implicit request =>
-    for {
-      library <- dependencyClient(request).libraries.getByGuid(guid)
-      projects <- dependencyClient(request).projects.get(libraryGuid = Some(guid))
-    } yield {
-      Ok(
-        views.html.libraries.show(
-          uiData(request),
-          library,
-          PaginatedCollection(projectsPage, projects)
+    withLibrary(request, guid) { library =>
+      for {
+        projects <- dependencyClient(request).projects.get(libraryGuid = Some(guid))
+      } yield {
+        Ok(
+          views.html.libraries.show(
+            uiData(request),
+            library,
+            PaginatedCollection(projectsPage, projects)
+          )
         )
-      )
-//    }.recover {
-//      case UnitResponse(404) => {
-//        Redirect(routes.LibrariesController.index()).flashing("warning" -> s"Library not found")
-//      }
+      }
+    }
+  }
+
+  def withLibrary[T](
+    request: IdentifiedRequest[T],
+    guid: UUID
+  )(
+    f: Library => Future[Result]
+  ) = {
+    dependencyClient(request).libraries.getByGuid(guid).flatMap { library =>
+      f(library)
+    }.recover {
+      case UnitResponse(404) => {
+        Redirect(routes.LibrariesController.index()).flashing("warning" -> s"Library not found")
+      }
     }
   }
 
 }
-

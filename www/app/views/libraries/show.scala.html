@@ -4,12 +4,12 @@
   projects: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Project]
 )(implicit flash: Flash, messages: Messages)
 
-@main(data.copy()) {
+@main(data.copy(title = Some(s"Library: ${library.groupId}.${library.artifactId}"))) {
 
   <ul>
     <li>Group ID: @library.groupId</li>
     <li>Artifact ID: @library.artifactId</li>
-    <li>Resolvesr: @library.resolvers</li>
+    <li>Resolvers: @library.resolvers</li>
   </ul>
 
   <h3>Projects</h3>
