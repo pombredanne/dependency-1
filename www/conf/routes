@@ -3,7 +3,7 @@ GET     /                                       controllers.ApplicationControlle
 
 GET     /library/versions                       controllers.ApplicationController.redirect
 GET     /library/versions/                      controllers.LibraryVersionsController.index()
-GET     /library/versions                       controllers.LibraryVersionsController.show(guid: java.util.UUID, projectsPage: Int ?= 0)
+GET     /library/versions/:guid                 controllers.LibraryVersionsController.show(guid: java.util.UUID, projectsPage: Int ?= 0)
 
 GET     /libraries                              controllers.ApplicationController.redirect
 GET     /libraries/                             controllers.LibrariesController.index(page: Int ?= 0)
