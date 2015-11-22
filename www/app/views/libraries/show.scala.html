@@ -1,6 +1,7 @@
 @(
   data: com.bryzek.dependency.lib.UiData,
   library: com.bryzek.dependency.v0.models.Library,
+  versions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LibraryVersion],
   projects: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Project]
 )(implicit flash: Flash, messages: Messages)
 
@@ -10,6 +11,17 @@
     <li>Group ID: @library.groupId</li>
     <li>Artifact ID: @library.artifactId</li>
     <li>Resolvers: @library.resolvers</li>
+    <li>Versions:
+      @versions.items.map { version =>
+        <a href="#">@version.version</a>
+      }
+      @if(versions.hasPrevious) {
+        <a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page - 1, projectsPage = projects.page)">Previous</a>
+      }
+      @if(versions.hasNext) {
+        <a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page + 1, projectsPage = projects.page)">Next</a>
+	}
+    </li>
   </ul>
 
   <h3>Projects</h3>
@@ -17,10 +29,10 @@
   @if(projects.hasPrevious || projects.hasNext) {
     <ul class="pager">
       @if(projects.hasPrevious) {
-        <li><a href="@routes.LibrariesController.show(library.guid, projectsPage = projects.page - 1)">Previous</a></li>
+        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page, projectsPage = projects.page - 1)">Previous</a></li>
       }
       @if(projects.hasNext) {
-        <li><a href="@routes.LibrariesController.show(library.guid, projectsPage = projects.page + 1)">Next</a></li>
+        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page, projectsPage = projects.page + 1)">Next</a></li>
       }
     </ul>
   }
