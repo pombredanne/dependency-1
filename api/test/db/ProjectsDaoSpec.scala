@@ -122,26 +122,6 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     }
 
     "with library" must {
-      def createProjectWithLibrary(): (Project, LibraryVersion) = {
-        val libraryForm = createLibraryForm().copy(
-          groupId = UUID.randomUUID.toString,
-          artifactId = UUID.randomUUID.toString,
-          version = UUID.randomUUID.toString
-        )
-
-        val project = createProject()
-        ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(libraryForm)))
-
-        val library = LibrariesDao.findByResolversAndGroupIdAndArtifactId(libraryForm.resolvers, libraryForm.groupId, libraryForm.artifactId).getOrElse {
-          sys.error("Failed to find library")
-        }
-
-        val libraryVersion = LibraryVersionsDao.findByLibraryAndVersion(library, libraryForm.version).getOrElse {
-          sys.error("Failed to find library version")
-        }
-
-        (project, libraryVersion)
-      }
 
       "groupId" in {
         val (project, version) = createProjectWithLibrary()
@@ -195,26 +175,6 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     }
 
     "with language" must {
-      def createProjectWithLanguage(): (Project, LanguageVersion) = {
-        val languageForm = createLanguageForm().copy(
-          name = createTestName(),
-          version = UUID.randomUUID.toString
-        )
-
-        val project = createProject()
-        ProjectsDao.setDependencies(systemUser, project, languages = Some(Seq(languageForm)))
-
-        val language = LanguagesDao.findByName(languageForm.name).getOrElse {
-          sys.error("Failed to find language")
-        }
-        println(s"Created languages - $language")
-
-        val languageVersion = LanguageVersionsDao.findByLanguageAndVersion(language, languageForm.version).getOrElse {
-          sys.error("Failed to find language version")
-        }
-
-        (project, languageVersion)
-      }
 
       "language name" in {
         val (project, version) = createProjectWithLanguage()

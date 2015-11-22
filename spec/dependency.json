@@ -90,6 +90,14 @@
                 { "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},
+
+	"project_library_version": {
+	    "description": "A projection of projects and the specific library versions the project is dependent on",
+	    "fields": [
+		{ "name": "project", "type": "project" },
+		{ "name": "library_version", "type": "library_version" }
+	    ]
+	},	    
 	
 	"project_form": {
 	    "fields": [
@@ -395,7 +403,28 @@
                     }
                 }
             ]
-        }
+        },
+
+	"project_library_version": {
+	    "operations": [
+		{
+                    "method": "GET",
+                    "description": "Get detailed information on every project using this library, including the precise version",
+                    "parameters": [
+			{ "name": "project_guid", "type": "uuid", "description": "Filter for this project", "required": false },
+			{ "name": "library_guid", "type": "uuid", "description": "Filter for this library", "required": false },
+			{ "name": "library_version_guid", "type": "uuid", "description": "Filter for this library version", "required": false },
+			{ "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+			{ "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+			"200": { "type": "[project_library_version]" },
+			"401": { "type": "unit" }
+                    }
+		}
+	    ]
+	}
+	    
     }
 
 }
