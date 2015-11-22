@@ -36,12 +36,15 @@ private[lib] case class DefaultLibraryArtifactProvider() extends LibraryArtifact
     library: Library
   ): Seq[Artifact] = {
     println(s"Resolver[$resolver]")
-    val result = RemoteDirectory.fetch(
+    val versions = RemoteDirectory.fetch(
       resolver = resolver,
       groupId = library.groupId,
       artifactId = library.artifactId
-    )()
-    println("result: " + result)
+    )
+    println(s"Versions for groupId[${library.groupId}] artifactId[${library.artifactId}]")
+    versions.foreach { v =>
+      println(s"  - $v")
+    }
     Nil
   }
 

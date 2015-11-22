@@ -13,63 +13,59 @@ object RemoteDirectory {
     crossBuildVersion: Option[String]
   )
 
-  case class Result(
-    url: String,
-    files: Seq[String] = Nil,
-    versions: Seq[Version] = Nil
-  )
-
   def fetch(
     resolver: String,
     groupId: String,
     artifactId: String
-  ) (
-    filter: String => Boolean = { name => name == artifactId || name.startsWith(artifactId + "_") }
-  ): Result = {
-    val result = Result(url = makeUrl(resolver, groupId))
-    fetchUri(result, filter)
+  ): Seq[Version] = {
+    fetchUrl(
+      url = makeUrl(resolver, groupId),
+      filter = { name => name == artifactId || name.startsWith(artifactId + "_") }
+    )
   }
 
-  private[this] def fetchUri(
-    result: Result,
+  private[this] def fetchUrl(
+    url: String,
     filter: String => Boolean
-  ): Result = {
-    val base = Result(url = result.url)
-    println(s"==> Fetching ${base.url}")
-
+  ): Seq[Version] = {
     val cleaner = new HtmlCleaner()
-    Try(cleaner.clean(new URL(base.url))) match {
+    Try(cleaner.clean(new URL(url))) match {
       case Failure(ex) => ex match {
         case e: java.io.FileNotFoundException => {
-          base
+          Nil
         }
         case _ => {
           Logger.error("Error fetching URL[$url]: $ex")
-          base
+          Nil
         }
       }
       case Success(rootNode) => {
-        rootNode.getElementsByName("a", true).foldLeft(base) { case (result, elem) =>
+        rootNode.getElementsByName("a", true).foldLeft(Seq[Version]()) { case (versions, elem) =>
           Option(elem.getAttributeByName("href")) match {
-            case None => result
+            case None => {
+              versions
+            }
             case Some(rawHref) => {
               val text = StringEscapeUtils.unescapeHtml4(elem.getText.toString)
-              val href =StringEscapeUtils.unescapeHtml4(rawHref)
+              val href = StringEscapeUtils.unescapeHtml4(rawHref)
               filter(text) match {
                 case false => {
-                  result
+                  versions
                 }
                 case true => {
                   text.endsWith("/") match {
-                    case true => result.copy(
-                      versions = result.versions ++ Seq(
+                    case true => {
+                      versions ++ Seq(
                         fetchVersionFromMavenMetadata(
-                          joinUrl(result.url, text),
+                          joinUrl(url, text),
                           crossBuildVersion = crossBuildVersion(text)
                         )
                       ).flatten
-                    )
-                    case false => result.copy(files = result.files ++ Seq(text))
+                    }
+                    case false => {
+                      println("Got a basic version: $text")
+                      versions ++ Seq(Version(name = text, crossBuildVersion = None))
+                    }
                   }
                 }
               }
@@ -85,7 +81,6 @@ object RemoteDirectory {
     crossBuildVersion: Option[String] = None
   ): Option[Version] = {
     val fullUrl = Seq(url, "maven-metadata.xml").mkString("/")
-    println("FULL URL: " + fullUrl)
 
     val cleaner = new HtmlCleaner()
     Try(cleaner.clean(new URL(fullUrl))) match {
