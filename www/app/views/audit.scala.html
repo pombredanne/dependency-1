@@ -1,0 +1,12 @@
+@(
+  audit: io.flow.common.v0.models.Audit
+)
+
+Created on @com.bryzek.dependency.lib.DateHelper.longDateTime(audit.createdAt).
+@if(audit.createdAt == audit.updatedAt) {
+  No updates since.
+} else {
+  Last updated @com.bryzek.dependency.lib.DateHelper.longDateTime(audit.updatedAt).
+}
+
+
