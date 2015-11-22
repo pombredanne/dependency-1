@@ -11,12 +11,8 @@ object Exploration {
   )
 
   def test() {
-    // getHeadlinesFromUrl("http://dl.bintray.com/typesafe/maven-releases/com/typesafe/play/play_2.11/")
     println("")
-    println(getHeadlinesFromUrl("file:///web/dependency/play_2.11.html"))
-
-    println("")
-    println(getHeadlinesFromUrl("file:///web/dependency/2.3.7.html"))
+    getHeadlinesFromUrl("http://dl.bintray.com/typesafe/maven-releases/com/typesafe/play/play_2.11/")
   }
 
   def getHeadlinesFromUrl(url: String): UrlResult = {

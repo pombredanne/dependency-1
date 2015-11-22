@@ -33,6 +33,7 @@ class LibraryActor extends Actor {
       s"LibraryActor.Messages.Sync"
     ) {
       dataLibrary.foreach { lib =>
+        println(s"Syncing library[$lib]")
         // TODO: fetch all versions for this library and store them
       }
     }
