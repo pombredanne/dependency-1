@@ -33,7 +33,6 @@ class LibraryActor extends Actor {
     case LibraryActor.Messages.Sync => Util.withVerboseErrorHandler(
       s"LibraryActor.Messages.Sync"
     ) {
-      /*
       dataLibrary.foreach { lib =>
         println(s"Syncing library[$lib]")
         DefaultLibraryArtifactProvider().artifacts(lib).map { version =>
@@ -45,7 +44,6 @@ class LibraryActor extends Actor {
           )
         }
       }
-       */
     }
 
     case m: Any => {

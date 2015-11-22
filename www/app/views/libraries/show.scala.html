@@ -11,15 +11,14 @@
     <li>Group ID: <a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(library.groupId)).query))">@library.groupId</a></li>
     <li>Artifact ID: <a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(library.groupId), artifactId = Some(library.artifactId)).query))">@library.artifactId</a></li>
     <li>Versions:
-      @versions.items.map { version =>
-        <a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(library.groupId), artifactId = Some(library.artifactId), version = Some(version.version)).query))">@version.version</a>
-      }
-      @if(versions.hasPrevious) {
-        <a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page - 1, projectsPage = projectLibraryVersions.page)">Previous</a>
+      @versions.items.map(_.version).distinct.map { version =>
+        <a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(library.groupId), artifactId = Some(library.artifactId), version = Some(version)).query))">
+          @version
+	</a>
       }
       @if(versions.hasNext) {
-        <a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page + 1, projectsPage = projectLibraryVersions.page)">Next</a>
-	}
+        [<a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(library.groupId), artifactId = Some(library.artifactId)).query))">More</a>]
+      }
     </li>
     <li>Resolvers:
       <ul>
@@ -49,10 +48,10 @@
   @if(projectLibraryVersions.hasPrevious || projectLibraryVersions.hasNext) {
     <ul class="pager">
       @if(projectLibraryVersions.hasPrevious) {
-        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page, projectsPage = projectLibraryVersions.page - 1)">Previous</a></li>
+        <li><a href="@routes.LibrariesController.show(library.guid, projectsPage = projectLibraryVersions.page - 1)">Previous</a></li>
       }
       @if(projectLibraryVersions.hasNext) {
-        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page, projectsPage = projectLibraryVersions.page + 1)">Next</a></li>
+        <li><a href="@routes.LibrariesController.show(library.guid, projectsPage = projectLibraryVersions.page + 1)">Next</a></li>
       }
     </ul>
   }

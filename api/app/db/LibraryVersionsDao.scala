@@ -9,6 +9,7 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+import scala.util.{Failure, Success, Try}
 
 object LibraryVersionsDao {
 
@@ -49,7 +50,23 @@ object LibraryVersionsDao {
       crossBuildVersion = Some(form.crossBuildVersion),
       limit = 1
     ).headOption.getOrElse {
-      createWithConnection(createdBy, libraryGuid, form)
+      Try {
+        createWithConnection(createdBy, libraryGuid, form)
+      } match {
+        case Success(version) => version
+        case Failure(ex) => {
+          // check concurrent insert
+          findAllWithConnection(
+            libraryGuid = Some(libraryGuid),
+            version = Some(form.version),
+            crossBuildVersion = Some(form.crossBuildVersion),
+            limit = 1
+          ).headOption.getOrElse {
+            play.api.Logger.error(ex.getMessage, ex)
+            sys.error(ex.getMessage)
+          }
+        }
+      }
     }
   }
 
@@ -167,7 +184,7 @@ object LibraryVersionsDao {
         }
       },
       isDeleted.map(Filters.isDeleted("library_versions", _)),
-      Some(s"order by library_versions.sort_key, library_versions.created_at limit ${limit} offset ${offset}")
+      Some(s"order by library_versions.sort_key desc, library_versions.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](

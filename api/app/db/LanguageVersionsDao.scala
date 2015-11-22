@@ -146,7 +146,7 @@ object LanguageVersionsDao {
       projectGuid.map { v => s"and language_versions.guid in (select language_version_guid from project_language_versions where deleted_at is null and project_guid = {project_guid}::uuid)" },
       version.map { v => s"and lower(language_versions.version) = lower(trim({version}))" },
       isDeleted.map(Filters.isDeleted("language_versions", _)),
-      Some(s"order by language_versions.sort_key, language_versions.created_at limit ${limit} offset ${offset}")
+      Some(s"order by language_versions.sort_key desc, language_versions.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](

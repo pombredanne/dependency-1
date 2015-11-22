@@ -40,19 +40,26 @@ class LibrariesController @javax.inject.Inject() (
 
   def show(
     guid: UUID,
-    versionsPage: Int = 0,
     projectsPage: Int = 0
   ) = Identified.async { implicit request =>
     withLibrary(request, guid) { library =>
       for {
-        versions <- dependencyClient(request).libraryVersions.get(libraryGuid = Some(guid))
-        projectLibraryVersions <- dependencyClient(request).projectLibraryVersions.get(libraryGuid = Some(guid))
+        versions <- dependencyClient(request).libraryVersions.get(
+          libraryGuid = Some(guid),
+          limit = Pagination.DefaultLimit+1,
+          offset = 0
+        )
+        projectLibraryVersions <- dependencyClient(request).projectLibraryVersions.get(
+          libraryGuid = Some(guid),
+          limit = Pagination.DefaultLimit+1,
+          offset = projectsPage * Pagination.DefaultLimit
+        )
       } yield {
         Ok(
           views.html.libraries.show(
             uiData(request),
             library,
-            PaginatedCollection(versionsPage, versions),
+            PaginatedCollection(0, versions),
             PaginatedCollection(projectsPage, projectLibraryVersions)
           )
         )
