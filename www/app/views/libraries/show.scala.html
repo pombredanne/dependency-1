@@ -17,10 +17,10 @@
   @if(projects.hasPrevious || projects.hasNext) {
     <ul class="pager">
       @if(projects.hasPrevious) {
-        <li><a href="@routes.LibrariesController.show(library.guid, projectPage = projects.page - 1)">Previous</a></li>
+        <li><a href="@routes.LibrariesController.show(library.guid, projectsPage = projects.page - 1)">Previous</a></li>
       }
       @if(projects.hasNext) {
-        <li><a href="@routes.LibrariesController.show(library.guid, projectPage = projects.page + 1)">Next</a></li>
+        <li><a href="@routes.LibrariesController.show(library.guid, projectsPage = projects.page + 1)">Next</a></li>
       }
     </ul>
   }

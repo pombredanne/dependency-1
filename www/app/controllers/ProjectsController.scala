@@ -53,7 +53,7 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def show(guid: UUID, languagePage: Int = 0, libraryPage: Int = 0) = Identified.async { implicit request =>
+  def show(guid: UUID, languagesPage: Int = 0, librariesPage: Int = 0) = Identified.async { implicit request =>
     for {
       project <- dependencyClient(request).projects.getByGuid(guid)
       languages <- dependencyClient(request).languages.get(projectGuid = Some(guid))
@@ -63,8 +63,8 @@ class ProjectsController @javax.inject.Inject() (
         views.html.projects.show(
           uiData(request),
           project,
-          PaginatedCollection(languagePage, languages),
-          PaginatedCollection(libraryPage, libraries)
+          PaginatedCollection(languagesPage, languages),
+          PaginatedCollection(librariesPage, libraries)
         )
       )
 //    }.recover {

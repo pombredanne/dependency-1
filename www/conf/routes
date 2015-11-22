@@ -1,11 +1,15 @@
 GET     /_internal_/healthcheck                 controllers.HealthchecksController.index()
 GET     /                                       controllers.ApplicationController.index()
 
+GET     /libraries                              controllers.ApplicationController.redirect
+GET     /libraries/                             controllers.LibrariesController.index(page: Int ?= 0)
+GET     /libraries/:guid                        controllers.LibrariesController.show(guid: java.util.UUID, projectsPage: Int ?= 0)
+
 GET     /projects                               controllers.ApplicationController.redirect
 GET     /projects/                              controllers.ProjectsController.index(page: Int ?= 0)
 GET     /projects/create                        controllers.ProjectsController.create()
 POST    /projects/postCreate                    controllers.ProjectsController.postCreate()
-GET     /projects/:guid                         controllers.ProjectsController.show(guid: java.util.UUID, languagePage: Int ?= 0, libraryPage: Int ?= 0)
+GET     /projects/:guid                         controllers.ProjectsController.show(guid: java.util.UUID, languagesPage: Int ?= 0, librariesPage: Int ?= 0)
 GET     /projects/:guid/edit                    controllers.ProjectsController.edit(guid: java.util.UUID)
 POST    /projects/:guid/postEdit                controllers.ProjectsController.postEdit(guid: java.util.UUID)
 
