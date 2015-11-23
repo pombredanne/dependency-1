@@ -108,16 +108,17 @@ object ProjectsDao {
     languages: Seq[LanguageForm]
   ) {
     val newGuids = languages.map { form =>
-      val lang = LanguagesDao.upsert(createdBy, form) match {
+      val language = LanguagesDao.upsert(createdBy, form) match {
         case Left(errors) => sys.error(errors.mkString(", n"))
-        case Right(lang) => lang
+        case Right(language) => language
       }
-      LanguageVersionsDao.findByLanguageAndVersion(lang, form.version).getOrElse {
+      LanguageVersionsDao.findByLanguageAndVersion(language, form.version).getOrElse {
         sys.error("Could not create language version")
       }.guid
     }
 
-    val existingGuids = LanguagesDao.findAll(projectGuid = Some(project.guid)).map(_.guid)
+    val existingGuids = LanguageVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.guid)
+
     val toAdd = newGuids.filter { guid => !existingGuids.contains(guid) }
     val toRemove = existingGuids.filter { guid => !newGuids.contains(guid) }
 

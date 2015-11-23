@@ -84,11 +84,15 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       val language = createLanguageForm()
       ProjectsDao.setDependencies(systemUser, project, languages = Some(Seq(language)))
       LanguagesDao.findAll(projectGuid = Some(project.guid)).map(_.name.toString) must be(Seq(language.name.toString))
+
+      // Make sure we can reset w/out error
+      ProjectsDao.setDependencies(systemUser, project, languages = Some(Seq(language)))
     }
 
     "set libraries" in {
       val project = createProject()
       val library = createLibraryForm()
+
       ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(library)))
       val fetched = LibrariesDao.findAll(projectGuid = Some(project.guid)) match {
         case one :: Nil => one
@@ -97,6 +101,8 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       fetched.resolvers must be(library.resolvers)
       fetched.groupId must be(library.groupId)
       fetched.artifactId must be(library.artifactId)
+
+      ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(library)))
     }
 
   }
@@ -207,6 +213,5 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       }
 
     }
-  }
-
+   }
 }
