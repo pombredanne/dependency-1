@@ -65,4 +65,20 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
     )
   }
 
+  "Prefers latest production release even when more recent beta release is available" in {
+    val libraryVersions = createLibraryWithMultipleVersions(
+      versions = Seq("1.0.0", "1.0.2-RC1", "1.0.1")
+    )
+    val project = createProject()
+    addLibraryVersion(project, libraryVersions.head)
+    LibraryRecommendationsDao.forProject(project) must be(
+      Seq(
+        LibraryRecommendation(
+          from = libraryVersions.head,
+          to = libraryVersions.last
+        )
+      )
+    )
+  }
+
 }

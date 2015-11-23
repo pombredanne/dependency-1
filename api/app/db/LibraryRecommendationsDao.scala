@@ -14,7 +14,7 @@ object LibraryRecommendationsDao {
     Pager.eachPage { offset =>
       LibraryVersionsDao.findAll(projectGuid = Some(project.guid), offset = offset)
     } { currentVersion =>
-      versionsGreaterThan(currentVersion).headOption.map { v =>
+      recommend(currentVersion, versionsGreaterThan(currentVersion)).map { v =>
         versions ++= Seq(
           LibraryRecommendation(
             from = currentVersion,
@@ -24,6 +24,10 @@ object LibraryRecommendationsDao {
       }
     }
     versions
+  }
+
+  def recommend(currentVersion: LibraryVersion, others: Seq[LibraryVersion]): Option[LibraryVersion] = {
+    others.headOption
   }
 
   /**
