@@ -39,6 +39,7 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
     )
   }
 
+  /*
   "no-op if nothing to upgrade" in {
     val project = createProject()
     LibraryRecommendationsDao.forProject(project) must be(Nil)
@@ -79,6 +80,23 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
         )
       )
     )
+  }
+   */
+
+  "recommendTag" must {
+
+    "No recommendation if others is empty" in {
+      LibraryRecommendationsDao.recommendTag("1.0.0", Nil) must be(None)
+    }
+
+    "No recommendation if others is self" in {
+      LibraryRecommendationsDao.recommendTag("1.0.0", Seq("1.0.0")) must be(None)
+    }
+
+    "No recommendation if others are lower than self" in {
+      LibraryRecommendationsDao.recommendTag("1.0.0", Seq("0.1.0", "0.1.1")) must be(None)
+    }
+
   }
 
 }
