@@ -39,12 +39,6 @@ class LanguagesController @javax.inject.Inject() (
   def show(
     guid: UUID,
     projectsPage: Int = 0
-  ) = TODO
-
-  /*
-  def show(
-    guid: UUID,
-    projectsPage: Int = 0
   ) = Identified.async { implicit request =>
     withLanguage(request, guid) { language =>
       for {
@@ -85,5 +79,5 @@ class LanguagesController @javax.inject.Inject() (
       }
     }
   }
-   */
+
 }

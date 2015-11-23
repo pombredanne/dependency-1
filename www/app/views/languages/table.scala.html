@@ -7,8 +7,7 @@
     <table class="table">
       @languages.items.map { lang =>
         <tr>
-          <td><a href="#">Details</a></td>
-          <td>@lang.name</td>
+          <td><a href="@routes.LanguagesController.show(lang.guid)">@lang.name</a</td>
         </tr>
       }
     </table>

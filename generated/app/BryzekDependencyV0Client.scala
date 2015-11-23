@@ -497,6 +497,8 @@ package com.bryzek.dependency.v0 {
 
     def languages: Languages = Languages
 
+    def languageVersions: LanguageVersions = LanguageVersions
+
     def libraries: Libraries = Libraries
 
     def libraryVersions: LibraryVersions = LibraryVersions
@@ -575,6 +577,43 @@ package com.bryzek.dependency.v0 {
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+        }
+      }
+    }
+
+    object LanguageVersions extends LanguageVersions {
+      override def get(
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+        languageGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        limit: Long = 25,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.LanguageVersion]] = {
+        val queryParameters = Seq(
+          guid.map("guid" -> _.toString),
+          languageGuid.map("language_guid" -> _.toString),
+          projectGuid.map("project_guid" -> _.toString),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten ++
+          guids.getOrElse(Nil).map("guids" -> _.toString)
+
+        _executeRequest("GET", s"/language_versions", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.LanguageVersion]", r, _.validate[Seq[com.bryzek.dependency.v0.models.LanguageVersion]])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+        }
+      }
+
+      override def getByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.LanguageVersion] = {
+        _executeRequest("GET", s"/language_versions/${guid}").map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.LanguageVersion", r, _.validate[com.bryzek.dependency.v0.models.LanguageVersion])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
     }
@@ -1004,6 +1043,27 @@ package com.bryzek.dependency.v0 {
     def deleteByGuid(
       guid: _root_.java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+  }
+
+  trait LanguageVersions {
+    /**
+     * Search language versions. Results are paginated
+     */
+    def get(
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+      languageGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      limit: Long = 25,
+      offset: Long = 0
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.LanguageVersion]]
+
+    /**
+     * Returns information about the language version with this guid.
+     */
+    def getByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.LanguageVersion]
   }
 
   trait Libraries {
