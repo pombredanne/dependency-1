@@ -138,6 +138,7 @@ object LibraryVersionsDao {
     projectGuid: Option[UUID] = None,
     version: Option[String] = None,
     crossBuildVersion: Option[Option[String]] = None,
+    greaterThanVersion: Option[LibraryVersion] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -150,6 +151,7 @@ object LibraryVersionsDao {
         projectGuid = projectGuid,
         version = version,
         crossBuildVersion = crossBuildVersion,
+        greaterThanVersion = greaterThanVersion,
         isDeleted = isDeleted,
         limit = limit,
         offset = offset
@@ -164,6 +166,7 @@ object LibraryVersionsDao {
     projectGuid: Option[UUID] = None,
     version: Option[String] = None,
     crossBuildVersion: Option[Option[String]] = None,
+    greaterThanVersion: Option[LibraryVersion] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -183,6 +186,9 @@ object LibraryVersionsDao {
           case Some(_) => s"and lower(library_versions.cross_build_version) = lower(trim({cross_build_version}))"
         }
       },
+      greaterThanVersion.map { v =>
+        s"and library_versions.sort_key > (select sort_key from library_versions where guid = {greater_than_version_guid}::uuid)"
+      },
       isDeleted.map(Filters.isDeleted("library_versions", _)),
       Some(s"order by library_versions.sort_key desc, library_versions.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -197,7 +203,8 @@ object LibraryVersionsDao {
           case None => None
           case Some(value) => Some('cross_build_version -> value.toString)
         }
-      }
+      },
+      greaterThanVersion.map('greater_than_version_guid -> _.guid)
     ).flatten
 
     SQL(sql).on(bind: _*).as(
