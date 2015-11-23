@@ -129,6 +129,22 @@
 		{ "name": "scms", "type": "scms", "required": false },
 		{ "name": "uri", "type": "string", "required": false }
 	    ]
+	},
+
+	"library_recommendation": {
+	    "fields": [
+		{ "name": "library", "type": "library" },
+		{ "name": "from", "type": "version_form" },
+		{ "name": "to", "type": "version_form" }
+	    ]
+	},
+	
+	"language_recommendation": {
+	    "fields": [
+		{ "name": "language", "type": "language" },
+		{ "name": "from", "type": "string" },
+		{ "name": "to", "type": "string" }
+	    ]
 	}
 	
     },
@@ -488,6 +504,25 @@
                     ],
                     "responses": {
 			"200": { "type": "[project_language_version]" },
+			"401": { "type": "unit" }
+                    }
+		}
+	    ]
+	},
+
+	"library_recommendation": {
+	    "path": "/recommendations/libraries",
+
+	    "operations": [
+		{
+                    "method": "GET",
+		    "path": "/projects/:project_guid",
+                    "description": "Get recommendations for which libraries to upgrade",
+                    "parameters": [
+			{ "name": "project_guid", "type": "uuid" }
+                    ],
+                    "responses": {
+			"200": { "type": "[library_recommendation]" },
 			"401": { "type": "unit" }
                     }
 		}

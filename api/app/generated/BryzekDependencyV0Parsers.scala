@@ -163,6 +163,46 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
+  object LanguageRecommendation {
+
+    case class Mappings(
+      language: com.bryzek.dependency.v0.anorm.parsers.Language.Mappings,
+      from: String = "from",
+      to: String = "to"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        language = com.bryzek.dependency.v0.anorm.parsers.Language.Mappings.prefix(Seq(prefix, "language").filter(!_.isEmpty).mkString("_"), "_"),
+        from = s"${prefix}${sep}from",
+        to = s"${prefix}${sep}to"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LanguageRecommendation] = {
+      com.bryzek.dependency.v0.anorm.parsers.Language.parser(mappings.language) ~
+      SqlParser.str(mappings.from) ~
+      SqlParser.str(mappings.to) map {
+        case language ~ from ~ to => {
+          com.bryzek.dependency.v0.models.LanguageRecommendation(
+            language = language,
+            from = from,
+            to = to
+          )
+        }
+      }
+    }
+
+  }
+
   object LanguageVersion {
 
     case class Mappings(
@@ -292,6 +332,46 @@ package com.bryzek.dependency.v0.anorm.parsers {
             resolvers = resolvers,
             artifactId = artifactId,
             version = version
+          )
+        }
+      }
+    }
+
+  }
+
+  object LibraryRecommendation {
+
+    case class Mappings(
+      library: com.bryzek.dependency.v0.anorm.parsers.Library.Mappings,
+      from: com.bryzek.dependency.v0.anorm.parsers.VersionForm.Mappings,
+      to: com.bryzek.dependency.v0.anorm.parsers.VersionForm.Mappings
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        library = com.bryzek.dependency.v0.anorm.parsers.Library.Mappings.prefix(Seq(prefix, "library").filter(!_.isEmpty).mkString("_"), "_"),
+        from = com.bryzek.dependency.v0.anorm.parsers.VersionForm.Mappings.prefix(Seq(prefix, "from").filter(!_.isEmpty).mkString("_"), "_"),
+        to = com.bryzek.dependency.v0.anorm.parsers.VersionForm.Mappings.prefix(Seq(prefix, "to").filter(!_.isEmpty).mkString("_"), "_")
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LibraryRecommendation] = {
+      com.bryzek.dependency.v0.anorm.parsers.Library.parser(mappings.library) ~
+      com.bryzek.dependency.v0.anorm.parsers.VersionForm.parser(mappings.from) ~
+      com.bryzek.dependency.v0.anorm.parsers.VersionForm.parser(mappings.to) map {
+        case library ~ from ~ to => {
+          com.bryzek.dependency.v0.models.LibraryRecommendation(
+            library = library,
+            from = from,
+            to = to
           )
         }
       }

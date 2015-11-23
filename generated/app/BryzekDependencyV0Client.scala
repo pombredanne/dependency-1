@@ -23,6 +23,12 @@ package com.bryzek.dependency.v0.models {
     version: String
   )
 
+  case class LanguageRecommendation(
+    language: com.bryzek.dependency.v0.models.Language,
+    from: String,
+    to: String
+  )
+
   case class LanguageVersion(
     guid: _root_.java.util.UUID,
     language: com.bryzek.dependency.v0.models.Language,
@@ -43,6 +49,12 @@ package com.bryzek.dependency.v0.models {
     resolvers: Seq[String],
     artifactId: String,
     version: _root_.scala.Option[com.bryzek.dependency.v0.models.VersionForm] = None
+  )
+
+  case class LibraryRecommendation(
+    library: com.bryzek.dependency.v0.models.Library,
+    from: com.bryzek.dependency.v0.models.VersionForm,
+    to: com.bryzek.dependency.v0.models.VersionForm
   )
 
   case class LibraryVersion(
@@ -244,6 +256,22 @@ package com.bryzek.dependency.v0.models {
       )(unlift(LanguageForm.unapply _))
     }
 
+    implicit def jsonReadsDependencyLanguageRecommendation: play.api.libs.json.Reads[LanguageRecommendation] = {
+      (
+        (__ \ "language").read[com.bryzek.dependency.v0.models.Language] and
+        (__ \ "from").read[String] and
+        (__ \ "to").read[String]
+      )(LanguageRecommendation.apply _)
+    }
+
+    implicit def jsonWritesDependencyLanguageRecommendation: play.api.libs.json.Writes[LanguageRecommendation] = {
+      (
+        (__ \ "language").write[com.bryzek.dependency.v0.models.Language] and
+        (__ \ "from").write[String] and
+        (__ \ "to").write[String]
+      )(unlift(LanguageRecommendation.unapply _))
+    }
+
     implicit def jsonReadsDependencyLanguageVersion: play.api.libs.json.Reads[LanguageVersion] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
@@ -298,6 +326,22 @@ package com.bryzek.dependency.v0.models {
         (__ \ "artifact_id").write[String] and
         (__ \ "version").writeNullable[com.bryzek.dependency.v0.models.VersionForm]
       )(unlift(LibraryForm.unapply _))
+    }
+
+    implicit def jsonReadsDependencyLibraryRecommendation: play.api.libs.json.Reads[LibraryRecommendation] = {
+      (
+        (__ \ "library").read[com.bryzek.dependency.v0.models.Library] and
+        (__ \ "from").read[com.bryzek.dependency.v0.models.VersionForm] and
+        (__ \ "to").read[com.bryzek.dependency.v0.models.VersionForm]
+      )(LibraryRecommendation.apply _)
+    }
+
+    implicit def jsonWritesDependencyLibraryRecommendation: play.api.libs.json.Writes[LibraryRecommendation] = {
+      (
+        (__ \ "library").write[com.bryzek.dependency.v0.models.Library] and
+        (__ \ "from").write[com.bryzek.dependency.v0.models.VersionForm] and
+        (__ \ "to").write[com.bryzek.dependency.v0.models.VersionForm]
+      )(unlift(LibraryRecommendation.unapply _))
     }
 
     implicit def jsonReadsDependencyLibraryVersion: play.api.libs.json.Reads[LibraryVersion] = {
@@ -501,6 +545,8 @@ package com.bryzek.dependency.v0 {
 
     def libraries: Libraries = Libraries
 
+    def libraryRecommendations: LibraryRecommendations = LibraryRecommendations
+
     def libraryVersions: LibraryVersions = LibraryVersions
 
     def projectLanguageVersions: ProjectLanguageVersions = ProjectLanguageVersions
@@ -677,6 +723,18 @@ package com.bryzek.dependency.v0 {
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+        }
+      }
+    }
+
+    object LibraryRecommendations extends LibraryRecommendations {
+      override def getRecommendationsAndLibrariesAndProjectsByProjectGuid(
+        projectGuid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.LibraryRecommendation]] = {
+        _executeRequest("GET", s"/recommendations/libraries/projects/${projectGuid}").map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.LibraryRecommendation]", r, _.validate[Seq[com.bryzek.dependency.v0.models.LibraryRecommendation]])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
     }
@@ -1097,6 +1155,15 @@ package com.bryzek.dependency.v0 {
     def deleteByGuid(
       guid: _root_.java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+  }
+
+  trait LibraryRecommendations {
+    /**
+     * Get recommendations for which libraries to upgrade
+     */
+    def getRecommendationsAndLibrariesAndProjectsByProjectGuid(
+      projectGuid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.LibraryRecommendation]]
   }
 
   trait LibraryVersions {

@@ -14,7 +14,7 @@ import java.util.UUID
 @javax.inject.Singleton
 class Projects @javax.inject.Inject() (
   val userTokensClient: UserTokensClient
-) extends Controller with IdentifiedRestController {
+) extends Controller with IdentifiedRestController with Helpers {
 
   def get(
     guid: Option[UUID],
@@ -114,19 +114,6 @@ class Projects @javax.inject.Inject() (
     withProject(guid) { project =>
       ProjectsDao.softDelete(request.user, project)
       NoContent
-    }
-  }
-
-  def withProject(guid: UUID)(
-    f: Project => Result
-  ): Result = {
-    ProjectsDao.findByGuid(guid) match {
-      case None => {
-        NotFound
-      }
-      case Some(project) => {
-        f(project)
-      }
     }
   }
 
