@@ -1,9 +1,6 @@
 package com.bryzek.dependency.lib
 
 import org.apache.commons.lang3.StringUtils
-import java.net.URL
-import scala.util.{Failure, Success, Try}
-import play.api.Logger
 
 object RemoteVersions {
 
