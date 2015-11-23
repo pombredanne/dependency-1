@@ -37,7 +37,7 @@ class LanguageRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with H
       )
     )
   }
-/*
+
   "no-op if nothing to upgrade" in {
     val project = createProject()
     LanguageRecommendationsDao.forProject(project) must be(Nil)
@@ -53,31 +53,57 @@ class LanguageRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with H
   "with language to upgrade" in {
     val languageVersions = createLanguageWithMultipleVersions()
     val project = createProject()
-    addLanguageVersion(project, languageVersions.head)
-    LanguageRecommendationsDao.forProject(project) must be(
+    addLanguageVersion(project, languageVersions.find(_.version == "1.0.0").get)
+    verify(
+      LanguageRecommendationsDao.forProject(project),
       Seq(
         LanguageRecommendation(
-          from = languageVersions.head,
-          to = languageVersions.last
+          from = languageVersions.find(_.version == "1.0.0").get,
+          to = languageVersions.find(_.version == "1.0.2").get
         )
       )
     )
   }
-*/
+
   "Prefers latest production release even when more recent beta release is available" in {
     val languageVersions = createLanguageWithMultipleVersions(
       versions = Seq("1.0.0", "1.0.2-RC1", "1.0.1")
     )
     val project = createProject()
-    addLanguageVersion(project, languageVersions.head)
-    LanguageRecommendationsDao.forProject(project) must be(
+    addLanguageVersion(project, languageVersions.find(_.version == "1.0.0").get)
+    verify(
+      LanguageRecommendationsDao.forProject(project),
       Seq(
         LanguageRecommendation(
-          from = languageVersions.head,
-          to = languageVersions.last
+          from = languageVersions.find(_.version == "1.0.0").get,
+          to = languageVersions.find(_.version == "1.0.1").get
         )
       )
     )
+  }
+
+
+  def verify(actual: Seq[LanguageRecommendation], expected: Seq[LanguageRecommendation]) {
+    (actual == expected) match {
+      case true => {}
+      case false => {
+        (actual.size == expected.size) match {
+          case false => {
+            sys.error(s"Expected[${expected.size}] recommendations but got [${actual.size}]")
+          }
+          case true => {
+            (actual zip expected).map { case (a, b) =>
+              (a == b) match {
+                case true => {}
+                case false => {
+                  sys.error(s"Expected[${b.from.version} => ${b.to.version}] but got[${a.from.version} => ${a.to.version}]")
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
 }
