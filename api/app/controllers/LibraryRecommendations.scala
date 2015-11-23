@@ -1,5 +1,6 @@
 package controllers
 
+import db.LibraryRecommendationsDao
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import com.bryzek.dependency.v0.models.json._
@@ -17,7 +18,11 @@ class LibraryRecommendations @javax.inject.Inject() (
     projectGuid: UUID
   ) = Identified { request =>
     withProject(projectGuid) { project =>
-      sys.error("TODO")
+      Ok(
+        Json.toJson(
+          LibraryRecommendationsDao.forProject(project)
+        )
+      )
     }
   }
 
