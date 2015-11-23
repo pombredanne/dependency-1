@@ -97,6 +97,10 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
       LibraryRecommendationsDao.recommendTag("1.0.0", Seq("0.1.0", "0.1.1")) must be(None)
     }
 
+    "No recommendation if greater versions are beta versions" in {
+      LibraryRecommendationsDao.recommendTag("1.0.0", Seq("1.0.1-rc1")) must be(None)
+    }
+
   }
 
 }
