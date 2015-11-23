@@ -42,6 +42,7 @@ class ProjectsController @javax.inject.Inject() (
     withProject(request, guid) { project =>
       for {
         libraryRecommendations <- dependencyClient(request).libraryRecommendations.getRecommendationsAndLibrariesAndProjectsByProjectGuid(project.guid)
+        languageRecommendations <- dependencyClient(request).languageRecommendations.getRecommendationsAndLanguagesAndProjectsByProjectGuid(project.guid)
         languages <- dependencyClient(request).languageVersions.get(
           projectGuid = Some(guid),
           limit = Pagination.DefaultLimit+1,
@@ -58,6 +59,7 @@ class ProjectsController @javax.inject.Inject() (
             uiData(request),
             project,
             libraryRecommendations,
+            languageRecommendations,
             PaginatedCollection(languagesPage, languages),
             PaginatedCollection(librariesPage, libraries)
           )

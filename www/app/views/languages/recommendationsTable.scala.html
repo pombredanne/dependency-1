@@ -1,0 +1,24 @@
+@(recommendations: Seq[com.bryzek.dependency.v0.models.LanguageRecommendation])
+
+@if(recommendations.isEmpty) {
+  <em>No recommendations</em>
+} else {
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Language</th>
+          <th>Current</th>
+          <th>Recommended</th>
+        </tr>
+      </thead>
+      @recommendations.map { rec =>
+        <tr>
+          <td><a href="@routes.LanguagesController.show(rec.from.language.guid)">@rec.from.language.name</a></td>
+          <td>@rec.from.version</td>
+          <td>@rec.to.version</td>
+        </tr>
+      }
+    </table>
+  </div>
+}

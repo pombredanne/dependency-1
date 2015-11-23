@@ -2,6 +2,7 @@
   data: com.bryzek.dependency.lib.UiData,
   project: com.bryzek.dependency.v0.models.Project,
   libraryRecommendations: Seq[com.bryzek.dependency.v0.models.LibraryRecommendation],
+  languageRecommendations: Seq[com.bryzek.dependency.v0.models.LanguageRecommendation],
   languageVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LanguageVersion],
   libraryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LibraryVersion]
 )(implicit flash: Flash, messages: Messages)
@@ -19,10 +20,11 @@
   </ul>
 
   <h3>Recommendations</h3>
-  @if(libraryRecommendations.isEmpty) {
+  @if(libraryRecommendations.isEmpty && languageRecommendations.isEmpty) {
     <em>Awesome - your project is fully up to date!</em>
   } else {
     @views.html.libraries.recommendationsTable(libraryRecommendations)
+    @views.html.languages.recommendationsTable(languageRecommendations)
   }
 
   <h3>Languages</h3>
