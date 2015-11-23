@@ -1,0 +1,55 @@
+package com.bryzek.dependency.lib
+
+import com.bryzek.dependency.v0.models.ProgrammingLanguage
+import org.apache.commons.lang3.StringUtils
+import play.api.Logger
+
+
+trait LanguageVersionProvider {
+
+  /**
+    * Returns the versions for this language, fetching them from
+    * appropriate remote locations.
+    */
+  def versions(language: ProgrammingLanguage): Seq[VersionTag]
+
+}
+
+object DefaultLanguageVersionProvider extends LanguageVersionProvider {
+
+  private[this] val ScalaUrl = "http://www.scala-lang.org/download/all.html"
+
+  override def versions(
+    language: ProgrammingLanguage
+  ) : Seq[VersionTag] = {
+    language match {
+      case ProgrammingLanguage.Scala => {
+        fetchScalaVersions()
+      }
+      case ProgrammingLanguage.UNDEFINED(name) => {
+        Logger.warn(s"Do not know how to find versions for the programming language[$name]")
+        Nil
+      }
+    }
+  }
+
+  def fetchScalaVersions(): Seq[VersionTag] = {
+    RemoteDirectory.fetch(ScalaUrl) { name =>
+      name.toLowerCase.startsWith("scala ")
+    }.files.flatMap { toVersion(_) }
+  }
+
+  def toVersion(value: String): Option[VersionTag] = {
+    val tag = VersionTag(
+      StringUtils.stripStart(
+        StringUtils.stripStart(value, "scala"),
+        "Scala"
+      ).trim
+    )
+    tag.major match {
+      case None => None
+      case Some(_) => Some(tag)
+    }
+  }
+
+}

@@ -32,7 +32,7 @@ class LanguageActor extends Actor {
     case LanguageActor.Messages.Sync => Util.withVerboseErrorHandler(
       s"LanguageActor.Messages.Sync"
     ) {
-      dataLanguage.foreach { lib =>
+      dataLanguage.foreach { lang =>
         // TODO: fetch all versions for this language and store them
       }
     }
