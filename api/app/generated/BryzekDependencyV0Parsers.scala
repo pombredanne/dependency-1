@@ -342,9 +342,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
   object LibraryRecommendation {
 
     case class Mappings(
-      library: com.bryzek.dependency.v0.anorm.parsers.Library.Mappings,
-      from: com.bryzek.dependency.v0.anorm.parsers.VersionForm.Mappings,
-      to: com.bryzek.dependency.v0.anorm.parsers.VersionForm.Mappings
+      from: com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings,
+      to: com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings
     )
 
     object Mappings {
@@ -354,9 +353,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
       def table(table: String) = prefix(table, ".")
 
       def prefix(prefix: String, sep: String) = Mappings(
-        library = com.bryzek.dependency.v0.anorm.parsers.Library.Mappings.prefix(Seq(prefix, "library").filter(!_.isEmpty).mkString("_"), "_"),
-        from = com.bryzek.dependency.v0.anorm.parsers.VersionForm.Mappings.prefix(Seq(prefix, "from").filter(!_.isEmpty).mkString("_"), "_"),
-        to = com.bryzek.dependency.v0.anorm.parsers.VersionForm.Mappings.prefix(Seq(prefix, "to").filter(!_.isEmpty).mkString("_"), "_")
+        from = com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings.prefix(Seq(prefix, "from").filter(!_.isEmpty).mkString("_"), "_"),
+        to = com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings.prefix(Seq(prefix, "to").filter(!_.isEmpty).mkString("_"), "_")
       )
 
     }
@@ -364,12 +362,10 @@ package com.bryzek.dependency.v0.anorm.parsers {
     def table(table: String) = parser(Mappings.prefix(table, "."))
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LibraryRecommendation] = {
-      com.bryzek.dependency.v0.anorm.parsers.Library.parser(mappings.library) ~
-      com.bryzek.dependency.v0.anorm.parsers.VersionForm.parser(mappings.from) ~
-      com.bryzek.dependency.v0.anorm.parsers.VersionForm.parser(mappings.to) map {
-        case library ~ from ~ to => {
+      com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.parser(mappings.from) ~
+      com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.parser(mappings.to) map {
+        case from ~ to => {
           com.bryzek.dependency.v0.models.LibraryRecommendation(
-            library = library,
             from = from,
             to = to
           )

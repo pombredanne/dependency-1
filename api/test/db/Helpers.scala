@@ -45,11 +45,13 @@ trait Helpers {
     }
   }
 
-  def createLibraryForm() = LibraryForm(
+  def createLibraryForm(
+    versionForm: VersionForm = VersionForm("0.0.1")
+  ) = LibraryForm(
     resolvers = Seq("http://dependencies.io.flow"),
     groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
     artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
-    version = Some(VersionForm("0.0.1"))
+    version = Some(versionForm)
   )
 
   def createLibraryVersion(
@@ -83,13 +85,13 @@ trait Helpers {
     )
   }
 
-  def createProjectWithLibrary(): (Project, LibraryVersion) = {
-    val libraryForm = createLibraryForm().copy(
+  def createProjectWithLibrary(
+    libraryForm: LibraryForm = createLibraryForm().copy(
       groupId = UUID.randomUUID.toString,
       artifactId = UUID.randomUUID.toString,
       version = Some(createVersionForm())
     )
-
+  ): (Project, LibraryVersion) = {
     val project = createProject()
     ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(libraryForm)))
 

@@ -133,9 +133,8 @@
 
 	"library_recommendation": {
 	    "fields": [
-		{ "name": "library", "type": "library" },
-		{ "name": "from", "type": "version_form" },
-		{ "name": "to", "type": "version_form" }
+		{ "name": "from", "type": "library_version" },
+		{ "name": "to", "type": "library_version" }
 	    ]
 	},
 	
