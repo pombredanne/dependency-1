@@ -40,6 +40,7 @@ object LibraryRecommendationsDao {
       filter(_ != current).
       map(VersionTag(_)).
       filter(_ > VersionTag(current)).
+      filter(_.qualifier == VersionTag(current).qualifier).
       sorted.
       headOption.
       map(_.version)

@@ -39,7 +39,6 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
     )
   }
 
-  /*
   "no-op if nothing to upgrade" in {
     val project = createProject()
     LibraryRecommendationsDao.forProject(project) must be(Nil)
@@ -81,7 +80,6 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
       )
     )
   }
-   */
 
   "recommendTag" must {
 
@@ -99,6 +97,12 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
 
     "No recommendation if greater versions are beta versions" in {
       LibraryRecommendationsDao.recommendTag("1.0.0", Seq("1.0.1-rc1")) must be(None)
+    }
+
+    "Recommends similar library if qualifiers match" in {
+      LibraryRecommendationsDao.recommendTag(
+        "9.4-1201-jdbc41", Seq("9.4-1205-jdbc4", "9.4-1205-jdbc41", "9.4-1205-jdbc42")
+      ) must be(Some("9.4-1205-jdbc41"))
     }
 
   }
