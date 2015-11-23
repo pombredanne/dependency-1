@@ -7,11 +7,8 @@
     <table class="table">
       @libraryVersions.items.map { version =>
         <tr>
-          <td><a href="@routes.LibrariesController.show(version.library.guid)">Details</a></td>
-          <td>@version.library.groupId</td>
-          <td>@version.library.artifactId</td>
+          <td><a href="@routes.LibrariesController.show(version.library.guid)">@{version.library.groupId}.@{version.library.artifactId}</a></td>
           <td>@version.version</td>
-          <td>@com.bryzek.dependency.lib.Text.truncate(version.library.resolvers.mkString(", "), 20)</td>
         </tr>
       }
     </table>
