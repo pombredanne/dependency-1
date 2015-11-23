@@ -4,6 +4,7 @@ import scala.util.{Failure, Success, Try}
 import play.api.Logger
 
 case class SearchQuery(
+  language: Option[String] = None,
   groupId: Option[String] = None,
   artifactId: Option[String] = None,
   version: Option[String] = None
@@ -11,6 +12,7 @@ case class SearchQuery(
 
   val query: String = {
     Map(
+      "language" -> language,
       "groupId" -> groupId,
       "artifactId" -> artifactId,
       "version" -> version
@@ -33,6 +35,7 @@ object SearchQuery {
           piece.split("=").toList match {
             case key :: value :: Nil => {
               key.toLowerCase match {
+                case "language" => q.copy(language = Some(value))
                 case "groupid" => q.copy(groupId = Some(value))
                 case "artifactid" => q.copy(artifactId = Some(value))
                 case "version" => q.copy(version = Some(value))

@@ -14,7 +14,7 @@
         @version.version
       }
       @if(versions.hasNext) {
-        [<a href="#">More</a>]
+        [<a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(language = Some(language.name.toString)).query))">More</a>]
       }
     </li>
     <li>@audit(language.audit)</li>
