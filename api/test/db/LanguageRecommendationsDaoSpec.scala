@@ -20,6 +20,7 @@ class LanguageRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with H
         version = version
       )
     }
+    LanguageVersionsDao.findAll(languageGuid = Some(language.guid), limit = versions.size).reverse
   }
 
   def addLanguageVersion(project: Project, languageVersion: LanguageVersion) {
