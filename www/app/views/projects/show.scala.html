@@ -1,7 +1,7 @@
 @(
   data: com.bryzek.dependency.lib.UiData,
   project: com.bryzek.dependency.v0.models.Project,
-  languages: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Language],
+  languageVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LanguageVersion],
   libraryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LibraryVersion]
 )(implicit flash: Flash, messages: Messages)
 
@@ -17,15 +17,15 @@
     <li>@audit(project.audit)</li>
   </ul>
 
-  <h3>Languages</h3>
-  @views.html.languages.table(languages)
-  @if(languages.hasPrevious || languages.hasNext) {
+  <h3>LanguageVersions</h3>
+  @views.html.languages.versions.table(languageVersions)
+  @if(languageVersions.hasPrevious || languageVersions.hasNext) {
     <ul class="pager">
-      @if(languages.hasPrevious) {
-        <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = languages.page - 1, librariesPage = libraryVersions.page)">Previous</a></li>
+      @if(languageVersions.hasPrevious) {
+        <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = languageVersions.page - 1, librariesPage = libraryVersions.page)">Previous</a></li>
       }
-      @if(languages.hasNext) {
-        <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = languages.page + 1, librariesPage = libraryVersions.page)">Next</a></li>
+      @if(languageVersions.hasNext) {
+        <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = languageVersions.page + 1, librariesPage = libraryVersions.page)">Next</a></li>
       }
     </ul>
   }

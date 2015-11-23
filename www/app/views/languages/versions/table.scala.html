@@ -1,0 +1,17 @@
+@(languageVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LanguageVersion])
+
+@if(languageVersions.isEmpty) {
+  <em>No languageVersions</em>
+} else {
+  <div class="table-responsive">
+    <table class="table">
+      @languageVersions.items.map { lang =>
+        <tr>
+	  <td><a href="@routes.LanguagesController.show(lang.language.guid)">Details</a></td>
+          <td>@lang.language.name</td>
+          <td>@lang.version</td>
+        </tr>
+      }
+    </table>
+  </div>
+}

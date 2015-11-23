@@ -9,6 +9,7 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+import scala.util.{Failure, Success, Try}
 
 object LanguageVersionsDao {
 
@@ -45,7 +46,21 @@ object LanguageVersionsDao {
       version = Some(version),
       limit = 1
     ).headOption.getOrElse {
-      createWithConnection(createdBy, languageGuid, version)
+      Try {
+        createWithConnection(createdBy, languageGuid, version)
+      } match {
+        case Success(version) => version
+        case Failure(ex) => {
+          findAllWithConnection(
+            languageGuid = Some(languageGuid),
+            version = Some(version),
+            limit = 1
+          ).headOption.getOrElse {
+            play.api.Logger.error(ex.getMessage, ex)
+            sys.error(ex.getMessage)
+          }
+        }
+      }
     }
   }
 

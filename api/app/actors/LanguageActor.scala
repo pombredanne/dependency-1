@@ -1,8 +1,9 @@
 package com.bryzek.dependency.actors
 
+import com.bryzek.dependency.lib.DefaultLanguageVersionProvider
 import com.bryzek.dependency.v0.models.Language
 import io.flow.play.postgresql.Pager
-import db.{LanguagesDao, LanguageVersionsDao}
+import db.{LanguagesDao, LanguageVersionsDao, UsersDao}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -33,7 +34,11 @@ class LanguageActor extends Actor {
       s"LanguageActor.Messages.Sync"
     ) {
       dataLanguage.foreach { lang =>
-        // TODO: fetch all versions for this language and store them
+        DefaultLanguageVersionProvider.versions(lang.name).foreach { version =>
+          // TODO: fetch all versions for this language and store them
+          println(s"Store version[${version.version}] from lang[$lang]")
+          LanguageVersionsDao.upsert(UsersDao.systemUser, lang.guid, version.version)
+        }
       }
     }
 
