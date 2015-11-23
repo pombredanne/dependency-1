@@ -12,19 +12,24 @@ object RemoteVersions {
     groupId: String,
     artifactId: String
   ): Seq[ArtifactVersion] = {
-    makeUrls(resolver, groupId).map { url =>
-      fetchUrl(
-        url = url,
-        filter = { name => name == artifactId || name.startsWith(artifactId + "_") }
-      )
-    }.flatten.sortBy { _.tag }.reverse
+    val versions = fetchUrl(joinUrl(resolver, groupId.replaceAll("\\.", "/")), artifactId) match {
+      case Nil => {
+        fetchUrl(joinUrl(resolver, groupId), artifactId)
+      }
+      case results => {
+        results
+      }
+    }
+    versions.sortBy { _.tag }.reverse
   }
 
   private[this] def fetchUrl(
     url: String,
-    filter: String => Boolean
+    artifactId: String
   ): Seq[ArtifactVersion] = {
-    val result = RemoteDirectory.fetch(url)(filter)
+    val result = RemoteDirectory.fetch(url)(
+      filter = { name => name == artifactId || name.startsWith(artifactId + "_") }
+    )
 
     result.directories.flatMap { dir =>
       val thisUrl = joinUrl(url, dir)
