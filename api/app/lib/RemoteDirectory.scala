@@ -33,7 +33,7 @@ object RemoteDirectory {
           base
         }
         case _ => {
-          Logger.error("Error fetching URL[$url]: $ex")
+          Logger.error(s"Error fetching URL[$url]: $ex")
           base
         }
       }
