@@ -85,4 +85,12 @@ class VersionTagSpec extends FunSpec with Matchers {
     VersionTag("0.0.5-dev").qualifier should be(Some("dev"))
   }
 
+  it("sorts versions w/ varying lengths") {
+    assertSorted(Seq("1", "0.1"), "0.1 1")
+    assertSorted(Seq("1", "0.1", "0.0.1"), "0.0.1 0.1 1")
+    assertSorted(Seq("1.2", "1.2.1"), "1.2 1.2.1")
+    assertSorted(Seq("1.2", "1.2.1", "2"), "1.2 1.2.1 2")
+
+  }
+
 }
