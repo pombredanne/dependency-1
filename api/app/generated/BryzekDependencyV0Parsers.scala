@@ -435,6 +435,42 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
+  object ProjectLanguageVersion {
+
+    case class Mappings(
+      project: com.bryzek.dependency.v0.anorm.parsers.Project.Mappings,
+      languageVersion: com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        project = com.bryzek.dependency.v0.anorm.parsers.Project.Mappings.prefix(Seq(prefix, "project").filter(!_.isEmpty).mkString("_"), "_"),
+        languageVersion = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings.prefix(Seq(prefix, "language_version").filter(!_.isEmpty).mkString("_"), "_")
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ProjectLanguageVersion] = {
+      com.bryzek.dependency.v0.anorm.parsers.Project.parser(mappings.project) ~
+      com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.parser(mappings.languageVersion) map {
+        case project ~ languageVersion => {
+          com.bryzek.dependency.v0.models.ProjectLanguageVersion(
+            project = project,
+            languageVersion = languageVersion
+          )
+        }
+      }
+    }
+
+  }
+
   object ProjectLibraryVersion {
 
     case class Mappings(

@@ -68,6 +68,15 @@ package com.bryzek.dependency.v0.models {
   )
 
   /**
+   * A projection of projects and the specific language versions the project is
+   * dependent on
+   */
+  case class ProjectLanguageVersion(
+    project: com.bryzek.dependency.v0.models.Project,
+    languageVersion: com.bryzek.dependency.v0.models.LanguageVersion
+  )
+
+  /**
    * A projection of projects and the specific library versions the project is
    * dependent on
    */
@@ -347,6 +356,20 @@ package com.bryzek.dependency.v0.models {
       )(unlift(ProjectForm.unapply _))
     }
 
+    implicit def jsonReadsDependencyProjectLanguageVersion: play.api.libs.json.Reads[ProjectLanguageVersion] = {
+      (
+        (__ \ "project").read[com.bryzek.dependency.v0.models.Project] and
+        (__ \ "language_version").read[com.bryzek.dependency.v0.models.LanguageVersion]
+      )(ProjectLanguageVersion.apply _)
+    }
+
+    implicit def jsonWritesDependencyProjectLanguageVersion: play.api.libs.json.Writes[ProjectLanguageVersion] = {
+      (
+        (__ \ "project").write[com.bryzek.dependency.v0.models.Project] and
+        (__ \ "language_version").write[com.bryzek.dependency.v0.models.LanguageVersion]
+      )(unlift(ProjectLanguageVersion.unapply _))
+    }
+
     implicit def jsonReadsDependencyProjectLibraryVersion: play.api.libs.json.Reads[ProjectLibraryVersion] = {
       (
         (__ \ "project").read[com.bryzek.dependency.v0.models.Project] and
@@ -477,6 +500,8 @@ package com.bryzek.dependency.v0 {
     def libraries: Libraries = Libraries
 
     def libraryVersions: LibraryVersions = LibraryVersions
+
+    def projectLanguageVersions: ProjectLanguageVersions = ProjectLanguageVersions
 
     def projectLibraryVersions: ProjectLibraryVersions = ProjectLibraryVersions
 
@@ -650,6 +675,30 @@ package com.bryzek.dependency.v0 {
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+        }
+      }
+    }
+
+    object ProjectLanguageVersions extends ProjectLanguageVersions {
+      override def get(
+        projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        languageGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        languageVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        limit: Long = 25,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.ProjectLanguageVersion]] = {
+        val queryParameters = Seq(
+          projectGuid.map("project_guid" -> _.toString),
+          languageGuid.map("language_guid" -> _.toString),
+          languageVersionGuid.map("language_version_guid" -> _.toString),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/project_language_versions", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.ProjectLanguageVersion]", r, _.validate[Seq[com.bryzek.dependency.v0.models.ProjectLanguageVersion]])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
     }
@@ -1009,6 +1058,20 @@ package com.bryzek.dependency.v0 {
     def getByGuid(
       guid: _root_.java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.LibraryVersion]
+  }
+
+  trait ProjectLanguageVersions {
+    /**
+     * Get detailed information on every project using this language, including the
+     * precise version
+     */
+    def get(
+      projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      languageGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      languageVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      limit: Long = 25,
+      offset: Long = 0
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.ProjectLanguageVersion]]
   }
 
   trait ProjectLibraryVersions {

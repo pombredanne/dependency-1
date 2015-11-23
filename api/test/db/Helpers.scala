@@ -116,7 +116,6 @@ trait Helpers {
     val language = LanguagesDao.findByName(languageForm.name).getOrElse {
       sys.error("Failed to find language")
     }
-    println(s"Created languages - $language")
 
     val languageVersion = LanguageVersionsDao.findByLanguageAndVersion(language, languageForm.version).getOrElse {
       sys.error("Failed to find language version")

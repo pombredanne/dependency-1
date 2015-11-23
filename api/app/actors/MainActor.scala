@@ -43,8 +43,8 @@ class MainActor(name: String) extends Actor with ActorLogging {
   private[this] val libraryActors = scala.collection.mutable.Map[UUID, ActorRef]()
   private[this] val languageActors = scala.collection.mutable.Map[UUID, ActorRef]()
 
-  Akka.system.scheduler.schedule(12.hours, 1.day, periodicActor, PeriodicActor.Messages.SyncProjects)
-  Akka.system.scheduler.schedule(12.hours, 1.day, periodicActor, PeriodicActor.Messages.SyncLibraries)
+  Akka.system.scheduler.schedule(15.minutes, 1.day, periodicActor, PeriodicActor.Messages.SyncProjects)
+  Akka.system.scheduler.schedule(15.minutes, 1.day, periodicActor, PeriodicActor.Messages.SyncLibraries)
 
   def receive = akka.event.LoggingReceive {
 
