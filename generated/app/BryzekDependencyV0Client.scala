@@ -24,9 +24,8 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class LanguageRecommendation(
-    language: com.bryzek.dependency.v0.models.Language,
-    from: String,
-    to: String
+    from: com.bryzek.dependency.v0.models.LanguageVersion,
+    to: com.bryzek.dependency.v0.models.LanguageVersion
   )
 
   case class LanguageVersion(
@@ -257,17 +256,15 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyLanguageRecommendation: play.api.libs.json.Reads[LanguageRecommendation] = {
       (
-        (__ \ "language").read[com.bryzek.dependency.v0.models.Language] and
-        (__ \ "from").read[String] and
-        (__ \ "to").read[String]
+        (__ \ "from").read[com.bryzek.dependency.v0.models.LanguageVersion] and
+        (__ \ "to").read[com.bryzek.dependency.v0.models.LanguageVersion]
       )(LanguageRecommendation.apply _)
     }
 
     implicit def jsonWritesDependencyLanguageRecommendation: play.api.libs.json.Writes[LanguageRecommendation] = {
       (
-        (__ \ "language").write[com.bryzek.dependency.v0.models.Language] and
-        (__ \ "from").write[String] and
-        (__ \ "to").write[String]
+        (__ \ "from").write[com.bryzek.dependency.v0.models.LanguageVersion] and
+        (__ \ "to").write[com.bryzek.dependency.v0.models.LanguageVersion]
       )(unlift(LanguageRecommendation.unapply _))
     }
 
@@ -536,6 +533,8 @@ package com.bryzek.dependency.v0 {
 
     def healthchecks: Healthchecks = Healthchecks
 
+    def languageRecommendations: LanguageRecommendations = LanguageRecommendations
+
     def languages: Languages = Languages
 
     def languageVersions: LanguageVersions = LanguageVersions
@@ -559,6 +558,18 @@ package com.bryzek.dependency.v0 {
         _executeRequest("GET", s"/_internal_/healthcheck").map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("io.flow.common.v0.models.Healthcheck", r, _.validate[io.flow.common.v0.models.Healthcheck])
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+        }
+      }
+    }
+
+    object LanguageRecommendations extends LanguageRecommendations {
+      override def getRecommendationsAndLanguagesAndProjectsByProjectGuid(
+        projectGuid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.LanguageRecommendation]] = {
+        _executeRequest("GET", s"/recommendations/languages/projects/${projectGuid}").map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.LanguageRecommendation]", r, _.validate[Seq[com.bryzek.dependency.v0.models.LanguageRecommendation]])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
     }
@@ -1066,6 +1077,15 @@ package com.bryzek.dependency.v0 {
 
   trait Healthchecks {
     def getInternalAndHealthcheck()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.common.v0.models.Healthcheck]
+  }
+
+  trait LanguageRecommendations {
+    /**
+     * Get recommendations for which languages to upgrade
+     */
+    def getRecommendationsAndLanguagesAndProjectsByProjectGuid(
+      projectGuid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.LanguageRecommendation]]
   }
 
   trait Languages {

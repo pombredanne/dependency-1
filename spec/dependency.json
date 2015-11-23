@@ -140,9 +140,8 @@
 	
 	"language_recommendation": {
 	    "fields": [
-		{ "name": "language", "type": "language" },
-		{ "name": "from", "type": "string" },
-		{ "name": "to", "type": "string" }
+		{ "name": "from", "type": "language_version" },
+		{ "name": "to", "type": "language_version" }
 	    ]
 	}
 	
@@ -522,6 +521,25 @@
                     ],
                     "responses": {
 			"200": { "type": "[library_recommendation]" },
+			"401": { "type": "unit" }
+                    }
+		}
+	    ]
+	},
+	
+	"language_recommendation": {
+	    "path": "/recommendations/languages",
+
+	    "operations": [
+		{
+                    "method": "GET",
+		    "path": "/projects/:project_guid",
+                    "description": "Get recommendations for which languages to upgrade",
+                    "parameters": [
+			{ "name": "project_guid", "type": "uuid" }
+                    ],
+                    "responses": {
+			"200": { "type": "[language_recommendation]" },
 			"401": { "type": "unit" }
                     }
 		}

@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.lib.VersionTag
+import com.bryzek.dependency.lib.Recommendations
 import com.bryzek.dependency.v0.models.{LibraryRecommendation, LibraryVersion, Project}
 import io.flow.play.postgresql.Pager
 import anorm._
@@ -28,23 +28,11 @@ object LibraryRecommendationsDao {
   }
 
   def recommend(currentVersion: LibraryVersion, others: Seq[LibraryVersion]): Option[LibraryVersion] = {
-    recommendTag(currentVersion.version, others.map(_.version)).map { tag =>
+    Recommendations.version(currentVersion.version, others.map(_.version)).map { tag =>
       others.find(_.version == tag).getOrElse {
         sys.error(s"Failed to find tag[$tag]")
       }
     }
-  }
-
-  def recommendTag(current: String, others: Seq[String]): Option[String] = {
-    others.
-      filter(_ != current).
-      map(VersionTag(_)).
-      filter(_ > VersionTag(current)).
-      filter(_.qualifier == VersionTag(current).qualifier).
-      sorted.
-      reverse.
-      headOption.
-      map(_.version)
   }
 
   /**

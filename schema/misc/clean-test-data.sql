@@ -6,11 +6,7 @@ update projects
 update libraries
    set deleted_at=now(), deleted_by_guid = created_by_guid
  where deleted_at is null
-   and guid not in (
-     select library_versions.library_guid
-       from library_versions
-       join project_library_versions on project_library_versions.deleted_at is null and project_library_versions.library_version_guid = library_versions.guid
-      where library_versions.deleted_at is null);
+   and group_id like 'z-test%';
 
 update library_versions
    set deleted_at=now(), deleted_by_guid = created_by_guid
@@ -19,6 +15,20 @@ update library_versions
      select libraries.guid
        from libraries
       where libraries.deleted_at is null
+  );
+
+update languages
+   set deleted_at=now(), deleted_by_guid = created_by_guid
+ where deleted_at is null
+   and (lower(name) like 'z-test%' or lower(name) like 'z test%'); 
+
+update language_versions
+   set deleted_at=now(), deleted_by_guid = created_by_guid
+ where deleted_at is null
+   and language_guid not in (
+     select languages.guid
+       from languages
+      where languages.deleted_at is null
   );
 
 update users

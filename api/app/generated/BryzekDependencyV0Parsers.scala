@@ -166,9 +166,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
   object LanguageRecommendation {
 
     case class Mappings(
-      language: com.bryzek.dependency.v0.anorm.parsers.Language.Mappings,
-      from: String = "from",
-      to: String = "to"
+      from: com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings,
+      to: com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings
     )
 
     object Mappings {
@@ -178,9 +177,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
       def table(table: String) = prefix(table, ".")
 
       def prefix(prefix: String, sep: String) = Mappings(
-        language = com.bryzek.dependency.v0.anorm.parsers.Language.Mappings.prefix(Seq(prefix, "language").filter(!_.isEmpty).mkString("_"), "_"),
-        from = s"${prefix}${sep}from",
-        to = s"${prefix}${sep}to"
+        from = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings.prefix(Seq(prefix, "from").filter(!_.isEmpty).mkString("_"), "_"),
+        to = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings.prefix(Seq(prefix, "to").filter(!_.isEmpty).mkString("_"), "_")
       )
 
     }
@@ -188,12 +186,10 @@ package com.bryzek.dependency.v0.anorm.parsers {
     def table(table: String) = parser(Mappings.prefix(table, "."))
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LanguageRecommendation] = {
-      com.bryzek.dependency.v0.anorm.parsers.Language.parser(mappings.language) ~
-      SqlParser.str(mappings.from) ~
-      SqlParser.str(mappings.to) map {
-        case language ~ from ~ to => {
+      com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.parser(mappings.from) ~
+      com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.parser(mappings.to) map {
+        case from ~ to => {
           com.bryzek.dependency.v0.models.LanguageRecommendation(
-            language = language,
             from = from,
             to = to
           )

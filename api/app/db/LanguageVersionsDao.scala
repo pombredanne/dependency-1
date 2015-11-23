@@ -123,6 +123,7 @@ object LanguageVersionsDao {
     languageGuid: Option[UUID] = None,
     projectGuid: Option[UUID] = None,
     version: Option[String] = None,
+    greaterThanVersion: Option[LanguageVersion] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -134,6 +135,7 @@ object LanguageVersionsDao {
         languageGuid = languageGuid,
         projectGuid = projectGuid,
         version = version,
+        greaterThanVersion = greaterThanVersion,
         isDeleted = isDeleted,
         limit = limit,
         offset = offset
@@ -147,6 +149,7 @@ object LanguageVersionsDao {
     languageGuid: Option[UUID] = None,
     projectGuid: Option[UUID] = None,
     version: Option[String] = None,
+    greaterThanVersion: Option[LanguageVersion] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -160,6 +163,9 @@ object LanguageVersionsDao {
       languageGuid.map { v => s"and language_versions.language_guid = {language_guid}::uuid" },
       projectGuid.map { v => s"and language_versions.guid in (select language_version_guid from project_language_versions where deleted_at is null and project_guid = {project_guid}::uuid)" },
       version.map { v => s"and lower(language_versions.version) = lower(trim({version}))" },
+      greaterThanVersion.map { v =>
+        s"and language_versions.sort_key > (select sort_key from language_versions where guid = {greater_than_version_guid}::uuid)"
+      },
       isDeleted.map(Filters.isDeleted("language_versions", _)),
       Some(s"order by language_versions.sort_key desc, language_versions.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -168,7 +174,8 @@ object LanguageVersionsDao {
       guid.map('guid -> _.toString),
       languageGuid.map('language_guid -> _.toString),
       projectGuid.map('project_guid -> _.toString),
-      version.map('version -> _.toString)
+      version.map('version -> _.toString),
+      greaterThanVersion.map('greater_than_version_guid -> _.guid)
     ).flatten
 
     SQL(sql).on(bind: _*).as(
