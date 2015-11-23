@@ -43,6 +43,14 @@ case class VersionTag(version: String) extends Ordered[VersionTag] {
     }
   }
 
+  val qualifier: Option[String] = {
+    trimmedVersion.split(VersionTag.Dash).toList match {
+      case Nil => None
+      case one :: Nil => None
+      case multiple => multiple.lastOption
+    }
+  }
+
   def compare(that: VersionTag) = {
     sortKey.compare(that.sortKey)
   }
