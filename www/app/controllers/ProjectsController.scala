@@ -41,6 +41,7 @@ class ProjectsController @javax.inject.Inject() (
   def show(guid: UUID, languagesPage: Int = 0, librariesPage: Int = 0) = Identified.async { implicit request =>
     withProject(request, guid) { project =>
       for {
+        libraryRecommendations <- dependencyClient(request).libraryRecommendations.getRecommendationsAndLibrariesAndProjectsByProjectGuid(project.guid)
         languages <- dependencyClient(request).languageVersions.get(
           projectGuid = Some(guid),
           limit = Pagination.DefaultLimit+1,
@@ -56,6 +57,7 @@ class ProjectsController @javax.inject.Inject() (
           views.html.projects.show(
             uiData(request),
             project,
+            libraryRecommendations,
             PaginatedCollection(languagesPage, languages),
             PaginatedCollection(librariesPage, libraries)
           )

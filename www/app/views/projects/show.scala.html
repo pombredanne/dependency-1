@@ -1,6 +1,7 @@
 @(
   data: com.bryzek.dependency.lib.UiData,
   project: com.bryzek.dependency.v0.models.Project,
+  libraryRecommendations: Seq[com.bryzek.dependency.v0.models.LibraryRecommendation],
   languageVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LanguageVersion],
   libraryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LibraryVersion]
 )(implicit flash: Flash, messages: Messages)
@@ -16,6 +17,9 @@
     <li>URI: <a href="@project.uri">@project.uri</a></li>
     <li>@audit(project.audit)</li>
   </ul>
+
+  <h3>Recommendations - Libraries</h3>
+  @views.html.libraries.recommendationsTable(libraryRecommendations)
 
   <h3>Languages</h3>
   @views.html.languages.versions.table(languageVersions)

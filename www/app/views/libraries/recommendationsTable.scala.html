@@ -1,0 +1,24 @@
+@(recommendations: Seq[com.bryzek.dependency.v0.models.LibraryRecommendation])
+
+@if(recommendations.isEmpty) {
+  <em>No recommendations</em>
+} else {
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Library</th>
+          <th>Current</th>
+          <th>Recommended</th>
+        </tr>
+      </thead>
+      @recommendations.map { rec =>
+        <tr>
+          <td><a href="@routes.LibrariesController.show(rec.from.library.guid)">@{rec.from.library.groupId}.@rec.from.library.artifactId</a></td>
+          <td>@rec.from.version</td>
+          <td>@rec.to.version</td>
+        </tr>
+      }
+    </table>
+  </div>
+}
