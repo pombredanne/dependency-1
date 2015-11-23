@@ -1,10 +1,15 @@
 dependency
 ==========
-Tracks dependencies across multiple projects to manage upgrading of
-dependencies. For example, if you are using a postgresql library, you
-can register your project and start receiving immediate alerts for
-upgrade events (like when a new version of that library is made
-available).
+It's hard to keep up with releases of all of the software we use. This
+project is designed to keep track for you.
 
-Example query in maven:
-  http://search.maven.org/solrsearch/select?q=g:%22com.google.inject%22+AND+a:%22guice%22&core=gav&rows=20&wt=json
+The core entity is the project - add a project from github, and the
+dependency app will begin tracking all of your dependencies -
+including the programming languages you use. It also regularly
+searches all of the resolvers your project uses to find all of the
+available versions of each dependency and language.
+
+Whenever a newer version is found - that information is highlighted
+for you as a task... and when you update your project, the dependency
+app will automatically close the task picking up that your project has
+been upgraded.
