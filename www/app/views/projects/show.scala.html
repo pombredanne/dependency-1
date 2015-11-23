@@ -19,7 +19,11 @@
   </ul>
 
   <h3>Recommendations</h3>
-  @views.html.libraries.recommendationsTable(libraryRecommendations)
+  @if(libraryRecommendations.isEmpty) {
+    <em>Awesome - your project is fully up to date!</em>
+  } else {
+    @views.html.libraries.recommendationsTable(libraryRecommendations)
+  }
 
   <h3>Languages</h3>
   @views.html.languages.versions.table(languageVersions)
