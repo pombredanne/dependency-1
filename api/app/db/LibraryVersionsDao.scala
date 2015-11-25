@@ -79,10 +79,10 @@ object LibraryVersionsDao {
   def createWithConnection(createdBy: User, libraryGuid: UUID, form: VersionForm)(implicit c: java.sql.Connection): LibraryVersion = {
     val guid = UUID.randomUUID
 
-    val sortKey = Seq(
-      Some(VersionTag(form.version).sortKey),
-      form.crossBuildVersion.map(VersionTag(_).sortKey)
-    ).flatten.mkString(VersionTag.Separator)
+    val sortKey = form.crossBuildVersion match {
+      case None => VersionTag(form.version).sortKey
+      case Some(crossBuildVersion) => VersionTag(s"${form.version}-$crossBuildVersion").sortKey
+    }
 
     SQL(InsertQuery).on(
       'guid -> guid,

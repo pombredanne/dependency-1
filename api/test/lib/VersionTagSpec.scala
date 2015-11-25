@@ -2,10 +2,10 @@ package com.bryzek.dependency.lib
 
 import org.scalatest.{FunSpec, Matchers}
 
-// From https://github.com/mbryzek/apidoc
-class VersionTag2Spec extends FunSpec with Matchers {
+class VersionTagSpec extends FunSpec with Matchers {
 
   def assertSorted(versions: Seq[String], target: String) {
+<<<<<<< a6c67135e2a8eb0c2d372c491fe8ffd006bddae9
 <<<<<<< ac10373e505f3e49259b7a31c5e260e2cace0ed3
 <<<<<<< 7dec3a0762eb1988b8b61393530618e8b956c3c2
 <<<<<<< Updated upstream
@@ -19,9 +19,12 @@ class VersionTag2Spec extends FunSpec with Matchers {
     versionObjects.sorted.map(_.version).mkString(" ") should be(target)
 =======
     versions.map( VersionTag2(_) ).foreach { v =>
+=======
+    versions.map( VersionTag(_) ).foreach { v =>
+>>>>>>> Replace VersionTag implementation
       println(s" - $v: ${v.sortKey}")
     }
-    versions.map( VersionTag2(_) ).sorted.map(_.version).mkString(" ") should be(target)
+    versions.map( VersionTag(_) ).sorted.map(_.version).mkString(" ") should be(target)
   }
 
 <<<<<<< c205d2d7faf75389cfbc9a1db6604b82ec09e13a
@@ -30,10 +33,10 @@ class VersionTag2Spec extends FunSpec with Matchers {
 =======
 >>>>>>> Add support for date based tags
   it("isDate") {
-    VersionTag2.isDate(123) should be(false)
-    VersionTag2.isDate(20141018) should be(true)
-    VersionTag2.isDate(10141018) should be(false)
-    VersionTag2.isDate(19141018) should be(true)
+    VersionTag.isDate(123) should be(false)
+    VersionTag.isDate(20141018) should be(true)
+    VersionTag.isDate(10141018) should be(false)
+    VersionTag.isDate(19141018) should be(true)
   }
 <<<<<<< c205d2d7faf75389cfbc9a1db6604b82ec09e13a
 
@@ -58,18 +61,18 @@ class VersionTag2Spec extends FunSpec with Matchers {
 >>>>>>> Add support for date based tags
 
   it("fromString") {
-    VersionTag2("1") should be(VersionTag2.Semver("1", 1, 0, 0))
-    VersionTag2("1.0") should be(VersionTag2.Semver("1.0", 1, 0, 0))
-    VersionTag2("1.0.0") should be(VersionTag2.Semver("1.0.0", 1, 0, 0))
-    VersionTag2("1.2.3.4") should be(VersionTag2.Semver("1.2.3.4", 1, 2, 3))
-    VersionTag2("dev") should be(VersionTag2.Unknown("dev"))
+    VersionTag("1") should be(VersionTag.Semver("1", 1, 0, 0))
+    VersionTag("1.0") should be(VersionTag.Semver("1.0", 1, 0, 0))
+    VersionTag("1.0.0") should be(VersionTag.Semver("1.0.0", 1, 0, 0))
+    VersionTag("1.2.3.4") should be(VersionTag.Semver("1.2.3.4", 1, 2, 3))
+    VersionTag("dev") should be(VersionTag.Unknown("dev"))
 
-    VersionTag2("1.0.0-dev") should be(
-      VersionTag2.Multi(
+    VersionTag("1.0.0-dev") should be(
+      VersionTag.Multi(
         "1.0.0-dev",
         Seq(
-          VersionTag2.Semver("1.0.0", 1, 0, 0),
-          VersionTag2.Unknown("dev")
+          VersionTag.Semver("1.0.0", 1, 0, 0),
+          VersionTag.Unknown("dev")
         )
       )
     )
@@ -109,28 +112,28 @@ class VersionTag2Spec extends FunSpec with Matchers {
   }
 
   it("parses major from semver versions") {
-    VersionTag2("0.0.0").major should be(Some(0))
-    VersionTag2("0.0.0").major should be(Some(0))
-    VersionTag2("0.0.0-dev").major should be(Some(0))
+    VersionTag("0.0.0").major should be(Some(0))
+    VersionTag("0.0.0").major should be(Some(0))
+    VersionTag("0.0.0-dev").major should be(Some(0))
 
-    VersionTag2("1.0.0").major should be(Some(1))
-    VersionTag2("1.0.0-dev").major should be(Some(1))
+    VersionTag("1.0.0").major should be(Some(1))
+    VersionTag("1.0.0-dev").major should be(Some(1))
   }
 
   it("parses major from github versions") {
-    VersionTag2("v1").major should be(Some(1))
-    VersionTag2("v1.0.0").major should be(Some(1))
-    VersionTag2("v1.0.0-dev").major should be(Some(1))
+    VersionTag("v1").major should be(Some(1))
+    VersionTag("v1.0.0").major should be(Some(1))
+    VersionTag("v1.0.0-dev").major should be(Some(1))
   }
 
   it("returns none when no major number") {
-    VersionTag2("v").major should be(None)
-    VersionTag2("dev").major should be(None)
+    VersionTag("v").major should be(None)
+    VersionTag("dev").major should be(None)
   }
 
   it("major ignores whitespace") {
-    VersionTag2(" 1.0").major should be(Some(1))
-    VersionTag2(" v2.0").major should be(Some(2))
+    VersionTag(" 1.0").major should be(Some(1))
+    VersionTag(" v2.0").major should be(Some(2))
   }
 
 <<<<<<< 47f106d8025363bbd8426db41d2bd38d6633abd1
@@ -214,25 +217,25 @@ class VersionTag2Spec extends FunSpec with Matchers {
   }
 
   it("nextMicro") {
-    VersionTag2("foo").nextMicro should be(None)
-    VersionTag2("foo-bar").nextMicro should be(None)
-    VersionTag2("foo-0.1.2").nextMicro should be(None)
-    VersionTag2("0.0.1").nextMicro should be(Some(VersionTag2.Semver("0.0.2", 0, 0, 2)))
-    VersionTag2("1.2.3").nextMicro should be(Some(VersionTag2.Semver("1.2.4", 1, 2, 4)))
+    VersionTag("foo").nextMicro should be(None)
+    VersionTag("foo-bar").nextMicro should be(None)
+    VersionTag("foo-0.1.2").nextMicro should be(None)
+    VersionTag("0.0.1").nextMicro should be(Some(VersionTag.Semver("0.0.2", 0, 0, 2)))
+    VersionTag("1.2.3").nextMicro should be(Some(VersionTag.Semver("1.2.4", 1, 2, 4)))
 
-    VersionTag2("0.0.5-dev").nextMicro should be(Some(VersionTag2.Multi(
+    VersionTag("0.0.5-dev").nextMicro should be(Some(VersionTag.Multi(
       "0.0.6-dev",
       Seq(
-        VersionTag2.Semver("0.0.6", 0, 0, 6),
-        VersionTag2.Unknown("dev")
+        VersionTag.Semver("0.0.6", 0, 0, 6),
+        VersionTag.Unknown("dev")
       )
     )))
   }
 
   it("qualifier") {
-    VersionTag2("foo").qualifier should be(None)
-    VersionTag2("0.0.1").qualifier should be(None)
-    VersionTag2("0.0.5-dev").qualifier should be(Some("dev"))
+    VersionTag("foo").qualifier should be(None)
+    VersionTag("0.0.1").qualifier should be(None)
+    VersionTag("0.0.5-dev").qualifier should be(Some("dev"))
   }
 
 >>>>>>> Complete version tag implementation
