@@ -8,7 +8,7 @@ class VersionTag2Spec extends FunSpec with Matchers {
   def assertSorted(versions: Seq[String], target: String) {
     val versionObjects = versions.map( VersionTag2(_) )
     versionObjects.foreach { v =>
-      println(s" - $v")
+      println(s" - $v: ${v.sortKey}")
     }
     versionObjects.sorted.map(_.version).mkString(" ") should be(target)
   }
