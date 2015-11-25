@@ -23,8 +23,18 @@ class VersionTag2Spec extends FunSpec with Matchers {
     VersionTag2("1") should be(VersionTag2.Semver("1", 1, 0, 0))
     VersionTag2("1.0") should be(VersionTag2.Semver("1.0", 1, 0, 0))
     VersionTag2("1.0.0") should be(VersionTag2.Semver("1.0.0", 1, 0, 0))
-    VersionTag2("1.0.0-dev") should be(VersionTag2.QualifiedSemver("1.0.0-dev", 1, 0, 0, "dev"))
+    VersionTag2("1.2.3.4") should be(VersionTag2.Semver("1.2.3.4", 1, 2, 3))
     VersionTag2("dev") should be(VersionTag2.Unknown("dev"))
+
+    VersionTag2("1.0.0-dev") should be(
+      VersionTag2.Multi(
+        "1.0.0-dev",
+        Seq(
+          VersionTag2.Semver("1.0.0", 1, 0, 0),
+          VersionTag2.Unknown("dev")
+        )
+      )
+    )
   }
 
   it("sorts developer tags before release tags (latest release tag should be last)") {
@@ -85,19 +95,6 @@ class VersionTag2Spec extends FunSpec with Matchers {
     VersionTag2(" v2.0").major should be(Some(2))
   }
 
-  it("nextMicro") {
-    VersionTag2("foo").nextMicro should be(None)
-    VersionTag2("0.0.1").nextMicro should be(Some(VersionTag2.Semver("0.0.2", 0, 0, 2)))
-    VersionTag2("1.2.3").nextMicro should be(Some(VersionTag2.Semver("1.2.4", 1, 2, 4)))
-    VersionTag2("0.0.5-dev").nextMicro should be(Some(VersionTag2.QualifiedSemver("0.0.6-dev", 0, 0, 6, "dev")))
-  }
-
-  it("qualifier") {
-    VersionTag2("foo").qualifier should be(None)
-    VersionTag2("0.0.1").qualifier should be(None)
-    VersionTag2("0.0.5-dev").qualifier should be(Some("dev"))
-  }
-
   it("sorts versions w/ varying lengths") {
     assertSorted(Seq("1", "0.1"), "0.1 1")
     assertSorted(Seq("1", "0.1", "0.0.1"), "0.0.1 0.1 1")
@@ -108,6 +105,39 @@ class VersionTag2Spec extends FunSpec with Matchers {
 
   it("numeric tags are considered newer than string tags") {
     assertSorted(Seq("1.0.0", "r20140201.1"), "r20140201.1 1.0.0")
+  }
+
+  it("scalatestplus version numbers") {
+    assertSorted(Seq("1.4.0-M4", "1.4.0-M3"), "1.4.0-M3 1.4.0-M4")
+  }
+
+  it("Sorts semvers with more than 3 components") {
+    // we don't fully support this use case... defaults to a string
+    // sort after position 3
+
+    assertSorted(Seq("1.0.9.5", "1.0.9.8", "1.0.10.1", "1.0.10.2"), "1.0.9.5 1.0.9.8 1.0.10.1 1.0.10.2")
+  }
+
+  it("nextMicro") {
+    VersionTag2("foo").nextMicro should be(None)
+    VersionTag2("foo-bar").nextMicro should be(None)
+    VersionTag2("foo-0.1.2").nextMicro should be(None)
+    VersionTag2("0.0.1").nextMicro should be(Some(VersionTag2.Semver("0.0.2", 0, 0, 2)))
+    VersionTag2("1.2.3").nextMicro should be(Some(VersionTag2.Semver("1.2.4", 1, 2, 4)))
+
+    VersionTag2("0.0.5-dev").nextMicro should be(Some(VersionTag2.Multi(
+      "0.0.6-dev",
+      Seq(
+        VersionTag2.Semver("0.0.6", 0, 0, 6),
+        VersionTag2.Unknown("dev")
+      )
+    )))
+  }
+
+  it("qualifier") {
+    VersionTag2("foo").qualifier should be(None)
+    VersionTag2("0.0.1").qualifier should be(None)
+    VersionTag2("0.0.5-dev").qualifier should be(Some("dev"))
   }
 
 }
