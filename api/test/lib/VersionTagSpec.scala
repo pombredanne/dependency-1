@@ -6,8 +6,31 @@ import org.scalatest.{FunSpec, Matchers}
 class VersionTagSpec extends FunSpec with Matchers {
 
   def assertSorted(versions: Seq[String], target: String) {
+<<<<<<< Updated upstream
     val versionObjects = versions.map( VersionTag(_) )
     versionObjects.sorted.map(_.version).mkString(" ") should be(target)
+=======
+    versions.map( VersionTag2(_) ).foreach { v =>
+      println(s" - $v: ${v.sortKey}")
+    }
+    versions.map( VersionTag2(_) ).sorted.map(_.version).mkString(" ") should be(target)
+  }
+
+/*
+  it("isDate") {
+    VersionTag2.isDate(123) should be(false)
+    VersionTag2.isDate(20141018) should be(true)
+    VersionTag2.isDate(10141018) should be(false)
+    VersionTag2.isDate(19141018) should be(true)
+  }
+
+  it("fromString") {
+    VersionTag2("1") should be(VersionTag2.Semver("1", 1, 0, 0))
+    VersionTag2("1.0") should be(VersionTag2.Semver("1.0", 1, 0, 0))
+    VersionTag2("1.0.0") should be(VersionTag2.Semver("1.0.0", 1, 0, 0))
+    VersionTag2("1.0.0-dev") should be(VersionTag2.QualifiedSemver("1.0.0-dev", 1, 0, 0, "dev"))
+    VersionTag2("dev") should be(VersionTag2.Unknown("dev"))
+>>>>>>> Stashed changes
   }
 
   it("sorts developer tags before release tags (latest release tag should be last)") {
@@ -72,6 +95,7 @@ class VersionTagSpec extends FunSpec with Matchers {
     VersionTag(" v2.0").major should be(Some(2))
   }
 
+<<<<<<< Updated upstream
   it("nextMicro") {
     VersionTag("foo").nextMicro should be(None)
     VersionTag("0.0.1").nextMicro should be(Some("0.0.2"))
@@ -85,6 +109,8 @@ class VersionTagSpec extends FunSpec with Matchers {
     VersionTag("0.0.5-dev").qualifier should be(Some("dev"))
   }
 
+=======
+>>>>>>> Stashed changes
   it("sorts versions w/ varying lengths") {
     assertSorted(Seq("1", "0.1"), "0.1 1")
     assertSorted(Seq("1", "0.1", "0.0.1"), "0.0.1 0.1 1")
@@ -93,4 +119,24 @@ class VersionTagSpec extends FunSpec with Matchers {
 
   }
 
+<<<<<<< Updated upstream
+=======
+  it("numeric tags are considered newer than string tags") {
+    assertSorted(Seq("1.0.0", "r20140201.1"), "r20140201.1 1.0.0")
+  }
+
+  it("nextMicro") {
+    VersionTag2("foo").nextMicro should be(None)
+    VersionTag2("0.0.1").nextMicro should be(Some(VersionTag2.Semver("0.0.2", 0, 0, 2)))
+    VersionTag2("1.2.3").nextMicro should be(Some(VersionTag2.Semver("1.2.4", 1, 2, 4)))
+    VersionTag2("0.0.5-dev").nextMicro should be(Some(VersionTag2.QualifiedSemver("0.0.6-dev", 0, 0, 6, "dev")))
+  }
+*/
+  it("qualifier") {
+    VersionTag2("foo").qualifier should be(None)
+    VersionTag2("0.0.1").qualifier should be(None)
+    VersionTag2("0.0.5-dev").qualifier should be(Some("dev"))
+  }
+
+>>>>>>> Stashed changes
 }
