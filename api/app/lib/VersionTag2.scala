@@ -44,32 +44,26 @@ object VersionTag2 {
   private[lib] val SemverRx = """^[a-z]?([\d\.]+)$""".r
 
   def apply(value: String): VersionTag2 = {
-    fromString(value).getOrElse {
-      Unknown(value)
+    value.trim.split(VersionTag.Dash).flatMap(fromString(_)).toList match {
+      case Nil => Unknown(value)
+      case one :: Nil => one
+      case multiple => Multi(value, multiple)
     }
   }
 
-  def fromString(value: String): Option[VersionTag2] = {
-    value.trim.split(VersionTag.Dash).flatMap(versionTagFromString(_)).toList match {
-      case Nil => None
-      case a :: Nil => Some(a)
-      case a :: b :: Nil => {
-        (a, b) match {
-          case (a: Semver, b: Unknown) => Some(QualifiedSemver(value, a.majorNum, a.minorNum, a.microNum, b.version))
-          case _ => Some(Multi(value, Seq(a, b)))
-        }
-      }
-      case multiple => Some(Multi(value, multiple))
-    }
-  }
-
-  private def versionTagFromString(value: String): Option[VersionTag2] = {
+  private def fromString(value: String): Option[VersionTag2] = {
     value.trim match {
       case SemverRx(rest) => {
         rest.split(VersionTag.Dot).map(_.toInt).toList match {
           case Nil => None
           case major :: Nil => Some(Semver(value, major, 0, 0))
-          case major :: minor :: Nil => Some(Semver(value, major, minor, 0))
+          case major :: minor :: Nil => {
+            println(s"major[$major] isDate(major)[${isDate(major)}]")
+            isDate(major) match {
+              case true => Some(Date(value, major, minor))
+              case false => Some(Semver(value, major, minor, 0))
+            }
+          }
           case major :: minor :: micro :: Nil => Some(Semver(value, major, minor, micro))
           case major :: minor :: micro :: rest => {
             Some(QualifiedSemver(value, major, minor, micro, rest.mkString(".")))
@@ -78,6 +72,10 @@ object VersionTag2 {
       }
       case _ => Some(Unknown(value.trim))
     }
+  }
+
+  private[lib] def isDate(value: Int): Boolean = {
+    value.toString.length >= 8 && value.toString.substring(0, 4).toInt >= 1900
   }
 
   /**

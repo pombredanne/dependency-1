@@ -12,7 +12,12 @@ class VersionTag2Spec extends FunSpec with Matchers {
     versions.map( VersionTag2(_) ).sorted.map(_.version).mkString(" ") should be(target)
   }
 
-  /*
+  it("isDate") {
+    VersionTag2.isDate(123) should be(false)
+    VersionTag2.isDate(20141018) should be(true)
+    VersionTag2.isDate(10141018) should be(false)
+    VersionTag2.isDate(19141018) should be(true)
+  }
 
   it("fromString") {
     VersionTag2("1") should be(VersionTag2.Semver("1", 1, 0, 0))
@@ -100,8 +105,6 @@ class VersionTag2Spec extends FunSpec with Matchers {
     assertSorted(Seq("1.2", "1.2.1", "2"), "1.2 1.2.1 2")
 
   }
-  */
-
 
   it("numeric tags are considered newer than string tags") {
     assertSorted(Seq("1.0.0", "r20140201.1"), "r20140201.1 1.0.0")
