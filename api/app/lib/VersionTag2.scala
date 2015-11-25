@@ -55,11 +55,11 @@ object VersionTag2 {
       case a :: Nil => Some(a)
       case a :: b :: Nil => {
         (a, b) match {
-          case (a: Semver, b: Unknown) => Some(QualifiedSemver(a.majorNum, a.minorNum, a.microNum, b.version))
-          case _ => Some(Multi(Seq(a, b)))
+          case (a: Semver, b: Unknown) => Some(QualifiedSemver(value, a.majorNum, a.minorNum, a.microNum, b.version))
+          case _ => Some(Multi(value, Seq(a, b)))
         }
       }
-      case multiple => Some(Multi(multiple))
+      case multiple => Some(Multi(value, multiple))
     }
   }
 
@@ -69,11 +69,11 @@ object VersionTag2 {
       case SemverRx(rest) => {
         value.split(VersionTag.Dot).map(_.toInt).toList match {
           case Nil => None
-          case major :: Nil => Some(Semver(major, 0, 0))
-          case major :: minor :: Nil => Some(Semver(major, minor, 0))
-          case major :: minor :: micro :: Nil => Some(Semver(major, minor, micro))
+          case major :: Nil => Some(Semver(value, major, 0, 0))
+          case major :: minor :: Nil => Some(Semver(value, major, minor, 0))
+          case major :: minor :: micro :: Nil => Some(Semver(value, major, minor, micro))
           case major :: minor :: micro :: rest => {
-            Some(QualifiedSemver(major, minor, micro, rest.mkString(".")))
+            Some(QualifiedSemver(value, major, minor, micro, rest.mkString(".")))
           }
         }
       }
@@ -81,34 +81,33 @@ object VersionTag2 {
     }
   }
 
-  case class Semver(majorNum: Int, minorNum: Int, microNum: Int) extends VersionTag2 {
-    override val version = Seq(majorNum, minorNum, microNum).mkString(".")
+  case class Semver(version: String, majorNum: Int, minorNum: Int, microNum: Int) extends VersionTag2 {
+    //override val version = Seq(majorNum, minorNum, microNum).mkString(".")
     override val sortKey = Seq(5, Padding + majorNum, Padding + minorNum, Padding + microNum).mkString(Divider)
     override val major = Some(majorNum)
     override val qualifier = None
-    override def nextMicro() = Some(Semver(majorNum, minorNum, microNum + 1))
+    override def nextMicro() = Some(Semver(version, majorNum, minorNum, microNum + 1))
   }
 
-  case class QualifiedSemver(majorNum: Int, minorNum: Int, microNum: Int, qual: String) extends VersionTag2 {
-    override val version = Seq(majorNum, minorNum, microNum, qual).mkString(".") + s"-$qual"
+  case class QualifiedSemver(version: String, majorNum: Int, minorNum: Int, microNum: Int, qual: String) extends VersionTag2 {
+    //override val version = Seq(majorNum, minorNum, microNum, qual).mkString(".") + s"-$qual"
     override val sortKey = Seq(3, Padding + majorNum, Padding + minorNum, Padding + microNum, MaxPadding, qual).mkString(Divider)
     override val major = Some(majorNum)
     override val qualifier = Some(qual)
-    override def nextMicro() = Some(QualifiedSemver(majorNum, minorNum, microNum, qual))
+    override def nextMicro() = Some(QualifiedSemver(version, majorNum, minorNum, microNum, qual))
   }
 
-  case class Unknown(tag: String) extends VersionTag2 {
-    override val version = tag
-    override val sortKey: String = Seq(1, Padding, tag).mkString(Divider)
+  case class Unknown(version: String) extends VersionTag2 {
+    override val sortKey: String = Seq(1, Padding, version).mkString(Divider)
     override val major = None
     override val qualifier = None
     override def nextMicro() = None
   }
 
-  case class Multi(tags: Seq[VersionTag2]) extends VersionTag2 {
+  case class Multi(version: String, tags: Seq[VersionTag2]) extends VersionTag2 {
     assert(tags.size > 1, "Must have at least two tags")
-    override val version = tags.map(_.version).mkString("-")
-    override val sortKey = "2|" + tags.map(_.sortKey).mkString("|")
+    //override val version = tags.map(_.version).mkString("-")
+    override val sortKey = Seq(2, Padding, tags.map(_.sortKey).mkString("|")).mkString(Divider)
     override val major = tags.head.major
     override val qualifier = None
     override def nextMicro() = None
