@@ -64,10 +64,9 @@ object VersionTag2 {
   }
 
   private def versionTagFromString(value: String): Option[VersionTag2] = {
-    println(s"versionTagFromString($value)")
     value.trim match {
       case SemverRx(rest) => {
-        value.split(VersionTag.Dot).map(_.toInt).toList match {
+        rest.split(VersionTag.Dot).map(_.toInt).toList match {
           case Nil => None
           case major :: Nil => Some(Semver(value, major, 0, 0))
           case major :: minor :: Nil => Some(Semver(value, major, minor, 0))
@@ -82,19 +81,17 @@ object VersionTag2 {
   }
 
   case class Semver(version: String, majorNum: Int, minorNum: Int, microNum: Int) extends VersionTag2 {
-    //override val version = Seq(majorNum, minorNum, microNum).mkString(".")
     override val sortKey = Seq(5, Padding + majorNum, Padding + minorNum, Padding + microNum).mkString(Divider)
     override val major = Some(majorNum)
     override val qualifier = None
-    override def nextMicro() = Some(Semver(version, majorNum, minorNum, microNum + 1))
+    override def nextMicro() = Some(Semver(s"${majorNum}.${minorNum}.${microNum+1}", majorNum, minorNum, microNum + 1))
   }
 
   case class QualifiedSemver(version: String, majorNum: Int, minorNum: Int, microNum: Int, qual: String) extends VersionTag2 {
-    //override val version = Seq(majorNum, minorNum, microNum, qual).mkString(".") + s"-$qual"
     override val sortKey = Seq(3, Padding + majorNum, Padding + minorNum, Padding + microNum, MaxPadding, qual).mkString(Divider)
     override val major = Some(majorNum)
     override val qualifier = Some(qual)
-    override def nextMicro() = Some(QualifiedSemver(version, majorNum, minorNum, microNum, qual))
+    override def nextMicro() = Some(QualifiedSemver(s"${majorNum}.${minorNum}.${microNum+1}-$qual", majorNum, minorNum, microNum + 1, qual))
   }
 
   case class Unknown(version: String) extends VersionTag2 {
@@ -106,7 +103,6 @@ object VersionTag2 {
 
   case class Multi(version: String, tags: Seq[VersionTag2]) extends VersionTag2 {
     assert(tags.size > 1, "Must have at least two tags")
-    //override val version = tags.map(_.version).mkString("-")
     override val sortKey = Seq(2, Padding, tags.map(_.sortKey).mkString("|")).mkString(Divider)
     override val major = tags.head.major
     override val qualifier = None

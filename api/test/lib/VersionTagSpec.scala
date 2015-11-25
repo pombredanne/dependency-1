@@ -6,6 +6,7 @@ import org.scalatest.{FunSpec, Matchers}
 class VersionTag2Spec extends FunSpec with Matchers {
 
   def assertSorted(versions: Seq[String], target: String) {
+<<<<<<< ac10373e505f3e49259b7a31c5e260e2cace0ed3
 <<<<<<< 7dec3a0762eb1988b8b61393530618e8b956c3c2
 <<<<<<< Updated upstream
     val versionObjects = versions.map( VersionTag(_) )
@@ -38,6 +39,12 @@ class VersionTag2Spec extends FunSpec with Matchers {
     VersionTag2("1.0.0-dev") should be(VersionTag2.QualifiedSemver("1.0.0-dev", 1, 0, 0, "dev"))
     VersionTag2("dev") should be(VersionTag2.Unknown("dev"))
 >>>>>>> Stashed changes
+=======
+    versions.map( VersionTag2(_) ).foreach { v =>
+      println(s" - $v: ${v.sortKey}")
+    }
+    versions.map( VersionTag2(_) ).sorted.map(_.version).mkString(" ") should be(target)
+>>>>>>> Implement next micro
   }
 
   it("fromString") {
@@ -113,9 +120,9 @@ class VersionTag2Spec extends FunSpec with Matchers {
 <<<<<<< Updated upstream
   it("nextMicro") {
     VersionTag2("foo").nextMicro should be(None)
-    VersionTag2("0.0.1").nextMicro should be(Some("0.0.2"))
-    VersionTag2("1.2.3").nextMicro should be(Some("1.2.4"))
-    VersionTag2("0.0.5-dev").nextMicro should be(None)
+    VersionTag2("0.0.1").nextMicro should be(Some(VersionTag2.Semver("0.0.2", 0, 0, 2)))
+    VersionTag2("1.2.3").nextMicro should be(Some(VersionTag2.Semver("1.2.4", 1, 2, 4)))
+    VersionTag2("0.0.5-dev").nextMicro should be(Some(VersionTag2.QualifiedSemver("0.0.6-dev", 0, 0, 6, "dev")))
   }
 
   it("qualifier") {
