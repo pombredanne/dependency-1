@@ -24,6 +24,7 @@ class VersionTag2Spec extends FunSpec with Matchers {
     versions.map( VersionTag2(_) ).sorted.map(_.version).mkString(" ") should be(target)
   }
 
+<<<<<<< 087c2ed15f53566e2e491ca959a845d7d74e1b15
 /*
   it("isDate") {
     VersionTag2.isDate(123) should be(false)
@@ -46,6 +47,9 @@ class VersionTag2Spec extends FunSpec with Matchers {
     versions.map( VersionTag2(_) ).sorted.map(_.version).mkString(" ") should be(target)
 >>>>>>> Implement next micro
   }
+=======
+  /*
+>>>>>>> Add Date version tag
 
   it("fromString") {
     VersionTag2("1") should be(VersionTag2.Semver("1", 1, 0, 0))
@@ -78,10 +82,6 @@ class VersionTag2Spec extends FunSpec with Matchers {
   it("sorts 3 element version") {
     assertSorted(Seq("0.0.0", "0.0.1", "0.1.0", "5.1.0"), "0.0.0 0.0.1 0.1.0 5.1.0")
     assertSorted(Seq("10.10.10", "10.0.1", "1.1.50", "15.2.2", "1.0.10"), "1.0.10 1.1.50 10.0.1 10.10.10 15.2.2")
-  }
-
-  it("numeric tags are considered newer than string tags") {
-    assertSorted(Seq("1.0.0", "r20140201.1"), "r20140201.1 1.0.0")
   }
 
   it("sorts string tags as strings") {
@@ -140,6 +140,7 @@ class VersionTag2Spec extends FunSpec with Matchers {
     assertSorted(Seq("1.2", "1.2.1", "2"), "1.2 1.2.1 2")
 
   }
+<<<<<<< 087c2ed15f53566e2e491ca959a845d7d74e1b15
 <<<<<<< d85e41e24a7810d0c389fe0888b91a12a6250a78
 <<<<<<< 7dec3a0762eb1988b8b61393530618e8b956c3c2
 
@@ -167,6 +168,14 @@ class VersionTag2Spec extends FunSpec with Matchers {
    */
 >>>>>>> Refactor version parsing
 =======
+=======
+  */
+
+
+  it("numeric tags are considered newer than string tags") {
+    assertSorted(Seq("1.0.0", "r20140201.1"), "r20140201.1 1.0.0")
+  }
+>>>>>>> Add Date version tag
 
 >>>>>>> Implement parsing of addl version numbers
 }
