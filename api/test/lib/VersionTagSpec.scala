@@ -24,14 +24,18 @@ class VersionTag2Spec extends FunSpec with Matchers {
     versions.map( VersionTag2(_) ).sorted.map(_.version).mkString(" ") should be(target)
   }
 
+<<<<<<< c205d2d7faf75389cfbc9a1db6604b82ec09e13a
 <<<<<<< 087c2ed15f53566e2e491ca959a845d7d74e1b15
 /*
+=======
+>>>>>>> Add support for date based tags
   it("isDate") {
     VersionTag2.isDate(123) should be(false)
     VersionTag2.isDate(20141018) should be(true)
     VersionTag2.isDate(10141018) should be(false)
     VersionTag2.isDate(19141018) should be(true)
   }
+<<<<<<< c205d2d7faf75389cfbc9a1db6604b82ec09e13a
 
   it("fromString") {
     VersionTag2("1") should be(VersionTag2.Semver("1", 1, 0, 0))
@@ -50,6 +54,8 @@ class VersionTag2Spec extends FunSpec with Matchers {
 =======
   /*
 >>>>>>> Add Date version tag
+=======
+>>>>>>> Add support for date based tags
 
   it("fromString") {
     VersionTag2("1") should be(VersionTag2.Semver("1", 1, 0, 0))
@@ -140,6 +146,7 @@ class VersionTag2Spec extends FunSpec with Matchers {
     assertSorted(Seq("1.2", "1.2.1", "2"), "1.2 1.2.1 2")
 
   }
+<<<<<<< c205d2d7faf75389cfbc9a1db6604b82ec09e13a
 <<<<<<< 087c2ed15f53566e2e491ca959a845d7d74e1b15
 <<<<<<< d85e41e24a7810d0c389fe0888b91a12a6250a78
 <<<<<<< 7dec3a0762eb1988b8b61393530618e8b956c3c2
@@ -171,6 +178,8 @@ class VersionTag2Spec extends FunSpec with Matchers {
 =======
   */
 
+=======
+>>>>>>> Add support for date based tags
 
   it("numeric tags are considered newer than string tags") {
     assertSorted(Seq("1.0.0", "r20140201.1"), "r20140201.1 1.0.0")
