@@ -80,11 +80,26 @@ object VersionTag2 {
     }
   }
 
+  /**
+    * Ex: 1.5.0
+    */
   case class Semver(version: String, majorNum: Int, minorNum: Int, microNum: Int) extends VersionTag2 {
     override val sortKey = Seq(5, Padding + majorNum, Padding + minorNum, Padding + microNum).mkString(Divider)
     override val major = Some(majorNum)
     override val qualifier = None
     override def nextMicro() = Some(Semver(s"${majorNum}.${minorNum}.${microNum+1}", majorNum, minorNum, microNum + 1))
+  }
+
+  /**
+    * Ex: 20120809.1
+    */
+  case class Date(version: String, date: Long, minorNum: Int) extends VersionTag2 {
+    override val sortKey = Seq(4, Padding + date, Padding + minorNum).mkString(Divider)
+    override val major = None
+    override val qualifier = None
+    override def nextMicro() = {
+      Some(Date(s"${date}.${minorNum + 1}", date, minorNum + 1))
+    }
   }
 
   case class QualifiedSemver(version: String, majorNum: Int, minorNum: Int, microNum: Int, qual: String) extends VersionTag2 {
