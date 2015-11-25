@@ -5,6 +5,7 @@ import org.scalatest.{FunSpec, Matchers}
 class VersionTagSpec extends FunSpec with Matchers {
 
   def assertSorted(versions: Seq[String], target: String) {
+<<<<<<< 751557e36cd1584890a1874d0f57f2a19be5fd2c
 <<<<<<< a6c67135e2a8eb0c2d372c491fe8ffd006bddae9
 <<<<<<< ac10373e505f3e49259b7a31c5e260e2cace0ed3
 <<<<<<< 7dec3a0762eb1988b8b61393530618e8b956c3c2
@@ -24,6 +25,8 @@ class VersionTagSpec extends FunSpec with Matchers {
 >>>>>>> Replace VersionTag implementation
       println(s" - $v: ${v.sortKey}")
     }
+=======
+>>>>>>> Remove debugging
     versions.map( VersionTag(_) ).sorted.map(_.version).mkString(" ") should be(target)
   }
 
