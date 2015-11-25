@@ -3,11 +3,18 @@ package com.bryzek.dependency.lib
 import org.scalatest.{FunSpec, Matchers}
 
 // From https://github.com/mbryzek/apidoc
-class VersionTagSpec extends FunSpec with Matchers {
+class VersionTag2Spec extends FunSpec with Matchers {
 
   def assertSorted(versions: Seq[String], target: String) {
+<<<<<<< 7dec3a0762eb1988b8b61393530618e8b956c3c2
 <<<<<<< Updated upstream
     val versionObjects = versions.map( VersionTag(_) )
+=======
+    val versionObjects = versions.map( VersionTag2(_) )
+    versionObjects.foreach { v =>
+      println(s" - $v")
+    }
+>>>>>>> Refactor version parsing
     versionObjects.sorted.map(_.version).mkString(" ") should be(target)
 =======
     versions.map( VersionTag2(_) ).foreach { v =>
@@ -33,6 +40,12 @@ class VersionTagSpec extends FunSpec with Matchers {
 >>>>>>> Stashed changes
   }
 
+  it("fromString") {
+    VersionTag2("1.0.0") should be(VersionTag2.Semver(1, 0, 0))
+    VersionTag2("1.0.0-dev") should be(VersionTag2.QualifiedSemver(1, 0, 0, "dev"))
+    VersionTag2("dev") should be(VersionTag2.Unknown("dev"))
+  }
+
   it("sorts developer tags before release tags (latest release tag should be last)") {
     assertSorted(Seq("1.0.0", "1.0.0-g-1"), "1.0.0-g-1 1.0.0")
     assertSorted(Seq("0.6.0-3-g3b52fba", "0.7.6"), "0.6.0-3-g3b52fba 0.7.6")
@@ -41,6 +54,7 @@ class VersionTagSpec extends FunSpec with Matchers {
     assertSorted(Seq("0.28.1-dev", "0.28.1"), "0.28.1-dev 0.28.1")
   }
 
+  /*
   it("sorts 1 element version") {
     assertSorted(Seq("0", "1", "5"), "0 1 5")
     assertSorted(Seq("5", "0", "1"), "0 1 5")
@@ -71,42 +85,42 @@ class VersionTagSpec extends FunSpec with Matchers {
   }
 
   it("parses major from semver versions") {
-    VersionTag("0.0.0").major should be(Some(0))
-    VersionTag("0.0.0").major should be(Some(0))
-    VersionTag("0.0.0-dev").major should be(Some(0))
+    VersionTag2("0.0.0").major should be(Some(0))
+    VersionTag2("0.0.0").major should be(Some(0))
+    VersionTag2("0.0.0-dev").major should be(Some(0))
 
-    VersionTag("1.0.0").major should be(Some(1))
-    VersionTag("1.0.0-dev").major should be(Some(1))
+    VersionTag2("1.0.0").major should be(Some(1))
+    VersionTag2("1.0.0-dev").major should be(Some(1))
   }
 
   it("parses major from github versions") {
-    VersionTag("v1").major should be(Some(1))
-    VersionTag("v1.0.0").major should be(Some(1))
-    VersionTag("v1.0.0-dev").major should be(Some(1))
+    VersionTag2("v1").major should be(Some(1))
+    VersionTag2("v1.0.0").major should be(Some(1))
+    VersionTag2("v1.0.0-dev").major should be(Some(1))
   }
 
   it("returns none when no major number") {
-    VersionTag("v").major should be(None)
-    VersionTag("dev").major should be(None)
+    VersionTag2("v").major should be(None)
+    VersionTag2("dev").major should be(None)
   }
 
   it("major ignores whitespace") {
-    VersionTag(" 1.0").major should be(Some(1))
-    VersionTag(" v2.0").major should be(Some(2))
+    VersionTag2(" 1.0").major should be(Some(1))
+    VersionTag2(" v2.0").major should be(Some(2))
   }
 
 <<<<<<< Updated upstream
   it("nextMicro") {
-    VersionTag("foo").nextMicro should be(None)
-    VersionTag("0.0.1").nextMicro should be(Some("0.0.2"))
-    VersionTag("1.2.3").nextMicro should be(Some("1.2.4"))
-    VersionTag("0.0.5-dev").nextMicro should be(None)
+    VersionTag2("foo").nextMicro should be(None)
+    VersionTag2("0.0.1").nextMicro should be(Some("0.0.2"))
+    VersionTag2("1.2.3").nextMicro should be(Some("1.2.4"))
+    VersionTag2("0.0.5-dev").nextMicro should be(None)
   }
 
   it("qualifier") {
-    VersionTag("foo").qualifier should be(None)
-    VersionTag("0.0.1").qualifier should be(None)
-    VersionTag("0.0.5-dev").qualifier should be(Some("dev"))
+    VersionTag2("foo").qualifier should be(None)
+    VersionTag2("0.0.1").qualifier should be(None)
+    VersionTag2("0.0.5-dev").qualifier should be(Some("dev"))
   }
 
 =======
@@ -118,6 +132,7 @@ class VersionTagSpec extends FunSpec with Matchers {
     assertSorted(Seq("1.2", "1.2.1", "2"), "1.2 1.2.1 2")
 
   }
+<<<<<<< 7dec3a0762eb1988b8b61393530618e8b956c3c2
 
 <<<<<<< Updated upstream
 =======
@@ -139,4 +154,7 @@ class VersionTagSpec extends FunSpec with Matchers {
   }
 
 >>>>>>> Stashed changes
+=======
+   */
+>>>>>>> Refactor version parsing
 }
