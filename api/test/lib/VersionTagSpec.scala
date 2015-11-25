@@ -6,11 +6,10 @@ import org.scalatest.{FunSpec, Matchers}
 class VersionTag2Spec extends FunSpec with Matchers {
 
   def assertSorted(versions: Seq[String], target: String) {
-    val versionObjects = versions.map( VersionTag2(_) )
-    versionObjects.foreach { v =>
+    versions.map( VersionTag2(_) ).foreach { v =>
       println(s" - $v: ${v.sortKey}")
     }
-    versionObjects.sorted.map(_.version).mkString(" ") should be(target)
+    versions.map( VersionTag2(_) ).sorted.map(_.version).mkString(" ") should be(target)
   }
 
   it("fromString") {
@@ -85,9 +84,9 @@ class VersionTag2Spec extends FunSpec with Matchers {
 
   it("nextMicro") {
     VersionTag2("foo").nextMicro should be(None)
-    VersionTag2("0.0.1").nextMicro should be(Some("0.0.2"))
-    VersionTag2("1.2.3").nextMicro should be(Some("1.2.4"))
-    VersionTag2("0.0.5-dev").nextMicro should be(None)
+    VersionTag2("0.0.1").nextMicro should be(Some(VersionTag2.Semver("0.0.2", 0, 0, 2)))
+    VersionTag2("1.2.3").nextMicro should be(Some(VersionTag2.Semver("1.2.4", 1, 2, 4)))
+    VersionTag2("0.0.5-dev").nextMicro should be(Some(VersionTag2.QualifiedSemver("0.0.6-dev", 0, 0, 6, "dev")))
   }
 
   it("qualifier") {
