@@ -14,8 +14,10 @@ class VersionTag2Spec extends FunSpec with Matchers {
   }
 
   it("fromString") {
-    VersionTag2("1.0.0") should be(VersionTag2.Semver(1, 0, 0))
-    VersionTag2("1.0.0-dev") should be(VersionTag2.QualifiedSemver(1, 0, 0, "dev"))
+    VersionTag2("1") should be(VersionTag2.Semver("1", 1, 0, 0))
+    VersionTag2("1.0") should be(VersionTag2.Semver("1.0", 1, 0, 0))
+    VersionTag2("1.0.0") should be(VersionTag2.Semver("1.0.0", 1, 0, 0))
+    VersionTag2("1.0.0-dev") should be(VersionTag2.QualifiedSemver("1.0.0-dev", 1, 0, 0, "dev"))
     VersionTag2("dev") should be(VersionTag2.Unknown("dev"))
   }
 
@@ -27,7 +29,6 @@ class VersionTag2Spec extends FunSpec with Matchers {
     assertSorted(Seq("0.28.1-dev", "0.28.1"), "0.28.1-dev 0.28.1")
   }
 
-  /*
   it("sorts 1 element version") {
     assertSorted(Seq("0", "1", "5"), "0 1 5")
     assertSorted(Seq("5", "0", "1"), "0 1 5")
@@ -102,5 +103,5 @@ class VersionTag2Spec extends FunSpec with Matchers {
     assertSorted(Seq("1.2", "1.2.1", "2"), "1.2 1.2.1 2")
 
   }
-   */
+
 }
