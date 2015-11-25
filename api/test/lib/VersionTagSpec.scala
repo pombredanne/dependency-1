@@ -12,7 +12,7 @@ class VersionTag2Spec extends FunSpec with Matchers {
 =======
     val versionObjects = versions.map( VersionTag2(_) )
     versionObjects.foreach { v =>
-      println(s" - $v")
+      println(s" - $v: ${v.sortKey}")
     }
 >>>>>>> Refactor version parsing
     versionObjects.sorted.map(_.version).mkString(" ") should be(target)
