@@ -9,7 +9,7 @@ class RecommendationsSpec extends Specification {
     Recommendations.version(
       VersionForm(value),
       others.map(VersionForm(_))
-    ).map(_.version)
+    )
   }
 
   "No recommendation if others is empty" in {
@@ -63,6 +63,32 @@ class RecommendationsSpec extends Specification {
         VersionForm("1.1", Some("2.11.6")),
         VersionForm("1.1", Some("2.11.7"))
       )
-    ) must beEqualTo(Some(VersionForm("1.1", Some("2.11.7"))))
+    ) must beEqualTo(Some("1.1"))
+  }
+
+  "matches on partial cross build version" in {
+    Recommendations.version(
+      VersionForm("1.2.1", Some("2.11.7")),
+      Seq(
+        VersionForm("1.2.1", Some("2.11.7")),
+        VersionForm("1.2.1", Some("2.11")),
+        VersionForm("1.2.2", Some("2.11")),
+        VersionForm("1.2.1", Some("2.10")),
+        VersionForm("1.2.2", Some("2.10"))
+      )
+    ) must beEqualTo(Some("1.2.2"))
+  }
+
+  "matches on partial cross build version" in {
+    Recommendations.version(
+      VersionForm("1.2.1", Some("2.12")),
+      Seq(
+        VersionForm("1.2.1", Some("2.11.7")),
+        VersionForm("1.2.1", Some("2.11")),
+        VersionForm("1.2.2", Some("2.11")),
+        VersionForm("1.2.1", Some("2.10")),
+        VersionForm("1.2.2", Some("2.10"))
+      )
+    ) must beEqualTo(None)
   }
 }

@@ -32,9 +32,9 @@ object LanguageRecommendationsDao {
     Recommendations.version(
       VersionForm(currentVersion.version),
       others.map(v => VersionForm(v.version))
-    ).map { form =>
-      others.find { v => v.version == form.version }.getOrElse {
-        sys.error(s"Failed to find language tag[$form]")
+    ).map { version =>
+      others.find { _.version == version }.getOrElse {
+        sys.error(s"Failed to find language tag[$version]")
       }
     }
   }

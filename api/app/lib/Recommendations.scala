@@ -9,23 +9,23 @@ object Recommendations {
     * suggests the best version to which to upgrade (or None if not
     * found)
     */
-  def version(current: VersionForm, others: Seq[VersionForm]): Option[VersionForm] = {
+  def version(current: VersionForm, others: Seq[VersionForm]): Option[String] = {
     val currentTag = Version(current.version)
 
     others.
       filter(_ != current).
-      filter(_.crossBuildVersion == current.crossBuildVersion).
+      filter(v => matchesCrossBuild(v.crossBuildVersion, current.crossBuildVersion)).
       map(v => Version(v.version)).
       filter(_ > currentTag).
       filter(currentTag.tags.size == _.tags.size).
-      filter(textPortionsMatch(currentTag, _)).
+      filter(matchesText(currentTag, _)).
       sorted.
       reverse.
       headOption.
-      map { v => VersionForm(v.value, current.crossBuildVersion) }
+      map { _.value }
   }
 
-  private[this] def textPortionsMatch(current: Version, other: Version): Boolean = {
+  private[this] def matchesText(current: Version, other: Version): Boolean = {
     (current.tags zip other.tags).map{ case (a, b) =>
       (a, b) match {
         case (t1: Tag.Semver, t2: Tag.Semver) => true
@@ -36,4 +36,27 @@ object Recommendations {
     }.forall( el => el )
   }
 
+  private[this] def matchesCrossBuild(current: Option[String], other: Option[String]): Boolean = {
+    (current, other) match {
+      case (None, None) => true
+      case (None, Some(_)) => false
+      case (Some(_), None) => false
+      case (Some(a), Some(b)) => {
+        (a == b) match {
+          case true => true
+          case false => {
+            // In this case, we fuzzy match. Main use case was from
+            // scala - some libraries cross built for 2.11 need to
+            // match 2.11.7
+            (Version(a).tags.head, Version(b).tags.head) match {
+              case (a: Tag.Semver, b: Tag.Semver) => {
+                a.major == b.major && a.minor == b.minor
+              }
+              case _ => false
+            }
+          }
+        }
+      }
+    }
+  }
 }
