@@ -17,6 +17,7 @@ object Recommendations {
       filter(_.crossBuildVersion == current.crossBuildVersion).
       map(v => Version(v.version)).
       filter(_ > currentTag).
+      filter(currentTag.tags.size == _.tags.size).
       filter(textPortionsMatch(currentTag, _)).
       sorted.
       reverse.

@@ -65,5 +65,4 @@ class RecommendationsSpec extends Specification {
       )
     ) must beEqualTo(Some(VersionForm("1.1", Some("2.11.7"))))
   }
-
 }
