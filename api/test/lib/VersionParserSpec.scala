@@ -136,6 +136,31 @@ class VersionParserSpec extends FunSpec with Matchers {
     assertSorted(Seq("1.4.0-M4", "1.4.0-M3"), "1.4.0-M3 1.4.0-M4")
   }
 
+  it("parses major from semver versions") {
+    VersionParser.parse("0.0.0").major should be(Some(0))
+    VersionParser.parse("0.0.0").major should be(Some(0))
+    VersionParser.parse("0.0.0-dev").major should be(Some(0))
+
+    VersionParser.parse("1.0.0").major should be(Some(1))
+    VersionParser.parse("1.0.0-dev").major should be(Some(1))
+  }
+
+  it("parses major from github versions") {
+    VersionParser.parse("v1").major should be(Some(1))
+    VersionParser.parse("v1.0.0").major should be(Some(1))
+    VersionParser.parse("v1.0.0-dev").major should be(Some(1))
+  }
+
+  it("returns none when no major number") {
+    VersionParser.parse("v").major should be(None)
+    VersionParser.parse("dev").major should be(None)
+  }
+
+  it("major ignores whitespace") {
+    VersionParser.parse(" 1.0").major should be(Some(1))
+    VersionParser.parse(" v2.0").major should be(Some(2))
+  }
+
   def assertSorted(versions: Seq[String], target: String) {
     versions.map( VersionParser.parse(_) ).sorted.map(_.value).mkString(" ") should be(target)
   }

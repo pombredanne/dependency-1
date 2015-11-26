@@ -5,9 +5,22 @@ import scala.util.parsing.combinator._
 case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
 
   /**
+    * If present, the major version number
+    */
+  val major: Option[Int] = {
+    tags.headOption.flatMap { tag =>
+      tag match {
+        case Tag.Semver(major, _, _, _) => Some(major)
+        case Tag.Date(_, _) | Tag.Text(_) => None
+      }
+    }
+  }
+
+  /**
     * Note that we want to make sure that the simple semver versions
     * sort highest - thus if we have exactly one tag that is semver,
-    * bump up its priority
+    * bump up its priority. This allows for 1.0.0 to sort
+    * about 1.0.0-dev (as one example).
     */
   val sortKey: String = {
     tags match {
