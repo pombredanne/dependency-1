@@ -77,7 +77,7 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
         LibraryRecommendation(
           from = libraryVersions.find(_.version == "1.0.0n").get,
           to = libraryVersions.find(_.version == "1.0.1").get,
-          latest = libraryVersions.find(_.version == "1.0.2-RC2").get
+          latest = libraryVersions.find(_.version == "1.0.2-RC1").get
         )
       )
     )

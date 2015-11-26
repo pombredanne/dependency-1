@@ -78,7 +78,7 @@ class LanguageRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with H
         LanguageRecommendation(
           from = languageVersions.find(_.version == "1.0.0").get,
           to = languageVersions.find(_.version == "1.0.1").get,
-          latest = languageVersions.find(_.version == "1.0.2-RC2").get
+          latest = languageVersions.find(_.version == "1.0.2-RC1").get
         )
       )
     )
@@ -98,7 +98,7 @@ class LanguageRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with H
               (a == b) match {
                 case true => {}
                 case false => {
-                  sys.error(s"Expected[${b.from.version} => ${b.to.version}] but got[${a.from.version} => ${a.to.version}]")
+                  sys.error(s"Expected[${b.from.version} => ${b.to.version}] but got[${a.from.version} => ${a.to.version}]. For latest version, expected[${b.latest.version}] but got[${a.latest.version}]")
                 }
               }
             }
