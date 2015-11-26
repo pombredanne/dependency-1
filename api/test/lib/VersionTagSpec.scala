@@ -8,31 +8,6 @@ class VersionTagSpec extends FunSpec with Matchers {
     versions.map( VersionTag(_) ).sorted.map(_.version).mkString(" ") should be(target)
   }
 /*
-  it("isDate") {
-    VersionTag.isDate(123) should be(false)
-    VersionTag.isDate(20141018) should be(true)
-    VersionTag.isDate(10141018) should be(false)
-    VersionTag.isDate(19141018) should be(true)
-  }
-
-  it("fromString") {
-    VersionTag("1") should be(VersionTag.Semver("1", 1, 0, 0))
-    VersionTag("1.0") should be(VersionTag.Semver("1.0", 1, 0, 0))
-    VersionTag("1.0.0") should be(VersionTag.Semver("1.0.0", 1, 0, 0))
-    VersionTag("1.2.3.4") should be(VersionTag.Semver("1.2.3.4", 1, 2, 3))
-    VersionTag("dev") should be(VersionTag.Text("dev"))
-
-    VersionTag("1.0.0-dev") should be(
-      VersionTag.Multi(
-        "1.0.0-dev",
-        Seq(
-          VersionTag.Semver("1.0.0", 1, 0, 0),
-          VersionTag.Text("dev")
-        )
-      )
-    )
-  }
-
   it("sorts developer tags before release tags (latest release tag should be last)") {
     assertSorted(Seq("1.0.0", "1.0.0-g-1"), "1.0.0-g-1 1.0.0")
     assertSorted(Seq("0.6.0-3-g3b52fba", "0.7.6"), "0.6.0-3-g3b52fba 0.7.6")

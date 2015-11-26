@@ -7,7 +7,13 @@ case class Version(value: String, tags: Seq[Tag])
 sealed trait Tag
 object Tag {
 
+  // Any text in the tag (e.g. final)
   case class Text(value: String) extends Tag
+
+  // Tags that look like r20151211.1
+  case class Date(date: Long, minorNum: Int) extends Tag
+
+  // Tags that look like 1.2.3 (semantic versioning... preferred)
   case class Semver(major: Int, minor: Int, micro: Int, additional: Seq[Int] = Nil) extends Tag
 
 }
@@ -29,7 +35,11 @@ object VersionParser {
       }
     }
   }
-  
+
+  private[lib] def isDate(value: Int): Boolean = {
+    value.toString.length >= 8 && value.toString.substring(0, 4).toInt >= 1900
+  }
+
 }
 
 class VersionParser extends RegexParsers {
@@ -37,15 +47,21 @@ class VersionParser extends RegexParsers {
   def text: Parser[Tag.Text] = """[a-zA-Z]+""".r ^^ { case value => Tag.Text(value.toString) }
   def dot: Parser[String] = """\.""".r ^^ { _.toString }
   def divider: Parser[String] = """[\.\_\-]+""".r ^^ { _.toString }
-  def semver: Parser[Tag.Semver] = rep1sep(number, dot) ^^ {
+  def semver: Parser[Tag] = rep1sep(number, dot) ^^ {
     case Nil => {
       Tag.Semver(0, 0, 0)
     }
     case major :: Nil => {
-      Tag.Semver(major, 0, 0)
+      VersionParser.isDate(major) match {
+        case true => Tag.Date(major, 0)
+        case false => Tag.Semver(major, 0, 0)
+      }
     }
     case major :: minor :: Nil => {
-      Tag.Semver(major, minor, 0)
+      VersionParser.isDate(major) match {
+        case true => Tag.Date(major, minor)
+        case false => Tag.Semver(major, minor, 0)
+      }
     }
     case major :: minor :: micro :: additional => {
       Tag.Semver(major, minor, micro, additional)
