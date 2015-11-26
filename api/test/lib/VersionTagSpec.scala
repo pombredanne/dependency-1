@@ -228,5 +228,21 @@ class VersionTagSpec extends FunSpec with Matchers {
     VersionTag("0.0.5-dev").nextMicro should be(None)
   }
 
+<<<<<<< ff47b6162c260c64cb03adb3da4177f5d40c04a7
 >>>>>>> Complete version tag implementation
+=======
+  it("postgresql version") {
+    VersionTag("9.4-1201-jdbc41") should be(
+      VersionTag.Multi(
+        "9.4-1201-jdbc41",
+        Seq(
+          VersionTag.Semver("9.4", 9, 4, 0),
+          VersionTag.Semver("1201", 1201, 0, 0),
+          VersionTag.Unknown("jdbc41")
+        )
+      )
+    )
+  }
+
+>>>>>>> Add test to parse postgresql version number
 }
