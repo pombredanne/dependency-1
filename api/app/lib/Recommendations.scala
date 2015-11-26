@@ -1,5 +1,7 @@
 package com.bryzek.dependency.lib
 
+import com.bryzek.dependency.v0.models.VersionForm
+
 object Recommendations {
 
   /**
@@ -7,11 +9,13 @@ object Recommendations {
     * suggests the best version to which to upgrade (or None if not
     * found)
     */
-  def version(current: String, others: Seq[String]): Option[String] = {
-    val currentTag = Version(current)
+  def version(current: VersionForm, others: Seq[VersionForm]): Option[String] = {
+    val currentTag = Version(current.version)
+
     others.
       filter(_ != current).
-      map(Version(_)).
+      filter(_.crossBuildVersion == current.crossBuildVersion).
+      map(v => Version(v.version)).
       filter(_ > currentTag).
       filter(textPortionsMatch(currentTag, _)).
       sorted.

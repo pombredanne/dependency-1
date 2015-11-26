@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.lib.Recommendations
-import com.bryzek.dependency.v0.models.{LanguageRecommendation, LanguageVersion, Project}
+import com.bryzek.dependency.v0.models.{LanguageRecommendation, LanguageVersion, Project, VersionForm}
 import io.flow.play.postgresql.Pager
 import anorm._
 import play.api.db._
@@ -28,7 +28,10 @@ object LanguageRecommendationsDao {
   }
 
   def recommend(currentVersion: LanguageVersion, others: Seq[LanguageVersion]): Option[LanguageVersion] = {
-    Recommendations.version(currentVersion.version, others.map(_.version)).map { tag =>
+    Recommendations.version(
+      VersionForm(currentVersion.version),
+      others.map(v => VersionForm(v.version))
+    ).map { tag =>
       others.find(_.version == tag).getOrElse {
         sys.error(s"Failed to find tag[$tag]")
       }
