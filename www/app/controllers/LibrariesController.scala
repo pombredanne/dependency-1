@@ -22,6 +22,8 @@ class LibrariesController @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  val VersionsPerPage = 5
+
   def index(page: Int = 0) = Identified.async { implicit request =>
     for {
       libraries <- dependencyClient(request).libraries.get(
@@ -47,8 +49,8 @@ class LibrariesController @javax.inject.Inject() (
       for {
         versions <- dependencyClient(request).libraryVersions.get(
           libraryGuid = Some(guid),
-          limit = Pagination.DefaultLimit+1,
-          offset = projectsPage * Pagination.DefaultLimit
+          limit = VersionsPerPage+1,
+          offset = versionsPage * VersionsPerPage
         )
         projectLibraryVersions <- dependencyClient(request).projectLibraryVersions.get(
           libraryGuid = Some(guid),
@@ -60,7 +62,7 @@ class LibrariesController @javax.inject.Inject() (
           views.html.libraries.show(
             uiData(request),
             library,
-            PaginatedCollection(0, versions, 5),
+            PaginatedCollection(versionsPage, versions, VersionsPerPage),
             PaginatedCollection(projectsPage, projectLibraryVersions)
           )
         )

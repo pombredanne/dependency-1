@@ -170,6 +170,10 @@ class VersionParserSpec extends FunSpec with Matchers {
     VersionParser.parse("0.0.5-dev").nextMicro.map(_.value) should be(Some("0.0.6-dev"))
   }
 
+  it("can parse long ints") {
+    VersionParser.parse("20131213005945") should be(Version("20131213005945", Seq(Tag.Date(20131213005945l, 0))))
+  }
+
   def assertSorted(versions: Seq[String], target: String) {
     versions.map( VersionParser.parse(_) ).sorted.map(_.value).mkString(" ") should be(target)
   }

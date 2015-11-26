@@ -7,7 +7,7 @@ case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
   /**
     * If present, the major version number
     */
-  val major: Option[Int] = {
+  val major: Option[Long] = {
     tags.headOption.flatMap { tag =>
       tag match {
         case Tag.Semver(major, _, _, _) => Some(major)
@@ -103,7 +103,7 @@ object Tag {
   }
 
   // Tags that look like r20151211.1
-  case class Date(date: Long, minorNum: Int) extends Tag {
+  case class Date(date: Long, minorNum: Long) extends Tag {
     assert(VersionParser.isDate(date), s"Must be a date[$date]")
     override val value: String = s"${date}.$minorNum"
     override val sortKey: String = Seq(40, date, minorNum + Padding).mkString(".")
@@ -111,13 +111,13 @@ object Tag {
   }
 
   // Tags that look like 1.2.3 (semantic versioning... preferred)
-  case class Semver(major: Int, minor: Int, micro: Int, additional: Seq[Int] = Nil) extends Tag {
+  case class Semver(major: Long, minor: Long, micro: Long, additional: Seq[Long] = Nil) extends Tag {
     private[this] val all = (Seq(major, minor, micro) ++ additional)
 
     override val value: String = all.mkString(".")
     override val sortKey: String = sortKeyWithPrefix(60)
 
-    def sortKeyWithPrefix(prefix: Int) = Seq(
+    def sortKeyWithPrefix(prefix: Long) = Seq(
       prefix,
       all.map(_ + Padding).mkString(".")
     ).mkString(".")
@@ -166,13 +166,13 @@ object VersionParser {
   }
 
   private[lib] def isDate(value: Long): Boolean = {
-    value.toString.length >= 8 && value.toString.substring(0, 4).toInt >= 1900
+    value.toString.length >= 8 && value.toString.substring(0, 4).toLong >= 1900
   }
 
 }
 
 class VersionParser extends RegexParsers {
-  def number: Parser[Int] = """[0-9]+""".r ^^ { _.toInt }
+  def number: Parser[Long] = """[0-9]+""".r ^^ { _.toLong }
   def text: Parser[Tag.Text] = """[a-zA-Z]+""".r ^^ { case value => Tag.Text(value.toString) }
   def dot: Parser[String] = """\.""".r ^^ { _.toString }
   def divider: Parser[String] = """[\.\_\-]+""".r ^^ { _.toString }
