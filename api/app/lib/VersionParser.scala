@@ -47,7 +47,10 @@ case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
     * Note that we want to make sure that the simple semver versions
     * sort highest - thus if we have exactly one tag that is semver,
     * bump up its priority. This allows for 1.0.0 to sort
-    * about 1.0.0-dev (as one example).
+    * about 1.0.0-dev (as one example). General strategy in the sort
+    * key is to append a high padding that includes the number of
+    * remaining elements (which naturally favors shorter version
+    * numbers).
     */
   val sortKey: String = {
     tags.zipWithIndex.map { case (tag, i) =>
