@@ -11,7 +11,7 @@ trait LanguageVersionProvider {
     * Returns the versions for this language, fetching them from
     * appropriate remote locations.
     */
-  def versions(language: ProgrammingLanguage): Seq[VersionTag]
+  def versions(language: ProgrammingLanguage): Seq[Version]
 
 }
 
@@ -21,7 +21,7 @@ object DefaultLanguageVersionProvider extends LanguageVersionProvider {
 
   override def versions(
     language: ProgrammingLanguage
-  ) : Seq[VersionTag] = {
+  ) : Seq[Version] = {
     language match {
       case ProgrammingLanguage.Scala => {
         fetchScalaVersions()
@@ -33,14 +33,14 @@ object DefaultLanguageVersionProvider extends LanguageVersionProvider {
     }
   }
 
-  def fetchScalaVersions(): Seq[VersionTag] = {
+  def fetchScalaVersions(): Seq[Version] = {
     RemoteDirectory.fetch(ScalaUrl) { name =>
       name.toLowerCase.startsWith("scala ")
     }.files.flatMap { toVersion(_) }
   }
 
-  def toVersion(value: String): Option[VersionTag] = {
-    val tag = VersionTag(
+  def toVersion(value: String): Option[Version] = {
+    val tag = Version(
       StringUtils.stripStart(
         StringUtils.stripStart(value, "scala"),
         "Scala"

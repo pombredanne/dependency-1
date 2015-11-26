@@ -32,7 +32,7 @@ object RemoteVersions {
       val thisUrl = joinUrl(url, dir)
       RemoteDirectory.fetch(thisUrl)().directories.map { d =>
         ArtifactVersion(
-          tag = VersionTag(StringUtils.stripEnd(d, "/")),
+          tag = Version(StringUtils.stripEnd(d, "/")),
           crossBuildVersion = crossBuildVersion(dir)
         )
       }
@@ -40,7 +40,7 @@ object RemoteVersions {
   }
 
   // e.g. "scala-csv_2.11/" => 2.11
-  def crossBuildVersion(text: String): Option[VersionTag] = {
+  def crossBuildVersion(text: String): Option[Version] = {
     StringUtils.stripEnd(text, "/").split("_").toList match {
       case Nil => None
       case one :: Nil => None
@@ -48,7 +48,7 @@ object RemoteVersions {
         // Check if we can successfully parse the version tag for a
         // major version. If so, we assume we have found a cross build
         // version.
-        val tag = VersionTag(multiple.last)
+        val tag = Version(multiple.last)
         tag.major match {
           case None => None
           case Some(_) => Some(tag)

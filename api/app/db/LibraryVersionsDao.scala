@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.lib.VersionTag
+import com.bryzek.dependency.lib.Version
 import com.bryzek.dependency.v0.models.{Library, LibraryVersion, VersionForm}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
@@ -80,8 +80,8 @@ object LibraryVersionsDao {
     val guid = UUID.randomUUID
 
     val sortKey = form.crossBuildVersion match {
-      case None => VersionTag(form.version).sortKey
-      case Some(crossBuildVersion) => VersionTag(s"${form.version}-$crossBuildVersion").sortKey
+      case None => Version(form.version).sortKey
+      case Some(crossBuildVersion) => Version(s"${form.version}-$crossBuildVersion").sortKey
     }
 
     SQL(InsertQuery).on(

@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.actors.MainActor
-import com.bryzek.dependency.lib.VersionTag
+import com.bryzek.dependency.lib.Version
 import com.bryzek.dependency.v0.models.{Library, LibraryForm}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User

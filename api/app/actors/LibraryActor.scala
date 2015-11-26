@@ -36,11 +36,11 @@ class LibraryActor extends Actor {
       dataLibrary.foreach { lib =>
         println(s"Syncing library[$lib]")
         DefaultLibraryArtifactProvider().artifacts(lib).map { version =>
-          println(s" groupId[${lib.groupId}] artifactId[${lib.artifactId}] version[${version.tag.version}] crossBuilt[${version.crossBuildVersion}]")
+          println(s" groupId[${lib.groupId}] artifactId[${lib.artifactId}] version[${version.tag.value}] crossBuilt[${version.crossBuildVersion}]")
           LibraryVersionsDao.upsert(
             createdBy = UsersDao.systemUser,
             libraryGuid = lib.guid,
-            form = VersionForm(version.tag.version, version.crossBuildVersion.map(_.version))
+            form = VersionForm(version.tag.value, version.crossBuildVersion.map(_.value))
           )
         }
       }

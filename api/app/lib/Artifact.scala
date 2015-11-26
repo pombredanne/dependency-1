@@ -11,7 +11,7 @@ case class Artifact(
 
   def toLibraryForm(
     resolvers: Seq[Resolver],
-    crossBuildVersion: Option[VersionTag]
+    crossBuildVersion: Option[Version]
   ): LibraryForm = {
     LibraryForm(
       resolvers = Resolvers.all(resolvers.map(_.uri)),
@@ -21,7 +21,7 @@ case class Artifact(
         VersionForm(
           version = version,
           crossBuildVersion = isCrossBuilt match {
-            case true => crossBuildVersion.map(_.version)
+            case true => crossBuildVersion.map(_.value)
             case false => None
           }
         )

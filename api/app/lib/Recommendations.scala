@@ -8,19 +8,19 @@ object Recommendations {
     * found)
     */
   def version(current: String, others: Seq[String]): Option[String] = {
-    val currentTag = VersionTag(current)
+    val currentTag = Version(current)
     others.
       filter(_ != current).
-      map(VersionTag(_)).
+      map(Version(_)).
       filter(_ > currentTag).
       filter(textPortionsMatch(currentTag, _)).
       sorted.
       reverse.
       headOption.
-      map(_.version)
+      map(_.value)
   }
 
-  private[this] def textPortionsMatch(current: VersionTag, other: VersionTag): Boolean = {
+  private[this] def textPortionsMatch(current: Version, other: Version): Boolean = {
     println(s"current: ${current}")
     println(s"other: $other")
     true

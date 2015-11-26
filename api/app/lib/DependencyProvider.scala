@@ -20,11 +20,11 @@ case class Dependencies(
     }
   }
 
-  lazy val crossBuildVersion: Option[VersionTag] = {
+  lazy val crossBuildVersion: Option[Version] = {
     languages match {
       case None => None
       case Some(langs) => {
-        langs.map(_.version).distinct.map(VersionTag(_)).sorted.reverse.toList match {
+        langs.map(_.version).distinct.map(Version(_)).sorted.reverse.toList match {
           case Nil => None
           case one :: Nil => {
             Some(one)

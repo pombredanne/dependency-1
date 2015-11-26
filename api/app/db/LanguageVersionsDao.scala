@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.lib.VersionTag
+import com.bryzek.dependency.lib.Version
 import com.bryzek.dependency.v0.models.{Language, LanguageVersion}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
@@ -78,7 +78,7 @@ object LanguageVersionsDao {
       'guid -> guid,
       'language_guid -> languageGuid,
       'version -> version.trim,
-      'sort_key -> VersionTag(version.trim).sortKey,
+      'sort_key -> Version(version.trim).sortKey,
       'created_by_guid -> createdBy.guid
     ).execute()
 

@@ -36,8 +36,8 @@ class LanguageActor extends Actor {
       dataLanguage.foreach { lang =>
         DefaultLanguageVersionProvider.versions(lang.name).foreach { version =>
           // TODO: fetch all versions for this language and store them
-          println(s"Store version[${version.version}] from lang[$lang]")
-          LanguageVersionsDao.upsert(UsersDao.systemUser, lang.guid, version.version)
+          println(s"Store version[${version.value}] from lang[$lang]")
+          LanguageVersionsDao.upsert(UsersDao.systemUser, lang.guid, version.value)
         }
       }
     }

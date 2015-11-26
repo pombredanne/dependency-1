@@ -67,6 +67,14 @@ case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
 
 }
 
+object Version {
+
+  def apply(value: String): Version = {
+    VersionParser.parse(value)
+  }
+
+}
+
 sealed trait Tag extends Ordered[Tag] {
 
   /**
