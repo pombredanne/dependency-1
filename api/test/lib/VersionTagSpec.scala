@@ -4,9 +4,6 @@ import org.scalatest.{FunSpec, Matchers}
 
 class VersionTagSpec extends FunSpec with Matchers {
 
-  def assertSorted(versions: Seq[String], target: String) {
-    versions.map( VersionTag(_) ).sorted.map(_.version).mkString(" ") should be(target)
-  }
 /*
   it("parses major from semver versions") {
     VersionTag("0.0.0").major should be(Some(0))
@@ -31,26 +28,6 @@ class VersionTagSpec extends FunSpec with Matchers {
   it("major ignores whitespace") {
     VersionTag(" 1.0").major should be(Some(1))
     VersionTag(" v2.0").major should be(Some(2))
-  }
-
-  it("sorts versions w/ varying lengths") {
-    assertSorted(Seq("1", "0.1"), "0.1 1")
-    assertSorted(Seq("1", "0.1", "0.0.1"), "0.0.1 0.1 1")
-    assertSorted(Seq("1.2", "1.2.1"), "1.2 1.2.1")
-    assertSorted(Seq("1.2", "1.2.1", "2"), "1.2 1.2.1 2")
-
-  }
-
-  it("numeric tags are considered newer than string tags") {
-    assertSorted(Seq("1.0.0", "r20140201.1"), "r20140201.1 1.0.0")
-  }
-
-  it("scalatestplus version numbers") {
-    assertSorted(Seq("1.4.0-M4", "1.4.0-M3"), "1.4.0-M3 1.4.0-M4")
-  }
-
-  it("Sorts semvers with more than 3 components") {
-    assertSorted(Seq("1.0.9.5", "1.0.9.8", "1.0.10.1", "1.0.10.2"), "1.0.9.5 1.0.9.8 1.0.10.1 1.0.10.2")
   }
 
   it("nextMicro") {

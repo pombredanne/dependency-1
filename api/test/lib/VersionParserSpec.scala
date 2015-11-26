@@ -117,6 +117,25 @@ class VersionParserSpec extends FunSpec with Matchers {
     assertSorted(Seq("0.8.6", "0.8.8", "development"), "development 0.8.6 0.8.8")
   }
 
+  it("sorts versions w/ varying lengths") {
+    assertSorted(Seq("1", "0.1"), "0.1 1")
+    assertSorted(Seq("1", "0.1", "0.0.1"), "0.0.1 0.1 1")
+    assertSorted(Seq("1.2", "1.2.1"), "1.2 1.2.1")
+    assertSorted(Seq("1.2", "1.2.1", "2"), "1.2 1.2.1 2")
+  }
+
+  it("Sorts semvers with more than 3 components") {
+    assertSorted(Seq("1.0.9.5", "1.0.9.8", "1.0.10.1", "1.0.10.2"), "1.0.9.5 1.0.9.8 1.0.10.1 1.0.10.2")
+  }
+
+  it("numeric tags are considered newer than string tags") {
+    assertSorted(Seq("1.0.0", "r20140201.1"), "r20140201.1 1.0.0")
+  }
+
+  it("scalatestplus version numbers") {
+    assertSorted(Seq("1.4.0-M4", "1.4.0-M3"), "1.4.0-M3 1.4.0-M4")
+  }
+
   def assertSorted(versions: Seq[String], target: String) {
     versions.map( VersionParser.parse(_) ).sorted.map(_.value).mkString(" ") should be(target)
   }
