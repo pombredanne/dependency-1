@@ -17,6 +17,33 @@ case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
   }
 
   /**
+    * If possible, we construct the next micro version number higher
+    * than the present version. General algorithm is to find the first
+    * semver or date tag and then increment its smallest version
+    * (micro for semver, minor for date).
+    */
+  def nextMicro(): Option[Version] = {
+    var found: Option[(Tag, Tag)] = None
+    val newTags = tags.map { tag =>
+      (found, tag) match {
+        case (Some(_), _) => tag
+        case (None, t: Tag.Text) => t
+        case (None, t: Tag.Semver) => {
+          found = Some(t -> t.nextMicro)
+          t.nextMicro
+        }
+        case (None, t: Tag.Date) => {
+          found = Some(t -> t.nextMicro)
+          t.nextMicro
+        }
+      }
+    }
+    found.map { case (oldTag, newTag) =>
+      Version(value.replace(oldTag.value, newTag.value), newTags)
+    }
+  }
+
+  /**
     * Note that we want to make sure that the simple semver versions
     * sort highest - thus if we have exactly one tag that is semver,
     * bump up its priority. This allows for 1.0.0 to sort
@@ -42,6 +69,14 @@ case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
 
 sealed trait Tag extends Ordered[Tag] {
 
+  /**
+    * Constucts string repesentation of this tag
+    */
+  val value: String
+
+  /**
+    * Constructs a lexicographic sort key for this tag
+    */
   val sortKey: String
 
   def compare(that: Tag) = {
@@ -62,17 +97,29 @@ object Tag {
   // Tags that look like r20151211.1
   case class Date(date: Long, minorNum: Int) extends Tag {
     assert(VersionParser.isDate(date), s"Must be a date[$date]")
+    override val value: String = s"${date}.$minorNum"
     override val sortKey: String = Seq(40, date, minorNum + Padding).mkString(".")
+    def nextMicro: Tag = Date(date, minorNum + 1)
   }
 
   // Tags that look like 1.2.3 (semantic versioning... preferred)
   case class Semver(major: Int, minor: Int, micro: Int, additional: Seq[Int] = Nil) extends Tag {
+    private[this] val all = (Seq(major, minor, micro) ++ additional)
+
+    override val value: String = all.mkString(".")
     override val sortKey: String = sortKeyWithPrefix(60)
 
     def sortKeyWithPrefix(prefix: Int) = Seq(
       prefix,
-      (Seq(major, minor, micro) ++ additional).map(_ + Padding).mkString(".")
+      all.map(_ + Padding).mkString(".")
     ).mkString(".")
+
+    def nextMicro: Semver = additional match {
+      case Nil => Semver(major, minor, micro + 1)
+      case some => {
+        Semver(major, minor, micro, additional.dropRight(1) ++ Seq(some.last + 1))
+      }
+    }
   }
 
 }

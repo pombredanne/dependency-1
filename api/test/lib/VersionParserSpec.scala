@@ -161,6 +161,15 @@ class VersionParserSpec extends FunSpec with Matchers {
     VersionParser.parse(" v2.0").major should be(Some(2))
   }
 
+  it("nextMicro") {
+    VersionParser.parse("foo").nextMicro should be(None)
+    VersionParser.parse("foo-bar").nextMicro should be(None)
+    VersionParser.parse("foo-0.1.2").nextMicro should be(Some(Version("foo-0.1.3", Seq(Tag.Text("foo"), Tag.Semver(0, 1, 3)))))
+    VersionParser.parse("0.0.1").nextMicro.map(_.value) should be(Some("0.0.2"))
+    VersionParser.parse("1.2.3").nextMicro.map(_.value) should be(Some("1.2.4"))
+    VersionParser.parse("0.0.5-dev").nextMicro.map(_.value) should be(Some("0.0.6-dev"))
+  }
+
   def assertSorted(versions: Seq[String], target: String) {
     versions.map( VersionParser.parse(_) ).sorted.map(_.value).mkString(" ") should be(target)
   }
