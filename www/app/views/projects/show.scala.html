@@ -23,10 +23,15 @@
   @if(libraryRecommendations.isEmpty && languageRecommendations.isEmpty) {
     <em>Awesome - your project is fully up to date!</em>
   } else {
-    @views.html.libraries.recommendationsTable(libraryRecommendations)
-    @views.html.languages.recommendationsTable(languageRecommendations)
+    @if(!libraryRecommendations.isEmpty) {
+      @views.html.libraries.recommendationsTable(libraryRecommendations)
+    }
+    @if(!languageRecommendations.isEmpty) {
+      @views.html.languages.recommendationsTable(languageRecommendations)
+    }
   }
 
+  <h3>Dependencies</h3>
   @views.html.languages.versions.table(languageVersions)
   @if(languageVersions.hasPrevious || languageVersions.hasNext) {
     <ul class="pager">
