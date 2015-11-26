@@ -42,8 +42,28 @@ class RecommendationsSpec extends Specification {
     ) must beEqualTo(Some("1.4.0-M4"))
   }
 
-//1.3.3	0.13
-//1.3.2	0.13
-//1.0.1	2.11.7
+  "matches on cross build version" in {
+    Recommendations.version(
+      VersionForm("1.0.1", Some("2.11.7")),
+      Seq(
+        VersionForm("1.0.1", Some("2.11.7")),
+        VersionForm("1.3.2", Some("0.13")),
+        VersionForm("1.3.3", Some("0.13"))
+      )
+    ) must be(None)
+  }
+
+  "matches on cross build version" in {
+    Recommendations.version(
+      VersionForm("1.0.1", Some("2.11.7")),
+      Seq(
+        VersionForm("1.0.1", Some("2.11.7")),
+        VersionForm("1.3.2", Some("0.13")),
+        VersionForm("1.3.3", Some("0.13")),
+        VersionForm("1.1", Some("2.11.6")),
+        VersionForm("1.1", Some("2.11.7"))
+      )
+    ) must beEqualTo(Some("1.1"))
+  }
 
 }
