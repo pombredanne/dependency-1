@@ -7,7 +7,7 @@ class VersionTagSpec extends FunSpec with Matchers {
   def assertSorted(versions: Seq[String], target: String) {
     versions.map( VersionTag(_) ).sorted.map(_.version).mkString(" ") should be(target)
   }
-
+/*
   it("isDate") {
     VersionTag.isDate(123) should be(false)
     VersionTag.isDate(20141018) should be(true)
@@ -20,14 +20,14 @@ class VersionTagSpec extends FunSpec with Matchers {
     VersionTag("1.0") should be(VersionTag.Semver("1.0", 1, 0, 0))
     VersionTag("1.0.0") should be(VersionTag.Semver("1.0.0", 1, 0, 0))
     VersionTag("1.2.3.4") should be(VersionTag.Semver("1.2.3.4", 1, 2, 3))
-    VersionTag("dev") should be(VersionTag.Unknown("dev"))
+    VersionTag("dev") should be(VersionTag.Text("dev"))
 
     VersionTag("1.0.0-dev") should be(
       VersionTag.Multi(
         "1.0.0-dev",
         Seq(
           VersionTag.Semver("1.0.0", 1, 0, 0),
-          VersionTag.Unknown("dev")
+          VersionTag.Text("dev")
         )
       )
     )
@@ -130,18 +130,32 @@ class VersionTagSpec extends FunSpec with Matchers {
         Seq(
           VersionTag.Semver("9.4", 9, 4, 0),
           VersionTag.Semver("1201", 1201, 0, 0),
-          VersionTag.Unknown("jdbc41")
+          VersionTag.Text("jdbc41")
         )
       )
     )
   }
+
+  it("separated text from numbers") {
+    VersionTag("1.4.0-M4") should be(
+      VersionTag.Multi(
+        "1.4.0-M4",
+        Seq(
+          VersionTag.Semver("1.4.0", 1, 4, 0),
+          VersionTag.Text("M"),
+          VersionTag.Semver("4", 4, 0, 0)
+        )
+      )
+    )
+  }
+ */
 
   it("scala lang versions") {
     VersionTag("2.9.1.final") should be(VersionTag.Multi(
       "2.9.1.final",
       Seq(
         VersionTag.Semver("2.9.1", 2, 9, 1),
-        VersionTag.Unknown("final")
+        VersionTag.Text("final")
       )
     ))
   }

@@ -35,59 +35,43 @@ object VersionTag {
   val Dot = """\."""
   val Padding = 10000
 
-  private[lib] val SemverRx = """^([a-z]?)([\d\.]+)$""".r
-  private[lib] val SemverWithTextRx = """^([a-z]?)([\d\.]+)[\.\_\-]([\w]+)$""".r
+  private[lib] val SemverWithOptionalTextRx = """^([a-zA-Z\.\_\-]*)([\d\.]+)$""".r
 
   def apply(value: String): VersionTag = {
     value.trim.split(VersionTag.Dash).flatMap(fromString(_)).toList match {
-      case Nil => Unknown(value)
+      case Nil => Text(value)
       case one :: Nil => one
       case multiple => Multi(value, multiple)
     }
   }
 
-  private def fromString(value: String): Option[VersionTag] = {
+  private def fromString(value: String): Seq[VersionTag] = {
     value.trim match {
-      case SemverRx(leadingText, versions) => {
-        toSemverOrDate(versions, leadingText)
-      }
-      case SemverWithTextRx(leadingText, versions, text) => {
-        toSemverOrDate(versions, leadingText) match {
-          case None => {
-            Some(Unknown(value))
-          }
-          case Some(semver) => {
-            Some(
-              Multi(
-                value,
-                Seq(
-                  semver,
-                  Unknown(text)
-                )
-              )
-            )
-          }
+      case SemverWithOptionalTextRx(leadingText, versions) => {
+        val tags = toSemverOrDate(versions)
+        leadingText.trim match {
+          case "" => tags
+          case v => Seq(Text(v)) ++ tags
         }
       }
       case _ => {
-        Some(Unknown(value.trim))
+        Seq(Text(value.trim))
       }
     }
   }
 
-  private[this] def toSemverOrDate(value: String, leadingText: String): Option[VersionTag] = {
-    val fullVersion = s"${leadingText}$value"
+  private[this] def toSemverOrDate(value: String): Seq[VersionTag] = {
     value.split(VersionTag.Dot).map(_.toInt).toList match {
-      case Nil => None
-      case major :: Nil => Some(Semver(fullVersion, major, 0, 0))
+      case Nil => Nil
+      case major :: Nil => Seq(Semver(value, major, 0, 0))
       case major :: minor :: Nil => {
         isDate(major) match {
-          case true => Some(Date(fullVersion, major, minor))
-          case false => Some(Semver(fullVersion, major, minor, 0))
+          case true => Seq(Date(value, major, minor))
+          case false => Seq(Semver(value, major, minor, 0))
         }
       }
       case major :: minor :: micro :: rest => {
-        Some(Semver(fullVersion, major, minor, micro))
+        Seq(Semver(value, major, minor, micro))
       }
     }
   }
@@ -123,7 +107,7 @@ object VersionTag {
     override def nextMicro() = None
   }
 
-  case class Unknown(version: String) extends VersionTag {
+  case class Text(version: String) extends VersionTag {
     override val sortKey: String = Seq(1, Padding, version.toLowerCase).mkString(Divider)
     override val major = None
     override def nextMicro() = None
