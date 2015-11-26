@@ -20,24 +20,7 @@
     <li>@audit(library.audit)</li>
   </ul>
 
-  <h3>Versions</h3>
-  <div class="table-responsive">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Version</th>
-          <th>Cross built for</th>
-        </tr>
-      </thead>
-      @versions.items.map { version =>
-        <tr>
-          <td>@version.version</td>
-          <td>@version.crossBuildVersion.getOrElse("")</td>
-        </tr>
-      }
-    </table>
-  </div>
-
+  @views.html.libraries.versions.table(versions, displayLibrary = false)
   @if(versions.hasPrevious || versions.hasNext) {
     <ul class="pager">
       @if(versions.hasPrevious) {
@@ -49,16 +32,22 @@
     </ul>
   }
 
-  <h3>Projects</h3>
   <div class="table-responsive">
     <table class="table">
+      <thead>
+        <tr>
+          <th>Project</th>
+          <th>Library</th>
+          <th>Version</th>
+          <th>Cross built for</th>
+        </tr>
+      </thead>
       @projectLibraryVersions.items.map { rec =>
         <tr>
           <td><a href="@routes.ProjectsController.show(rec.project.guid)">@{rec.project.name}</a></td>
-
-          <td><a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(rec.libraryVersion.library.groupId)).query))">@rec.libraryVersion.library.groupId</td>
-          <td><a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(rec.libraryVersion.library.groupId), artifactId = Some(rec.libraryVersion.library.artifactId)).query))">@rec.libraryVersion.library.artifactId</td>
-          <td><a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(rec.libraryVersion.library.groupId), artifactId = Some(rec.libraryVersion.library.artifactId), version = Some(rec.libraryVersion.version)).query))">@rec.libraryVersion.version</td>
+          <td>@rec.libraryVersion.library.groupId.@rec.libraryVersion.library.artifactId</td>
+          <td>@rec.libraryVersion.version</td>
+          <td>@rec.libraryVersion.crossBuildVersion.getOrElse("-")</td>
         </tr>
       }
     </table>

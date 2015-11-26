@@ -27,7 +27,6 @@
     @views.html.languages.recommendationsTable(languageRecommendations)
   }
 
-  <h3>Languages</h3>
   @views.html.languages.versions.table(languageVersions)
   @if(languageVersions.hasPrevious || languageVersions.hasNext) {
     <ul class="pager">
@@ -40,7 +39,6 @@
     </ul>
   }
 
-  <h3>Libraries</h3>
   @views.html.libraries.versions.table(libraryVersions)
   @if(libraryVersions.hasPrevious || libraryVersions.hasNext) {
     <ul class="pager">

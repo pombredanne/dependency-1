@@ -5,6 +5,12 @@
 } else {
   <div class="table-responsive">
     <table class="table">
+      <thead>
+        <tr>
+          <th>Language</th>
+          <th>Version</th>
+        </tr>
+      </thead>
       @languageVersions.items.map { lang =>
         <tr>
 	  <td><a href="@routes.LanguagesController.show(lang.language.guid)">@lang.language.name</a></td>
