@@ -136,4 +136,14 @@ class VersionTagSpec extends FunSpec with Matchers {
     )
   }
 
+  it("scala lang versions") {
+    VersionTag("2.9.1.final") should be(VersionTag.Multi(
+      "2.9.1.final",
+      Seq(
+        VersionTag.Semver("2.9.1", 2, 9, 1),
+        VersionTag.Unknown("final")
+      )
+    ))
+  }
+
 }
