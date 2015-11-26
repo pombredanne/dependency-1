@@ -87,8 +87,8 @@ trait Helpers {
 
   def createProjectWithLibrary(
     libraryForm: LibraryForm = createLibraryForm().copy(
-      groupId = UUID.randomUUID.toString,
-      artifactId = UUID.randomUUID.toString,
+      groupId = s"z-test-${UUID.randomUUID}".toLowerCase,
+      artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
       version = Some(createVersionForm())
     )
   ): (Project, LibraryVersion) = {
