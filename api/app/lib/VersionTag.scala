@@ -35,8 +35,8 @@ object VersionTag {
   val Dot = """\."""
   val Padding = 10000
 
-  private[lib] val SemverRx = """^[a-z]?([\d\.]+)$""".r
-  private[lib] val SemverWithTextRx = """^[a-z]?([\d\.]+)[\.\_\-]([\w]+)$""".r
+  private[lib] val SemverRx = """^([a-z]?)([\d\.]+)$""".r
+  private[lib] val SemverWithTextRx = """^([a-z]?)([\d\.]+)[\.\_\-]([\w]+)$""".r
 
   def apply(value: String): VersionTag = {
     value.trim.split(VersionTag.Dash).flatMap(fromString(_)).toList match {
@@ -48,11 +48,11 @@ object VersionTag {
 
   private def fromString(value: String): Option[VersionTag] = {
     value.trim match {
-      case SemverRx(text) => {
-        toSemverOrDate(text)
+      case SemverRx(leadingText, versions) => {
+        toSemverOrDate(versions, leadingText)
       }
-      case SemverWithTextRx(versions, text) => {
-        toSemverOrDate(versions) match {
+      case SemverWithTextRx(leadingText, versions, text) => {
+        toSemverOrDate(versions, leadingText) match {
           case None => {
             Some(Unknown(value))
           }
@@ -75,18 +75,19 @@ object VersionTag {
     }
   }
 
-  private[this] def toSemverOrDate(value: String): Option[VersionTag] = {
+  private[this] def toSemverOrDate(value: String, leadingText: String): Option[VersionTag] = {
+    val fullVersion = s"${leadingText}$value"
     value.split(VersionTag.Dot).map(_.toInt).toList match {
       case Nil => None
-      case major :: Nil => Some(Semver(value, major, 0, 0))
+      case major :: Nil => Some(Semver(fullVersion, major, 0, 0))
       case major :: minor :: Nil => {
         isDate(major) match {
-          case true => Some(Date(value, major, minor))
-          case false => Some(Semver(value, major, minor, 0))
+          case true => Some(Date(fullVersion, major, minor))
+          case false => Some(Semver(fullVersion, major, minor, 0))
         }
       }
       case major :: minor :: micro :: rest => {
-        Some(Semver(value, major, minor, micro))
+        Some(Semver(fullVersion, major, minor, micro))
       }
     }
   }
