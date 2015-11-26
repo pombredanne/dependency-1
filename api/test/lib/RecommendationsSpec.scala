@@ -22,8 +22,9 @@ class RecommendationsSpec extends Specification {
 
   "Recommends similar library if qualifiers match" in {
     Recommendations.version(
-      "9.4-1201-jdbc41", Seq("9.4-1205-jdbc4", "9.4-1205-jdbc41", "9.4-1205-jdbc42")
-    ) must be(Some("9.4-1205-jdbc41"))
+      "9.4-1201-jdbc41",
+      Seq("9.4-1205-jdbc4", "9.4-1205-jdbc41", "9.4-1205-jdbc42")
+    ) must beEqualTo(Some("9.4-1205-jdbc42"))
   }
 
 }
