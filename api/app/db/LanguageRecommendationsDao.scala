@@ -20,7 +20,7 @@ object LanguageRecommendationsDao {
           LanguageRecommendation(
             from = currentVersion,
             to = v,
-            latest = LanguageVersionsDao.findAll(languageGuid = Some(currentVersion.language.guid), limit = 1).head
+            latest = LanguageVersionsDao.findAll(languageGuid = Some(currentVersion.language.guid), limit = 1).headOption.getOrElse(v)
           )
         )
       }

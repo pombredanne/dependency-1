@@ -20,7 +20,7 @@ object LibraryRecommendationsDao {
           LibraryRecommendation(
             from = currentVersion,
             to = v,
-            latest = LibraryVersionsDao.findAll(libraryGuid = Some(currentVersion.library.guid), limit = 1).head
+            latest = LibraryVersionsDao.findAll(libraryGuid = Some(currentVersion.library.guid), limit = 1).headOption.getOrElse(v)
           )
         )
       }
