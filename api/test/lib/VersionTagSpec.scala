@@ -16,23 +16,6 @@ class VersionTagSpec extends FunSpec with Matchers {
     assertSorted(Seq("0.28.1-dev", "0.28.1"), "0.28.1-dev 0.28.1")
   }
 
-  it("sorts 1 element version") {
-    assertSorted(Seq("0", "1", "5"), "0 1 5")
-    assertSorted(Seq("5", "0", "1"), "0 1 5")
-    assertSorted(Seq("2", "1", "0"), "0 1 2")
-  }
-
-  it("sorts 2 element version") {
-    assertSorted(Seq("0.0", "0.1", "2.1"), "0.0 0.1 2.1")
-    assertSorted(Seq("0.0", "0.1", "2.1"), "0.0 0.1 2.1")
-    assertSorted(Seq("1.0", "0.0", "1.1", "1.2", "0.10"), "0.0 0.10 1.0 1.1 1.2")
-  }
-
-  it("sorts 3 element version") {
-    assertSorted(Seq("0.0.0", "0.0.1", "0.1.0", "5.1.0"), "0.0.0 0.0.1 0.1.0 5.1.0")
-    assertSorted(Seq("10.10.10", "10.0.1", "1.1.50", "15.2.2", "1.0.10"), "1.0.10 1.1.50 10.0.1 10.10.10 15.2.2")
-  }
-
   it("sorts string tags as strings") {
     assertSorted(Seq("r20140201.1", "r20140201.2"), "r20140201.1 r20140201.2")
   }
@@ -83,9 +66,6 @@ class VersionTagSpec extends FunSpec with Matchers {
   }
 
   it("Sorts semvers with more than 3 components") {
-    // we don't fully support this use case... defaults to a string
-    // sort after position 3
-
     assertSorted(Seq("1.0.9.5", "1.0.9.8", "1.0.10.1", "1.0.10.2"), "1.0.9.5 1.0.9.8 1.0.10.1 1.0.10.2")
   }
 
@@ -97,42 +77,6 @@ class VersionTagSpec extends FunSpec with Matchers {
     VersionTag("1.2.3").nextMicro should be(Some(VersionTag.Semver("1.2.4", 1, 2, 4)))
     VersionTag("0.0.5-dev").nextMicro should be(None)
   }
-
-  it("postgresql version") {
-    VersionTag("9.4-1201-jdbc41") should be(
-      VersionTag.Multi(
-        "9.4-1201-jdbc41",
-        Seq(
-          VersionTag.Semver("9.4", 9, 4, 0),
-          VersionTag.Semver("1201", 1201, 0, 0),
-          VersionTag.Text("jdbc41")
-        )
-      )
-    )
-  }
-
-  it("separated text from numbers") {
-    VersionTag("1.4.0-M4") should be(
-      VersionTag.Multi(
-        "1.4.0-M4",
-        Seq(
-          VersionTag.Semver("1.4.0", 1, 4, 0),
-          VersionTag.Text("M"),
-          VersionTag.Semver("4", 4, 0, 0)
-        )
-      )
-    )
-  }
  */
-
-  it("scala lang versions") {
-    VersionTag("2.9.1.final") should be(VersionTag.Multi(
-      "2.9.1.final",
-      Seq(
-        VersionTag.Semver("2.9.1", 2, 9, 1),
-        VersionTag.Text("final")
-      )
-    ))
-  }
 
 }
