@@ -76,9 +76,12 @@ class VersionParserSpec extends FunSpec with Matchers {
   it("sortKey") {
     VersionParser.parse("TEST").sortKey should be("20.test")
     VersionParser.parse("r20141211.1").sortKey should be("40.20141211.10001")
-    VersionParser.parse("1.2.3").sortKey should be("60.10001.10002.10003")
-    VersionParser.parse("r1.2.3").sortKey should be("60.10001.10002.10003")
-    VersionParser.parse("1.2.3.4").sortKey should be("60.10001.10002.10003.10004")
+    VersionParser.parse("1.2.3").sortKey should be("80.10001.10002.10003")
+    VersionParser.parse("r1.2.3").sortKey should be("80.10001.10002.10003")
+    VersionParser.parse("1.2.3.4").sortKey should be("80.10001.10002.10003.10004")
+
+    VersionParser.parse("1.0.0").sortKey should be("80.10001.10000.10000")
+    VersionParser.parse("1.0.0-g-1").sortKey should be("60.10001.10000.10000,20.g,60.10001.10000.10000")
   }
 
   it("sorts 1 element version") {
@@ -96,6 +99,22 @@ class VersionParserSpec extends FunSpec with Matchers {
   it("sorts 3 element version") {
     assertSorted(Seq("0.0.0", "0.0.1", "0.1.0", "5.1.0"), "0.0.0 0.0.1 0.1.0 5.1.0")
     assertSorted(Seq("10.10.10", "10.0.1", "1.1.50", "15.2.2", "1.0.10"), "1.0.10 1.1.50 10.0.1 10.10.10 15.2.2")
+  }
+
+  it("sorts developer tags before release tags (latest release tag should be last)") {
+    assertSorted(Seq("1.0.0", "1.0.0-g-1"), "1.0.0-g-1 1.0.0")
+    assertSorted(Seq("0.6.0-3-g3b52fba", "0.7.6"), "0.6.0-3-g3b52fba 0.7.6")
+
+    assertSorted(Seq("0.28.1", "0.28.1-dev"), "0.28.1-dev 0.28.1")
+    assertSorted(Seq("0.28.1-dev", "0.28.1"), "0.28.1-dev 0.28.1")
+  }
+
+  it("sorts string tags as strings") {
+    assertSorted(Seq("r20140201.1", "r20140201.2"), "r20140201.1 r20140201.2")
+  }
+
+  it("sorts strings mixed with semver tags") {
+    assertSorted(Seq("0.8.6", "0.8.8", "development"), "development 0.8.6 0.8.8")
   }
 
   def assertSorted(versions: Seq[String], target: String) {

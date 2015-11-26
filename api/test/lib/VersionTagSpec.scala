@@ -8,22 +8,6 @@ class VersionTagSpec extends FunSpec with Matchers {
     versions.map( VersionTag(_) ).sorted.map(_.version).mkString(" ") should be(target)
   }
 /*
-  it("sorts developer tags before release tags (latest release tag should be last)") {
-    assertSorted(Seq("1.0.0", "1.0.0-g-1"), "1.0.0-g-1 1.0.0")
-    assertSorted(Seq("0.6.0-3-g3b52fba", "0.7.6"), "0.6.0-3-g3b52fba 0.7.6")
-
-    assertSorted(Seq("0.28.1", "0.28.1-dev"), "0.28.1-dev 0.28.1")
-    assertSorted(Seq("0.28.1-dev", "0.28.1"), "0.28.1-dev 0.28.1")
-  }
-
-  it("sorts string tags as strings") {
-    assertSorted(Seq("r20140201.1", "r20140201.2"), "r20140201.1 r20140201.2")
-  }
-
-  it("sorts strings mixed with semver tags") {
-    assertSorted(Seq("0.8.6", "0.8.8", "development"), "development 0.8.6 0.8.8")
-  }
-
   it("parses major from semver versions") {
     VersionTag("0.0.0").major should be(Some(0))
     VersionTag("0.0.0").major should be(Some(0))

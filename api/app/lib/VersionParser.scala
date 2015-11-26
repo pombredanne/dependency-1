@@ -4,7 +4,22 @@ import scala.util.parsing.combinator._
 
 case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
 
-  val sortKey: String = tags.map(_.sortKey).mkString(",")
+  /**
+    * Note that we want to make sure that the simple semver versions
+    * sort highest - thus if we have exactly one tag that is semver,
+    * bump up its priority
+    */
+  val sortKey: String = {
+    tags match {
+      case one :: Nil => {
+        one match {
+          case tag: Tag.Semver => tag.sortKeyWithPrefix(80)
+          case _ => one.sortKey
+        }
+      }
+      case multiple => multiple.map(_.sortKey).mkString(",")
+    }
+  }
 
   def compare(that: Version) = {
     sortKey.compare(that.sortKey)
@@ -39,8 +54,10 @@ object Tag {
 
   // Tags that look like 1.2.3 (semantic versioning... preferred)
   case class Semver(major: Int, minor: Int, micro: Int, additional: Seq[Int] = Nil) extends Tag {
-    override val sortKey: String = Seq(
-      60,
+    override val sortKey: String = sortKeyWithPrefix(60)
+
+    def sortKeyWithPrefix(prefix: Int) = Seq(
+      prefix,
       (Seq(major, minor, micro) ++ additional).map(_ + Padding).mkString(".")
     ).mkString(".")
   }
