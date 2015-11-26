@@ -1,2 +1,3 @@
  - when created a project, create a user_projects record for the user that is creating that project
  - add timeouts to api/app/lib/GitHubDependencyProvider.scala
+ - add a test case for scalatestplus verisons... on 1.4.0-M3 recommend 1.4.0-M4 but not 1.5.0-SNAP1
