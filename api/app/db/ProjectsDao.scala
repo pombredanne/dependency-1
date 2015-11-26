@@ -132,7 +132,7 @@ object ProjectsDao {
     }
 
     toRemove.foreach { guid =>
-      SoftDelete.delete(c, "project_language_versions", createdBy.guid, ("language_version_guid", None, guid.toString))
+      SoftDelete.delete(c, "project_language_versions", createdBy.guid, ("language_version_guid", Some("::uuid"), guid.toString))
     }
   }
 
@@ -169,7 +169,7 @@ object ProjectsDao {
     }
 
     toRemove.foreach { guid =>
-      SoftDelete.delete(c, "project_library_versions", createdBy.guid, ("library_version_guid", None, guid.toString))
+      SoftDelete.delete(c, "project_library_versions", createdBy.guid, ("library_version_guid", Some("::uuid"), guid.toString))
     }
   }
 
