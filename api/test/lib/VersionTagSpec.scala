@@ -225,20 +225,7 @@ class VersionTagSpec extends FunSpec with Matchers {
     VersionTag("foo-0.1.2").nextMicro should be(None)
     VersionTag("0.0.1").nextMicro should be(Some(VersionTag.Semver("0.0.2", 0, 0, 2)))
     VersionTag("1.2.3").nextMicro should be(Some(VersionTag.Semver("1.2.4", 1, 2, 4)))
-
-    VersionTag("0.0.5-dev").nextMicro should be(Some(VersionTag.Multi(
-      "0.0.6-dev",
-      Seq(
-        VersionTag.Semver("0.0.6", 0, 0, 6),
-        VersionTag.Unknown("dev")
-      )
-    )))
-  }
-
-  it("qualifier") {
-    VersionTag("foo").qualifier should be(None)
-    VersionTag("0.0.1").qualifier should be(None)
-    VersionTag("0.0.5-dev").qualifier should be(Some("dev"))
+    VersionTag("0.0.5-dev").nextMicro should be(None)
   }
 
 >>>>>>> Complete version tag implementation
