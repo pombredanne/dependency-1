@@ -59,7 +59,8 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
       Seq(
         LibraryRecommendation(
           from = libraryVersions.head,
-          to = libraryVersions.last
+          to = libraryVersions.last,
+          latest = libraryVersions.last
         )
       )
     )
@@ -74,12 +75,14 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
     LibraryRecommendationsDao.forProject(project) must be(
       Seq(
         LibraryRecommendation(
-          from = libraryVersions.head,
-          to = libraryVersions.last
+          from = libraryVersions.find(_.version == "1.0.0n").get,
+          to = libraryVersions.find(_.version == "1.0.1").get,
+          latest = libraryVersions.find(_.version == "1.0.2-RC2").get
         )
       )
     )
   }
+
   // TODO: Add tests specific to cross build versions
 
 }

@@ -59,7 +59,8 @@ class LanguageRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with H
       Seq(
         LanguageRecommendation(
           from = languageVersions.find(_.version == "1.0.0").get,
-          to = languageVersions.find(_.version == "1.0.2").get
+          to = languageVersions.find(_.version == "1.0.2").get,
+          latest = languageVersions.find(_.version == "1.0.2").get
         )
       )
     )
@@ -76,7 +77,8 @@ class LanguageRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with H
       Seq(
         LanguageRecommendation(
           from = languageVersions.find(_.version == "1.0.0").get,
-          to = languageVersions.find(_.version == "1.0.1").get
+          to = languageVersions.find(_.version == "1.0.1").get,
+          latest = languageVersions.find(_.version == "1.0.2-RC2").get
         )
       )
     )
