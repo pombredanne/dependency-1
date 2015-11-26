@@ -31,9 +31,9 @@ object LibraryRecommendationsDao {
     Recommendations.version(
       VersionForm(currentVersion.version, currentVersion.crossBuildVersion),
       others.map(v => VersionForm(v.version, v.crossBuildVersion))
-    ).map { tag =>
-      others.find(_.version == tag).getOrElse {
-        sys.error(s"Failed to find tag[$tag]")
+    ).map { form =>
+      others.find { v => v.version == form.version && v.crossBuildVersion == form.crossBuildVersion }.getOrElse {
+        sys.error(s"Failed to find library tag[$form]")
       }
     }
   }

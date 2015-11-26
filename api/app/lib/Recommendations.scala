@@ -9,7 +9,7 @@ object Recommendations {
     * suggests the best version to which to upgrade (or None if not
     * found)
     */
-  def version(current: VersionForm, others: Seq[VersionForm]): Option[String] = {
+  def version(current: VersionForm, others: Seq[VersionForm]): Option[VersionForm] = {
     val currentTag = Version(current.version)
 
     others.
@@ -21,7 +21,7 @@ object Recommendations {
       sorted.
       reverse.
       headOption.
-      map(_.value)
+      map { v => VersionForm(v.value, current.crossBuildVersion) }
   }
 
   private[this] def textPortionsMatch(current: Version, other: Version): Boolean = {

@@ -9,7 +9,7 @@ class RecommendationsSpec extends Specification {
     Recommendations.version(
       VersionForm(value),
       others.map(VersionForm(_))
-    )
+    ).map(_.version)
   }
 
   "No recommendation if others is empty" in {
@@ -63,7 +63,7 @@ class RecommendationsSpec extends Specification {
         VersionForm("1.1", Some("2.11.6")),
         VersionForm("1.1", Some("2.11.7"))
       )
-    ) must beEqualTo(Some("1.1"))
+    ) must beEqualTo(Some(VersionForm("1.1", Some("2.11.7"))))
   }
 
 }
