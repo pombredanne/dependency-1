@@ -244,5 +244,18 @@ class VersionTagSpec extends FunSpec with Matchers {
     )
   }
 
+<<<<<<< 11fb6778b8bc5b9043f3568ed4be7d3688f0e867
 >>>>>>> Add test to parse postgresql version number
+=======
+  it("scala lang versions") {
+    VersionTag("2.9.1.final") should be(VersionTag.Multi(
+      "2.9.1.final",
+      Seq(
+        VersionTag.Semver("2.9.1", 2, 9, 1),
+        VersionTag.Unknown("final")
+      )
+    ))
+  }
+
+>>>>>>> Add support for scala versions - e.g. 2.9.1.final
 }

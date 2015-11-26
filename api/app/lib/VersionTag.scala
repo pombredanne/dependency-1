@@ -36,6 +36,7 @@ object VersionTag {
   val Padding = 10000
 
   private[lib] val SemverRx = """^[a-z]?([\d\.]+)$""".r
+  private[lib] val SemverWithTextRx = """^[a-z]?([\d\.]+)[\.\_\-]([\w]+)$""".r
 
   def apply(value: String): VersionTag = {
     value.trim.split(VersionTag.Dash).flatMap(fromString(_)).toList match {
@@ -47,22 +48,46 @@ object VersionTag {
 
   private def fromString(value: String): Option[VersionTag] = {
     value.trim match {
-      case SemverRx(rest) => {
-        rest.split(VersionTag.Dot).map(_.toInt).toList match {
-          case Nil => None
-          case major :: Nil => Some(Semver(value, major, 0, 0))
-          case major :: minor :: Nil => {
-            isDate(major) match {
-              case true => Some(Date(value, major, minor))
-              case false => Some(Semver(value, major, minor, 0))
-            }
+      case SemverRx(text) => {
+        toSemverOrDate(text)
+      }
+      case SemverWithTextRx(versions, text) => {
+        toSemverOrDate(versions) match {
+          case None => {
+            Some(Unknown(value))
           }
-          case major :: minor :: micro :: rest => {
-            Some(Semver(value, major, minor, micro))
+          case Some(semver) => {
+            Some(
+              Multi(
+                value,
+                Seq(
+                  semver,
+                  Unknown(text)
+                )
+              )
+            )
           }
         }
       }
-      case _ => Some(Unknown(value.trim))
+      case _ => {
+        Some(Unknown(value.trim))
+      }
+    }
+  }
+
+  private[this] def toSemverOrDate(value: String): Option[VersionTag] = {
+    value.split(VersionTag.Dot).map(_.toInt).toList match {
+      case Nil => None
+      case major :: Nil => Some(Semver(value, major, 0, 0))
+      case major :: minor :: Nil => {
+        isDate(major) match {
+          case true => Some(Date(value, major, minor))
+          case false => Some(Semver(value, major, minor, 0))
+        }
+      }
+      case major :: minor :: micro :: rest => {
+        Some(Semver(value, major, minor, micro))
+      }
     }
   }
 

@@ -8,7 +8,10 @@ import play.api.test._
 class LanguageVersionProviderSpec extends PlaySpecification {
 
   "scala" in {
-    val versions = DefaultLanguageVersionProvider.versions(ProgrammingLanguage.Scala).map(_.version)
+    val scalaVersions = DefaultLanguageVersionProvider.versions(ProgrammingLanguage.Scala)
+    println("scalaVersions: " + scalaVersions)
+    val versions = scalaVersions.map(_.version)
+    println("scalaVersions: " + versions)
     versions.contains("2.11.7") must beTrue
     versions.contains("2.9.1.final") must beTrue
     versions.contains("0.11.7") must beFalse
