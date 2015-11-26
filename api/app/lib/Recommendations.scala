@@ -21,9 +21,14 @@ object Recommendations {
   }
 
   private[this] def textPortionsMatch(current: Version, other: Version): Boolean = {
-    println(s"current: ${current}")
-    println(s"other: $other")
-    true
+    (current.tags zip other.tags).map{ case (a, b) =>
+      (a, b) match {
+        case (t1: Tag.Semver, t2: Tag.Semver) => true
+        case (t1: Tag.Date, t2: Tag.Date) => true
+        case (Tag.Text(value1), Tag.Text(value2)) => value1 == value2
+        case (_, _) => false
+      }
+    }.forall( el => el )
   }
 
 }

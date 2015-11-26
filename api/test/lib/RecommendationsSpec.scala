@@ -3,7 +3,7 @@ package com.bryzek.dependency.lib
 import org.specs2.mutable._
 
 class RecommendationsSpec extends Specification {
-/*
+
   "No recommendation if others is empty" in {
     Recommendations.version("1.0.0", Nil) must be(None)
   }
@@ -26,7 +26,7 @@ class RecommendationsSpec extends Specification {
       Seq("9.4-1205-jdbc4", "9.4-1205-jdbc41", "9.4-1205-jdbc42")
     ) must beEqualTo(Some("9.4-1205-jdbc42"))
   }
-*/
+
   "scalatest example" in {
     Recommendations.version(
       "1.4.0-M3",
