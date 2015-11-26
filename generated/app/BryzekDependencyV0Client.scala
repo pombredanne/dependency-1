@@ -25,7 +25,8 @@ package com.bryzek.dependency.v0.models {
 
   case class LanguageRecommendation(
     from: com.bryzek.dependency.v0.models.LanguageVersion,
-    to: com.bryzek.dependency.v0.models.LanguageVersion
+    to: com.bryzek.dependency.v0.models.LanguageVersion,
+    latest: com.bryzek.dependency.v0.models.LanguageVersion
   )
 
   case class LanguageVersion(
@@ -52,7 +53,8 @@ package com.bryzek.dependency.v0.models {
 
   case class LibraryRecommendation(
     from: com.bryzek.dependency.v0.models.LibraryVersion,
-    to: com.bryzek.dependency.v0.models.LibraryVersion
+    to: com.bryzek.dependency.v0.models.LibraryVersion,
+    latest: com.bryzek.dependency.v0.models.LibraryVersion
   )
 
   case class LibraryVersion(
@@ -257,14 +259,16 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyLanguageRecommendation: play.api.libs.json.Reads[LanguageRecommendation] = {
       (
         (__ \ "from").read[com.bryzek.dependency.v0.models.LanguageVersion] and
-        (__ \ "to").read[com.bryzek.dependency.v0.models.LanguageVersion]
+        (__ \ "to").read[com.bryzek.dependency.v0.models.LanguageVersion] and
+        (__ \ "latest").read[com.bryzek.dependency.v0.models.LanguageVersion]
       )(LanguageRecommendation.apply _)
     }
 
     implicit def jsonWritesDependencyLanguageRecommendation: play.api.libs.json.Writes[LanguageRecommendation] = {
       (
         (__ \ "from").write[com.bryzek.dependency.v0.models.LanguageVersion] and
-        (__ \ "to").write[com.bryzek.dependency.v0.models.LanguageVersion]
+        (__ \ "to").write[com.bryzek.dependency.v0.models.LanguageVersion] and
+        (__ \ "latest").write[com.bryzek.dependency.v0.models.LanguageVersion]
       )(unlift(LanguageRecommendation.unapply _))
     }
 
@@ -327,14 +331,16 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyLibraryRecommendation: play.api.libs.json.Reads[LibraryRecommendation] = {
       (
         (__ \ "from").read[com.bryzek.dependency.v0.models.LibraryVersion] and
-        (__ \ "to").read[com.bryzek.dependency.v0.models.LibraryVersion]
+        (__ \ "to").read[com.bryzek.dependency.v0.models.LibraryVersion] and
+        (__ \ "latest").read[com.bryzek.dependency.v0.models.LibraryVersion]
       )(LibraryRecommendation.apply _)
     }
 
     implicit def jsonWritesDependencyLibraryRecommendation: play.api.libs.json.Writes[LibraryRecommendation] = {
       (
         (__ \ "from").write[com.bryzek.dependency.v0.models.LibraryVersion] and
-        (__ \ "to").write[com.bryzek.dependency.v0.models.LibraryVersion]
+        (__ \ "to").write[com.bryzek.dependency.v0.models.LibraryVersion] and
+        (__ \ "latest").write[com.bryzek.dependency.v0.models.LibraryVersion]
       )(unlift(LibraryRecommendation.unapply _))
     }
 

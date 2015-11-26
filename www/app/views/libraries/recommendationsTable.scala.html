@@ -10,6 +10,7 @@
           <th>Library</th>
           <th>Current</th>
           <th>Recommended</th>
+          <th>Latest</th>
         </tr>
       </thead>
       @recommendations.map { rec =>
@@ -17,6 +18,7 @@
           <td><a href="@routes.LibrariesController.show(rec.from.library.guid)">@{rec.from.library.groupId}.@rec.from.library.artifactId</a></td>
           <td>@rec.from.version</td>
           <td>@rec.to.version</td>
+          <td>@rec.latest.version</td>
         </tr>
       }
     </table>

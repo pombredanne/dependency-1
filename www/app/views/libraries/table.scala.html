@@ -5,18 +5,9 @@
 } else {
   <div class="table-responsive">
     <table class="table">
-        <thead>
-          <tr>
-            <th></th>
-            <th>Group ID</th>
-            <th>Artifact ID</th>
-          </tr>
-        </thead>
       @libraries.items.map { library =>
         <tr>
-          <td><a href="@routes.LibrariesController.show(library.guid)">Details</a></td>
-          <td><a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(library.groupId)).query))">@library.groupId</td>
-          <td><a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(artifactId = Some(library.artifactId)).query))">@library.artifactId</td>
+          <td><a href="@routes.LibrariesController.show(library.guid)">@library.groupId.@library.artifactId</td>
         </tr>
       }
     </table>

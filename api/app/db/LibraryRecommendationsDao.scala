@@ -19,7 +19,8 @@ object LibraryRecommendationsDao {
         versions ++= Seq(
           LibraryRecommendation(
             from = currentVersion,
-            to = v
+            to = v,
+            latest = LibraryVersionsDao.findAll(libraryGuid = Some(currentVersion.library.guid), limit = 1).head
           )
         )
       }

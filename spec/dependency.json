@@ -134,14 +134,16 @@
 	"library_recommendation": {
 	    "fields": [
 		{ "name": "from", "type": "library_version" },
-		{ "name": "to", "type": "library_version" }
+		{ "name": "to", "type": "library_version" },
+		{ "name": "latest", "type": "library_version" }
 	    ]
 	},
 	
 	"language_recommendation": {
 	    "fields": [
 		{ "name": "from", "type": "language_version" },
-		{ "name": "to", "type": "language_version" }
+		{ "name": "to", "type": "language_version" },
+		{ "name": "latest", "type": "language_version" }
 	    ]
 	}
 	

@@ -10,6 +10,7 @@
           <th>Language</th>
           <th>Current</th>
           <th>Recommended</th>
+          <th>Latest</th>
         </tr>
       </thead>
       @recommendations.map { rec =>
@@ -17,6 +18,7 @@
           <td><a href="@routes.LanguagesController.show(rec.from.language.guid)">@rec.from.language.name</a></td>
           <td>@rec.from.version</td>
           <td>@rec.to.version</td>
+          <td>@rec.latest.version</td>
         </tr>
       }
     </table>

@@ -19,7 +19,8 @@ object LanguageRecommendationsDao {
         versions ++= Seq(
           LanguageRecommendation(
             from = currentVersion,
-            to = v
+            to = v,
+            latest = LanguageVersionsDao.findAll(languageGuid = Some(currentVersion.language.guid), limit = 1).head
           )
         )
       }

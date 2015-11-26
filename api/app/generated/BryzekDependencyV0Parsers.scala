@@ -167,7 +167,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       from: com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings,
-      to: com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings
+      to: com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings,
+      latest: com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings
     )
 
     object Mappings {
@@ -178,7 +179,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         from = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings.prefix(Seq(prefix, "from").filter(!_.isEmpty).mkString("_"), "_"),
-        to = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings.prefix(Seq(prefix, "to").filter(!_.isEmpty).mkString("_"), "_")
+        to = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings.prefix(Seq(prefix, "to").filter(!_.isEmpty).mkString("_"), "_"),
+        latest = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings.prefix(Seq(prefix, "latest").filter(!_.isEmpty).mkString("_"), "_")
       )
 
     }
@@ -187,11 +189,13 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LanguageRecommendation] = {
       com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.parser(mappings.from) ~
-      com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.parser(mappings.to) map {
-        case from ~ to => {
+      com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.parser(mappings.to) ~
+      com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.parser(mappings.latest) map {
+        case from ~ to ~ latest => {
           com.bryzek.dependency.v0.models.LanguageRecommendation(
             from = from,
-            to = to
+            to = to,
+            latest = latest
           )
         }
       }
@@ -339,7 +343,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       from: com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings,
-      to: com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings
+      to: com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings,
+      latest: com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings
     )
 
     object Mappings {
@@ -350,7 +355,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         from = com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings.prefix(Seq(prefix, "from").filter(!_.isEmpty).mkString("_"), "_"),
-        to = com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings.prefix(Seq(prefix, "to").filter(!_.isEmpty).mkString("_"), "_")
+        to = com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings.prefix(Seq(prefix, "to").filter(!_.isEmpty).mkString("_"), "_"),
+        latest = com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings.prefix(Seq(prefix, "latest").filter(!_.isEmpty).mkString("_"), "_")
       )
 
     }
@@ -359,11 +365,13 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LibraryRecommendation] = {
       com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.parser(mappings.from) ~
-      com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.parser(mappings.to) map {
-        case from ~ to => {
+      com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.parser(mappings.to) ~
+      com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.parser(mappings.latest) map {
+        case from ~ to ~ latest => {
           com.bryzek.dependency.v0.models.LibraryRecommendation(
             from = from,
-            to = to
+            to = to,
+            latest = latest
           )
         }
       }
