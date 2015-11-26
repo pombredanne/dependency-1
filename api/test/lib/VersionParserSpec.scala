@@ -74,14 +74,14 @@ class VersionParserSpec extends FunSpec with Matchers {
   }
 
   it("sortKey") {
-    VersionParser.parse("TEST").sortKey should be("20.test")
-    VersionParser.parse("r20141211.1").sortKey should be("40.20141211.10001")
-    VersionParser.parse("1.2.3").sortKey should be("80.10001.10002.10003")
-    VersionParser.parse("r1.2.3").sortKey should be("80.10001.10002.10003")
-    VersionParser.parse("1.2.3.4").sortKey should be("80.10001.10002.10003.10004")
+    VersionParser.parse("TEST").sortKey should be("20.test.99999")
+    VersionParser.parse("r20141211.1").sortKey should be("40.20141211.10001.99999")
+    VersionParser.parse("1.2.3").sortKey should be("60.10001.10002.10003.99999")
+    VersionParser.parse("r1.2.3").sortKey should be("60.10001.10002.10003.99999")
+    VersionParser.parse("1.2.3.4").sortKey should be("60.10001.10002.10003.10004.99999")
 
-    VersionParser.parse("1.0.0").sortKey should be("80.10001.10000.10000")
-    VersionParser.parse("1.0.0-g-1").sortKey should be("60.10001.10000.10000,20.g,60.10001.10000.10000")
+    VersionParser.parse("1.0.0").sortKey should be("60.10001.10000.10000.99999")
+    VersionParser.parse("1.0.0-g-1").sortKey should be("60.10001.10000.10000.99997,20.g.99998,60.10001.10000.10000.99999")
   }
 
   it("sorts 1 element version") {
@@ -107,6 +107,8 @@ class VersionParserSpec extends FunSpec with Matchers {
 
     assertSorted(Seq("0.28.1", "0.28.1-dev"), "0.28.1-dev 0.28.1")
     assertSorted(Seq("0.28.1-dev", "0.28.1"), "0.28.1-dev 0.28.1")
+
+    assertSorted(Seq("1.0.1", "1.0.1-dev", "1.0.2", "1.0.0"), "1.0.0 1.0.1-dev 1.0.1 1.0.2")
   }
 
   it("sorts string tags as strings") {

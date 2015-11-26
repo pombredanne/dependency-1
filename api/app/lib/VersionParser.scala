@@ -50,15 +50,14 @@ case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
     * about 1.0.0-dev (as one example).
     */
   val sortKey: String = {
-    tags match {
-      case one :: Nil => {
-        one match {
-          case tag: Tag.Semver => tag.sortKeyWithPrefix(80)
-          case _ => one.sortKey
-        }
+    tags.zipWithIndex.map { case (tag, i) =>
+      val remaining = Tag.MaxPadding - (tags.length - i - 1)
+      tag match {
+        case t: Tag.Text =>   Seq(20, t.sortKey, remaining).mkString(".")
+        case t: Tag.Date =>   Seq(40, t.sortKey, remaining).mkString(".")
+        case t: Tag.Semver => Seq(60, t.sortKey, remaining).mkString(".")
       }
-      case multiple => multiple.map(_.sortKey).mkString(",")
-    }
+    }.mkString(",")
   }
 
   def compare(that: Version) = {
@@ -95,18 +94,19 @@ sealed trait Tag extends Ordered[Tag] {
 
 object Tag {
 
+  val MaxPadding = 99999
   private[this] val Padding = 10000
 
   // Any text in the tag (e.g. final)
   case class Text(value: String) extends Tag {
-    override val sortKey: String = Seq(20, value.trim.toLowerCase).mkString(".")
+    override val sortKey: String = value.trim.toLowerCase
   }
 
   // Tags that look like r20151211.1
   case class Date(date: Long, minorNum: Long) extends Tag {
     assert(VersionParser.isDate(date), s"Must be a date[$date]")
     override val value: String = s"${date}.$minorNum"
-    override val sortKey: String = Seq(40, date, minorNum + Padding).mkString(".")
+    override val sortKey: String = Seq(date, minorNum + Padding).mkString(".")
     def nextMicro: Tag = Date(date, minorNum + 1)
   }
 
@@ -115,12 +115,7 @@ object Tag {
     private[this] val all = (Seq(major, minor, micro) ++ additional)
 
     override val value: String = all.mkString(".")
-    override val sortKey: String = sortKeyWithPrefix(60)
-
-    def sortKeyWithPrefix(prefix: Long) = Seq(
-      prefix,
-      all.map(_ + Padding).mkString(".")
-    ).mkString(".")
+    override val sortKey: String = all.map(_ + Padding).mkString(".")
 
     def nextMicro: Semver = additional match {
       case Nil => Semver(major, minor, micro + 1)
