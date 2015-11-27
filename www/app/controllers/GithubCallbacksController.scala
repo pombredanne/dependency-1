@@ -9,6 +9,7 @@ import com.bryzek.dependency.lib.DependencyClientProvider
 import play.api._
 import play.api.i18n._
 import play.api.mvc._
+import scala.concurrent.Future
 
 class GithubCallbacksController @javax.inject.Inject() (
   val messagesApi: MessagesApi,
@@ -52,22 +53,32 @@ class GithubCallbacksController @javax.inject.Inject() (
             sys.error("Need email")
           }
           case Some(email) => {
-            client.users.post(
-              UserForm(
-                email = Some(email),
-                name = Some(
-                  NameForm(
-                    first = githubUser.name
-                  )
-                ),
-                avatarUrl = githubUser.avatarUrl,
-                externalIds = Some(
-                  Seq(ExternalId(System.Github, githubUser.id.toString))
-                )
-              )
-            ).map { user =>
-              // TODO: Thread through returnUrl
-              Redirect(routes.ApplicationController.index()).withSession { "user_guid" -> user.guid.toString }
+            client.users.get(email = Some(email)).flatMap { users =>
+              users.headOption match {
+                case Some(user) => Future {
+                  // TODO: Thread through returnUrl
+                  Redirect(routes.ApplicationController.index()).withSession { "user_guid" -> user.guid.toString }
+                }
+                case None => {
+                  client.users.post(
+                    UserForm(
+                      email = Some(email),
+                      name = Some(
+                        NameForm(
+                          first = githubUser.name
+                      )
+                      ),
+                      avatarUrl = githubUser.avatarUrl,
+                      externalIds = Some(
+                        Seq(ExternalId(System.Github, githubUser.id.toString))
+                      )
+                    )
+                  ).map { user =>
+                    // TODO: Thread through returnUrl
+                    Redirect(routes.ApplicationController.index()).withSession { "user_guid" -> user.guid.toString }
+                  }
+                }
+              }
             }
           }
         }

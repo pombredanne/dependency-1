@@ -26,7 +26,7 @@ class Users @javax.inject.Inject() (
     email: Option[String],
     limit: Long = 25,
     offset: Long = 0
-  ) = Identified { request =>
+  ) = Anonymous { request =>
     Ok(
       Json.toJson(
         UsersDao.findAll(
