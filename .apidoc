@@ -21,6 +21,10 @@ code:
       version: latest
       generators:
         play_2_4_client: generated/app
+    github-oauth:
+      version: latest
+      generators:
+        play_2_4_client: generated/app
     maven:
       version: latest
       generators:
