@@ -1,2 +1,3 @@
  - when created a project, create a user_projects record for the user that is creating that project
  - add timeouts to api/app/lib/GitHubDependencyProvider.scala
+ - add support for sbt vesrion
