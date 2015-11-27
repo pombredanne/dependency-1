@@ -13,19 +13,7 @@ import java.net.URI
 
 object GitHubClient {
 
-  private lazy val token: String = {
-    (
-      DefaultConfig.optionalString("github.api.token.file"),
-      DefaultConfig.optionalString("github.api.token.value")
-    ) match {
-      case (None, None) => sys.error("Missing configuration for github.api.token and github.api.token.file")
-      case (Some(_), Some(_)) => sys.error("Cannot specify configuration for both github.api.token and github.api.token.file")
-      case (Some(file), None) => scala.io.Source.fromFile("/tmp/github-token.txt", "UTF-8").mkString.trim
-      case (None, Some(token)) => token
-    }
-  }
-
-  lazy val instance = new GitHubDependencyProvider(token)
+  lazy val instance = new GitHubDependencyProvider(DefaultConfig.requiredString("github.api.token"))
 
 }
 
