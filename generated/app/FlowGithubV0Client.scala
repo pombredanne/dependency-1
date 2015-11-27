@@ -19,9 +19,21 @@ package io.flow.github.v0.models {
     downloadUrl: String
   )
 
-  case class Owner(
+  case class Repository(
+    id: Long,
+    owner: io.flow.github.v0.models.User,
+    name: String,
+    fullName: String,
+    description: _root_.scala.Option[String] = None,
+    url: String,
+    htmlUrl: String
+  )
+
+  case class User(
     id: Long,
     login: String,
+    name: _root_.scala.Option[String] = None,
+    email: _root_.scala.Option[String] = None,
     avatarUrl: _root_.scala.Option[String] = None,
     gravatarId: _root_.scala.Option[String] = None,
     url: String,
@@ -29,14 +41,10 @@ package io.flow.github.v0.models {
     `type`: io.flow.github.v0.models.OwnerType
   )
 
-  case class Repository(
-    id: Long,
-    owner: io.flow.github.v0.models.Owner,
-    name: String,
-    fullName: String,
-    description: _root_.scala.Option[String] = None,
-    url: String,
-    htmlUrl: String
+  case class UserEmail(
+    email: String,
+    verified: Boolean,
+    primary: Boolean
   )
 
   sealed trait ContentsType
@@ -258,34 +266,10 @@ package io.flow.github.v0.models {
       )(unlift(Contents.unapply _))
     }
 
-    implicit def jsonReadsGithubOwner: play.api.libs.json.Reads[Owner] = {
-      (
-        (__ \ "id").read[Long] and
-        (__ \ "login").read[String] and
-        (__ \ "avatar_url").readNullable[String] and
-        (__ \ "gravatar_id").readNullable[String] and
-        (__ \ "url").read[String] and
-        (__ \ "html_url").read[String] and
-        (__ \ "type").read[io.flow.github.v0.models.OwnerType]
-      )(Owner.apply _)
-    }
-
-    implicit def jsonWritesGithubOwner: play.api.libs.json.Writes[Owner] = {
-      (
-        (__ \ "id").write[Long] and
-        (__ \ "login").write[String] and
-        (__ \ "avatar_url").writeNullable[String] and
-        (__ \ "gravatar_id").writeNullable[String] and
-        (__ \ "url").write[String] and
-        (__ \ "html_url").write[String] and
-        (__ \ "type").write[io.flow.github.v0.models.OwnerType]
-      )(unlift(Owner.unapply _))
-    }
-
     implicit def jsonReadsGithubRepository: play.api.libs.json.Reads[Repository] = {
       (
         (__ \ "id").read[Long] and
-        (__ \ "owner").read[io.flow.github.v0.models.Owner] and
+        (__ \ "owner").read[io.flow.github.v0.models.User] and
         (__ \ "name").read[String] and
         (__ \ "full_name").read[String] and
         (__ \ "description").readNullable[String] and
@@ -297,13 +281,57 @@ package io.flow.github.v0.models {
     implicit def jsonWritesGithubRepository: play.api.libs.json.Writes[Repository] = {
       (
         (__ \ "id").write[Long] and
-        (__ \ "owner").write[io.flow.github.v0.models.Owner] and
+        (__ \ "owner").write[io.flow.github.v0.models.User] and
         (__ \ "name").write[String] and
         (__ \ "full_name").write[String] and
         (__ \ "description").writeNullable[String] and
         (__ \ "url").write[String] and
         (__ \ "html_url").write[String]
       )(unlift(Repository.unapply _))
+    }
+
+    implicit def jsonReadsGithubUser: play.api.libs.json.Reads[User] = {
+      (
+        (__ \ "id").read[Long] and
+        (__ \ "login").read[String] and
+        (__ \ "name").readNullable[String] and
+        (__ \ "email").readNullable[String] and
+        (__ \ "avatar_url").readNullable[String] and
+        (__ \ "gravatar_id").readNullable[String] and
+        (__ \ "url").read[String] and
+        (__ \ "html_url").read[String] and
+        (__ \ "type").read[io.flow.github.v0.models.OwnerType]
+      )(User.apply _)
+    }
+
+    implicit def jsonWritesGithubUser: play.api.libs.json.Writes[User] = {
+      (
+        (__ \ "id").write[Long] and
+        (__ \ "login").write[String] and
+        (__ \ "name").writeNullable[String] and
+        (__ \ "email").writeNullable[String] and
+        (__ \ "avatar_url").writeNullable[String] and
+        (__ \ "gravatar_id").writeNullable[String] and
+        (__ \ "url").write[String] and
+        (__ \ "html_url").write[String] and
+        (__ \ "type").write[io.flow.github.v0.models.OwnerType]
+      )(unlift(User.unapply _))
+    }
+
+    implicit def jsonReadsGithubUserEmail: play.api.libs.json.Reads[UserEmail] = {
+      (
+        (__ \ "email").read[String] and
+        (__ \ "verified").read[Boolean] and
+        (__ \ "primary").read[Boolean]
+      )(UserEmail.apply _)
+    }
+
+    implicit def jsonWritesGithubUserEmail: play.api.libs.json.Writes[UserEmail] = {
+      (
+        (__ \ "email").write[String] and
+        (__ \ "verified").write[Boolean] and
+        (__ \ "primary").write[Boolean]
+      )(unlift(UserEmail.unapply _))
     }
   }
 }
@@ -409,6 +437,10 @@ package io.flow.github.v0 {
 
     def repositories: Repositories = Repositories
 
+    def userEmails: UserEmails = UserEmails
+
+    def users: Users = Users
+
     object Contents extends Contents {
       override def getReposAndReadmeByOwnerAndRepo(
         owner: String,
@@ -502,6 +534,26 @@ package io.flow.github.v0 {
 
         _executeRequest("GET", s"/orgs/${play.utils.UriEncoding.encodePathSegment(org, "UTF-8")}/repos", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.io.flow.github.v0.Client.parseJson("Seq[io.flow.github.v0.models.Repository]", r, _.validate[Seq[io.flow.github.v0.models.Repository]])
+          case r if r.status == 401 => throw new io.flow.github.v0.errors.UnitResponse(r.status)
+          case r => throw new io.flow.github.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+        }
+      }
+    }
+
+    object UserEmails extends UserEmails {
+      override def getUserAndEmails()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.github.v0.models.UserEmail]] = {
+        _executeRequest("GET", s"/user/emails").map {
+          case r if r.status == 200 => _root_.io.flow.github.v0.Client.parseJson("Seq[io.flow.github.v0.models.UserEmail]", r, _.validate[Seq[io.flow.github.v0.models.UserEmail]])
+          case r if r.status == 401 => throw new io.flow.github.v0.errors.UnitResponse(r.status)
+          case r => throw new io.flow.github.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+        }
+      }
+    }
+
+    object Users extends Users {
+      override def getUser()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.github.v0.models.User] = {
+        _executeRequest("GET", s"/user").map {
+          case r if r.status == 200 => _root_.io.flow.github.v0.Client.parseJson("io.flow.github.v0.models.User", r, _.validate[io.flow.github.v0.models.User])
           case r if r.status == 401 => throw new io.flow.github.v0.errors.UnitResponse(r.status)
           case r => throw new io.flow.github.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
@@ -638,6 +690,14 @@ package io.flow.github.v0 {
       sort: String = "full_name",
       direction: String = "asc"
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.github.v0.models.Repository]]
+  }
+
+  trait UserEmails {
+    def getUserAndEmails()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.github.v0.models.UserEmail]]
+  }
+
+  trait Users {
+    def getUser()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.github.v0.models.User]
   }
 
   package errors {
