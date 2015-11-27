@@ -98,8 +98,9 @@ object UsersDao {
               'guid -> UUID.randomUUID,
               'user_guid -> userGuid,
               'system -> ext.system.toString,
-              'id -> ext.id.trim
-            )
+              'id -> ext.id.trim,
+              'created_by_guid -> createdBy.getOrElse(UsersDao.anonymousUser).guid
+            ).execute()
           }
         }
 

@@ -30,6 +30,9 @@ create table user_external_ids (
 );
 
 select schema_evolution_manager.create_basic_audit_data('public', 'user_external_ids');
+create index on user_external_ids(user_guid);
+create unique index user_external_ids_user_guid_system_id_not_deleted_un_idx on
+  user_external_ids(user_guid, system, id) where deleted_at is null;
 
 comment on table user_external_ids is '
   maps our users to their IDs in third party systems (e.g. github)
