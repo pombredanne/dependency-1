@@ -17,7 +17,12 @@ class GithubCallbacksController @javax.inject.Inject() (
 
   private[this] lazy val githubClientId = DefaultConfig.requiredString("github.dependency.client.id")
   private[this] lazy val githubClientSecret = DefaultConfig.requiredString("github.dependency.client.secret")
-  private[this] lazy val githubOauthClient = new Client("https://github.com")
+  private[this] lazy val githubOauthClient = new Client(
+    apiUrl = "https://github.com",
+    defaultHeaders = Seq(
+      ("Accept" -> "application/json")
+    )
+  )
 
   def authorizations(code: String, state: Option[String]) = Action.async { implicit request =>
     // Content-Type: application/json
