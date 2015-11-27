@@ -3,7 +3,7 @@ package controllers
 import com.bryzek.dependency.v0.errors.ErrorsResponse
 import com.bryzek.dependency.v0.models.AuthenticationForm
 import com.bryzek.dependency.lib.{DependencyClientProvider, UiData}
-import io.flow.play.util.Validation
+import io.flow.play.util.{DefaultConfig, Validation}
 import io.flow.user.v0.models.UserForm
 import play.api._
 import play.api.i18n._
@@ -21,10 +21,11 @@ class LoginController @javax.inject.Inject() (
   import scala.concurrent.ExecutionContext.Implicits.global
 
   private[this] lazy val client = provider.newClient(user = None)
+  private[this] lazy val githubClientId = DefaultConfig.requiredString("github.dependency.client.id")
 
   def index(returnUrl: Option[String]) = Action { implicit request =>
     val form = LoginController.loginForm.fill(LoginController.LoginData(email = "", returnUrl = returnUrl))
-    Ok(views.html.login.index(UiData(requestPath = request.path), form))
+    Ok(views.html.login.index(UiData(requestPath = request.path), githubClientId, form))
   }
 
   def indexPost() = Action.async { implicit request =>
@@ -32,7 +33,7 @@ class LoginController @javax.inject.Inject() (
     form.fold (
 
       formWithErrors => Future {
-        Ok(views.html.login.index(UiData(requestPath = request.path), formWithErrors))
+        Ok(views.html.login.index(UiData(requestPath = request.path), githubClientId, formWithErrors))
       },
 
       validForm => {
@@ -53,12 +54,12 @@ class LoginController @javax.inject.Inject() (
                   Redirect(returnUrl).withSession { "user_guid" -> user.guid.toString }
                 } catch {
                   case r: ErrorsResponse => {
-                    Ok(views.html.login.index(UiData(requestPath = request.path), form, r.errors.map(_.message)))
+                    Ok(views.html.login.index(UiData(requestPath = request.path), githubClientId, form, r.errors.map(_.message)))
                   }
                 }
               }
               case _ => {
-                Ok(views.html.login.index(UiData(requestPath = request.path), form, r.errors.map(_.message)))
+                Ok(views.html.login.index(UiData(requestPath = request.path), githubClientId, form, r.errors.map(_.message)))
               }
             }
           }

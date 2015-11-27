@@ -1,4 +1,5 @@
 @(data: com.bryzek.dependency.lib.UiData,
+  githubClientId: String,
   loginForm: Form[controllers.LoginController.LoginData],
   errorMessages: Seq[String] = Nil
 )(implicit flash: Flash, messages: Messages)
@@ -13,6 +14,7 @@
           <div class="modal-body">
             <div class="well">
               <div class="tab-content">
+		<a href="https://github.com/login/oauth/authorize?scope=user:email&client_id=@githubClientId">Login via Github</a>
 
                 <div id="login" class="tab-pane active in">
 

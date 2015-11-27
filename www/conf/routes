@@ -1,6 +1,8 @@
 GET     /_internal_/healthcheck                 controllers.HealthchecksController.index()
 GET     /                                       controllers.ApplicationController.index()
 
+GET     /callbacks/github/authorizations        controllers.GithubCallbacksController.authorizations(code: String, state: Option[String] = None)
+
 GET     /libraries                              controllers.ApplicationController.redirect
 GET     /libraries/                             controllers.LibrariesController.index(page: Int ?= 0)
 GET     /libraries/:guid                        controllers.LibrariesController.show(guid: java.util.UUID, versionsPage: Int ?= 0, projectsPage: Int ?= 0)
