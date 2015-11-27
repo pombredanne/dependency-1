@@ -4,7 +4,7 @@ import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm, Project}
 import io.flow.github.v0.Client
 import io.flow.github.v0.errors.UnitResponse
 import io.flow.github.v0.models.{Contents, Encoding}
-import io.flow.play.util.Config
+import io.flow.play.util.DefaultConfig
 import org.apache.commons.codec.binary.Base64
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -15,8 +15,8 @@ object GitHubClient {
 
   private lazy val token: String = {
     (
-      Config.optionalString("github.api.token.file"),
-      Config.optionalString("github.api.token.value")
+      DefaultConfig.optionalString("github.api.token.file"),
+      DefaultConfig.optionalString("github.api.token.value")
     ) match {
       case (None, None) => sys.error("Missing configuration for github.api.token and github.api.token.file")
       case (Some(_), Some(_)) => sys.error("Cannot specify configuration for both github.api.token and github.api.token.file")

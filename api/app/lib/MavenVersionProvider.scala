@@ -1,6 +1,6 @@
 package com.bryzek.dependency.lib
 
-import io.flow.play.util.Config
+import io.flow.play.util.DefaultConfig
 import io.flow.maven.v0.Client
 
 import play.api.Logger
@@ -10,7 +10,7 @@ object MavenVersionProvider extends VersionProvider {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  private[this] lazy val client = new Client(Config.requiredString("maven.api.url"))
+  private[this] lazy val client = new Client(DefaultConfig.requiredString("maven.api.url"))
 
   /**
     * Fetches the latest version of a an artifact on maven.
