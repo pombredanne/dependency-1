@@ -11,7 +11,8 @@ create table users (
   guid                    uuid primary key,
   email                   text not null check(non_empty_trimmed_string(email)),
   first_name              text check(trim(first_name) = first_name),
-  last_name               text check(trim(last_name) = last_name)
+  last_name               text check(trim(last_name) = last_name),
+  avatar_url              text check(avatar_url is null or trim(avatar_url) = avatar_url)
 );
 
 comment on table users is '
@@ -21,6 +22,18 @@ comment on table users is '
 select schema_evolution_manager.create_basic_audit_data('public', 'users');
 create unique index users_lower_email_not_deleted_un_idx on users(lower(email)) where deleted_at is null;
 
+create table user_external_ids (
+  guid                     uuid not null primary key,
+  user_guid                uuid not null references users,
+  system                   text not null check(enum(system)),
+  id                       text not null check(non_empty_trimmed_string(id))
+);
+
+select schema_evolution_manager.create_basic_audit_data('public', 'user_external_ids');
+
+comment on table user_external_ids is '
+  maps our users to their IDs in third party systems (e.g. github)
+';
 
 create table authorizations (
   guid                    uuid primary key,

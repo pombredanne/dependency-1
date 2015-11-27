@@ -4,6 +4,68 @@ package io.flow.user.v0.anorm.parsers {
 
   import io.flow.user.v0.anorm.conversions.Json._
 
+  object System {
+
+    case class Mappings(value: String)
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        value = s"${prefix}${sep}value"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[io.flow.user.v0.models.System] = {
+      SqlParser.str(mappings.value) map {
+        case value => io.flow.user.v0.models.System(value)
+      }
+    }
+
+  }
+
+  object ExternalId {
+
+    case class Mappings(
+      system: String = "system",
+      id: String = "id"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        system = s"${prefix}${sep}system",
+        id = s"${prefix}${sep}id"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[io.flow.user.v0.models.ExternalId] = {
+      io.flow.user.v0.anorm.parsers.System.parser(io.flow.user.v0.anorm.parsers.System.Mappings(mappings.system)) ~
+      SqlParser.str(mappings.id) map {
+        case system ~ id => {
+          io.flow.user.v0.models.ExternalId(
+            system = system,
+            id = id
+          )
+        }
+      }
+    }
+
+  }
+
   object Name {
 
     case class Mappings(
@@ -113,42 +175,6 @@ package io.flow.user.v0.anorm.parsers {
             email = email,
             name = name,
             audit = audit
-          )
-        }
-      }
-    }
-
-  }
-
-  object UserForm {
-
-    case class Mappings(
-      email: String = "email",
-      name: io.flow.user.v0.anorm.parsers.NameForm.Mappings
-    )
-
-    object Mappings {
-
-      val base = prefix("", "")
-
-      def table(table: String) = prefix(table, ".")
-
-      def prefix(prefix: String, sep: String) = Mappings(
-        email = s"${prefix}${sep}email",
-        name = io.flow.user.v0.anorm.parsers.NameForm.Mappings.prefix(Seq(prefix, "name").filter(!_.isEmpty).mkString("_"), "_")
-      )
-
-    }
-
-    def table(table: String) = parser(Mappings.prefix(table, "."))
-
-    def parser(mappings: Mappings): RowParser[io.flow.user.v0.models.UserForm] = {
-      SqlParser.str(mappings.email).? ~
-      io.flow.user.v0.anorm.parsers.NameForm.parser(mappings.name).? map {
-        case email ~ name => {
-          io.flow.user.v0.models.UserForm(
-            email = email,
-            name = name
           )
         }
       }

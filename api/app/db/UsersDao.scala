@@ -30,6 +30,7 @@ object UsersDao {
            users.email,
            users.first_name as users_name_first,
            users.last_name as users_name_last,
+           users.avatar_url,
            ${AuditsDao.all("users")}
       from users
      where true
@@ -37,10 +38,19 @@ object UsersDao {
 
   private[this] val InsertQuery = """
     insert into users
-    (guid, email, first_name, last_name, updated_by_guid, created_by_guid)
+    (guid, email, first_name, last_name, avatar_url, updated_by_guid, created_by_guid)
     values
-    ({guid}::uuid, {email}, {first_name}, {last_name}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {email}, {first_name}, {last_name}, {avatar_url}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
+
+  private[this] val InsertExternalIdQuery = """
+    insert into user_external_ids
+    (guid, user_guid, system, id, updated_by_guid, created_by_guid)
+    values
+    ({guid}::uuid, {user_guid}::uuid, {system}, {id}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+  """
+  
+  
 
   def validate(form: UserForm): Seq[String] = {
     form.email match {
@@ -73,14 +83,24 @@ object UsersDao {
       case Nil => {
         val userGuid = UUID.randomUUID
 
-        DB.withConnection { implicit c =>
+        DB.withTransaction { implicit c =>
           SQL(InsertQuery).on(
             'guid -> userGuid,
             'email -> form.email.getOrElse("").trim,
+            'avatar_url -> Util.trimmedString(form.avatarUrl),
             'first_name -> Util.trimmedString(form.name.flatMap(_.first)),
             'last_name -> Util.trimmedString(form.name.flatMap(_.last)),
             'created_by_guid -> createdBy.getOrElse(UsersDao.anonymousUser).guid
           ).execute()
+
+          form.externalIds.getOrElse(Nil).foreach { ext =>
+            SQL(InsertExternalIdQuery).on(
+              'guid -> UUID.randomUUID,
+              'user_guid -> userGuid,
+              'system -> ext.system.toString,
+              'id -> ext.id.trim
+            )
+          }
         }
 
         Right(

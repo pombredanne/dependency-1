@@ -5,6 +5,14 @@
  */
 package io.flow.user.v0.models {
 
+  /**
+   * Allow storing third party identifiers (e.g. github login ID)
+   */
+  case class ExternalId(
+    system: io.flow.user.v0.models.System,
+    id: String
+  )
+
   case class Name(
     first: _root_.scala.Option[String] = None,
     last: _root_.scala.Option[String] = None
@@ -27,8 +35,43 @@ package io.flow.user.v0.models {
 
   case class UserForm(
     email: _root_.scala.Option[String] = None,
-    name: _root_.scala.Option[io.flow.user.v0.models.NameForm] = None
+    name: _root_.scala.Option[io.flow.user.v0.models.NameForm] = None,
+    avatarUrl: _root_.scala.Option[String] = None,
+    externalIds: _root_.scala.Option[Seq[io.flow.user.v0.models.ExternalId]] = None
   )
+
+  sealed trait System
+
+  object System {
+
+    case object Github extends System { override def toString = "github" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends System
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(Github)
+
+    private[this]
+    val byName = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): System = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[System] = byName.get(value.toLowerCase)
+
+  }
 
 }
 
@@ -59,6 +102,25 @@ package io.flow.user.v0.models {
         val str = dateTime.print(x)
         JsString(str)
       }
+    }
+
+    implicit val jsonReadsUserSystem = __.read[String].map(System.apply)
+    implicit val jsonWritesUserSystem = new Writes[System] {
+      def writes(x: System) = JsString(x.toString)
+    }
+
+    implicit def jsonReadsUserExternalId: play.api.libs.json.Reads[ExternalId] = {
+      (
+        (__ \ "system").read[io.flow.user.v0.models.System] and
+        (__ \ "id").read[String]
+      )(ExternalId.apply _)
+    }
+
+    implicit def jsonWritesUserExternalId: play.api.libs.json.Writes[ExternalId] = {
+      (
+        (__ \ "system").write[io.flow.user.v0.models.System] and
+        (__ \ "id").write[String]
+      )(unlift(ExternalId.unapply _))
     }
 
     implicit def jsonReadsUserName: play.api.libs.json.Reads[Name] = {
@@ -110,14 +172,18 @@ package io.flow.user.v0.models {
     implicit def jsonReadsUserUserForm: play.api.libs.json.Reads[UserForm] = {
       (
         (__ \ "email").readNullable[String] and
-        (__ \ "name").readNullable[io.flow.user.v0.models.NameForm]
+        (__ \ "name").readNullable[io.flow.user.v0.models.NameForm] and
+        (__ \ "avatar_url").readNullable[String] and
+        (__ \ "external_ids").readNullable[Seq[io.flow.user.v0.models.ExternalId]]
       )(UserForm.apply _)
     }
 
     implicit def jsonWritesUserUserForm: play.api.libs.json.Writes[UserForm] = {
       (
         (__ \ "email").writeNullable[String] and
-        (__ \ "name").writeNullable[io.flow.user.v0.models.NameForm]
+        (__ \ "name").writeNullable[io.flow.user.v0.models.NameForm] and
+        (__ \ "avatar_url").writeNullable[String] and
+        (__ \ "external_ids").writeNullable[Seq[io.flow.user.v0.models.ExternalId]]
       )(unlift(UserForm.unapply _))
     }
   }
@@ -150,7 +216,16 @@ package io.flow.user.v0 {
       ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: Exception) => s"Error parsing date $key. Example: 2014-04-29"
     )
 
+    // Enum: System
+    private[this] val enumSystemNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${io.flow.user.v0.models.System.all.mkString(", ")}"
 
+    implicit val pathBindableEnumSystem = new PathBindable.Parsing[io.flow.user.v0.models.System] (
+      System.fromString(_).get, _.toString, enumSystemNotFound
+    )
+
+    implicit val queryStringBindableEnumSystem = new QueryStringBindable.Parsing[io.flow.user.v0.models.System](
+      System.fromString(_).get, _.toString, enumSystemNotFound
+    )
 
   }
 
