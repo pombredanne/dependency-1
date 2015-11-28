@@ -159,7 +159,7 @@ package com.bryzek.dependency.v0.models {
 
   object Scms {
 
-    case object GitHub extends Scms { override def toString = "git_hub" }
+    case object Github extends Scms { override def toString = "github" }
 
     /**
      * UNDEFINED captures values that are sent either in error or
@@ -177,7 +177,7 @@ package com.bryzek.dependency.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all = Seq(GitHub)
+    val all = Seq(Github)
 
     private[this]
     val byName = all.map(x => x.toString.toLowerCase -> x).toMap

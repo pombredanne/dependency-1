@@ -9,7 +9,7 @@
     "enums": {
 	"scms": {
 	    "values": [
-		{ "name": "git_hub" }
+		{ "name": "github" }
 	    ]
 	},
 

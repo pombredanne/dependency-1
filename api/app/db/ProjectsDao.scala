@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Scms, Language, LanguageForm, Library, LibraryForm, Project, ProjectForm}
-import com.bryzek.dependency.lib.GitHubUtil
+import com.bryzek.dependency.lib.GithubUtil
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
@@ -62,8 +62,8 @@ object ProjectsDao {
     } else {
       form.scms match {
         case Scms.UNDEFINED(_) => Seq("Scms not found")
-        case Scms.GitHub => {
-          GitHubUtil.parseUri(form.uri) match {
+        case Scms.Github => {
+          GithubUtil.parseUri(form.uri) match {
             case Left(error) => Seq(error)
             case Right(_) => Nil
           }

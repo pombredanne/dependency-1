@@ -53,7 +53,7 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     }
 
     "validates SCMS URI" in {
-      val form = createProjectForm().copy(scms = Scms.GitHub, uri = "http://github.com/mbryzek")
+      val form = createProjectForm().copy(scms = Scms.Github, uri = "http://github.com/mbryzek")
       ProjectsDao.create(systemUser, form) must be(
         Left(Seq("Invalid uri path[http://github.com/mbryzek] missing project name"))
       )

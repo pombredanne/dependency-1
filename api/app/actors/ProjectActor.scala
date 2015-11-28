@@ -1,6 +1,6 @@
 package com.bryzek.dependency.actors
 
-import com.bryzek.dependency.lib.{Dependencies, GitHubClient}
+import com.bryzek.dependency.lib.{Dependencies, GithubClient}
 import com.bryzek.dependency.v0.models.Project
 import db.ProjectsDao
 import play.api.Logger
@@ -35,7 +35,7 @@ class ProjectActor extends Actor {
       s"ProjectActor.Messages.Sync"
     ) {
       dataProject.foreach { project =>
-        GitHubClient.instance.dependencies(project).map { result =>
+        GithubClient.instance.dependencies(project).map { result =>
           result match {
             case None => {
               Logger.warn(s"project[${project.guid}] name[${project.name}]: no build file found")

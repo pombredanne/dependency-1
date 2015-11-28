@@ -90,7 +90,7 @@ trait Helpers {
     val name = createTestName()
     ProjectForm(
       name = name,
-      scms = Scms.GitHub,
+      scms = Scms.Github,
       uri = s"http://github.com/test/${UUID.randomUUID}"
     )
   }
