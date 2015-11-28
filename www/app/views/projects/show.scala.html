@@ -19,41 +19,51 @@
     <li>@audit(project.audit)</li>
   </ul>
 
-  <h3>Recommendations</h3>
-  @if(libraryRecommendations.isEmpty && languageRecommendations.isEmpty) {
-    <em>Awesome - your project is fully up to date!</em>
-  } else {
-    @if(!libraryRecommendations.isEmpty) {
-      @views.html.libraries.recommendationsTable(libraryRecommendations)
-    }
-    @if(!languageRecommendations.isEmpty) {
-      @views.html.languages.recommendationsTable(languageRecommendations)
+  @if(!languageVersions.isEmpty || !libraryVersions.isEmpty) {
+    <h3>Recommendations</h3>
+    @if(libraryRecommendations.isEmpty && languageRecommendations.isEmpty) {
+      <em>Awesome - your project is fully up to date!</em>
+    } else {
+      @if(!libraryRecommendations.isEmpty) {
+        @views.html.libraries.recommendationsTable(libraryRecommendations)
+      }
+      @if(!languageRecommendations.isEmpty) {
+        @views.html.languages.recommendationsTable(languageRecommendations)
+      }
     }
   }
 
   <h3>Dependencies</h3>
-  @views.html.languages.versions.table(languageVersions)
-  @if(languageVersions.hasPrevious || languageVersions.hasNext) {
-    <ul class="pager">
-      @if(languageVersions.hasPrevious) {
-        <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = languageVersions.page - 1, librariesPage = libraryVersions.page)">Previous</a></li>
+  @if(languageVersions.isEmpty && libraryVersions.isEmpty) {
+    <em>No dependencies found</em>
+  } else {
+    @if(!languageVersions.isEmpty) {
+      @views.html.languages.versions.table(languageVersions)
+      @if(languageVersions.hasPrevious || languageVersions.hasNext) {
+        <ul class="pager">
+          @if(languageVersions.hasPrevious) {
+            <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = languageVersions.page - 1, librariesPage = libraryVersions.page)">Previous</a></li>
+          }
+          @if(languageVersions.hasNext) {
+            <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = languageVersions.page + 1, librariesPage = libraryVersions.page)">Next</a></li>
+          }
+        </ul>
       }
-      @if(languageVersions.hasNext) {
-        <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = languageVersions.page + 1, librariesPage = libraryVersions.page)">Next</a></li>
-      }
-    </ul>
-  }
+    }
 
-  @views.html.libraries.versions.table(libraryVersions)
-  @if(libraryVersions.hasPrevious || libraryVersions.hasNext) {
-    <ul class="pager">
-      @if(libraryVersions.hasPrevious) {
-        <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = libraryVersions.page, librariesPage = libraryVersions.page - 1)">Previous</a></li>
+    @if(!libraryVersions.isEmpty) {
+      @views.html.libraries.versions.table(libraryVersions)
+      @if(libraryVersions.hasPrevious || libraryVersions.hasNext) {
+        <ul class="pager">
+          @if(libraryVersions.hasPrevious) {
+            <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = libraryVersions.page, librariesPage = libraryVersions.page - 1)">Previous</a></li>
+          }
+          @if(libraryVersions.hasNext) {
+            <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = libraryVersions.page, librariesPage = libraryVersions.page + 1)">Next</a></li>
+          }
+        </ul>
       }
-      @if(libraryVersions.hasNext) {
-        <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = libraryVersions.page, librariesPage = libraryVersions.page + 1)">Next</a></li>
-      }
-    </ul>
+    }
   }
 
 }

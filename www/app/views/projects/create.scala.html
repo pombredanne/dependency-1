@@ -10,7 +10,8 @@
     <table class="table">
       @repositories.items.map { repo =>
         <tr>
-          <td><a href="">@{repo.name}</a></td>
+          <td><a href="@routes.ProjectsController.createFromRepo(repo.name, repositories.page)">@{repo.name}</a></td>
+          <td>@repo.uri</td>
         </tr>
       }
     </table>

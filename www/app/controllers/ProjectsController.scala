@@ -83,32 +83,51 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def postCreate() = Identified.async { implicit request =>
-    val boundForm = ProjectsController.uiForm.bindFromRequest
-    boundForm.fold (
-
-      formWithErrors => Future {
-        sys.error("TODO")
-        // Ok(views.html.projects.create(uiData(request), formWithErrors))
-      },
-
-      uiForm => {
-        dependencyClient(request).projects.post(
-          projectForm = ProjectForm(
-            name = uiForm.name,
-            scms = Scms(uiForm.scms),
-            uri = uiForm.uri
-          )
-        ).map { project =>
-          Redirect(routes.ProjectsController.show(project.guid)).flashing("success" -> "Project created")
-        }.recover {
-          case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
-            sys.error("TODO")
-            // TODO Ok(views.html.projects.create(uiData(request), boundForm, response.errors.map(_.message)))
+  def createFromRepo(
+    name: String,
+    repositoriesPage: Int = 0
+  ) = Identified.async { implicit request =>
+    dependencyClient(request).repositories.getGithub(
+      name = Some(name)
+    ).flatMap { selected =>
+      dependencyClient(request).repositories.getGithub(
+        limit = Pagination.DefaultLimit+1,
+        offset = repositoriesPage * Pagination.DefaultLimit
+      ).flatMap { repositories =>
+        selected.headOption match {
+          case None => Future {
+            Ok(
+              views.html.projects.create(
+                uiData(request),
+                PaginatedCollection(repositoriesPage, repositories),
+                Seq("Repository with selected name was not found")
+              )
+            )
+          }
+          case Some(repo) => {
+            dependencyClient(request).projects.post(
+              ProjectForm(
+                name = repo.name,
+                scms = Scms.Github,
+                uri = repo.uri
+            )
+            ).map { project =>
+              Redirect(routes.ProjectsController.show(project.guid)).flashing("success" -> "Project added")
+            }.recover {
+              case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
+                Ok(
+                  views.html.projects.create(
+                    uiData(request),
+                    PaginatedCollection(repositoriesPage, repositories),
+                    response.errors.map(_.message)
+                  )
+                )
+              }
+            }
           }
         }
       }
-    )
+    }
   }
 
   def edit(guid: UUID) = Identified.async { implicit request =>

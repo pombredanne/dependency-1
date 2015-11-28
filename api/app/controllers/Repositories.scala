@@ -20,13 +20,20 @@ class Repositories @javax.inject.Inject() (
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def getGithub(
+    name: Option[String] = None,
     limit: Long = 25,
     offset: Long = 0
   ) = Identified.async { request =>
     github.repositories(request.user).map { repos =>
-      Ok(Json.toJson(repos.drop(offset.toInt).take(limit.toInt)))
+      Ok(
+        Json.toJson(
+          repos.
+            filter { r => name.isEmpty || name == Some(r.name) }.
+            drop(offset.toInt).
+            take(limit.toInt)
+        )
+      )
     }
   }
 
 }
-

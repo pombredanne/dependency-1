@@ -138,17 +138,14 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
   }
 
   override def repositories(user: User)(implicit ec: ExecutionContext): Future[Seq[Repository]] = {
-    println(s"user: $user")
-    println(s"user token: " + oauthToken(user))
     oauthToken(user) match {
       case None => Future { Nil }
       case Some(token) => {
         apiClient(token).repositories.getUserAndRepos().map { repos =>
           repos.map { repo =>
-            println(s"github repo: $repo")
             Repository(
               name = s"${repo.owner.login}/${repo.name}",
-              uri = repo.url
+              uri = repo.htmlUrl
             )
           }
         }
