@@ -7,7 +7,7 @@
 @main(data.copy(title = Some("Add project")), errorMessages = errorMessages) {
 
   @if(repositories.items.isEmpty) {
-
+    <em>No repositories were found that are not already added as projects.</em>
   } else {
     <a href="@routes.ProjectsController.createAll()">Add all</a>
 
