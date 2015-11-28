@@ -11,6 +11,11 @@ import io.flow.github.v0.models.{User => GithubUser}
 import scala.concurrent.{ExecutionContext, Future}
 import java.util.UUID
 
+case class GithubUserWithToken(
+  user: GithubUser,
+  token: String
+)
+
 trait Github {
 
   /**
@@ -23,8 +28,8 @@ trait Github {
   def getUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], User]] = {
     getGithubUserFromCode(code).map {
       case Left(errors) => Left(errors)
-      case Right(githubUser) => {
-        githubUser.email match {
+      case Right(githubUserWithToken) => {
+        githubUserWithToken.user.email match {
           case None => {
             Left(Seq("Github account does not have an email address that we can read"))
           }
@@ -38,10 +43,10 @@ trait Github {
                     email = Some(email),
                     name = Some(
                       NameForm(
-                        first = githubUser.name
+                        first = githubUserWithToken.user.name
                       )
                     ),
-                    avatarUrl = githubUser.avatarUrl
+                    avatarUrl = githubUserWithToken.user.avatarUrl
                   )
                 )
               }
@@ -56,8 +61,8 @@ trait Github {
                   createdBy = None,
                   form = GithubUserForm(
                     userGuid = user.guid,
-                    id = githubUser.id,
-                    login = githubUser.login
+                    id = githubUserWithToken.user.id,
+                    login = githubUserWithToken.user.login
                   )
                 )
 
@@ -82,7 +87,7 @@ trait Github {
   /**
     * Fetches github user from an oauth code
     */
-  def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUser]]
+  def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUserWithToken]]
 
   def repositories(user: User)(implicit ec: ExecutionContext): Future[Seq[Repository]]
 
@@ -113,7 +118,7 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
     )
   )
 
-  override def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUser]] = {
+  override def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUserWithToken]] = {
     oauthClient.accessTokens.postLoginAndOauthAndAccessToken(
       AccessTokenForm(
         clientId = clientId,
@@ -122,7 +127,12 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
       )
     ).flatMap { response =>
       apiClient(response.accessToken).users.getUser().map { githubUser =>
-        Right(githubUser)
+        Right(
+          GithubUserWithToken(
+            user = githubUser,
+            token = response.accessToken
+          )
+        )
       }
     }
   }
@@ -151,7 +161,7 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
 
 class MockGithub() extends Github {
 
-  override def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUser]] = {
+  override def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUserWithToken]] = {
     Future {
       MockGithubData.getUserByCode(code) match {
         case None => Left(Seq("Invalid access code"))
@@ -174,15 +184,20 @@ class MockGithub() extends Github {
 
 object MockGithubData {
 
-  private[this] var githubUserByCodes = scala.collection.mutable.Map[String, GithubUser]()
+  private[this] var githubUserByCodes = scala.collection.mutable.Map[String, GithubUserWithToken]()
   private[this] var userTokens = scala.collection.mutable.Map[UUID, String]()
   private[this] var repositories = scala.collection.mutable.Map[UUID, Repository]()
 
-  def addUserCode(code: String, user: GithubUser) {
-    githubUserByCodes +== (code -> user)
+  def addUser(user: GithubUser, code: String, token: Option[String] = None) {
+    githubUserByCodes +== (
+      code -> GithubUserWithToken(
+        user = user,
+        token = token.getOrElse(UUID.randomUUID.toString)
+      )
+    )
   }
 
-  def getUserByCode(code: String): Option[GithubUser] = {
+  def getUserByCode(code: String): Option[GithubUserWithToken] = {
     githubUserByCodes.lift(code)
   }
 
