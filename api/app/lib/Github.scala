@@ -1,7 +1,7 @@
 package com.bryzek.dependency.lib
 
-import db.{GithubUsersDao, UsersDao}
-import com.bryzek.dependency.v0.models.{GithubUserForm, Repository}
+import db.{GithubUsersDao, TokensDao, UsersDao}
+import com.bryzek.dependency.v0.models.{GithubUserForm, Repository, TokenForm}
 import io.flow.user.v0.models.{NameForm, User, UserForm}
 import io.flow.play.util.DefaultConfig
 import io.flow.github.oauth.v0.{Client => GithubOauthClient}
@@ -58,6 +58,15 @@ trait Github {
                     userGuid = user.guid,
                     id = githubUser.id,
                     login = githubUser.login
+                  )
+                )
+
+                TokensDao.upsert(
+                  createdBy = user,
+                  form = TokenForm(
+                    userGuid = user.guid,
+                    tag = TokensDao.GithubOauthTokenTag,
+                    token = "TODO"
                   )
                 )
 

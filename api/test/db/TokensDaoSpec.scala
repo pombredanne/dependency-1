@@ -17,10 +17,12 @@ class TokensDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val token2 = TokensDao.upsert(systemUser, form)
     token1.guid must be(token2.guid)
 
-    val token3 = TokensDao.upsert(systemUser, createTokenForm())
+    val newToken = UUID.randomUUID.toString
+    val token3 = TokensDao.upsert(systemUser, form.copy(token = newToken))
 
     token2.guid must not be(token3.guid)
-    token2.guid must not be(token3.guid)
+    token2.token must be(form.token)
+    token3.token must be(newToken)
   }
 
   "findByGuid" in {
@@ -32,15 +34,14 @@ class TokensDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     TokensDao.findByGuid(UUID.randomUUID) must be(None)
   }
 
-  "findByTokenGuidAndTagAndToken" in {
+  "findByTokenGuidAndTag" in {
     val token = createToken()
-    TokensDao.findByUserGuidAndTagAndToken(token.user.guid, token.tag, token.token).map(_.guid) must be(
+    TokensDao.findByUserGuidAndTag(token.user.guid, token.tag).map(_.guid) must be(
       Some(token.guid)
     )
 
-    TokensDao.findByUserGuidAndTagAndToken(UUID.randomUUID, token.tag, token.token).map(_.guid) must be(None)
-    TokensDao.findByUserGuidAndTagAndToken(token.user.guid, UUID.randomUUID.toString, token.token).map(_.guid) must be(None)
-    TokensDao.findByUserGuidAndTagAndToken(token.user.guid, token.tag, UUID.randomUUID.toString).map(_.guid) must be(None)
+    TokensDao.findByUserGuidAndTag(UUID.randomUUID, token.tag).map(_.guid) must be(None)
+    TokensDao.findByUserGuidAndTag(token.user.guid, UUID.randomUUID.toString).map(_.guid) must be(None)
   }
 
   "findAll by guids" in {

@@ -18,4 +18,4 @@ comment on column tokens.tag is '
 ';
 
 create index on tokens(user_guid);
-create unique index tokens_user_guid_tag_token_not_deleted_un_idx on tokens(user_guid, tag, token) where deleted_at is null;
+create unique index tokens_user_guid_tag_not_deleted_un_idx on tokens(user_guid, tag) where deleted_at is null;
