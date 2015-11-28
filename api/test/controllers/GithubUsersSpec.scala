@@ -40,9 +40,13 @@ class GithubUsersSpec extends PlaySpecification with MockClient {
     user.email must beEqualTo(githubUser.email)
 
     GithubUsersDao.findByLogin(githubUser.login).map(_.user.guid) must beEqualTo(Some(user.guid))
+
+    // Test idempotence
+    val user2 = await(anonClient.githubUsers.postAuthenticationsAndGithub(GithubAuthenticationForm(code = code)))
+    user2.email must beEqualTo(githubUser.email)
   }
 
-  "POST /authentications/github validates accounts w/out email" in new WithServer(port=port) {
+  "POST /authentications/github validates account w/out email" in new WithServer(port=port) {
     val githubUser = createGithubUser().copy(email = None)
     val code = "test"
 
@@ -51,22 +55,5 @@ class GithubUsersSpec extends PlaySpecification with MockClient {
       anonClient.githubUsers.postAuthenticationsAndGithub(GithubAuthenticationForm(code = code))
     }.errors.map(_.message) must beEqualTo(Seq("Github account does not have an email address that we can read"))
   }
-
-  /*
-  "POST /users/authenticate validates non-existent email" in new WithServer(port=port) {
-    Seq(createTestEmail(), "foo").foreach { email =>
-      val response = expectErrors(
-        anonClient.users.postAuthenticate(AuthenticationForm(email = email))
-      )
-
-      response.errors.map(_.code) must beEqualTo(
-        Seq(Validation.Codes.UserAuthorizationFailed)
-      )
-      response.errors.map(_.message) must beEqualTo(
-        Seq("Email address not found")
-      )
-    }
-  }
- */
 
 }
