@@ -4,46 +4,14 @@
   errorMessages: Seq[String] = Nil
 )(implicit flash: Flash, messages: Messages)
 
-@main(data.copy(title = Some("Login")), errorMessages = errorMessages) {
+@main(data, errorMessages = errorMessages) {
 
   <div class="container">
 
-    <div class="row">
-      <div class="span12">
-        <div class="" id="loginModal">
-          <div class="modal-body">
-            <div class="well">
-              <div class="tab-content">
-		<a href="https://github.com/login/oauth/authorize?scope=user:email&client_id=@githubClientId">Login via Github</a>
+    <a class="btn btn-block btn-social btn-github" href="https://github.com/login/oauth/authorize?scope=user:email,repo&client_id=@githubClientId">
+      <span class="fa fa-github"></span> Sign in with Github
+    </a>
 
-                <div id="login" class="tab-pane active in">
-
-                  @helper.form(action = routes.LoginController.indexPost()) {
-
-                    <input type="hidden" name="return_url" value='@loginForm("return_url").value'/>
-
-                    @loginForm.globalErrors.map(_.message).map { msg =>
-                      <p><span class="error">@msg</span></p>
-                    }
-
-                    <fieldset>
-                        @helper.inputText(
-                            loginForm("email"),
-                            '_label -> "Email address",
-                            '_error -> loginForm.error("email")
-                        )
-                    </fieldset>
-
-                    <button class="btn btn-large btn-primary" type="submit">Login</button>
-
-                  }
-
-                </div>
-              </div>
-            </div>
-        </div>
-      </div>
-    </div>
   </div>
 
 }
