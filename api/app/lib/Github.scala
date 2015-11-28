@@ -71,7 +71,7 @@ trait Github {
                   form = TokenForm(
                     userGuid = user.guid,
                     tag = TokensDao.GithubOauthTokenTag,
-                    token = "TODO"
+                    token = githubUserWithToken.token
                   )
                 )
 
@@ -138,6 +138,8 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
   }
 
   override def repositories(user: User)(implicit ec: ExecutionContext): Future[Seq[Repository]] = {
+    println(s"user: $user")
+    println(s"user token: " + oauthToken(user))
     oauthToken(user) match {
       case None => Future { Nil }
       case Some(token) => {
@@ -155,7 +157,7 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
   }
 
   override def oauthToken(user: User): Option[String] = {
-    None
+    TokensDao.findByUserGuidAndTag(user.guid, TokensDao.GithubOauthTokenTag).map(_.token)
   }
 }
 

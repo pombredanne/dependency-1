@@ -1,19 +1,30 @@
 @(
   data: com.bryzek.dependency.lib.UiData,
-  form: Form[controllers.ProjectsController.UiForm],
+  repositories: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Repository],
   errorMessages: Seq[String] = Nil
 )(implicit flash: Flash, messages: Messages)
 
 @main(data.copy(title = Some("Add project")), errorMessages = errorMessages) {
 
-  <div class="container">
+  <div class="table-responsive">
+    <table class="table">
+      @repositories.items.map { repo =>
+        <tr>
+          <td><a href="">@{repo.name}</a></td>
+        </tr>
+      }
+    </table>
 
-    @helper.form(action = routes.ProjectsController.postCreate()) {
-
-      @projectForm(form, routes.ProjectsController.index())
-
+    @if(repositories.hasPrevious || repositories.hasNext) {
+      <ul class="pager">
+        @if(repositories.hasPrevious) {
+          <li><a href="@routes.ProjectsController.create(repositories.page - 1)">Previous</a></li>
+       }
+        @if(repositories.hasNext) {
+         <li><a href="@routes.ProjectsController.create(repositories.page + 1)">Next</a></li>
+        }
+      </ul>
     }
-
   </div>
 
 }

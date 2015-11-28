@@ -1082,14 +1082,14 @@ package com.bryzek.dependency.v0 {
       override def getGithub(
         limit: Long = 25,
         offset: Long = 0
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.ProjectForm]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Repository]] = {
         val queryParameters = Seq(
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten
 
         _executeRequest("GET", s"/repositories/github", queryParameters = queryParameters).map {
-          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.ProjectForm]", r, _.validate[Seq[com.bryzek.dependency.v0.models.ProjectForm]])
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Repository]", r, _.validate[Seq[com.bryzek.dependency.v0.models.Repository]])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
@@ -1452,7 +1452,7 @@ package com.bryzek.dependency.v0 {
     def getGithub(
       limit: Long = 25,
       offset: Long = 0
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.ProjectForm]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Repository]]
   }
 
   trait Users {

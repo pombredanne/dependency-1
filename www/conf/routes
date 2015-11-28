@@ -11,7 +11,7 @@ GET     /languages/:guid                        controllers.LanguagesController.
 
 GET     /projects                               controllers.ApplicationController.redirect
 GET     /projects/                              controllers.ProjectsController.index(page: Int ?= 0)
-GET     /projects/create                        controllers.ProjectsController.create()
+GET     /projects/create                        controllers.ProjectsController.create(repositoriesPage: Int ?= 0)
 POST    /projects/postCreate                    controllers.ProjectsController.postCreate()
 GET     /projects/:guid                         controllers.ProjectsController.show(guid: java.util.UUID, languagesPage: Int ?= 0, librariesPage: Int ?= 0)
 GET     /projects/:guid/edit                    controllers.ProjectsController.edit(guid: java.util.UUID)

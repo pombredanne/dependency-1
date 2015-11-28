@@ -22,11 +22,9 @@ class Repositories @javax.inject.Inject() (
   def getGithub(
     limit: Long = 25,
     offset: Long = 0
-  ) = Identified.async(parse.json) { request =>
-    for {
-      repos <- github.repositories(request.user)
-    } yield {
-      Ok(Json.toJson(repos))
+  ) = Identified.async { request =>
+    github.repositories(request.user).map { repos =>
+      Ok(Json.toJson(repos.drop(offset.toInt).take(limit.toInt)))
     }
   }
 

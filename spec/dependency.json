@@ -607,7 +607,7 @@
 			{ "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
                     "responses": {
-			"200": { "type": "[project_form]" },
+			"200": { "type": "[repository]" },
 			"401": { "type": "unit" }
                     }
 		}

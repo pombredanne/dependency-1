@@ -68,12 +68,19 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def create() = Identified { implicit request =>
-    Ok(
-      views.html.projects.create(
-        uiData(request), ProjectsController.uiForm
+  def create(repositoriesPage: Int = 0) = Identified.async { implicit request =>
+    for {
+      repositories <- dependencyClient(request).repositories.getGithub(
+        limit = Pagination.DefaultLimit+1,
+        offset = repositoriesPage * Pagination.DefaultLimit
       )
-    )
+    } yield {
+      Ok(
+        views.html.projects.create(
+          uiData(request), PaginatedCollection(repositoriesPage, repositories)
+        )
+      )
+    }
   }
 
   def postCreate() = Identified.async { implicit request =>
@@ -81,7 +88,8 @@ class ProjectsController @javax.inject.Inject() (
     boundForm.fold (
 
       formWithErrors => Future {
-        Ok(views.html.projects.create(uiData(request), formWithErrors))
+        sys.error("TODO")
+        // Ok(views.html.projects.create(uiData(request), formWithErrors))
       },
 
       uiForm => {
@@ -95,7 +103,8 @@ class ProjectsController @javax.inject.Inject() (
           Redirect(routes.ProjectsController.show(project.guid)).flashing("success" -> "Project created")
         }.recover {
           case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
-            Ok(views.html.projects.create(uiData(request), boundForm, response.errors.map(_.message)))
+            sys.error("TODO")
+            // TODO Ok(views.html.projects.create(uiData(request), boundForm, response.errors.map(_.message)))
           }
         }
       }
