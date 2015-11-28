@@ -715,6 +715,130 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
+  object Repository {
+
+    case class Mappings(
+      name: String = "name",
+      uri: String = "uri"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        name = s"${prefix}${sep}name",
+        uri = s"${prefix}${sep}uri"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Repository] = {
+      SqlParser.str(mappings.name) ~
+      SqlParser.str(mappings.uri) map {
+        case name ~ uri => {
+          com.bryzek.dependency.v0.models.Repository(
+            name = name,
+            uri = uri
+          )
+        }
+      }
+    }
+
+  }
+
+  object Token {
+
+    case class Mappings(
+      guid: String = "guid",
+      user: io.flow.common.v0.anorm.parsers.Reference.Mappings,
+      tag: String = "tag",
+      token: String = "token",
+      audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        guid = s"${prefix}${sep}guid",
+        user = io.flow.common.v0.anorm.parsers.Reference.Mappings.prefix(Seq(prefix, "user").filter(!_.isEmpty).mkString("_"), "_"),
+        tag = s"${prefix}${sep}tag",
+        token = s"${prefix}${sep}token",
+        audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Token] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      io.flow.common.v0.anorm.parsers.Reference.parser(mappings.user) ~
+      SqlParser.str(mappings.tag) ~
+      SqlParser.str(mappings.token) ~
+      io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
+        case guid ~ user ~ tag ~ token ~ audit => {
+          com.bryzek.dependency.v0.models.Token(
+            guid = guid,
+            user = user,
+            tag = tag,
+            token = token,
+            audit = audit
+          )
+        }
+      }
+    }
+
+  }
+
+  object TokenForm {
+
+    case class Mappings(
+      userGuid: String = "userGuid",
+      tag: String = "tag",
+      token: String = "token"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        userGuid = s"${prefix}${sep}user_guid",
+        tag = s"${prefix}${sep}tag",
+        token = s"${prefix}${sep}token"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.TokenForm] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.userGuid) ~
+      SqlParser.str(mappings.tag) ~
+      SqlParser.str(mappings.token) map {
+        case userGuid ~ tag ~ token => {
+          com.bryzek.dependency.v0.models.TokenForm(
+            userGuid = userGuid,
+            tag = tag,
+            token = token
+          )
+        }
+      }
+    }
+
+  }
+
   object VersionForm {
 
     case class Mappings(

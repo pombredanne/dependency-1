@@ -170,4 +170,22 @@ trait Helpers {
     )
   }
 
+  def createToken(
+    form: TokenForm = createTokenForm()
+  ): Token = {
+    TokensDao.create(systemUser, form)
+  }
+
+  def createTokenForm(
+    user: User = createUser(),
+    tag: String = createTestName().toLowerCase,
+    token: String = UUID.randomUUID().toString.toLowerCase
+  ) = {
+    TokenForm(
+      userGuid = user.guid,
+      tag = tag,
+      token = token
+    )
+  }
+
 }

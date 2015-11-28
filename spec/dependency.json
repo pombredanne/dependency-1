@@ -116,6 +116,13 @@
 	    ]
 	},
 	
+	"repository": {
+	    "fields": [
+		{ "name": "name", "type": "string" },
+		{ "name": "uri", "type": "string" }
+	    ]
+	},
+	
 	"project_patch_form": {
 	    "fields": [
 		{ "name": "name", "type": "string", "required": false },
@@ -163,6 +170,24 @@
 	    "fields": [
                 { "name": "code", "type": "string" }
             ]
+	},
+
+	"token": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+                { "name": "user", "type": "io.flow.common.v0.models.reference" },
+		{ "name": "tag", "type": "string" },
+		{ "name": "token", "type": "string" },
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+	    ]
+	},
+
+	"token_form": {
+	    "fields": [
+		{ "name": "user_guid", "type": "uuid" },
+		{ "name": "tag", "type": "string" },
+		{ "name": "token", "type": "string" }
+	    ]
 	}
 	
     },
@@ -569,7 +594,27 @@
                     }
 		}
 	    ]
+	},
+
+	"repository": {
+	    "operations": [
+		{
+                    "method": "GET",
+		    "path": "/github",
+                    "description": "Returns a list of repositories from github",
+                    "parameters": [
+			{ "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+			{ "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+			"200": { "type": "[project_form]" },
+			"401": { "type": "unit" }
+                    }
+		}
+	    ]
 	}
+
+	
 	    
     }
 

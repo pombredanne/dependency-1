@@ -35,7 +35,7 @@ class GithubUsersSpec extends PlaySpecification with MockClient {
     val githubUser = createGithubUser()
     val code = "test"
 
-    MockGithubData.addUser(code, githubUser)
+    MockGithubData.addUserCode(code, githubUser)
     val user = await(anonClient.githubUsers.postAuthenticationsAndGithub(GithubAuthenticationForm(code = code)))
     user.email must beEqualTo(githubUser.email)
 
@@ -50,7 +50,7 @@ class GithubUsersSpec extends PlaySpecification with MockClient {
     val githubUser = createGithubUser().copy(email = None)
     val code = "test"
 
-    MockGithubData.addUser(code, githubUser)
+    MockGithubData.addUserCode(code, githubUser)
     expectErrors {
       anonClient.githubUsers.postAuthenticationsAndGithub(GithubAuthenticationForm(code = code))
     }.errors.map(_.message) must beEqualTo(Seq("Github account does not have an email address that we can read"))

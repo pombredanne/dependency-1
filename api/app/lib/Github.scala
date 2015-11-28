@@ -1,7 +1,7 @@
 package com.bryzek.dependency.lib
 
 import db.{GithubUsersDao, UsersDao}
-import com.bryzek.dependency.v0.models.GithubUserForm
+import com.bryzek.dependency.v0.models.{GithubUserForm, Repository}
 import io.flow.user.v0.models.{NameForm, User, UserForm}
 import io.flow.play.util.DefaultConfig
 import io.flow.github.oauth.v0.{Client => GithubOauthClient}
@@ -9,6 +9,7 @@ import io.flow.github.oauth.v0.models.AccessTokenForm
 import io.flow.github.v0.{Client => GithubClient}
 import io.flow.github.v0.models.{User => GithubUser}
 import scala.concurrent.{ExecutionContext, Future}
+import java.util.UUID
 
 trait Github {
 
@@ -74,6 +75,13 @@ trait Github {
     */
   def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUser]]
 
+  def repositories(user: User)(implicit ec: ExecutionContext): Future[Seq[Repository]]
+
+  /**
+    * For this user, returns the oauth token if available
+    */
+  def oauthToken(user: User): Option[String]
+
 }
 
 @javax.inject.Singleton
@@ -110,31 +118,82 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
     }
   }
 
+  override def repositories(user: User)(implicit ec: ExecutionContext): Future[Seq[Repository]] = {
+    oauthToken(user) match {
+      case None => Future { Nil }
+      case Some(token) => {
+        apiClient(token).repositories.getUserAndRepos().map { repos =>
+          repos.map { repo =>
+            println(s"github repo: $repo")
+            Repository(
+              name = s"${repo.owner.login}/${repo.name}",
+              uri = repo.url
+            )
+          }
+        }
+      }
+    }
+  }
+
+  override def oauthToken(user: User): Option[String] = {
+    None
+  }
 }
 
 class MockGithub() extends Github {
 
   override def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUser]] = {
     Future {
-      MockGithubData.getUser(code) match {
+      MockGithubData.getUserByCode(code) match {
         case None => Left(Seq("Invalid access code"))
         case Some(u) => Right(u)
       }
     }
   }
 
+  override def repositories(user: User)(implicit ec: ExecutionContext): Future[Seq[Repository]] = {
+    Future {
+      MockGithubData.repositories(user)
+    }
+  }
+
+  override def oauthToken(user: User): Option[String] = {
+    MockGithubData.getToken(user)
+  }
+
 }
 
 object MockGithubData {
 
-  var users = scala.collection.mutable.Map[String, GithubUser]()
+  private[this] var githubUserByCodes = scala.collection.mutable.Map[String, GithubUser]()
+  private[this] var userTokens = scala.collection.mutable.Map[UUID, String]()
+  private[this] var repositories = scala.collection.mutable.Map[UUID, Repository]()
 
-  def addUser(code: String, user: GithubUser) {
-    users +== (code -> user)
+  def addUserCode(code: String, user: GithubUser) {
+    githubUserByCodes +== (code -> user)
   }
 
-  def getUser(code: String): Option[GithubUser] = {
-    users.lift(code)
+  def getUserByCode(code: String): Option[GithubUser] = {
+    githubUserByCodes.lift(code)
+  }
+
+  def addUserOauthToken(token: String, user: User) {
+    userTokens +== (user.guid -> token)
+  }
+
+  def getToken(user: User): Option[String] = {
+    userTokens.lift(user.guid)
+  }
+
+  def addRepository(user: User, repository: Repository) = {
+    repositories +== (user.guid -> repository)
+  }
+
+  def repositories(user: User): Seq[Repository] = {
+    repositories.lift(user.guid) match {
+      case None => Nil
+      case Some(repo) => Seq(repo)
+    }
   }
 
 }

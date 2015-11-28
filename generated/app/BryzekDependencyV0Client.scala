@@ -117,6 +117,25 @@ package com.bryzek.dependency.v0.models {
     uri: _root_.scala.Option[String] = None
   )
 
+  case class Repository(
+    name: String,
+    uri: String
+  )
+
+  case class Token(
+    guid: _root_.java.util.UUID,
+    user: io.flow.common.v0.models.Reference,
+    tag: String,
+    token: String,
+    audit: io.flow.common.v0.models.Audit
+  )
+
+  case class TokenForm(
+    userGuid: _root_.java.util.UUID,
+    tag: String,
+    token: String
+  )
+
   case class VersionForm(
     version: String,
     crossBuildVersion: _root_.scala.Option[String] = None
@@ -494,6 +513,56 @@ package com.bryzek.dependency.v0.models {
       )(unlift(ProjectPatchForm.unapply _))
     }
 
+    implicit def jsonReadsDependencyRepository: play.api.libs.json.Reads[Repository] = {
+      (
+        (__ \ "name").read[String] and
+        (__ \ "uri").read[String]
+      )(Repository.apply _)
+    }
+
+    implicit def jsonWritesDependencyRepository: play.api.libs.json.Writes[Repository] = {
+      (
+        (__ \ "name").write[String] and
+        (__ \ "uri").write[String]
+      )(unlift(Repository.unapply _))
+    }
+
+    implicit def jsonReadsDependencyToken: play.api.libs.json.Reads[Token] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "user").read[io.flow.common.v0.models.Reference] and
+        (__ \ "tag").read[String] and
+        (__ \ "token").read[String] and
+        (__ \ "audit").read[io.flow.common.v0.models.Audit]
+      )(Token.apply _)
+    }
+
+    implicit def jsonWritesDependencyToken: play.api.libs.json.Writes[Token] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "user").write[io.flow.common.v0.models.Reference] and
+        (__ \ "tag").write[String] and
+        (__ \ "token").write[String] and
+        (__ \ "audit").write[io.flow.common.v0.models.Audit]
+      )(unlift(Token.unapply _))
+    }
+
+    implicit def jsonReadsDependencyTokenForm: play.api.libs.json.Reads[TokenForm] = {
+      (
+        (__ \ "user_guid").read[_root_.java.util.UUID] and
+        (__ \ "tag").read[String] and
+        (__ \ "token").read[String]
+      )(TokenForm.apply _)
+    }
+
+    implicit def jsonWritesDependencyTokenForm: play.api.libs.json.Writes[TokenForm] = {
+      (
+        (__ \ "user_guid").write[_root_.java.util.UUID] and
+        (__ \ "tag").write[String] and
+        (__ \ "token").write[String]
+      )(unlift(TokenForm.unapply _))
+    }
+
     implicit def jsonReadsDependencyVersionForm: play.api.libs.json.Reads[VersionForm] = {
       (
         (__ \ "version").read[String] and
@@ -608,6 +677,8 @@ package com.bryzek.dependency.v0 {
     def projectLibraryVersions: ProjectLibraryVersions = ProjectLibraryVersions
 
     def projects: Projects = Projects
+
+    def repositories: Repositories = Repositories
 
     def users: Users = Users
 
@@ -1007,6 +1078,24 @@ package com.bryzek.dependency.v0 {
       }
     }
 
+    object Repositories extends Repositories {
+      override def getGithub(
+        limit: Long = 25,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.ProjectForm]] = {
+        val queryParameters = Seq(
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten
+
+        _executeRequest("GET", s"/repositories/github", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.ProjectForm]", r, _.validate[Seq[com.bryzek.dependency.v0.models.ProjectForm]])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+        }
+      }
+    }
+
     object Users extends Users {
       override def get(
         guid: _root_.scala.Option[_root_.java.util.UUID] = None,
@@ -1354,6 +1443,16 @@ package com.bryzek.dependency.v0 {
     def deleteByGuid(
       guid: _root_.java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+  }
+
+  trait Repositories {
+    /**
+     * Returns a list of repositories from github
+     */
+    def getGithub(
+      limit: Long = 25,
+      offset: Long = 0
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.ProjectForm]]
   }
 
   trait Users {

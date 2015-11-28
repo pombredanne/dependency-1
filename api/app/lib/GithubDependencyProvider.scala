@@ -11,7 +11,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import java.net.URI
 
-object GithubClient {
+object GithubDependencyProviderClient {
 
   lazy val instance = new GithubDependencyProvider(DefaultConfig.requiredString("github.api.token"))
 
