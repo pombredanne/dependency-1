@@ -36,3 +36,8 @@ update users
  where deleted_at is null
    and email like 'z-test-%';
 
+update github_users
+   set deleted_at=now(), deleted_by_guid = created_by_guid
+ where deleted_at is null
+   and login like 'z-test-%';
+
