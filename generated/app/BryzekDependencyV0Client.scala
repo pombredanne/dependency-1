@@ -1081,11 +1081,13 @@ package com.bryzek.dependency.v0 {
     object Repositories extends Repositories {
       override def getGithub(
         name: _root_.scala.Option[String] = None,
+        existingProject: _root_.scala.Option[Boolean] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Repository]] = {
         val queryParameters = Seq(
           name.map("name" -> _),
+          existingProject.map("existing_project" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten
@@ -1453,6 +1455,7 @@ package com.bryzek.dependency.v0 {
      */
     def getGithub(
       name: _root_.scala.Option[String] = None,
+      existingProject: _root_.scala.Option[Boolean] = None,
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Repository]]

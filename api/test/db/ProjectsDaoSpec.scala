@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{LanguageVersion, LibraryVersion, Project, Scms}
+import com.bryzek.dependency.v0.models.{LanguageVersion, LibraryVersion, Project, Scms, VersionForm}
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -89,6 +89,16 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       ProjectsDao.setDependencies(systemUser, project, languages = Some(Seq(language)))
     }
 
+    "set languages can upgrade version" in {
+      val project = createProject()
+      val language = createLanguageForm().copy(version = "2.11.6")
+      ProjectsDao.setDependencies(systemUser, project, languages = Some(Seq(language)))
+      LanguageVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.version.toString) must be(Seq("2.11.6"))
+
+      ProjectsDao.setDependencies(systemUser, project, languages = Some(Seq(language.copy(version = "2.11.7"))))
+      LanguageVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.version.toString) must be(Seq("2.11.7"))
+    }
+
     "set libraries" in {
       val project = createProject()
       val library = createLibraryForm()
@@ -103,6 +113,19 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       fetched.artifactId must be(library.artifactId)
 
       ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(library)))
+    }
+
+    "set libraries can upgrade version" in {
+      val project = createProject()
+      val versionForm = VersionForm(
+        version = "1.4.0"
+      )
+      val library = createLibraryForm().copy(version = Some(versionForm))
+      ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(library)))
+      LibraryVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.version.toString) must be(Seq("1.4.0"))
+
+      ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(library.copy(version = Some(versionForm.copy("1.4.2"))))))
+      LibraryVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.version.toString) must be(Seq("1.4.2"))
     }
 
   }

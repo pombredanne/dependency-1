@@ -71,6 +71,7 @@ class ProjectsController @javax.inject.Inject() (
   def create(repositoriesPage: Int = 0) = Identified.async { implicit request =>
     for {
       repositories <- dependencyClient(request).repositories.getGithub(
+        existingProject = Some(false),
         limit = Pagination.DefaultLimit+1,
         offset = repositoriesPage * Pagination.DefaultLimit
       )
@@ -91,6 +92,7 @@ class ProjectsController @javax.inject.Inject() (
       name = Some(name)
     ).flatMap { selected =>
       dependencyClient(request).repositories.getGithub(
+        existingProject = Some(false),
         limit = Pagination.DefaultLimit+1,
         offset = repositoriesPage * Pagination.DefaultLimit
       ).flatMap { repositories =>

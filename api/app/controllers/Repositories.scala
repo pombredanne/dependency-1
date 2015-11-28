@@ -1,5 +1,6 @@
 package controllers
 
+import db.ProjectsDao
 import com.bryzek.dependency.lib.Github
 import com.bryzek.dependency.v0.models.GithubAuthenticationForm
 import com.bryzek.dependency.v0.models.json._
@@ -21,6 +22,7 @@ class Repositories @javax.inject.Inject() (
 
   def getGithub(
     name: Option[String] = None,
+    existingProject: Option[Boolean] = None,
     limit: Long = 25,
     offset: Long = 0
   ) = Identified.async { request =>
@@ -29,6 +31,10 @@ class Repositories @javax.inject.Inject() (
         Json.toJson(
           repos.
             filter { r => name.isEmpty || name == Some(r.name) }.
+            filter { r => existingProject.isEmpty ||
+              existingProject == Some(true) && !ProjectsDao.findByName(r.name).isEmpty ||
+              existingProject == Some(false) && ProjectsDao.findByName(r.name).isEmpty
+            }.
             drop(offset.toInt).
             take(limit.toInt)
         )
