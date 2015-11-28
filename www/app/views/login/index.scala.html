@@ -1,6 +1,5 @@
 @(data: com.bryzek.dependency.lib.UiData,
-  githubClientId: String,
-  loginForm: Form[controllers.LoginController.LoginData],
+  returnUrl: Option[String],
   errorMessages: Seq[String] = Nil
 )(implicit flash: Flash, messages: Messages)
 
@@ -8,7 +7,7 @@
 
   <div class="container">
 
-    <a class="btn btn-block btn-social btn-github" href="https://github.com/login/oauth/authorize?scope=user:email,repo&client_id=@githubClientId">
+    <a class="btn btn-block btn-social btn-github" href="https://github.com/login/oauth/authorize?scope=user:email,repo&client_id=@com.bryzek.dependency.lib.Config.githubClientId">
       <span class="fa fa-github"></span> Sign in with Github
     </a>
 

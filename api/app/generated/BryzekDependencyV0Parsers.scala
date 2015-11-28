@@ -58,7 +58,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
   object GithubAuthenticationForm {
 
     case class Mappings(
-      token: String = "token"
+      code: String = "code"
     )
 
     object Mappings {
@@ -68,7 +68,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       def table(table: String) = prefix(table, ".")
 
       def prefix(prefix: String, sep: String) = Mappings(
-        token = s"${prefix}${sep}token"
+        code = s"${prefix}${sep}code"
       )
 
     }
@@ -76,10 +76,10 @@ package com.bryzek.dependency.v0.anorm.parsers {
     def table(table: String) = parser(Mappings.prefix(table, "."))
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.GithubAuthenticationForm] = {
-      SqlParser.str(mappings.token) map {
-        case token => {
+      SqlParser.str(mappings.code) map {
+        case code => {
           com.bryzek.dependency.v0.models.GithubAuthenticationForm(
-            token = token
+            code = code
           )
         }
       }

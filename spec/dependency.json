@@ -159,9 +159,9 @@
 	},
 
 	"github_authentication_form": {
-	    "description": "Used to authenticate user based on their github access token",
+	    "description": "Used to authenticate user based on the oauth code we receive from github",
 	    "fields": [
-                { "name": "token", "type": "string" }
+                { "name": "code", "type": "string" }
             ]
 	}
 	

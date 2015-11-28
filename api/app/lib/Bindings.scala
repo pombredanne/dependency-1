@@ -14,3 +14,18 @@ class UserTokensClientModule extends Module {
   }
 
 }
+
+class GithubModule extends Module {
+
+  def bindings(env: Environment, conf: Configuration) = {
+    env.mode match {
+      case Mode.Prod | Mode.Dev => Seq(
+        bind[Github].to[DefaultGithub]
+      )
+      case Mode.Test => Seq(
+        bind[Github].to[MockGithub]
+      )
+    }
+  }
+
+}

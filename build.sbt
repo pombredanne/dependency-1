@@ -29,7 +29,6 @@ lazy val api = project
     routesImport += "com.bryzek.dependency.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
-      "io.flow" %% "lib-play" % "0.0.1-SNAPSHOT",
       "io.flow" %% "lib-play-postgresql" % "0.0.1-SNAPSHOT",
       "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.15",
       "org.postgresql" % "postgresql" % "9.4-1206-jdbc42",
@@ -58,6 +57,7 @@ lazy val www = project
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("dependency-" + _),
   libraryDependencies ++= Seq(
+    "io.flow" %% "lib-play" % "0.0.1-SNAPSHOT",
     specs2 % Test,
     "org.scalatest" %% "scalatest" % "2.2.0" % Test
   ),

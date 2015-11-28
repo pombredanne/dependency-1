@@ -6,10 +6,10 @@
 package com.bryzek.dependency.v0.models {
 
   /**
-   * Used to authenticate user based on their github access token
+   * Used to authenticate user based on the oauth code we receive from github
    */
   case class GithubAuthenticationForm(
-    token: String
+    code: String
   )
 
   case class GithubUser(
@@ -231,12 +231,12 @@ package com.bryzek.dependency.v0.models {
     }
 
     implicit def jsonReadsDependencyGithubAuthenticationForm: play.api.libs.json.Reads[GithubAuthenticationForm] = {
-      (__ \ "token").read[String].map { x => new GithubAuthenticationForm(token = x) }
+      (__ \ "code").read[String].map { x => new GithubAuthenticationForm(code = x) }
     }
 
     implicit def jsonWritesDependencyGithubAuthenticationForm: play.api.libs.json.Writes[GithubAuthenticationForm] = new play.api.libs.json.Writes[GithubAuthenticationForm] {
       def writes(x: GithubAuthenticationForm) = play.api.libs.json.Json.obj(
-        "token" -> play.api.libs.json.Json.toJson(x.token)
+        "code" -> play.api.libs.json.Json.toJson(x.code)
       )
     }
 
