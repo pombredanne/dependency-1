@@ -1,9 +1,10 @@
 package db
 
 import com.bryzek.dependency.v0.models._
-import com.bryzek.dependency.v0.models.VersionForm
+import com.bryzek.dependency.v0.models.{GithubUserForm, VersionForm}
 import io.flow.user.v0.models.{NameForm, User, UserForm}
 import java.util.UUID
+import scala.util.Random
 
 trait Helpers {
 
@@ -141,5 +142,23 @@ trait Helpers {
     email = Some(email),
     name = name
   )
+
+  def createGithubUser(
+    form: GithubUserForm = createGithubUserForm()
+  ): GithubUser = {
+    GithubUsersDao.create(None, form)
+  }
+
+  def createGithubUserForm(
+    user: User = createUser(),
+    id: Long = (new Random()).nextLong,
+    login: String = createTestEmail()
+  ) = {
+    GithubUserForm(
+      userGuid = user.guid,
+      id = id,
+      login = login
+    )
+  }
 
 }

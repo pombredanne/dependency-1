@@ -22,13 +22,6 @@
 
     "models": {
 	    
-        "authentication_form": {
-	    "description": "Used to authenticate user. For first iteration just requires email",
-	    "fields": [
-                { "name": "email", "type": "string" }
-            ]
-	},
-
 	"language": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
@@ -40,7 +33,7 @@
 	"language_form": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
-		{ "name": "version", "type": "string", "description": "If provided, we automatically record this version of the language." }
+		{ "name": "version", "type": "string", "description": "If provided, we automatically record this version of theacc language." }
 	    ]
 	},
 
@@ -145,6 +138,31 @@
 		{ "name": "to", "type": "language_version" },
 		{ "name": "latest", "type": "language_version" }
 	    ]
+	},
+
+	"github_user_form": {
+	    "fields": [
+		{ "name": "user_guid", "type": "uuid" },
+		{ "name": "id", "type": "long" },
+		{ "name": "login", "type": "string" }
+	    ]
+	},
+	
+	"github_user": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+                { "name": "user", "type": "io.flow.common.v0.models.reference" },
+		{ "name": "id", "type": "long" },
+		{ "name": "login", "type": "string" },
+                { "name": "audit", "type": "io.flow.common.v0.models.audit" }
+	    ]
+	},
+
+	"github_authentication_form": {
+	    "description": "Used to authenticate user based on their github access token",
+	    "fields": [
+                { "name": "token", "type": "string" }
+            ]
 	}
 	
     },
@@ -164,6 +182,22 @@
 	    ]
 	},
 
+	"github_user": {
+	    "path": "/authentications",
+	    "operations": [
+		{
+		    "method": "POST",
+		    "path": "/github",
+		    "description": "Used to authenticate a user via github",
+		    "body": { "type": "github_authentication_form" },
+                    "responses": {
+                        "200": { "type": "io.flow.user.v0.models.user" },
+                        "409": { "type": "[io.flow.common.v0.models.error]" }
+		    }
+		}
+	    ]
+	},
+	
 	"io.flow.user.v0.models.user": {
             "operations": [
                 {
@@ -189,17 +223,6 @@
                         "404": { "type": "unit" }
                     }
                 },
-
-		{
-		    "method": "POST",
-		    "path": "/authenticate",
-		    "description": "Used to authenticate a user with an email address and password. Successful authentication returns an instance of the user model. Failed authorizations of any kind are returned as a generic error with code user_authorization_failed.",
-		    "body": { "type": "authentication_form" },
-                    "responses": {
-                        "200": { "type": "io.flow.user.v0.models.user" },
-                        "409": { "type": "[io.flow.common.v0.models.error]" }
-		    }
-		},
 
                 {
                     "method": "POST",

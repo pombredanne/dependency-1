@@ -7,7 +7,6 @@ import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
 import io.flow.user.v0.models.{User, UserForm}
 import io.flow.user.v0.models.json._
-import com.bryzek.dependency.v0.models.AuthenticationForm
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
@@ -55,32 +54,6 @@ class Users @javax.inject.Inject() (
           UsersDao.create(userOption, s.get) match {
             case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
             case Right(user) => Created(Json.toJson(user))
-          }
-        }
-      }
-    }
-  }
-
-  def postAuthenticate() = Action(parse.json) { request =>
-    request.body.validate[AuthenticationForm] match {
-      case e: JsError => {
-        Conflict(Json.toJson(Validation.invalidJson(e)))
-      }
-      case s: JsSuccess[AuthenticationForm] => {
-        val form = s.get
-        UsersDao.findByEmail(form.email) match {
-          case None => Conflict(
-            Json.toJson(
-              Seq(
-                Error(
-                  Validation.Codes.UserAuthorizationFailed,
-                  "Email address not found"
-                )
-              )
-            )
-          )
-          case Some(u) => {
-            Ok(Json.toJson(u))
           }
         }
       }

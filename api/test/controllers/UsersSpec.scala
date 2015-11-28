@@ -1,7 +1,6 @@
 package controllers
 
 import com.bryzek.dependency.v0.Client
-import com.bryzek.dependency.v0.models.AuthenticationForm
 import io.flow.user.v0.models.{NameForm, UserForm}
 import io.flow.play.util.Validation
 
@@ -62,26 +61,6 @@ class UsersSpec extends PlaySpecification with MockClient {
 
     expectNotFound {
       client.users.getByGuid(UUID.randomUUID)
-    }
-  }
-
-  "POST /users/authenticate with valid email" in new WithServer(port=port) {
-    await(anonClient.users.postAuthenticate(AuthenticationForm(email = user1.email.get))).guid must beEqualTo(user1.guid)
-    await(anonClient.users.postAuthenticate(AuthenticationForm(email = user2.email.get))).guid must beEqualTo(user2.guid)
-  }
-
-  "POST /users/authenticate validates non-existent email" in new WithServer(port=port) {
-    Seq(createTestEmail(), "foo").foreach { email =>
-      val response = expectErrors(
-        anonClient.users.postAuthenticate(AuthenticationForm(email = email))
-      )
-
-      response.errors.map(_.code) must beEqualTo(
-        Seq(Validation.Codes.UserAuthorizationFailed)
-      )
-      response.errors.map(_.message) must beEqualTo(
-        Seq("Email address not found")
-      )
     }
   }
 

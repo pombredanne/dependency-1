@@ -6,10 +6,24 @@
 package com.bryzek.dependency.v0.models {
 
   /**
-   * Used to authenticate user. For first iteration just requires email
+   * Used to authenticate user based on their github access token
    */
-  case class AuthenticationForm(
-    email: String
+  case class GithubAuthenticationForm(
+    token: String
+  )
+
+  case class GithubUser(
+    guid: _root_.java.util.UUID,
+    user: io.flow.common.v0.models.Reference,
+    id: Long,
+    login: String,
+    audit: io.flow.common.v0.models.Audit
+  )
+
+  case class GithubUserForm(
+    userGuid: _root_.java.util.UUID,
+    id: Long,
+    login: String
   )
 
   case class Language(
@@ -216,14 +230,50 @@ package com.bryzek.dependency.v0.models {
       def writes(x: Scms) = JsString(x.toString)
     }
 
-    implicit def jsonReadsDependencyAuthenticationForm: play.api.libs.json.Reads[AuthenticationForm] = {
-      (__ \ "email").read[String].map { x => new AuthenticationForm(email = x) }
+    implicit def jsonReadsDependencyGithubAuthenticationForm: play.api.libs.json.Reads[GithubAuthenticationForm] = {
+      (__ \ "token").read[String].map { x => new GithubAuthenticationForm(token = x) }
     }
 
-    implicit def jsonWritesDependencyAuthenticationForm: play.api.libs.json.Writes[AuthenticationForm] = new play.api.libs.json.Writes[AuthenticationForm] {
-      def writes(x: AuthenticationForm) = play.api.libs.json.Json.obj(
-        "email" -> play.api.libs.json.Json.toJson(x.email)
+    implicit def jsonWritesDependencyGithubAuthenticationForm: play.api.libs.json.Writes[GithubAuthenticationForm] = new play.api.libs.json.Writes[GithubAuthenticationForm] {
+      def writes(x: GithubAuthenticationForm) = play.api.libs.json.Json.obj(
+        "token" -> play.api.libs.json.Json.toJson(x.token)
       )
+    }
+
+    implicit def jsonReadsDependencyGithubUser: play.api.libs.json.Reads[GithubUser] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "user").read[io.flow.common.v0.models.Reference] and
+        (__ \ "id").read[Long] and
+        (__ \ "login").read[String] and
+        (__ \ "audit").read[io.flow.common.v0.models.Audit]
+      )(GithubUser.apply _)
+    }
+
+    implicit def jsonWritesDependencyGithubUser: play.api.libs.json.Writes[GithubUser] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "user").write[io.flow.common.v0.models.Reference] and
+        (__ \ "id").write[Long] and
+        (__ \ "login").write[String] and
+        (__ \ "audit").write[io.flow.common.v0.models.Audit]
+      )(unlift(GithubUser.unapply _))
+    }
+
+    implicit def jsonReadsDependencyGithubUserForm: play.api.libs.json.Reads[GithubUserForm] = {
+      (
+        (__ \ "user_guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[Long] and
+        (__ \ "login").read[String]
+      )(GithubUserForm.apply _)
+    }
+
+    implicit def jsonWritesDependencyGithubUserForm: play.api.libs.json.Writes[GithubUserForm] = {
+      (
+        (__ \ "user_guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[Long] and
+        (__ \ "login").write[String]
+      )(unlift(GithubUserForm.unapply _))
     }
 
     implicit def jsonReadsDependencyLanguage: play.api.libs.json.Reads[Language] = {
@@ -537,6 +587,8 @@ package com.bryzek.dependency.v0 {
 
     logger.info(s"Initializing com.bryzek.dependency.v0.Client for url $apiUrl")
 
+    def githubUsers: GithubUsers = GithubUsers
+
     def healthchecks: Healthchecks = Healthchecks
 
     def languageRecommendations: LanguageRecommendations = LanguageRecommendations
@@ -558,6 +610,20 @@ package com.bryzek.dependency.v0 {
     def projects: Projects = Projects
 
     def users: Users = Users
+
+    object GithubUsers extends GithubUsers {
+      override def postAuthenticationsAndGithub(
+        githubAuthenticationForm: com.bryzek.dependency.v0.models.GithubAuthenticationForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User] = {
+        val payload = play.api.libs.json.Json.toJson(githubAuthenticationForm)
+
+        _executeRequest("POST", s"/authentications/github", body = Some(payload)).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("io.flow.user.v0.models.User", r, _.validate[io.flow.user.v0.models.User])
+          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
+        }
+      }
+    }
 
     object Healthchecks extends Healthchecks {
       override def getInternalAndHealthcheck()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.common.v0.models.Healthcheck] = {
@@ -969,18 +1035,6 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def postAuthenticate(
-        authenticationForm: com.bryzek.dependency.v0.models.AuthenticationForm
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User] = {
-        val payload = play.api.libs.json.Json.toJson(authenticationForm)
-
-        _executeRequest("POST", s"/authenticate", body = Some(payload)).map {
-          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("io.flow.user.v0.models.User", r, _.validate[io.flow.user.v0.models.User])
-          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
-        }
-      }
-
       override def post(
         userForm: io.flow.user.v0.models.UserForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User] = {
@@ -1079,6 +1133,15 @@ package com.bryzek.dependency.v0 {
   sealed trait Authorization
   object Authorization {
     case class Basic(username: String, password: Option[String] = None) extends Authorization
+  }
+
+  trait GithubUsers {
+    /**
+     * Used to authenticate a user via github
+     */
+    def postAuthenticationsAndGithub(
+      githubAuthenticationForm: com.bryzek.dependency.v0.models.GithubAuthenticationForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User]
   }
 
   trait Healthchecks {
@@ -1308,15 +1371,6 @@ package com.bryzek.dependency.v0 {
      */
     def getByGuid(
       guid: _root_.java.util.UUID
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User]
-
-    /**
-     * Used to authenticate a user with an email address and password. Successful
-     * authentication returns an instance of the user model. Failed authorizations of
-     * any kind are returned as a generic error with code user_authorization_failed.
-     */
-    def postAuthenticate(
-      authenticationForm: com.bryzek.dependency.v0.models.AuthenticationForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User]
 
     /**

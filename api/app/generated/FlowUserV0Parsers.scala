@@ -30,42 +30,6 @@ package io.flow.user.v0.anorm.parsers {
 
   }
 
-  object ExternalId {
-
-    case class Mappings(
-      system: String = "system",
-      id: String = "id"
-    )
-
-    object Mappings {
-
-      val base = prefix("", "")
-
-      def table(table: String) = prefix(table, ".")
-
-      def prefix(prefix: String, sep: String) = Mappings(
-        system = s"${prefix}${sep}system",
-        id = s"${prefix}${sep}id"
-      )
-
-    }
-
-    def table(table: String) = parser(Mappings.prefix(table, "."))
-
-    def parser(mappings: Mappings): RowParser[io.flow.user.v0.models.ExternalId] = {
-      io.flow.user.v0.anorm.parsers.System.parser(io.flow.user.v0.anorm.parsers.System.Mappings(mappings.system)) ~
-      SqlParser.str(mappings.id) map {
-        case system ~ id => {
-          io.flow.user.v0.models.ExternalId(
-            system = system,
-            id = id
-          )
-        }
-      }
-    }
-
-  }
-
   object Name {
 
     case class Mappings(
@@ -175,6 +139,46 @@ package io.flow.user.v0.anorm.parsers {
             email = email,
             name = name,
             audit = audit
+          )
+        }
+      }
+    }
+
+  }
+
+  object UserForm {
+
+    case class Mappings(
+      email: String = "email",
+      name: io.flow.user.v0.anorm.parsers.NameForm.Mappings,
+      avatarUrl: String = "avatarUrl"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        email = s"${prefix}${sep}email",
+        name = io.flow.user.v0.anorm.parsers.NameForm.Mappings.prefix(Seq(prefix, "name").filter(!_.isEmpty).mkString("_"), "_"),
+        avatarUrl = s"${prefix}${sep}avatar_url"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[io.flow.user.v0.models.UserForm] = {
+      SqlParser.str(mappings.email).? ~
+      io.flow.user.v0.anorm.parsers.NameForm.parser(mappings.name).? ~
+      SqlParser.str(mappings.avatarUrl).? map {
+        case email ~ name ~ avatarUrl => {
+          io.flow.user.v0.models.UserForm(
+            email = email,
+            name = name,
+            avatarUrl = avatarUrl
           )
         }
       }

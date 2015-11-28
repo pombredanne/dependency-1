@@ -2,9 +2,9 @@
 # Service version: 0.0.1-dev
 # apidoc:0.9.48 http://www.apidoc.me/bryzek/dependency/0.0.1-dev/play_2_x_routes
 
+POST       /authentications/github                               controllers.GithubUsers.postAuthenticationsAndGithub()
 GET        /_internal_/healthcheck                               controllers.Healthchecks.getInternalAndHealthcheck()
 GET        /                                                     controllers.Users.get(guid: _root_.scala.Option[_root_.java.util.UUID], email: _root_.scala.Option[String])
-POST       /authenticate                                         controllers.Users.postAuthenticate()
 POST       /                                                     controllers.Users.post()
 GET        /languages                                            controllers.Languages.get(guid: _root_.scala.Option[_root_.java.util.UUID], guids: _root_.scala.Option[List[_root_.java.util.UUID]], project_guid: _root_.scala.Option[_root_.java.util.UUID], name: _root_.scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)
 GET        /languages/:guid                                      controllers.Languages.getByGuid(guid: _root_.java.util.UUID)
