@@ -6,7 +6,9 @@ import com.bryzek.dependency.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
 import java.util.UUID
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration.Duration
+import java.util.concurrent.TimeUnit
 
 import play.api._
 import play.api.i18n.MessagesApi
@@ -129,6 +131,27 @@ class ProjectsController @javax.inject.Inject() (
           }
         }
       }
+    }
+  }
+
+  def createAll() = Identified.async { implicit request =>
+    dependencyClient(request).repositories.getGithub(
+      existingProject = Some(false),
+      limit = 1000+1,
+      offset = 0
+    ).map { repositories =>
+      repositories.map { repo =>
+        Await.result(
+          dependencyClient(request).projects.post(
+            ProjectForm(
+              name = repo.name,
+              scms = Scms.Github,
+              uri = repo.uri
+            )
+          ), Duration(10, TimeUnit.SECONDS)
+        )
+      }
+      Redirect(routes.ProjectsController.index()).flashing("success" -> s"Projects (${repositories.size}) added")
     }
   }
 

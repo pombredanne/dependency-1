@@ -6,26 +6,32 @@
 
 @main(data.copy(title = Some("Add project")), errorMessages = errorMessages) {
 
-  <div class="table-responsive">
-    <table class="table">
-      @repositories.items.map { repo =>
-        <tr>
-          <td><a href="@routes.ProjectsController.createFromRepo(repo.name, repositories.page)">@{repo.name}</a></td>
-          <td>@repo.uri</td>
-        </tr>
-      }
-    </table>
+  @if(repositories.items.isEmpty) {
 
-    @if(repositories.hasPrevious || repositories.hasNext) {
-      <ul class="pager">
-        @if(repositories.hasPrevious) {
-          <li><a href="@routes.ProjectsController.create(repositories.page - 1)">Previous</a></li>
-       }
-        @if(repositories.hasNext) {
-         <li><a href="@routes.ProjectsController.create(repositories.page + 1)">Next</a></li>
+  } else {
+    <a href="@routes.ProjectsController.createAll()">Add all</a>
+
+    <div class="table-responsive">
+      <table class="table">
+        @repositories.items.map { repo =>
+          <tr>
+            <td><a href="@routes.ProjectsController.createFromRepo(repo.name, repositories.page)">@{repo.name}</a></td>
+            <td>@repo.uri</td>
+          </tr>
         }
-      </ul>
-    }
-  </div>
+      </table>
+
+      @if(repositories.hasPrevious || repositories.hasNext) {
+        <ul class="pager">
+          @if(repositories.hasPrevious) {
+            <li><a href="@routes.ProjectsController.create(repositories.page - 1)">Previous</a></li>
+         }
+          @if(repositories.hasNext) {
+           <li><a href="@routes.ProjectsController.create(repositories.page + 1)">Next</a></li>
+          }
+        </ul>
+      }
+    </div>
+  }
 
 }
