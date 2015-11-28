@@ -7,6 +7,7 @@ import io.flow.play.util.DefaultConfig
 import io.flow.github.oauth.v0.{Client => GithubOauthClient}
 import io.flow.github.oauth.v0.models.AccessTokenForm
 import io.flow.github.v0.{Client => GithubClient}
+import io.flow.github.v0.models.{User => GithubUser}
 import scala.concurrent.{ExecutionContext, Future}
 
 trait Github {
@@ -18,40 +19,10 @@ trait Github {
     * 
     * @param code The oauth authorization code from github
     */
-  def getUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], User]]
-
-}
-
-@javax.inject.Singleton
-class DefaultGithub @javax.inject.Inject() () extends Github {
-
-  private[this] lazy val clientId = DefaultConfig.requiredString("github.dependency.client.id")
-  private[this] lazy val clientSecret = DefaultConfig.requiredString("github.dependency.client.secret")
-
-  private[this] lazy val oauthClient = new GithubOauthClient(
-    apiUrl = "https://github.com",
-    defaultHeaders = Seq(
-      ("Accept" -> "application/json")
-    )
-  )
-
-  private[this] def apiClient(oauthToken: String) = new GithubClient(
-    apiUrl = "https://api.github.com",
-    defaultHeaders = Seq(
-      ("Authorization" -> s"token $oauthToken")
-    )
-  )
-
-  override def getUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], User]] = {
-    oauthClient.accessTokens.postLoginAndOauthAndAccessToken(
-      AccessTokenForm(
-        clientId = clientId,
-        clientSecret = clientSecret,
-        code = code
-      )
-    ).flatMap { response =>
-      apiClient(response.accessToken).users.getUser().map { githubUser =>
-        println(s"githubUser: " + githubUser)
+  def getUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], User]] = {
+    getGithubUserFromCode(code).map {
+      case Left(errors) => Left(errors)
+      case Right(githubUser) => {
         githubUser.email match {
           case None => {
             Left(Seq("Github account does not have an email address that we can read"))
@@ -68,7 +39,7 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
                       NameForm(
                         first = githubUser.name
                       )
-                  ),
+                    ),
                     avatarUrl = githubUser.avatarUrl
                   )
                 )
@@ -98,15 +69,72 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
     }
   }
 
+  /**
+    * Fetches github user from an oauth code
+    */
+  def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUser]]
+
+}
+
+@javax.inject.Singleton
+class DefaultGithub @javax.inject.Inject() () extends Github {
+
+  private[this] lazy val clientId = DefaultConfig.requiredString("github.dependency.client.id")
+  private[this] lazy val clientSecret = DefaultConfig.requiredString("github.dependency.client.secret")
+
+  private[this] lazy val oauthClient = new GithubOauthClient(
+    apiUrl = "https://github.com",
+    defaultHeaders = Seq(
+      ("Accept" -> "application/json")
+    )
+  )
+
+  private[this] def apiClient(oauthToken: String) = new GithubClient(
+    apiUrl = "https://api.github.com",
+    defaultHeaders = Seq(
+      ("Authorization" -> s"token $oauthToken")
+    )
+  )
+
+  override def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUser]] = {
+    oauthClient.accessTokens.postLoginAndOauthAndAccessToken(
+      AccessTokenForm(
+        clientId = clientId,
+        clientSecret = clientSecret,
+        code = code
+      )
+    ).flatMap { response =>
+      apiClient(response.accessToken).users.getUser().map { githubUser =>
+        Right(githubUser)
+      }
+    }
+  }
 
 }
 
 class MockGithub() extends Github {
 
-  override def getUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], User]] = {
+  override def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUser]] = {
     Future {
-      Left(Seq("TODO"))
+      MockGithubData.getUser(code) match {
+        case None => Left(Seq("Invalid access code"))
+        case Some(u) => Right(u)
+      }
     }
+  }
+
+}
+
+object MockGithubData {
+
+  var users = scala.collection.mutable.Map[String, GithubUser]()
+
+  def addUser(code: String, user: GithubUser) {
+    users +== (code -> user)
+  }
+
+  def getUser(code: String): Option[GithubUser] = {
+    users.lift(code)
   }
 
 }

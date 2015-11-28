@@ -18,6 +18,15 @@ trait Helpers {
     s"Z Test ${UUID.randomUUID}"
   }
 
+  @scala.annotation.tailrec
+  final def positiveRandomLong(): Long = {
+    val value = (new Random()).nextLong
+    (value > 0) match {
+      case true => value
+      case false => positiveRandomLong()
+    }
+  }
+
   def createLanguage(
     form: LanguageForm = createLanguageForm()
   ): Language = {
@@ -151,7 +160,7 @@ trait Helpers {
 
   def createGithubUserForm(
     user: User = createUser(),
-    id: Long = (new Random()).nextLong,
+    id: Long = positiveRandomLong(),
     login: String = createTestEmail()
   ) = {
     GithubUserForm(
