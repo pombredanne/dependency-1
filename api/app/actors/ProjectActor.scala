@@ -37,9 +37,7 @@ class ProjectActor extends Actor {
     case ProjectActor.Messages.Watch => Util.withVerboseErrorHandler(
       s"ProjectActor.Messages.Watch"
     ) {
-      println("ProjectActor.Messages.Watch")
       dataProject.foreach { project =>
-        println(" -- " + project.guid)
         WatchProjectsDao.upsert(
           MainActor.SystemUser,
           WatchProjectForm(
