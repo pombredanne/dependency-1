@@ -17,6 +17,9 @@ GET     /projects/:guid                         controllers.ProjectsController.s
 GET     /projects/:guid/edit                    controllers.ProjectsController.edit(guid: java.util.UUID)
 POST    /projects/:guid/postEdit                controllers.ProjectsController.postEdit(guid: java.util.UUID)
 
+GET     /watches/projects/create/:projectGuid   controllers.WatchProjectsController.create(projectGuid: java.util.UUID)
+GET     /watches/projects/delete/:projectGuid   controllers.WatchProjectsController.delete(projectGuid: java.util.UUID)
+
 GET     /search                                 controllers.SearchController.index(q: Option[String] ?= None, page: Int ?= 0)
 
 GET     /login                                  controllers.ApplicationController.redirect

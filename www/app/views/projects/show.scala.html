@@ -12,9 +12,9 @@
 
   <div class="pull-right">
     @if(isWatching) {
-      <span class="glyphicon glyphicon-plus"></span> <a href="#">Watching</a>
+      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.WatchProjectsController.delete(project.guid)">Watching</a>
     } else {
-      <span class="glyphicon glyphicon-plus"></span> <a href="#">Watch</a>
+      <span class="glyphicon glyphicon-plus"></span> <a href="@routes.WatchProjectsController.create(project.guid)">Watch</a>
     }
     | <span class="glyphicon glyphicon-plus"></span> <a href="@routes.ProjectsController.edit(project.guid)">Edit</a>
   </div>
