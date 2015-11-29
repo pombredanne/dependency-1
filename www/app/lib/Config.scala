@@ -12,15 +12,14 @@ object Config {
   private[this] val GitHubOauthUrl = "https://github.com/login/oauth/authorize"
 
   def githubOauthUrl(returnUrl: Option[String]): String = {
-    val url = GitHubOauthUrl + "?" + Seq(
+    GitHubOauthUrl + "?" + Seq(
       Some("scope" -> "user:email,repo"),
       Some("client_id" -> githubClientId),
       returnUrl.map { url => ("redirect_uri" -> (s"$githubBaseUrl?return_url=" + URLEncoder.encode(url, "UTF-8"))) }
     ).flatten.map { case (key, value) =>
         s"$key=" + URLEncoder.encode(value, "UTF-8")
     }.mkString("&")
-    println(url)
-    url
+
   }
 
 }
