@@ -1,6 +1,6 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm, Project}
+import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm, ProgrammingLanguage, Project}
 import play.api.Logger
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -20,24 +20,42 @@ case class Dependencies(
     }
   }
 
-  lazy val crossBuildVersion: Option[Version] = {
+  def crossBuildVersion(): Option[Version] = {
     languages match {
       case None => None
       case Some(langs) => {
-        langs.map(_.version).distinct.map(Version(_)).sorted.reverse.toList match {
+        langs.sortBy { l => Version(l.version) }.reverse.toList match {
           case Nil => None
           case one :: Nil => {
-            Some(one)
+            Some(crossBuildVersionFromLanguage(one))
           }
           case multiple => {
             Logger.warn(s"Found multiple language versions[${multiple.mkString(", ")}]. Using first")
-            multiple.headOption
+            Some(crossBuildVersionFromLanguage(multiple.head))
           }
         }
       }
     }
   }
 
+  private[this] def crossBuildVersionFromLanguage(lang: LanguageForm): Version = {
+    val version = Version(lang.version)
+    ProgrammingLanguage(lang.name) match {
+      case ProgrammingLanguage.Scala => {
+        version.tags match {
+          case Seq(Tag.Semver(major, minor, _, _)) => {
+            // This is most common. We just want major and minor
+            // version - e.g. 2.11.7 becomes 2.11.
+            Version(s"${major}.${minor}", Seq(Tag.Semver(major, minor, 0)))
+          }
+          case _ => version
+        }
+      }
+      case ProgrammingLanguage.UNDEFINED(_) => {
+        version
+      }
+    }
+  }
 }
 
 
