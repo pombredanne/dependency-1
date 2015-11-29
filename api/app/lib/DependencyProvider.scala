@@ -42,8 +42,8 @@ case class Dependencies(
     val version = Version(lang.version)
     ProgrammingLanguage(lang.name) match {
       case ProgrammingLanguage.Scala => {
-        version.tags match {
-          case Seq(Tag.Semver(major, minor, _, _)) => {
+        version.tags.head match {
+          case Tag.Semver(major, minor, _, _) => {
             // This is most common. We just want major and minor
             // version - e.g. 2.11.7 becomes 2.11.
             Version(s"${major}.${minor}", Seq(Tag.Semver(major, minor, 0)))
