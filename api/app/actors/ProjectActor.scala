@@ -1,8 +1,8 @@
 package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.lib.{Dependencies, GithubDependencyProviderClient}
-import com.bryzek.dependency.v0.models.Project
-import db.ProjectsDao
+import com.bryzek.dependency.v0.models.{Project, WatchProjectForm}
+import db.{ProjectsDao, WatchProjectsDao}
 import play.api.Logger
 import play.libs.Akka
 import akka.actor.Actor
@@ -14,6 +14,7 @@ object ProjectActor {
   object Messages {
     case class Data(guid: UUID)
     case object Sync
+    case object Watch
   }
 
 }
@@ -31,6 +32,22 @@ class ProjectActor extends Actor {
       s"ProjectActor.Messages.Data($guid)"
     ) {
       dataProject = ProjectsDao.findByGuid(guid)
+    }
+
+    case ProjectActor.Messages.Watch => Util.withVerboseErrorHandler(
+      s"ProjectActor.Messages.Watch"
+    ) {
+      println("ProjectActor.Messages.Watch")
+      dataProject.foreach { project =>
+        println(" -- " + project.guid)
+        WatchProjectsDao.upsert(
+          MainActor.SystemUser,
+          WatchProjectForm(
+            userGuid = project.audit.createdBy.guid,
+            projectGuid = project.guid
+          )
+        )
+      }
     }
 
     case ProjectActor.Messages.Sync => Util.withVerboseErrorHandler(

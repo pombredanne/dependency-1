@@ -55,6 +55,10 @@ class ProjectsController @javax.inject.Inject() (
           limit = Pagination.DefaultLimit+1,
           offset = librariesPage * Pagination.DefaultLimit
         )
+        watches <- dependencyClient(request).watchProjects.getWatchesAndProjects(
+          userGuid = Some(request.user.guid),
+          projectGuid = Some(guid)
+        )
       } yield {
         Ok(
           views.html.projects.show(
@@ -63,7 +67,8 @@ class ProjectsController @javax.inject.Inject() (
             libraryRecommendations,
             languageRecommendations,
             PaginatedCollection(languagesPage, languages),
-            PaginatedCollection(librariesPage, libraries)
+            PaginatedCollection(librariesPage, libraries),
+            isWatching = !watches.isEmpty
           )
         )
       }

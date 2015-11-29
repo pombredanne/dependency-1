@@ -53,6 +53,7 @@ class MainActor(name: String) extends Actor with ActorLogging {
     case MainActor.Messages.ProjectCreated(guid) => Util.withVerboseErrorHandler(
       s"MainActor.Messages.ProjectCreated($guid)"
     ) {
+      upsertProjectActor(guid) ! ProjectActor.Messages.Watch
       upsertProjectActor(guid) ! ProjectActor.Messages.Sync
     }
 

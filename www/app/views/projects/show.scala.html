@@ -4,13 +4,19 @@
   libraryRecommendations: Seq[com.bryzek.dependency.v0.models.LibraryRecommendation],
   languageRecommendations: Seq[com.bryzek.dependency.v0.models.LanguageRecommendation],
   languageVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LanguageVersion],
-  libraryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LibraryVersion]
+  libraryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LibraryVersion],
+  isWatching: Boolean
 )(implicit flash: Flash, messages: Messages)
 
 @main(data.copy(title = Some(project.name))) {
 
   <div class="pull-right">
-    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.ProjectsController.edit(project.guid)">Edit</a>
+    @if(isWatching) {
+      <span class="glyphicon glyphicon-plus"></span> <a href="#">Watching</a>
+    } else {
+      <span class="glyphicon glyphicon-plus"></span> <a href="#">Watch</a>
+    }
+    | <span class="glyphicon glyphicon-plus"></span> <a href="@routes.ProjectsController.edit(project.guid)">Edit</a>
   </div>
 
   <ul>
