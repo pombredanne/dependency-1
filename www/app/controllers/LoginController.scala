@@ -21,15 +21,24 @@ class LoginController @javax.inject.Inject() (
 
   def githubCallback(
     code: String,
-    state: Option[String]
+    state: Option[String],
+    returnUrl: Option[String]
   ) = Action.async { implicit request =>
-    val returnUrl = None // TODO
     provider.newClient(None).githubUsers.postAuthenticationsAndGithub(
       GithubAuthenticationForm(
         code = code
       )
     ).map { user =>
-      Redirect(routes.ApplicationController.index()).withSession { "user_guid" -> user.guid.toString }
+      val url = returnUrl match {
+        case None => {
+          routes.ApplicationController.index().path
+        }
+        case Some(u) => {
+          assert(u.startsWith("/"), s"Redirect URL[$u] must start with /")
+          u
+        }
+      }
+      Redirect(url).withSession { "user_guid" -> user.guid.toString }
     }.recover {
       case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
         Ok(views.html.login.index(UiData(requestPath = request.path), returnUrl, response.errors.map(_.message)))
