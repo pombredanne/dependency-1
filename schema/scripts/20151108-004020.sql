@@ -2,7 +2,6 @@ drop table if exists language_versions;
 drop table if exists languages;
 drop table if exists library_versions;
 drop table if exists libraries;
-drop table if exists user_projects;
 drop table if exists projects;
 drop table if exists authorizations;
 drop table if exists users;
@@ -64,21 +63,6 @@ comment on column projects.name is '
 
 select schema_evolution_manager.create_basic_audit_data('public', 'projects');
 create unique index projects_scms_lower_name_not_deleted_un_idx on projects(scms, lower(name)) where deleted_at is null;
-
-create table user_projects (
-  guid                    uuid primary key,
-  user_guid               uuid not null references users,
-  project_guid            uuid not null references projects
-);
-
-comment on table user_projects is '
-  Stores the list of projects that a particular user is interested in.
-';
-
-select schema_evolution_manager.create_basic_audit_data('public', 'user_projects');
-create index on user_projects(user_guid);
-create index on user_projects(project_guid);
-create unique index user_projects_user_guid_project_guid_not_deleted_un_idx on user_projects(user_guid, project_guid) where deleted_at is null;
 
 create table libraries (
   guid                    uuid primary key,

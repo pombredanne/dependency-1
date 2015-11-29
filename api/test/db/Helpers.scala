@@ -1,7 +1,6 @@
 package db
 
 import com.bryzek.dependency.v0.models._
-import com.bryzek.dependency.v0.models.{GithubUserForm, VersionForm}
 import io.flow.user.v0.models.{NameForm, User, UserForm}
 import java.util.UUID
 import scala.util.Random
@@ -185,6 +184,24 @@ trait Helpers {
       userGuid = user.guid,
       tag = tag,
       token = token
+    )
+  }
+
+  def createWatchProject(
+    form: WatchProjectForm = createWatchProjectForm()
+  ): WatchProject = {
+    WatchProjectsDao.create(systemUser, form).right.getOrElse {
+      sys.error("Failed to create watch project")
+    }
+  }
+
+  def createWatchProjectForm(
+    user: User = createUser(),
+    project: Project = createProject()
+  ) = {
+    WatchProjectForm(
+      userGuid = user.guid,
+      projectGuid = project.guid
     )
   }
 

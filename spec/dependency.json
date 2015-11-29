@@ -188,6 +188,22 @@
 		{ "name": "tag", "type": "string" },
 		{ "name": "token", "type": "string" }
 	    ]
+	},
+	
+	"watch_project": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+                { "name": "user", "type": "io.flow.common.v0.models.reference" },
+                { "name": "project", "type": "project" },
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+	    ]
+	},
+
+	"watch_project_form": {
+	    "fields": [
+		{ "name": "user_guid", "type": "uuid" },
+		{ "name": "project_guid", "type": "uuid" }
+	    ]
 	}
 	
     },
@@ -614,9 +630,61 @@
                     }
 		}
 	    ]
-	}
+	},
 
-	
+	"watch_project": {
+	    "path": "/watches/projects",
+
+	    "operations": [
+		{
+                    "method": "GET",
+                    "parameters": [
+                        { "name": "guid", "type": "uuid", "description": "Find language version with this guid. Exact match", "required": false },
+			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
+			{ "name": "user_guid", "type": "uuid", "required": false },
+			{ "name": "project_guid", "type": "uuid", "required": false },
+			{ "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+			{ "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+			"200": { "type": "[watch_project]" },
+			"401": { "type": "unit" }
+                    }
+		},
+
+		{
+		    "method": "GET",
+		    "path": "/:guid",
+                    "responses": {
+                        "200": { "type": "watch_project" },
+                        "401": { "type": "unit" },
+                        "404": { "type": "unit" }
+                    }
+                },
+		
+		{
+		    "method": "POST",
+		    "body": { "type": "watch_project_form" },
+                    "responses": {
+			"200": { "type": "watch_project", "description": "User was already watching this project. Existing record returned" },
+			"201": { "type": "watch_project", "description": "Watch record created and returned" },
+			"401": { "type": "unit" },
+                        "409": { "type": "[io.flow.common.v0.models.error]" }
+                    }
+		},
+
+		{
+		    "method": "DELETE",
+		    "path": "/:guid",
+                    "responses": {
+                        "204": { "type": "unit" },
+                        "401": { "type": "unit" },
+                        "404": { "type": "unit" }
+                    }
+                }
+		
+	    ]
+	}	
 	    
     }
 

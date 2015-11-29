@@ -141,6 +141,18 @@ package com.bryzek.dependency.v0.models {
     crossBuildVersion: _root_.scala.Option[String] = None
   )
 
+  case class WatchProject(
+    guid: _root_.java.util.UUID,
+    user: io.flow.common.v0.models.Reference,
+    project: com.bryzek.dependency.v0.models.Project,
+    audit: io.flow.common.v0.models.Audit
+  )
+
+  case class WatchProjectForm(
+    userGuid: _root_.java.util.UUID,
+    projectGuid: _root_.java.util.UUID
+  )
+
   sealed trait ProgrammingLanguage
 
   object ProgrammingLanguage {
@@ -576,6 +588,38 @@ package com.bryzek.dependency.v0.models {
         (__ \ "cross_build_version").writeNullable[String]
       )(unlift(VersionForm.unapply _))
     }
+
+    implicit def jsonReadsDependencyWatchProject: play.api.libs.json.Reads[WatchProject] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "user").read[io.flow.common.v0.models.Reference] and
+        (__ \ "project").read[com.bryzek.dependency.v0.models.Project] and
+        (__ \ "audit").read[io.flow.common.v0.models.Audit]
+      )(WatchProject.apply _)
+    }
+
+    implicit def jsonWritesDependencyWatchProject: play.api.libs.json.Writes[WatchProject] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "user").write[io.flow.common.v0.models.Reference] and
+        (__ \ "project").write[com.bryzek.dependency.v0.models.Project] and
+        (__ \ "audit").write[io.flow.common.v0.models.Audit]
+      )(unlift(WatchProject.unapply _))
+    }
+
+    implicit def jsonReadsDependencyWatchProjectForm: play.api.libs.json.Reads[WatchProjectForm] = {
+      (
+        (__ \ "user_guid").read[_root_.java.util.UUID] and
+        (__ \ "project_guid").read[_root_.java.util.UUID]
+      )(WatchProjectForm.apply _)
+    }
+
+    implicit def jsonWritesDependencyWatchProjectForm: play.api.libs.json.Writes[WatchProjectForm] = {
+      (
+        (__ \ "user_guid").write[_root_.java.util.UUID] and
+        (__ \ "project_guid").write[_root_.java.util.UUID]
+      )(unlift(WatchProjectForm.unapply _))
+    }
   }
 }
 
@@ -681,6 +725,8 @@ package com.bryzek.dependency.v0 {
     def repositories: Repositories = Repositories
 
     def users: Users = Users
+
+    def watchProjects: WatchProjects = WatchProjects
 
     object GithubUsers extends GithubUsers {
       override def postAuthenticationsAndGithub(
@@ -1141,6 +1187,68 @@ package com.bryzek.dependency.v0 {
       }
     }
 
+    object WatchProjects extends WatchProjects {
+      override def getWatchesAndProjects(
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+        userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        limit: Long = 25,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.WatchProject]] = {
+        val queryParameters = Seq(
+          guid.map("guid" -> _.toString),
+          userGuid.map("user_guid" -> _.toString),
+          projectGuid.map("project_guid" -> _.toString),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten ++
+          guids.getOrElse(Nil).map("guids" -> _.toString)
+
+        _executeRequest("GET", s"/watches/projects", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.WatchProject]", r, _.validate[Seq[com.bryzek.dependency.v0.models.WatchProject]])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+        }
+      }
+
+      override def getWatchesAndProjectsByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.WatchProject] = {
+        _executeRequest("GET", s"/watches/projects/${guid}").map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.WatchProject", r, _.validate[com.bryzek.dependency.v0.models.WatchProject])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+        }
+      }
+
+      override def postWatchesAndProjects(
+        watchProjectForm: com.bryzek.dependency.v0.models.WatchProjectForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.WatchProject] = {
+        val payload = play.api.libs.json.Json.toJson(watchProjectForm)
+
+        _executeRequest("POST", s"/watches/projects", body = Some(payload)).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.WatchProject", r, _.validate[com.bryzek.dependency.v0.models.WatchProject])
+          case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.WatchProject", r, _.validate[com.bryzek.dependency.v0.models.WatchProject])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 201, 401, 409")
+        }
+      }
+
+      override def deleteWatchesAndProjectsByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
+        _executeRequest("DELETE", s"/watches/projects/${guid}").map {
+          case r if r.status == 204 => ()
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+        }
+      }
+    }
+
     def _requestHolder(path: String): play.api.libs.ws.WSRequest = {
       import play.api.Play.current
 
@@ -1484,6 +1592,29 @@ package com.bryzek.dependency.v0 {
     def post(
       userForm: io.flow.user.v0.models.UserForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User]
+  }
+
+  trait WatchProjects {
+    def getWatchesAndProjects(
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+      userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      limit: Long = 25,
+      offset: Long = 0
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.WatchProject]]
+
+    def getWatchesAndProjectsByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.WatchProject]
+
+    def postWatchesAndProjects(
+      watchProjectForm: com.bryzek.dependency.v0.models.WatchProjectForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.WatchProject]
+
+    def deleteWatchesAndProjectsByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
   package errors {

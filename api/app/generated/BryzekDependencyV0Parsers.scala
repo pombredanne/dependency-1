@@ -875,4 +875,84 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
+  object WatchProject {
+
+    case class Mappings(
+      guid: String = "guid",
+      user: io.flow.common.v0.anorm.parsers.Reference.Mappings,
+      project: com.bryzek.dependency.v0.anorm.parsers.Project.Mappings,
+      audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        guid = s"${prefix}${sep}guid",
+        user = io.flow.common.v0.anorm.parsers.Reference.Mappings.prefix(Seq(prefix, "user").filter(!_.isEmpty).mkString("_"), "_"),
+        project = com.bryzek.dependency.v0.anorm.parsers.Project.Mappings.prefix(Seq(prefix, "project").filter(!_.isEmpty).mkString("_"), "_"),
+        audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.WatchProject] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      io.flow.common.v0.anorm.parsers.Reference.parser(mappings.user) ~
+      com.bryzek.dependency.v0.anorm.parsers.Project.parser(mappings.project) ~
+      io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
+        case guid ~ user ~ project ~ audit => {
+          com.bryzek.dependency.v0.models.WatchProject(
+            guid = guid,
+            user = user,
+            project = project,
+            audit = audit
+          )
+        }
+      }
+    }
+
+  }
+
+  object WatchProjectForm {
+
+    case class Mappings(
+      userGuid: String = "userGuid",
+      projectGuid: String = "projectGuid"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        userGuid = s"${prefix}${sep}user_guid",
+        projectGuid = s"${prefix}${sep}project_guid"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.WatchProjectForm] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.userGuid) ~
+      SqlParser.get[_root_.java.util.UUID](mappings.projectGuid) map {
+        case userGuid ~ projectGuid => {
+          com.bryzek.dependency.v0.models.WatchProjectForm(
+            userGuid = userGuid,
+            projectGuid = projectGuid
+          )
+        }
+      }
+    }
+
+  }
+
 }
