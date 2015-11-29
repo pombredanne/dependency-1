@@ -10,6 +10,10 @@ case class BuildSbtScalaParser(contents: String) extends SimpleScalaParser {
 
   private val LanguageScala = "scala"
 
+  private lazy val pluginParser = ProjectPluginsSbtScalaParser(contents)
+
+  val resolverUris = pluginParser.resolverUris
+
   val libraries: Seq[Artifact] = parseLibraries
 
   val languages: Seq[LanguageForm] = {

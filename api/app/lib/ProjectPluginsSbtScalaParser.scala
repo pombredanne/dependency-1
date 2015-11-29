@@ -11,6 +11,7 @@ case class ProjectPluginsSbtScalaParser(contents: String) extends SimpleScalaPar
   val resolverUris: Seq[String] = {
     lines.
       filter(_.startsWith("resolvers ")).
+      filter(_.indexOf(" at ") > 0).
       map { line =>
         interpolate(line.substring(line.indexOf(" at ") + 3).trim)
       }.distinct.sortBy(_.toLowerCase)

@@ -30,7 +30,7 @@ trait SimpleScalaParser {
     flatMap { line =>
       line.split("=").map(_.trim).toList match {
         case declaration :: value :: Nil => {
-          Some(Variable(declaration.substring(declaration.indexOf(" ")).trim, stripQuotes(value)))
+          Some(Variable(declaration.substring(declaration.indexOf(" ")).trim, cleanVariable(value)))
         }
         case _ => {
           None
@@ -44,8 +44,23 @@ trait SimpleScalaParser {
     */
   def interpolate(value: String): String = {
     variables.find(_.name == value) match {
-      case None => stripQuotes(value)
+      case None => cleanVariable(value)
       case Some(variable) => variable.value
+    }
+  }
+
+  @scala.annotation.tailrec
+  final def cleanVariable(value: String): String = {
+    val stripped = stripQuotes(value)
+    (stripped == value) match {
+      case false => cleanVariable(stripped)
+      case true => {
+        val stripped2 = stripTrailingCommas(value)
+          (stripped2 == value) match {
+          case false => cleanVariable(stripped2)
+          case true => value
+        }
+      }
     }
   }
 
@@ -54,6 +69,13 @@ trait SimpleScalaParser {
    */
   def stripQuotes(value: String): String = {
     value.stripPrefix("\"").stripSuffix("\"").trim
+  }
+
+  /**
+   * Removes leading and trailing quotes
+   */
+  def stripTrailingCommas(value: String): String = {
+    value.stripSuffix(",").trim
   }
 
   /**
