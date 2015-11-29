@@ -1,3 +1,1 @@
- - add timeouts to api/app/lib/GithubDependencyProvider.scala
  - add support for sbt versions
- - use github sign in button from http://lipis.github.io/bootstrap-social/
