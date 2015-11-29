@@ -10,13 +10,6 @@
   <ul>
     <li>Group ID: <a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(library.groupId)).query))">@library.groupId</a></li>
     <li>Artifact ID: <a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(groupId = Some(library.groupId), artifactId = Some(library.artifactId)).query))">@library.artifactId</a></li>
-    <li>Resolvers:
-      <ul>
-        @library.resolvers.map { resolver =>
-          <li> @resolver</li>
-        }
-      </ul>
-    </li>
     <li>@audit(library.audit)</li>
   </ul>
 
