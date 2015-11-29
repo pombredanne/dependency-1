@@ -45,13 +45,13 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val resolver1 = createResolver()
     val resolver2 = createResolver()
 
-    ResolversDao.findAll(guids = Some(Seq(resolver1.guid, resolver2.guid))).map(_.guid) must be(
-      Seq(resolver1.guid, resolver2.guid)
+    ResolversDao.findAll(guids = Some(Seq(resolver1.guid, resolver2.guid))).map(_.guid).sorted must be(
+      Seq(resolver1.guid, resolver2.guid).sorted
     )
 
     ResolversDao.findAll(guids = Some(Nil)) must be(Nil)
     ResolversDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    ResolversDao.findAll(guids = Some(Seq(resolver1.guid, UUID.randomUUID))).map(_.guid).sorted must be(Seq(resolver1.guid).sorted)
+    ResolversDao.findAll(guids = Some(Seq(resolver1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(resolver1.guid))
   }
 
 }
