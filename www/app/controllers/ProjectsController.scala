@@ -134,27 +134,6 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def createAll() = Identified.async { implicit request =>
-    dependencyClient(request).repositories.getGithub(
-      existingProject = Some(false),
-      limit = 1000+1,
-      offset = 0
-    ).map { repositories =>
-      repositories.map { repo =>
-        Await.result(
-          dependencyClient(request).projects.post(
-            ProjectForm(
-              name = repo.name,
-              scms = Scms.Github,
-              uri = repo.uri
-            )
-          ), Duration(10, TimeUnit.SECONDS)
-        )
-      }
-      Redirect(routes.ProjectsController.index()).flashing("success" -> s"Projects (${repositories.size}) added")
-    }
-  }
-
   def edit(guid: UUID) = Identified.async { implicit request =>
     withProject(request, guid) { project =>
       Future {
