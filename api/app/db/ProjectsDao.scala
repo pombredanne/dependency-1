@@ -122,7 +122,7 @@ object ProjectsDao {
     val toAdd = newGuids.filter { guid => !existingGuids.contains(guid) }
     val toRemove = existingGuids.filter { guid => !newGuids.contains(guid) }
 
-    toAdd.foreach { guid =>
+    toAdd.distinct.foreach { guid =>
       SQL(InsertLanguageVersionQuery).on(
         'guid -> UUID.randomUUID,
         'project_guid -> project.guid,
@@ -131,7 +131,7 @@ object ProjectsDao {
       ).execute()
     }
 
-    toRemove.foreach { guid =>
+    toRemove.distinct.foreach { guid =>
       SoftDelete.delete(c, "project_language_versions", createdBy.guid, ("language_version_guid", Some("::uuid"), guid.toString))
     }
   }
@@ -159,7 +159,7 @@ object ProjectsDao {
     val toAdd = newGuids.filter { guid => !existingGuids.contains(guid) }
     val toRemove = existingGuids.filter { guid => !newGuids.contains(guid) }
 
-    toAdd.foreach { guid =>
+    toAdd.distinct.foreach { guid =>
       SQL(InsertLibraryVersionQuery).on(
         'guid -> UUID.randomUUID,
         'project_guid -> project.guid,
@@ -168,7 +168,7 @@ object ProjectsDao {
       ).execute()
     }
 
-    toRemove.foreach { guid =>
+    toRemove.distinct.foreach { guid =>
       SoftDelete.delete(c, "project_library_versions", createdBy.guid, ("library_version_guid", Some("::uuid"), guid.toString))
     }
   }
