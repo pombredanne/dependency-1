@@ -1,6 +1,5 @@
- - when created a project, create a user_projects record for the user that is creating that project
  - add timeouts to api/app/lib/GithubDependencyProvider.scala
- - add support for sbt vesrion
+ - add support for sbt versions
  - use github sign in button from http://lipis.github.io/bootstrap-social/
 
 parse resolvers from:
