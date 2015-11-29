@@ -7,6 +7,7 @@ import io.flow.play.util.DefaultConfig
 import io.flow.github.oauth.v0.{Client => GithubOauthClient}
 import io.flow.github.oauth.v0.models.AccessTokenForm
 import io.flow.github.v0.{Client => GithubClient}
+import io.flow.github.v0.errors.UnitResponse
 import io.flow.github.v0.models.{User => GithubUser}
 import scala.concurrent.{ExecutionContext, Future}
 import java.util.UUID
@@ -17,6 +18,20 @@ case class GithubUserWithToken(
 )
 
 trait Github {
+
+  /**
+    * Fetches the contents of the file at the specified path from the
+    * given repository. Returns None if the file is not found.
+    * 
+    * @param path e.g. "build.sbt",  "project/plugins.sbt", etc.
+    */
+  def file(
+    user: User,
+    projectUri: String,
+    path: String
+  ) (
+    implicit ec: ExecutionContext
+  ): Future[Option[String]]
 
   /**
     * Given an auth validation code, pings the github UI to access the
@@ -156,6 +171,39 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
   override def oauthToken(user: User): Option[String] = {
     TokensDao.findByUserGuidAndTag(user.guid, TokensDao.GithubOauthTokenTag).map(_.token)
   }
+
+  override def file(
+    user: User,
+    projectUri: String,
+    path: String
+  ) (
+    implicit ec: ExecutionContext
+  ): Future[Option[String]] = {
+    GithubUtil.parseUri(projectUri) match {
+      case Left(error) => {
+        sys.error(error)
+      }
+      case Right(repo) => {
+        oauthToken(user) match {
+          case None => Future {
+            None
+          }
+          case Some(token) => {
+            apiClient(token).contents.getReposByOwnerAndRepoAndPath(
+              owner = repo.owner,
+              repo = repo.project,
+              path = path
+            ).map { contents =>
+              Some(GithubUtil.toText(contents))
+            }.recover {
+              case UnitResponse(404) => None
+            }
+          }
+        }
+      }
+    }
+  }
+
 }
 
 class MockGithub() extends Github {
@@ -177,6 +225,16 @@ class MockGithub() extends Github {
 
   override def oauthToken(user: User): Option[String] = {
     MockGithubData.getToken(user)
+  }
+
+  override def file(
+    user: User,
+    projectUri: String,
+    path: String
+  ) (
+    implicit ec: ExecutionContext
+  ): Future[Option[String]] = {
+    Future { None } // TODO
   }
 
 }

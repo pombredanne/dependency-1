@@ -1,5 +1,6 @@
 package com.bryzek.dependency.lib
 
+import io.flow.user.v0.models.User
 import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm, Project}
 import io.flow.github.v0.Client
 import io.flow.github.v0.errors.UnitResponse
@@ -10,12 +11,6 @@ import org.apache.commons.codec.binary.Base64
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 import java.net.URI
-
-object GithubDependencyProviderClient {
-
-  lazy val instance = new GithubDependencyProvider(DefaultConfig.requiredString("github.api.token"))
-
-}
 
 object GithubUtil {
 
@@ -64,92 +59,76 @@ object GithubUtil {
 
 }
 
-private[lib] case class GithubDependencyProvider(githubToken: String) extends DependencyProvider {
+object GithubDependencyProviderClient {
 
-  private val GithubHost = "https://api.github.com"
+  def instance(user: User) = {
+    new GithubDependencyProvider(new DefaultGithub(), user)
+  }
+
+}
+
+private[lib] case class GithubDependencyProvider(
+  github: Github,
+  user: User
+) extends DependencyProvider {
+
   private val BuildSbtFilename = "build.sbt"
   private val ProjectPluginsSbtFilename = "project/plugins.sbt"
 
-  lazy val client = new Client(
-    apiUrl = GithubHost,
-    defaultHeaders = Seq(
-      "Authorization" -> s"token $githubToken"
-    )
-  )
-
   override def dependencies(project: Project)(implicit ec: ExecutionContext): Future[Option[Dependencies]] = {
-    GithubUtil.parseUri(project.uri) match {
-      case Left(error) => {
-        sys.error(error)
-      }
-      case Right(repo) => {
-        for {
-          build <- getBuildDependencies(repo)
-          plugins <- getPluginsDependencies(repo)
-        } yield {
-          (build, plugins) match {
-            case (None, None) => None
-            case (Some(build), None) => Some(build)
-            case (None, Some(plugins)) => Some(plugins)
-            case (Some(build), Some(plugins)) => {
-              Some(
-                build.copy(
-                  resolvers = plugins.resolvers,
-                  plugins = plugins.plugins
-                )
-              )
-            }
-          }
+    for {
+      build <- getBuildDependencies(project.uri)
+      plugins <- getPluginsDependencies(project.uri)
+    } yield {
+      (build, plugins) match {
+        case (None, None) => None
+        case (Some(build), None) => Some(build)
+        case (None, Some(plugins)) => Some(plugins)
+        case (Some(build), Some(plugins)) => {
+          Some(
+            build.copy(
+              resolvers = plugins.resolvers,
+              plugins = plugins.plugins
+            )
+          )
         }
       }
     }
   }
 
   private[this] def getBuildDependencies(
-    repo: GithubUtil.Repository
+    projectUri: String
   ) (
     implicit ec: ExecutionContext
   ): Future[Option[Dependencies]] = {
-    client.contents.getReposByOwnerAndRepoAndPath(
-      owner = repo.owner,
-      repo = repo.project,
-      path = BuildSbtFilename
-    ).map { contents =>
-      val result = BuildSbtScalaParser(
-        GithubUtil.toText(contents)
-      )
-      Some(
-        Dependencies(
-          languages = Some(result.languages),
-          libraries = Some(result.libraries)
+    github.file(user, projectUri, BuildSbtFilename).map { result =>
+      result.flatMap { text =>
+        val result = BuildSbtScalaParser(text)
+        Some(
+          Dependencies(
+            languages = Some(result.languages),
+            libraries = Some(result.libraries)
+          )
         )
-      )
-    }.recover {
-      case UnitResponse(404) => None
+      }
     }
   }
 
   private[this] def getPluginsDependencies(
-    repo: GithubUtil.Repository
+    projectUri: String
   ) (
     implicit ec: ExecutionContext
   ): Future[Option[Dependencies]] = {
-    client.contents.getReposByOwnerAndRepoAndPath(
-      owner = repo.owner,
-      repo = repo.project,
-      path = ProjectPluginsSbtFilename
-    ).map { contents =>
-      val result = ProjectPluginsSbtScalaParser(
-        GithubUtil.toText(contents)
-      )
-      Some(
-        Dependencies(
-          plugins = Some(result.plugins),
-          resolvers = Some(result.resolvers)
+    github.file(user, projectUri, BuildSbtFilename).map { result =>
+      result.flatMap { text =>
+        val result = ProjectPluginsSbtScalaParser(text)
+        Some(
+          Dependencies(
+            plugins = Some(result.plugins),
+            resolvers = Some(result.resolvers)
+          )
         )
-      )
-    }.recover {
-      case UnitResponse(404) => None
+      }
     }
   }
 

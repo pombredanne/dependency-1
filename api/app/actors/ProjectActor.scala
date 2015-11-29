@@ -2,7 +2,7 @@ package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.lib.{Dependencies, GithubDependencyProviderClient}
 import com.bryzek.dependency.v0.models.{Project, WatchProjectForm}
-import db.{ProjectsDao, WatchProjectsDao}
+import db.{ProjectsDao, UsersDao, WatchProjectsDao}
 import play.api.Logger
 import play.libs.Akka
 import akka.actor.Actor
@@ -24,7 +24,6 @@ class ProjectActor extends Actor {
   implicit val projectExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("project-actor-context")
 
   var dataProject: Option[Project] = None
-  var dataDependencies: Option[Dependencies] = None
 
   def receive = {
 
@@ -52,30 +51,31 @@ class ProjectActor extends Actor {
       s"ProjectActor.Messages.Sync"
     ) {
       dataProject.foreach { project =>
-        GithubDependencyProviderClient.instance.dependencies(project).map { result =>
-          result match {
-            case None => {
-              Logger.warn(s"project[${project.guid}] name[${project.name}]: no build file found")
+        UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
+          GithubDependencyProviderClient.instance(user).dependencies(project).map { result =>
+            result match {
+              case None => {
+                Logger.warn(s"project[${project.guid}] name[${project.name}]: no build file found")
+              }
+              case Some(dependencies) => {
+                println(s" - dependencies: $dependencies")
+                ProjectsDao.setDependencies(
+                  createdBy = MainActor.SystemUser,
+                  project = project,
+                  languages = dependencies.languages,
+                  libraries = dependencies.librariesAndPlugins.map(_.map { artifact =>
+                    artifact.toLibraryForm(
+                      resolvers = dependencies.resolvers.getOrElse(Nil),
+                      crossBuildVersion = dependencies.crossBuildVersion()
+                    )
+                  })
+                )
+              }
             }
-            case Some(dependencies) => {
-              println(s" - dependencies: $dependencies")
-              ProjectsDao.setDependencies(
-                createdBy = MainActor.SystemUser,
-                project = project,
-                languages = dependencies.languages,
-                libraries = dependencies.librariesAndPlugins.map(_.map { artifact =>
-                  artifact.toLibraryForm(
-                    resolvers = dependencies.resolvers.getOrElse(Nil),
-                    crossBuildVersion = dependencies.crossBuildVersion()
-                  )
-                })
-              )
+          }.recover {
+            case e => {
+              Logger.error(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")
             }
-          }
-          this.dataDependencies = result
-        }.recover {
-          case e => {
-            Logger.error(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")
           }
         }
       }
