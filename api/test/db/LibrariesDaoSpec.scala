@@ -10,28 +10,19 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  "findByResolversAndGroupIdAndArtifactId" in {
+  "findByGroupIdAndArtifactId" in {
     val library = createLibrary()
-    LibrariesDao.findByResolversAndGroupIdAndArtifactId(
-      library.resolvers,
+    LibrariesDao.findByGroupIdAndArtifactId(
       library.groupId,
       library.artifactId
     ).map(_.guid) must be(Some(library.guid))
 
-    LibrariesDao.findByResolversAndGroupIdAndArtifactId(
-      library.resolvers ++ Seq("http://other"),
-      library.groupId,
-      library.artifactId
-    ) must be (None)
-
-    LibrariesDao.findByResolversAndGroupIdAndArtifactId(
-      library.resolvers,
+    LibrariesDao.findByGroupIdAndArtifactId(
       library.groupId + "-2",
       library.artifactId
     ) must be (None)
 
-    LibrariesDao.findByResolversAndGroupIdAndArtifactId(
-      library.resolvers,
+    LibrariesDao.findByGroupIdAndArtifactId(
       library.groupId,
       library.artifactId + "-2"
     ) must be (None)
@@ -77,12 +68,11 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     "validates duplicates" in {
       val library = createLibrary()
       val form = createLibraryForm().copy(
-        resolvers = library.resolvers,
         groupId = library.groupId,
         artifactId = library.artifactId
       )
       LibrariesDao.validate(form) must be(
-        Seq("Library with these resolvers, group id and artifact id already exists")
+        Seq("Library with this group id and artifact id already exists")
       )
     }
   }

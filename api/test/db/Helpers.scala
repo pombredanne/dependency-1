@@ -57,7 +57,6 @@ trait Helpers {
   def createLibraryForm(
     versionForm: VersionForm = VersionForm("0.0.1")
   ) = LibraryForm(
-    resolvers = Seq("http://dependencies.io.flow"),
     groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
     artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
     version = Some(versionForm)
@@ -104,7 +103,7 @@ trait Helpers {
     val project = createProject()
     ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(libraryForm)))
 
-    val library = LibrariesDao.findByResolversAndGroupIdAndArtifactId(libraryForm.resolvers, libraryForm.groupId, libraryForm.artifactId).getOrElse {
+    val library = LibrariesDao.findByGroupIdAndArtifactId(libraryForm.groupId, libraryForm.artifactId).getOrElse {
       sys.error("Failed to find library")
     }
 
@@ -184,6 +183,22 @@ trait Helpers {
       userGuid = user.guid,
       tag = tag,
       token = token
+    )
+  }
+
+  def createResolver(
+    form: ResolverForm = createResolverForm()
+  ): Resolver = {
+    ResolversDao.create(systemUser, form)
+  }
+
+  def createResolverForm(
+    user: User = createUser(),
+    uri: String = s"http://${UUID.randomUUID}.z-test.flow.io"
+  ) = {
+    ResolverForm(
+      userGuid = user.guid,
+      uri = uri
     )
   }
 

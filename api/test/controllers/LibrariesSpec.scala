@@ -69,7 +69,6 @@ class LibrariesSpec extends PlaySpecification with MockClient {
   "POST /libraries" in new WithServer(port=port) {
     val form = createLibraryForm()
     val library = await(client.libraries.post(form))
-    library.resolvers must beEqualTo(form.resolvers)
     library.groupId must beEqualTo(form.groupId)
     library.artifactId must beEqualTo(form.artifactId)
   }
@@ -78,13 +77,12 @@ class LibrariesSpec extends PlaySpecification with MockClient {
     expectErrors(
       client.libraries.post(
         createLibraryForm().copy(
-          resolvers = library1.resolvers,
           groupId = library1.groupId,
           artifactId = library1.artifactId
         )
       )
     ).errors.map(_.message) must beEqualTo(
-      Seq("Library with these resolvers, group id and artifact id already exists")
+      Seq("Library with this group id and artifact id already exists")
     )
   }
 

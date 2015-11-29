@@ -108,7 +108,6 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
         case one :: Nil => one
         case _ => sys.error("Expected one library")
       }
-      fetched.resolvers must be(library.resolvers)
       fetched.groupId must be(library.groupId)
       fetched.artifactId must be(library.artifactId)
 

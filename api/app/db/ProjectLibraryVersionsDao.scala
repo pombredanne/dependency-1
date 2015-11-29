@@ -15,7 +15,6 @@ object ProjectLibraryVersionsDao {
            library_versions.version as library_version_version,
            ${AuditsDao.all("library_versions", Some("library_version"))},
            libraries.guid as library_version_library_guid,
-           array_to_json(string_to_array(libraries.resolvers, ' ')) as library_version_library_resolvers,
            libraries.group_id as library_version_library_group_id,
            libraries.artifact_id as library_version_library_artifact_id,
            ${AuditsDao.all("libraries", Some("library_version_library"))},

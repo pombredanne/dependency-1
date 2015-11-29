@@ -15,7 +15,6 @@ object LibrariesDao {
 
   private[this] val BaseQuery = s"""
     select libraries.guid,
-           array_to_json(string_to_array(libraries.resolvers, ' ')) as resolvers,
            libraries.group_id,
            libraries.artifact_id,
            ${AuditsDao.all("libraries")}
@@ -25,9 +24,9 @@ object LibrariesDao {
 
   private[this] val InsertQuery = """
     insert into libraries
-    (guid, resolvers, group_id, artifact_id, created_by_guid, updated_by_guid)
+    (guid, group_id, artifact_id, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {resolvers}, {group_id}, {artifact_id}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {group_id}, {artifact_id}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[db] def validate(
@@ -46,9 +45,9 @@ object LibrariesDao {
     }
 
     val existsErrors = if (groupIdErrors.isEmpty && artifactIdErrors.isEmpty) {
-      LibrariesDao.findByResolversAndGroupIdAndArtifactId(form.resolvers, form.groupId, form.artifactId) match {
+      LibrariesDao.findByGroupIdAndArtifactId(form.groupId, form.artifactId) match {
         case None => Nil
-        case Some(_) => Seq("Library with these resolvers, group id and artifact id already exists")
+        case Some(_) => Seq("Library with this group id and artifact id already exists")
       }
     } else {
       Nil
@@ -58,7 +57,7 @@ object LibrariesDao {
   }
 
   def upsert(createdBy: User, form: LibraryForm): Either[Seq[String], Library] = {
-    LibrariesDao.findByResolversAndGroupIdAndArtifactId(form.resolvers, form.groupId, form.artifactId) match {
+    LibrariesDao.findByGroupIdAndArtifactId(form.groupId, form.artifactId) match {
       case None => {
         create(createdBy, form)
       }
@@ -81,7 +80,6 @@ object LibrariesDao {
         DB.withTransaction { implicit c =>
           SQL(InsertQuery).on(
             'guid -> guid,
-            'resolvers -> resolversToString(form.resolvers),
             'group_id -> form.groupId.trim,
             'artifact_id -> form.artifactId.trim,
             'created_by_guid -> createdBy.guid
@@ -108,13 +106,11 @@ object LibrariesDao {
     MainActor.ref ! MainActor.Messages.LibraryDeleted(library.guid)
   }
 
-  def findByResolversAndGroupIdAndArtifactId(
-    resolvers: Seq[String],
+  def findByGroupIdAndArtifactId(
     groupId: String,
     artifactId: String
   ): Option[Library] = {
     findAll(
-      resolvers = Some(resolvers),
       groupId = Some(groupId),
       artifactId = Some(artifactId),
       limit = 1
@@ -129,7 +125,6 @@ object LibrariesDao {
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     projectGuid: Option[UUID] = None,
-    resolvers: Option[Seq[String]] = None,
     groupId: Option[String] = None,
     artifactId: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -151,34 +146,24 @@ object LibrariesDao {
            where library_versions.deleted_at is null
         )
       """.trim },
-      resolvers.map { v => "and libraries.resolvers = {resolvers}" },
       groupId.map { v => "and lower(libraries.group_id) = lower(trim({group_id}))" },
       artifactId.map { v => "and lower(libraries.artifact_id) = lower(trim({artifact_id}))" },
       isDeleted.map(Filters.isDeleted("libraries", _)),
-      Some(s"order by lower(libraries.group_id), lower(libraries.artifact_id), lower(libraries.resolvers), libraries.created_at limit ${limit} offset ${offset}")
+      Some(s"order by lower(libraries.group_id), lower(libraries.artifact_id), libraries.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       projectGuid.map('project_guid -> _.toString),
-      resolvers.map(v => 'resolvers -> resolversToString(v)),
       groupId.map('group_id -> _.toString),
       artifactId.map('artifact_id -> _.toString)
     ).flatten
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.Library.parser(
-          com.bryzek.dependency.v0.anorm.parsers.Library.Mappings.table("libraries").copy(
-            resolvers = "resolvers"
-          )
-        ).*
+        com.bryzek.dependency.v0.anorm.parsers.Library.table("libraries").*
       )
     }
-  }
-
-  private[db] def resolversToString(resolvers: Seq[String]): String = {
-    resolvers.map(_.trim).filter(!_.isEmpty).mkString(" ")
   }
 
 }

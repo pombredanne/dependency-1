@@ -1,9 +1,9 @@
 package com.bryzek.dependency.actors
 
-import com.bryzek.dependency.v0.models.{Library, LibraryForm, VersionForm}
+import com.bryzek.dependency.v0.models.{Library, LibraryForm, Resolver, VersionForm}
 import com.bryzek.dependency.lib.DefaultLibraryArtifactProvider
 import io.flow.play.postgresql.Pager
-import db.{LibrariesDao, LibraryVersionsDao, UsersDao}
+import db.{LibrariesDao, LibraryVersionsDao, ResolversDao}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -33,12 +33,22 @@ class LibraryActor extends Actor {
     case LibraryActor.Messages.Sync => Util.withVerboseErrorHandler(
       s"LibraryActor.Messages.Sync"
     ) {
+      var resolvers = scala.collection.mutable.Map[UUID, Seq[Resolver]]()
+
       dataLibrary.foreach { lib =>
-        println(s"Syncing library[$lib]")
-        DefaultLibraryArtifactProvider().artifacts(lib).map { version =>
+        val userResolvers = resolvers.get(lib.audit.createdBy.guid).getOrElse {
+          val all = ResolversDao.findAll(
+            userGuid = Some(lib.audit.createdBy.guid)
+          )
+          resolvers +== (lib.audit.createdBy.guid -> all)
+          all
+        }
+
+        println(s"Syncing library[$lib] for user[${lib.audit.createdBy.guid}] resolvers[${userResolvers.map(_.uri)}]")
+        DefaultLibraryArtifactProvider().artifacts(lib, userResolvers).map { version =>
           println(s" groupId[${lib.groupId}] artifactId[${lib.artifactId}] version[${version.tag.value}] crossBuilt[${version.crossBuildVersion.map(_.value).getOrElse("")}]")
           LibraryVersionsDao.upsert(
-            createdBy = UsersDao.systemUser,
+            createdBy = MainActor.SystemUser,
             libraryGuid = lib.guid,
             form = VersionForm(version.tag.value, version.crossBuildVersion.map(_.value))
           )

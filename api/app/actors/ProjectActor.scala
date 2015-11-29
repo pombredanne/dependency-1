@@ -65,7 +65,6 @@ class ProjectActor extends Actor {
                   languages = dependencies.languages,
                   libraries = dependencies.librariesAndPlugins.map(_.map { artifact =>
                     artifact.toLibraryForm(
-                      resolvers = dependencies.resolvers.getOrElse(Nil),
                       crossBuildVersion = dependencies.crossBuildVersion()
                     )
                   })

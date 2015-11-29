@@ -87,7 +87,7 @@ private[lib] case class GithubDependencyProvider(
         case (Some(build), Some(plugins)) => {
           Some(
             build.copy(
-              resolvers = plugins.resolvers,
+              resolverUris = plugins.resolverUris,
               plugins = plugins.plugins
             )
           )
@@ -125,7 +125,7 @@ private[lib] case class GithubDependencyProvider(
         Some(
           Dependencies(
             plugins = Some(result.plugins),
-            resolvers = Some(result.resolvers)
+            resolverUris = Some(result.resolverUris)
           )
         )
       }

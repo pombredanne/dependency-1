@@ -8,12 +8,12 @@ case class ProjectPluginsSbtScalaParser(contents: String) extends SimpleScalaPar
 
   val plugins: Seq[Artifact] = parseLibraries
 
-  val resolvers: Seq[Resolver] = {
+  val resolverUris: Seq[String] = {
     lines.
       filter(_.startsWith("resolvers ")).
       map { line =>
-        Resolver(interpolate(line.substring(line.indexOf(" at ") + 3).trim))
-      }.distinct.sortBy(_.uri)
+        interpolate(line.substring(line.indexOf(" at ") + 3).trim)
+      }.distinct.sortBy(_.toLowerCase)
   }
 
 }

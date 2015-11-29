@@ -1,3 +1,4 @@
+drop table if exists resolvers;
 drop table if exists language_versions;
 drop table if exists languages;
 drop table if exists library_versions;
@@ -66,7 +67,6 @@ create unique index projects_scms_lower_name_not_deleted_un_idx on projects(scms
 
 create table libraries (
   guid                    uuid primary key,
-  resolvers               text not null check(non_empty_trimmed_string(resolvers)),
   group_id                text not null check(non_empty_trimmed_string(group_id)),
   artifact_id             text not null check(non_empty_trimmed_string(artifact_id))
 );
@@ -75,17 +75,10 @@ comment on table libraries is '
   Stores all libraries that we are tracking in some way.
 ';
 
-comment on column libraries.resolvers is '
-  This is a space separate list of the resolvers in the order in which
-  we check to find this library. Sole purpose of this column is to allow
-  two projects to have identical libraries but different resolvers - we
-  want to deterministically make sure we get the right version of each.
-';
-
 select schema_evolution_manager.create_basic_audit_data('public', 'libraries');
 create index on libraries(group_id);
 create index on libraries(artifact_id);
-create unique index libraries_resolvers_group_id_artifact_id_not_deleted_un_idx on libraries(resolvers, group_id, artifact_id) where deleted_at is null;
+create unique index libraries_group_id_artifact_id_not_deleted_un_idx on libraries(group_id, artifact_id) where deleted_at is null;
 
 create table library_versions (
   guid                    uuid primary key,
@@ -137,3 +130,19 @@ comment on table language_versions is '
 select schema_evolution_manager.create_basic_audit_data('public', 'language_versions');
 create index on language_versions(language_guid);
 create unique index language_versions_language_guid_version_not_deleted_un_idx on language_versions(language_guid, version) where deleted_at is null;
+
+create table resolvers (
+  guid                    uuid primary key,
+  user_guid               uuid not null references users,
+  uri                     text not null check(non_empty_trimmed_string(uri))
+);
+
+select schema_evolution_manager.create_basic_audit_data('public', 'resolvers');
+
+comment on table resolvers is '
+  Stores a private list of resolvers that this user needs to resolve libraries.
+';
+
+create index on resolvers(user_guid);
+create unique index resolvers_user_guid_uri_not_deleted_un_idx on resolvers(user_guid, uri) where deleted_at is null;
+

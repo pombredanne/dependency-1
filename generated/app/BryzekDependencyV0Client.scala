@@ -52,7 +52,6 @@ package com.bryzek.dependency.v0.models {
 
   case class Library(
     guid: _root_.java.util.UUID,
-    resolvers: Seq[String],
     groupId: String,
     artifactId: String,
     audit: io.flow.common.v0.models.Audit
@@ -60,7 +59,6 @@ package com.bryzek.dependency.v0.models {
 
   case class LibraryForm(
     groupId: String,
-    resolvers: Seq[String],
     artifactId: String,
     version: _root_.scala.Option[com.bryzek.dependency.v0.models.VersionForm] = None
   )
@@ -119,6 +117,18 @@ package com.bryzek.dependency.v0.models {
 
   case class Repository(
     name: String,
+    uri: String
+  )
+
+  case class Resolver(
+    guid: _root_.java.util.UUID,
+    user: io.flow.common.v0.models.Reference,
+    uri: String,
+    audit: io.flow.common.v0.models.Audit
+  )
+
+  case class ResolverForm(
+    userGuid: _root_.java.util.UUID,
     uri: String
   )
 
@@ -374,7 +384,6 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyLibrary: play.api.libs.json.Reads[Library] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "resolvers").read[Seq[String]] and
         (__ \ "group_id").read[String] and
         (__ \ "artifact_id").read[String] and
         (__ \ "audit").read[io.flow.common.v0.models.Audit]
@@ -384,7 +393,6 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyLibrary: play.api.libs.json.Writes[Library] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "resolvers").write[Seq[String]] and
         (__ \ "group_id").write[String] and
         (__ \ "artifact_id").write[String] and
         (__ \ "audit").write[io.flow.common.v0.models.Audit]
@@ -394,7 +402,6 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyLibraryForm: play.api.libs.json.Reads[LibraryForm] = {
       (
         (__ \ "group_id").read[String] and
-        (__ \ "resolvers").read[Seq[String]] and
         (__ \ "artifact_id").read[String] and
         (__ \ "version").readNullable[com.bryzek.dependency.v0.models.VersionForm]
       )(LibraryForm.apply _)
@@ -403,7 +410,6 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyLibraryForm: play.api.libs.json.Writes[LibraryForm] = {
       (
         (__ \ "group_id").write[String] and
-        (__ \ "resolvers").write[Seq[String]] and
         (__ \ "artifact_id").write[String] and
         (__ \ "version").writeNullable[com.bryzek.dependency.v0.models.VersionForm]
       )(unlift(LibraryForm.unapply _))
@@ -537,6 +543,38 @@ package com.bryzek.dependency.v0.models {
         (__ \ "name").write[String] and
         (__ \ "uri").write[String]
       )(unlift(Repository.unapply _))
+    }
+
+    implicit def jsonReadsDependencyResolver: play.api.libs.json.Reads[Resolver] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "user").read[io.flow.common.v0.models.Reference] and
+        (__ \ "uri").read[String] and
+        (__ \ "audit").read[io.flow.common.v0.models.Audit]
+      )(Resolver.apply _)
+    }
+
+    implicit def jsonWritesDependencyResolver: play.api.libs.json.Writes[Resolver] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "user").write[io.flow.common.v0.models.Reference] and
+        (__ \ "uri").write[String] and
+        (__ \ "audit").write[io.flow.common.v0.models.Audit]
+      )(unlift(Resolver.unapply _))
+    }
+
+    implicit def jsonReadsDependencyResolverForm: play.api.libs.json.Reads[ResolverForm] = {
+      (
+        (__ \ "user_guid").read[_root_.java.util.UUID] and
+        (__ \ "uri").read[String]
+      )(ResolverForm.apply _)
+    }
+
+    implicit def jsonWritesDependencyResolverForm: play.api.libs.json.Writes[ResolverForm] = {
+      (
+        (__ \ "user_guid").write[_root_.java.util.UUID] and
+        (__ \ "uri").write[String]
+      )(unlift(ResolverForm.unapply _))
     }
 
     implicit def jsonReadsDependencyToken: play.api.libs.json.Reads[Token] = {

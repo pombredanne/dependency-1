@@ -29,7 +29,6 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
       libraries = Some(
         Seq(
           LibraryForm(
-            resolvers = libraryVersion.library.resolvers,
             groupId = libraryVersion.library.groupId,
             artifactId = libraryVersion.library.artifactId,
             version = Some(VersionForm(version = libraryVersion.version))

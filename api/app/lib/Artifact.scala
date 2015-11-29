@@ -10,11 +10,9 @@ case class Artifact(
 ) {
 
   def toLibraryForm(
-    resolvers: Seq[Resolver],
     crossBuildVersion: Option[Version]
   ): LibraryForm = {
     LibraryForm(
-      resolvers = Resolvers.all(resolvers.map(_.uri)),
       groupId = groupId,
       artifactId = artifactId,
       version = Some(

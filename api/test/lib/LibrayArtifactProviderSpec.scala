@@ -22,13 +22,11 @@ class LibrayArtifactProviderSpec extends PlaySpecification {
   }
 
   def createLibrary(
-    resolvers: Seq[String] = Resolvers.Default,
     groupId: String = UUID.randomUUID.toString,
     artifactId: String = UUID.randomUUID.toString
   ): Library = {
     Library(
       guid = UUID.randomUUID,
-      resolvers = resolvers,
       groupId = groupId,
       artifactId = artifactId,
       audit = createAudit()
@@ -39,7 +37,7 @@ class LibrayArtifactProviderSpec extends PlaySpecification {
 
   "parseUri" in {
     val library = createLibrary(groupId = "com.github.tototoshi", artifactId = "scala-csv")
-    val versions = provider.artifacts(library)
+    val versions = provider.artifacts(library, resolvers = Nil)
     versions.find { v =>
       v.tag.value == "1.2.2" && v.crossBuildVersion.map(_.value) == Some("2.11")
     }.map(_.tag.value) must beEqualTo(Some("1.2.2"))
@@ -47,7 +45,7 @@ class LibrayArtifactProviderSpec extends PlaySpecification {
 
   "swagger" in {
     val library = createLibrary(groupId = "io.swagger", artifactId = "swagger-parser")
-    val versions = provider.artifacts(library).map(_.tag.value)
+    val versions = provider.artifacts(library, resolvers = Nil).map(_.tag.value)
     println(s"versions: " + versions.mkString(", "))
     versions.contains("1.0.4") must beTrue
     versions.contains("1.0.13") must beTrue

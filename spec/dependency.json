@@ -21,7 +21,24 @@
     },
 
     "models": {
-	    
+
+	"resolver": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+                { "name": "user", "type": "io.flow.common.v0.models.reference" },
+		{ "name": "uri", "type": "string", "example": "https://flow.artifactoryonline.com/flow/libs-release" },
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+	    ]
+	},
+
+	"resolver_form": {
+	    "fields": [
+		{ "name": "user_guid", "type": "uuid" },
+		{ "name": "uri", "type": "string" }
+	    ]
+	},
+
+
 	"language": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
@@ -57,7 +74,6 @@
 	"library": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
-		{ "name": "resolvers", "type": "[string]" },
 		{ "name": "group_id", "type": "string" },
 		{ "name": "artifact_id", "type": "string" },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
@@ -67,7 +83,6 @@
 	"library_form": {
 	    "fields": [
 		{ "name": "group_id", "type": "string" },
-		{ "name": "resolvers", "type": "[string]" },
 		{ "name": "artifact_id", "type": "string" },
 		{ "name": "version", "type": "version_form", "required": false, "description": "If provided, we automatically record this version of this library." }
 	    ]

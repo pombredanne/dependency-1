@@ -41,6 +41,11 @@ update github_users
  where deleted_at is null
    and login like 'z-test-%';
 
+update resolvers
+   set deleted_at=now(), deleted_by_guid = created_by_guid
+ where deleted_at is null
+   and uri like '%z-test.flow.io%';
+
 update tokens
    set deleted_at=now(), deleted_by_guid = created_by_guid
  where deleted_at is null

@@ -7,7 +7,7 @@ import scala.concurrent.{ExecutionContext, Future}
 case class Dependencies(
   languages: Option[Seq[LanguageForm]] = None,
   libraries: Option[Seq[Artifact]] = None,
-  resolvers: Option[Seq[Resolver]] = None,
+  resolverUris: Option[Seq[String]] = None,
   plugins: Option[Seq[Artifact]] = None
 ) {
 

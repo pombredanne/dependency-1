@@ -19,7 +19,6 @@ object LibraryVersionsDao {
            library_versions.cross_build_version,
            ${AuditsDao.all("library_versions")},
            libraries.guid as library_versions_library_guid,
-           array_to_json(string_to_array(libraries.resolvers, ' ')) as library_versions_library_resolvers,
            libraries.group_id as library_versions_library_group_id,
            libraries.artifact_id as library_versions_library_artifact_id,
            ${AuditsDao.all("libraries", Some("library_versions_library"))}
