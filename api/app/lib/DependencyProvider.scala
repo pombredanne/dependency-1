@@ -27,18 +27,22 @@ case class Dependencies(
         langs.sortBy { l => Version(l.version) }.reverse.toList match {
           case Nil => None
           case one :: Nil => {
-            Some(crossBuildVersionFromLanguage(one))
+            Some(DependencyHelper.crossBuildVersion(one))
           }
           case multiple => {
             Logger.warn(s"Found multiple language versions[${multiple.mkString(", ")}]. Using first")
-            Some(crossBuildVersionFromLanguage(multiple.head))
+            Some(DependencyHelper.crossBuildVersion(multiple.head))
           }
         }
       }
     }
   }
 
-  private[this] def crossBuildVersionFromLanguage(lang: LanguageForm): Version = {
+}
+
+private[lib] object DependencyHelper {
+
+  def crossBuildVersion(lang: LanguageForm): Version = {
     val version = Version(lang.version)
     ProgrammingLanguage(lang.name) match {
       case ProgrammingLanguage.Scala => {
