@@ -122,15 +122,15 @@ lazy val www = project
   "library with variable version names" in {
     val contents = """
 val avroVersion = "1.7.7"
+lazy val akkaVersion = "2.3.4"
 
 lazy val avro = project
   .in(file("avro"))
   .settings(
     libraryDependencies ++= Seq(
       "org.apache.avro"   % "avro"              % avroVersion,
-      "org.apache.avro"   % "avro-compiler"     % avroVersion,
-      "com.typesafe.play" %% "play-json" % "2.4.2",
-      "org.scalatest"     %% "scalatest" % "2.2.0" % "test"
+      "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
+      "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test"
     )
   )
 """
@@ -138,10 +138,9 @@ lazy val avro = project
     result.languages must beEqualTo(Nil)
     result.libraries must beEqualTo(
       Seq(
-        Artifact("com.typesafe.play", "play-json", "2.4.2", true),
         Artifact("org.apache.avro", "avro", "1.7.7", false),
-        Artifact("org.apache.avro", "avro-compiler", "1.7.7", false),
-        Artifact("org.scalatest", "scalatest", "2.2.0", true)
+        Artifact("com.typesafe.akka", "akka-cluster", "2.3.4", true),
+        Artifact("com.typesafe.akka", "akka-testkit", "2.3.4", true)
       )
     )
   }

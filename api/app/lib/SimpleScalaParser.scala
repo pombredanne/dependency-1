@@ -26,7 +26,7 @@ trait SimpleScalaParser {
   // Pull out all lines that start w/ "val " or "var " and capture
   // variable declarations
   lazy val variables: Seq[Variable] = lines.
-    filter(line => line.startsWith("val ") || line.startsWith("var ")).
+    filter(SimpleScalaParserUtil.definesVariable(_)).
     flatMap { line =>
       line.split("=").map(_.trim).toList match {
         case declaration :: value :: Nil => {
@@ -135,6 +135,26 @@ trait SimpleScalaParser {
             isCrossBuilt = isCrossBuilt
           )
         )
+      }
+    }
+  }
+
+}
+
+object SimpleScalaParserUtil {
+
+  @scala.annotation.tailrec
+  def definesVariable(line: String): Boolean = {
+    val trimmed = line.trim
+    (trimmed.startsWith("val ") || trimmed.startsWith("var ")) match {
+      case true => true
+      case false => {
+        trimmed.startsWith("lazy ") match {
+          case false => false
+          case true => {
+            definesVariable(trimmed.substring(5))
+          }
+        }
       }
     }
   }
