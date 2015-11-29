@@ -49,6 +49,7 @@ lazy val www = project
       "io.flow" %% "lib-play" % "0.0.1-SNAPSHOT",
       "org.webjars" %% "webjars-play" % "2.4.0-2",
       "org.webjars" % "bootstrap" % "3.3.5",
+      "org.webjars.bower" % "bootstrap-social" % "4.10.1",
       "org.webjars" % "font-awesome" % "4.5.0",
       "org.webjars" % "jquery" % "2.1.4"
     )
