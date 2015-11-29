@@ -2,6 +2,8 @@
  - add support for sbt versions
  - use github sign in button from http://lipis.github.io/bootstrap-social/
 
+ - move library.resolvers to user_resolvers. Add user to api/app/lib/LibrayArtifactProvider.scala
+
 parse resolvers from:
 
 lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
