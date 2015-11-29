@@ -6,16 +6,33 @@ import org.specs2.mutable._
 class SimpleScalaParserSpec extends Specification {
 
   "definesVariable" in {
-    SimpleScalaParserUtil.definesVariable("var foo = 3") should beTrue
-    SimpleScalaParserUtil.definesVariable("val foo = 3") should beTrue
-    SimpleScalaParserUtil.definesVariable("lazy var foo = 3") should beTrue
-    SimpleScalaParserUtil.definesVariable("lazy val foo = 3") should beTrue
-    SimpleScalaParserUtil.definesVariable("foo := 3") should beFalse
+    SimpleScalaParserUtil.toVariable("var foo = 3") should beEqualTo(
+      Some(SimpleScalaParserUtil.Variable("foo", "3"))
+    )
+
+    SimpleScalaParserUtil.toVariable("val foo = 3") should beEqualTo(
+      Some(SimpleScalaParserUtil.Variable("foo", "3"))
+    )
+
+    SimpleScalaParserUtil.toVariable("lazy var foo = 3") should beEqualTo(
+      Some(SimpleScalaParserUtil.Variable("foo", "3"))
+    )
+
+    SimpleScalaParserUtil.toVariable("lazy val foo = 3") should beEqualTo(
+      Some(SimpleScalaParserUtil.Variable("foo", "3"))
+    )
+
+    SimpleScalaParserUtil.toVariable("foo := 3") should be(None)
   }
 
-  "definesVariable tolerates spaces" in {
-    SimpleScalaParserUtil.definesVariable("   val     foo = 3") should beTrue
-    SimpleScalaParserUtil.definesVariable("   lazy    val     foo = 3") should beTrue
+  "toVariable tolerates spaces" in {
+    SimpleScalaParserUtil.toVariable("""   val     foo = "bar"""") should beEqualTo(
+      Some(SimpleScalaParserUtil.Variable("foo", "bar"))
+    )
+
+    SimpleScalaParserUtil.toVariable("""   lazy  val     foo = "bar"""") should beEqualTo(
+      Some(SimpleScalaParserUtil.Variable("foo", "bar"))
+    )
   }
 
 }

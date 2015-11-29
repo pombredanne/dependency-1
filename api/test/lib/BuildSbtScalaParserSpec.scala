@@ -138,9 +138,9 @@ lazy val avro = project
     result.languages must beEqualTo(Nil)
     result.libraries must beEqualTo(
       Seq(
-        Artifact("org.apache.avro", "avro", "1.7.7", false),
         Artifact("com.typesafe.akka", "akka-cluster", "2.3.4", true),
-        Artifact("com.typesafe.akka", "akka-testkit", "2.3.4", true)
+        Artifact("com.typesafe.akka", "akka-testkit", "2.3.4", true),
+        Artifact("org.apache.avro", "avro", "1.7.7", false)
       )
     )
   }

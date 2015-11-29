@@ -7,8 +7,6 @@ trait SimpleScalaParser {
 
   def contents: String
 
-  case class Variable(name: String, value: String)
-
   lazy val lines = parseIntoLines(contents)
 
   /**
@@ -25,18 +23,7 @@ trait SimpleScalaParser {
 
   // Pull out all lines that start w/ "val " or "var " and capture
   // variable declarations
-  lazy val variables: Seq[Variable] = lines.
-    filter(SimpleScalaParserUtil.definesVariable(_)).
-    flatMap { line =>
-      line.split("=").map(_.trim).toList match {
-        case declaration :: value :: Nil => {
-          Some(Variable(declaration.substring(declaration.indexOf(" ")).trim, cleanVariable(value)))
-        }
-        case _ => {
-          None
-        }
-      }
-    }
+  lazy val variables: Seq[SimpleScalaParserUtil.Variable] = SimpleScalaParserUtil.parseVariables(lines)
 
   /**
     * This method will substitute any variables for their values. For
@@ -44,38 +31,9 @@ trait SimpleScalaParser {
     */
   def interpolate(value: String): String = {
     variables.find(_.name == value) match {
-      case None => cleanVariable(value)
+      case None => SimpleScalaParserUtil.cleanVariable(value)
       case Some(variable) => variable.value
     }
-  }
-
-  @scala.annotation.tailrec
-  final def cleanVariable(value: String): String = {
-    val stripped = stripQuotes(value)
-    (stripped == value) match {
-      case false => cleanVariable(stripped)
-      case true => {
-        val stripped2 = stripTrailingCommas(value)
-          (stripped2 == value) match {
-          case false => cleanVariable(stripped2)
-          case true => value
-        }
-      }
-    }
-  }
-
-  /**
-   * Removes leading and trailing quotes
-   */
-  def stripQuotes(value: String): String = {
-    value.stripPrefix("\"").stripSuffix("\"").trim
-  }
-
-  /**
-   * Removes leading and trailing quotes
-   */
-  def stripTrailingCommas(value: String): String = {
-    value.stripSuffix(",").trim
   }
 
   /**
@@ -143,20 +101,62 @@ trait SimpleScalaParser {
 
 object SimpleScalaParserUtil {
 
-  @scala.annotation.tailrec
-  def definesVariable(line: String): Boolean = {
-    val trimmed = line.trim
+  case class Variable(name: String, value: String)
+
+  def parseVariables(lines: Seq[String]): Seq[Variable] = {
+    lines.flatMap(toVariable(_))
+  }
+
+  def toVariable(value: String): Option[Variable] = {
+    val trimmed = value.trim
     (trimmed.startsWith("val ") || trimmed.startsWith("var ")) match {
-      case true => true
+      case true => {
+        trimmed.substring(4).trim.split("=").map(_.trim).toList match {
+          case declaration :: value :: Nil => {
+            Some(Variable(declaration, cleanVariable(value)))
+          }
+          case _ => {
+            None
+          }
+        }
+      }
       case false => {
         trimmed.startsWith("lazy ") match {
-          case false => false
-          case true => {
-            definesVariable(trimmed.substring(5))
-          }
+          case false => None
+          case true => toVariable(trimmed.substring(5))
         }
       }
     }
   }
+
+  @scala.annotation.tailrec
+  final def cleanVariable(value: String): String = {
+    val stripped = stripQuotes(value)
+    (stripped == value) match {
+      case false => cleanVariable(stripped)
+      case true => {
+        val stripped2 = stripTrailingCommas(value)
+          (stripped2 == value) match {
+          case false => cleanVariable(stripped2)
+          case true => value
+        }
+      }
+    }
+  }
+
+  /**
+   * Removes leading and trailing quotes
+   */
+  def stripQuotes(value: String): String = {
+    value.stripPrefix("\"").stripSuffix("\"").trim
+  }
+
+  /**
+   * Removes leading and trailing quotes
+   */
+  def stripTrailingCommas(value: String): String = {
+    value.stripSuffix(",").trim
+  }
+
 
 }
