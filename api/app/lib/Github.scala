@@ -196,7 +196,9 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
             ).map { contents =>
               Some(GithubUtil.toText(contents))
             }.recover {
-              case UnitResponse(404) => None
+              case UnitResponse(404) => {
+                None
+              }
             }
           }
         }
@@ -234,7 +236,9 @@ class MockGithub() extends Github {
   ) (
     implicit ec: ExecutionContext
   ): Future[Option[String]] = {
-    Future { None } // TODO
+    Future {
+      MockGithubData.getFile(projectUri, path)
+    }
   }
 
 }
@@ -244,6 +248,7 @@ object MockGithubData {
   private[this] var githubUserByCodes = scala.collection.mutable.Map[String, GithubUserWithToken]()
   private[this] var userTokens = scala.collection.mutable.Map[UUID, String]()
   private[this] var repositories = scala.collection.mutable.Map[UUID, Repository]()
+  private[this] var files = scala.collection.mutable.Map[String, String]()
 
   def addUser(user: GithubUser, code: String, token: Option[String] = None) {
     githubUserByCodes +== (
@@ -276,5 +281,21 @@ object MockGithubData {
       case Some(repo) => Seq(repo)
     }
   }
+
+  def addFile(
+    projectUri: String,
+    path: String,
+    contents: String
+  ) {
+    files +== (s"${projectUri}.$path" -> contents)
+  }
+
+  def getFile(
+    projectUri: String,
+    path: String
+  ): Option[String] = {
+    files.get(s"${projectUri}.$path")
+  }
+
 
 }
