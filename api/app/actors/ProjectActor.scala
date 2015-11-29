@@ -4,8 +4,10 @@ import com.bryzek.dependency.lib.{Dependencies, GithubDependencyProviderClient}
 import com.bryzek.dependency.v0.models.Project
 import db.ProjectsDao
 import play.api.Logger
+import play.libs.Akka
 import akka.actor.Actor
 import java.util.UUID
+import scala.concurrent.ExecutionContext
 
 object ProjectActor {
 
@@ -18,7 +20,7 @@ object ProjectActor {
 
 class ProjectActor extends Actor {
 
-  import scala.concurrent.ExecutionContext.Implicits.global
+  implicit val projectExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("project-actor-context")
 
   var dataProject: Option[Project] = None
   var dataDependencies: Option[Dependencies] = None
