@@ -1,11 +1,11 @@
 package com.bryzek.dependency.actors
 
 import play.api.libs.concurrent.Akka
-import play.api.libs.concurrent.Execution.Implicits._
 import akka.actor._
 import play.api.Logger
 import play.api.Play.current
 import java.util.UUID
+import scala.concurrent.ExecutionContext
 
 object MainActor {
 
@@ -42,6 +42,8 @@ class MainActor(name: String) extends Actor with ActorLogging {
   private[this] val projectActors = scala.collection.mutable.Map[UUID, ActorRef]()
   private[this] val libraryActors = scala.collection.mutable.Map[UUID, ActorRef]()
   private[this] val languageActors = scala.collection.mutable.Map[UUID, ActorRef]()
+
+  implicit val mainActorExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("main-actor-context")
 
   Akka.system.scheduler.schedule(15.minutes, 1.day, periodicActor, PeriodicActor.Messages.SyncProjects)
   Akka.system.scheduler.schedule(15.minutes, 1.day, periodicActor, PeriodicActor.Messages.SyncLibraries)
