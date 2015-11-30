@@ -13,6 +13,7 @@ object ProjectLibraryVersionsDao {
   private[this] val BaseQuery = s"""
     select library_versions.guid as library_version_guid,
            library_versions.version as library_version_version,
+           library_versions.cross_build_version as library_version_cross_build_version,
            ${AuditsDao.all("library_versions", Some("library_version"))},
            libraries.guid as library_version_library_guid,
            libraries.group_id as library_version_library_group_id,
