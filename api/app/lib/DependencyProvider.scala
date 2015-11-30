@@ -24,15 +24,8 @@ case class Dependencies(
     languages match {
       case None => None
       case Some(langs) => {
-        langs.sortBy { l => Version(l.version) }.reverse.toList match {
-          case Nil => None
-          case one :: Nil => {
-            Some(DependencyHelper.crossBuildVersion(one))
-          }
-          case multiple => {
-            Logger.warn(s"Found multiple language versions[${multiple.mkString(", ")}]. Using first")
-            Some(DependencyHelper.crossBuildVersion(multiple.head))
-          }
+        langs.sortBy { l => Version(l.version) }.reverse.find(_.name == ProgrammingLanguage.Scala.toString).headOption.map { lang =>
+          DependencyHelper.crossBuildVersion(lang)
         }
       }
     }
