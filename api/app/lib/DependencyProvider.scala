@@ -45,7 +45,7 @@ private[lib] object DependencyHelper {
   def crossBuildVersion(lang: LanguageForm): Version = {
     val version = Version(lang.version)
     ProgrammingLanguage(lang.name) match {
-      case ProgrammingLanguage.Scala => {
+      case ProgrammingLanguage.Scala |  ProgrammingLanguage.Sbt=> {
         version.tags.head match {
           case Tag.Semver(major, minor, _, _) => {
             // This is most common. We just want major and minor

@@ -1,1 +1,2 @@
  - add support for sbt versions
+ - consider renaming ProgrammingLanguage enum to Binary

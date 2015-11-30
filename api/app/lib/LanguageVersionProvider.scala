@@ -18,6 +18,7 @@ trait LanguageVersionProvider {
 object DefaultLanguageVersionProvider extends LanguageVersionProvider {
 
   private[this] val ScalaUrl = "http://www.scala-lang.org/download/all.html"
+  private[this] val SbtUrl = "https://dl.bintray.com/sbt/native-packages/sbt/"
 
   override def versions(
     language: ProgrammingLanguage
@@ -25,6 +26,9 @@ object DefaultLanguageVersionProvider extends LanguageVersionProvider {
     language match {
       case ProgrammingLanguage.Scala => {
         fetchScalaVersions()
+      }
+      case ProgrammingLanguage.Sbt => {
+        fetchSbtVersions()
       }
       case ProgrammingLanguage.UNDEFINED(name) => {
         Logger.warn(s"Do not know how to find versions for the programming language[$name]")
@@ -37,6 +41,12 @@ object DefaultLanguageVersionProvider extends LanguageVersionProvider {
     RemoteDirectory.fetch(ScalaUrl) { name =>
       name.toLowerCase.startsWith("scala ")
     }.files.flatMap { toVersion(_) }
+  }
+
+  def fetchSbtVersions(): Seq[Version] = {
+    RemoteDirectory.fetch(SbtUrl)().directories.flatMap { dir =>
+      toVersion(StringUtils.stripEnd(dir, "/"))
+    }
   }
 
   def toVersion(value: String): Option[Version] = {

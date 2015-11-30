@@ -14,6 +14,13 @@ class LanguageVersionProviderSpec extends PlaySpecification {
     versions.contains("0.11.7") must beFalse
   }
 
+  "sbt" in {
+    val versions = DefaultLanguageVersionProvider.versions(ProgrammingLanguage.Sbt).map(_.value)
+    versions.contains("0.13.8") must beTrue
+    versions.contains("0.13.9") must beTrue
+    versions.contains("0.0.1") must beFalse
+  }
+
   "undefined" in {
     DefaultLanguageVersionProvider.versions(ProgrammingLanguage.UNDEFINED("other")) must be(Nil)
   }

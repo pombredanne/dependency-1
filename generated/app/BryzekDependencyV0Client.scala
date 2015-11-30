@@ -167,7 +167,14 @@ package com.bryzek.dependency.v0.models {
 
   object ProgrammingLanguage {
 
+    /**
+     * See http://www.scala-lang.org/
+     */
     case object Scala extends ProgrammingLanguage { override def toString = "scala" }
+    /**
+     * See http://www.scala-sbt.org/
+     */
+    case object Sbt extends ProgrammingLanguage { override def toString = "sbt" }
 
     /**
      * UNDEFINED captures values that are sent either in error or
@@ -185,7 +192,7 @@ package com.bryzek.dependency.v0.models {
      * lower case to avoid collisions with the camel cased values
      * above.
      */
-    val all = Seq(Scala)
+    val all = Seq(Scala, Sbt)
 
     private[this]
     val byName = all.map(x => x.toString.toLowerCase -> x).toMap

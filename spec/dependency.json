@@ -15,7 +15,8 @@
 
 	"programming_language": {
 	    "values": [
-		{ "name": "scala" }
+		{ "name": "scala", "description": "See http://www.scala-lang.org/" },
+		{ "name": "sbt", "description": "See http://www.scala-sbt.org/" }
 	    ]
 	}
     },
