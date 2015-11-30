@@ -52,25 +52,18 @@ class ProjectActor extends Actor {
     ) {
       dataProject.foreach { project =>
         UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
-          GithubDependencyProviderClient.instance(user).dependencies(project).map { result =>
-            result match {
-              case None => {
-                Logger.warn(s"project[${project.guid}] name[${project.name}]: no build file found")
-              }
-              case Some(dependencies) => {
-                println(s" - dependencies: $dependencies")
-                ProjectsDao.setDependencies(
-                  createdBy = MainActor.SystemUser,
-                  project = project,
-                  languages = dependencies.languages,
-                  libraries = dependencies.librariesAndPlugins.map(_.map { artifact =>
-                    artifact.toLibraryForm(
-                      crossBuildVersion = dependencies.crossBuildVersion()
-                    )
-                  })
+          GithubDependencyProviderClient.instance(user).dependencies(project).map { dependencies =>
+            println(s" - dependencies: $dependencies")
+            ProjectsDao.setDependencies(
+              createdBy = MainActor.SystemUser,
+              project = project,
+              languages = dependencies.languages,
+              libraries = dependencies.librariesAndPlugins.map(_.map { artifact =>
+                artifact.toLibraryForm(
+                  crossBuildVersion = dependencies.crossBuildVersion()
                 )
-              }
-            }
+              })
+            )
           }.recover {
             case e => {
               Logger.error(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")

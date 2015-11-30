@@ -70,6 +70,6 @@ trait DependencyProvider {
     * you are indicating that the project was not found or does not
     * exist.
     */
-  def dependencies(project: Project)(implicit ec: ExecutionContext): Future[Option[Dependencies]]
+  def dependencies(project: Project)(implicit ec: ExecutionContext): Future[Dependencies]
 
 }

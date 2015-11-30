@@ -74,24 +74,20 @@ private[lib] case class GithubDependencyProvider(
 
   private val BuildSbtFilename = "build.sbt"
   private val ProjectPluginsSbtFilename = "project/plugins.sbt"
+  private val BuildPropertiesFilename = "project/build.properties"
 
-  override def dependencies(project: Project)(implicit ec: ExecutionContext): Future[Option[Dependencies]] = {
+  override def dependencies(project: Project)(implicit ec: ExecutionContext): Future[Dependencies] = {
     for {
       build <- getBuildDependencies(project.uri)
       plugins <- getPluginsDependencies(project.uri)
+      properties <- parseProperties(project.uri)
     } yield {
-      (build, plugins) match {
-        case (None, None) => None
-        case (Some(build), None) => Some(build)
-        case (None, Some(plugins)) => Some(plugins)
-        case (Some(build), Some(plugins)) => {
-          Some(
-            build.copy(
-              resolverUris = Some((plugins.resolverUris.getOrElse(Nil) ++ build.resolverUris.getOrElse(Nil)).distinct),
-              plugins = Some((plugins.plugins.getOrElse(Nil) ++ build.plugins.getOrElse(Nil)).distinct)
-            )
-          )
-        }
+      Seq(build, plugins, properties).flatten.foldLeft(Dependencies()) { case (all, dep) =>
+        all.copy(
+          resolverUris = Some((all.resolverUris.getOrElse(Nil) ++ dep.resolverUris.getOrElse(Nil)).distinct),
+          plugins = Some((all.plugins.getOrElse(Nil) ++ dep.plugins.getOrElse(Nil)).distinct),
+          languages = Some((all.languages.getOrElse(Nil) ++ dep.languages.getOrElse(Nil)).distinct)
+        )
       }
     }
   }
@@ -111,6 +107,30 @@ private[lib] case class GithubDependencyProvider(
             resolverUris = Some(result.resolverUris)
           )
         )
+      }
+    }
+  }
+
+  private[this] def parseProperties(
+    projectUri: String
+  ) (
+    implicit ec: ExecutionContext
+  ): Future[Option[Dependencies]] = {
+    github.file(user, projectUri, BuildPropertiesFilename).map { result =>
+      result.flatMap { text =>
+        val properties = PropertiesParser(text)
+        properties.get("sbt.version").map { value =>
+          Dependencies(
+            Some(
+              Seq(
+                LanguageForm(
+                  name = "sbt",
+                  version = value
+                )
+              )
+            )
+          )
+        }
       }
     }
   }
