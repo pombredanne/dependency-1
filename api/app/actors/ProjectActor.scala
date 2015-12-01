@@ -53,7 +53,7 @@ class ProjectActor extends Actor {
       dataProject.foreach { project =>
         UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
           GithubDependencyProviderClient.instance(user).dependencies(project).map { dependencies =>
-            println(s" - dependencies: $dependencies")
+            println(s" - project[${project.guid}] name[${project.name}] dependencies: $dependencies")
             ProjectsDao.setDependencies(
               createdBy = MainActor.SystemUser,
               project = project,
