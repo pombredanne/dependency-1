@@ -149,7 +149,7 @@ private[lib] case class GithubDependencyProvider(
     github.file(user, projectUri, BuildSbtFilename).map { result =>
       result.flatMap { text =>
         val result = ProjectPluginsSbtScalaParser(
-          description = s"Project[${projectUri}] file[$BuildPropertiesFilename]",
+          description = s"Project[${projectUri}] file[$BuildSbtFilename]",
           contents = text
         )
 
