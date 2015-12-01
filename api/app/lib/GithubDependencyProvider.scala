@@ -99,7 +99,10 @@ private[lib] case class GithubDependencyProvider(
   ): Future[Option[Dependencies]] = {
     github.file(user, projectUri, BuildSbtFilename).map { result =>
       result.flatMap { text =>
-        val result = BuildSbtScalaParser(text)
+        val result = BuildSbtScalaParser(
+          description = s"Project[${projectUri}] file[$BuildSbtFilename]",
+          contents = text
+        )
         Some(
           Dependencies(
             languages = Some(result.languages),
@@ -118,7 +121,10 @@ private[lib] case class GithubDependencyProvider(
   ): Future[Option[Dependencies]] = {
     github.file(user, projectUri, BuildPropertiesFilename).map { result =>
       result.flatMap { text =>
-        val properties = PropertiesParser(text)
+        val properties = PropertiesParser(
+          description = s"Project[${projectUri}] file[$BuildPropertiesFilename]",
+          contents = text
+        )
         properties.get("sbt.version").map { value =>
           Dependencies(
             Some(
@@ -142,7 +148,11 @@ private[lib] case class GithubDependencyProvider(
   ): Future[Option[Dependencies]] = {
     github.file(user, projectUri, BuildSbtFilename).map { result =>
       result.flatMap { text =>
-        val result = ProjectPluginsSbtScalaParser(text)
+        val result = ProjectPluginsSbtScalaParser(
+          description = s"Project[${projectUri}] file[$BuildPropertiesFilename]",
+          contents = text
+        )
+
         Some(
           Dependencies(
             plugins = Some(result.plugins),

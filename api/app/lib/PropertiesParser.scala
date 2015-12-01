@@ -1,6 +1,9 @@
 package com.bryzek.dependency.lib
 
-case class PropertiesParser(contents: String) extends SimpleScalaParser {
+case class PropertiesParser(
+  override val description: String,
+  contents: String
+) extends SimpleScalaParser {
 
   private[this] lazy val properties: Map[String, String] = {
     var internal = scala.collection.mutable.Map[String, String]()

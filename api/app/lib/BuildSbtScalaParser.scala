@@ -6,11 +6,14 @@ import com.bryzek.dependency.v0.models.LanguageForm
   * Takes the contents of a build.sbt file and parses it, providing
   * access to its dependencies (libraries, languages and versions).
   */
-case class BuildSbtScalaParser(contents: String) extends SimpleScalaParser {
+case class BuildSbtScalaParser(
+  override val description: String,
+  contents: String
+) extends SimpleScalaParser {
 
   private val LanguageScala = "scala"
 
-  private lazy val pluginParser = ProjectPluginsSbtScalaParser(contents)
+  private lazy val pluginParser = ProjectPluginsSbtScalaParser(description, contents)
 
   val resolverUris = pluginParser.resolverUris
 

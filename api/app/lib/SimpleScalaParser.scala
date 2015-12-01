@@ -5,6 +5,12 @@ import com.bryzek.dependency.v0.models.LibraryForm
 
 trait SimpleScalaParser {
 
+  /**
+    * Label identifying what we are parsing. Used in log messages to
+    * point back to the actual file.
+    */
+  def description: String
+
   def contents: String
 
   lazy val lines = parseIntoLines(contents)
@@ -76,13 +82,13 @@ trait SimpleScalaParser {
 
     substring.replaceAll("%%", "%").split("%").map(_.trim).toList match {
       case Nil => {
-        Left(s"Could not parse library from[$value]")
+        Left(s"$description: Could not parse library from[$value]")
       }
       case groupId :: Nil => {
-        Left(s"Could not parse library from[$value] - only found groupId[$groupId] but missing artifactId and version")
+        Left(s"$description: Could not parse library from[$value] - only found groupId[$groupId] but missing artifactId and version")
       }
       case groupId :: artifactId :: Nil => {
-        Left(s"Could not parse library from[$value] - only found groupId[$groupId] and artifactId[$artifactId] but missing version")
+        Left(s"$description: Could not parse library from[$value] - only found groupId[$groupId] and artifactId[$artifactId] but missing version")
       }
       case groupId :: artifactId :: version :: more => {
         Right(
