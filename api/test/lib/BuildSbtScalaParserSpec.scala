@@ -15,7 +15,7 @@ lazy val root = project
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser(contents)
+      val result = BuildSbtScalaParser("test", contents)
       result.languages must beEqualTo(Nil)
       result.libraries must beEqualTo(Nil)
     }
@@ -46,7 +46,7 @@ lazy val root = project
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser(contents)
+      val result = BuildSbtScalaParser("test", contents)
       result.languages must beEqualTo(Seq(LanguageForm("scala", "2.11.7")))
       result.libraries must beEqualTo(
         Seq(
@@ -72,7 +72,7 @@ lazy val root = project
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser(contents)
+      val result = BuildSbtScalaParser("test", contents)
       result.languages must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
@@ -107,7 +107,7 @@ lazy val www = project
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser(contents)
+      val result = BuildSbtScalaParser("test", contents)
       result.languages must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
@@ -134,7 +134,7 @@ lazy val avro = project
     )
   )
 """
-    val result = BuildSbtScalaParser(contents)
+    val result = BuildSbtScalaParser("test", contents)
     result.languages must beEqualTo(Nil)
     result.libraries must beEqualTo(
       Seq(
@@ -153,7 +153,7 @@ lazy val avro = project
   )
 """
 
-    val result = BuildSbtScalaParser(contents)
+    val result = BuildSbtScalaParser("test", contents)
     result.languages must beEqualTo(Nil)
     result.libraries must beEqualTo(
       Seq(
@@ -181,7 +181,7 @@ lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser(contents)
+      val result = BuildSbtScalaParser("test", contents)
       result.languages must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
