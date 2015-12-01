@@ -55,6 +55,7 @@ trait SimpleScalaParser {
   def parseLibraries(): Seq[Artifact] = {
     lines.
       filter(_.replaceAll("%%", "%").split("%").size >= 2).
+      filter(!_.startsWith(".dependsOn")).
       map(_.stripSuffix(",")).
       map(_.trim).
       flatMap { line =>
