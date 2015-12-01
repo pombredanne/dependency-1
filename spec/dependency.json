@@ -13,7 +13,7 @@
 	    ]
 	},
 
-	"programming_language": {
+	"binary_type": {
 	    "values": [
 		{ "name": "scala", "description": "See http://www.scala-lang.org/" },
 		{ "name": "sbt", "description": "See http://www.scala-sbt.org/" }
@@ -40,35 +40,35 @@
 	},
 
 
-	"language": {
+	"binary": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
-		{ "name": "name", "type": "programming_language" },
+		{ "name": "name", "type": "binary_type" },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},
 
-	"language_form": {
+	"binary_form": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
-		{ "name": "version", "type": "string", "description": "If provided, we automatically record this version of theacc language." }
+		{ "name": "version", "type": "string", "description": "If provided, we automatically record this version of theacc binary." }
 	    ]
 	},
 
-	"language_version": {
+	"binary_version": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
-		{ "name": "language", "type": "language" },
+		{ "name": "binary", "type": "binary" },
 		{ "name": "version", "type": "string" },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},
 
-	"project_language_version": {
-	    "description": "A projection of projects and the specific language versions the project is dependent on",
+	"project_binary_version": {
+	    "description": "A projection of projects and the specific binary versions the project is dependent on",
 	    "fields": [
 		{ "name": "project", "type": "project" },
-		{ "name": "language_version", "type": "language_version" }
+		{ "name": "binary_version", "type": "binary_version" }
 	    ]
 	},	    
 	
@@ -155,11 +155,11 @@
 	    ]
 	},
 	
-	"language_recommendation": {
+	"binary_recommendation": {
 	    "fields": [
-		{ "name": "from", "type": "language_version" },
-		{ "name": "to", "type": "language_version" },
-		{ "name": "latest", "type": "language_version" }
+		{ "name": "from", "type": "binary_version" },
+		{ "name": "to", "type": "binary_version" },
+		{ "name": "latest", "type": "binary_version" }
 	    ]
 	},
 
@@ -307,9 +307,9 @@
                         { "name": "version", "type": "string", "description": "Find projects that are dependent on a library with this version number. Exact match", "required": false },
                         { "name": "library_guid", "type": "uuid", "description": "Find projects that are dependent on a library", "required": false },
                         { "name": "library_version_guid", "type": "uuid", "description": "Find projects that are dependent on a specific library version", "required": false },
-                        { "name": "language", "type": "string", "description": "Find projects that are dependent on this language. Case in-sensitive. Exact match", "required": false },
-                        { "name": "language_guid", "type": "uuid", "description": "Find projects that are dependent on a language", "required": false },
-                        { "name": "language_version_guid", "type": "uuid", "description": "Find projects that are dependent on a language", "required": false },
+                        { "name": "binary", "type": "string", "description": "Find projects that are dependent on this binary. Case in-sensitive. Exact match", "required": false },
+                        { "name": "binary_guid", "type": "uuid", "description": "Find projects that are dependent on a binary", "required": false },
+                        { "name": "binary_version_guid", "type": "uuid", "description": "Find projects that are dependent on a binary", "required": false },
 			{ "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
@@ -385,7 +385,7 @@
                     "parameters": [
                         { "name": "guid", "type": "uuid", "description": "Find library with this guid. Exact match", "required": false },
 			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
-                        { "name": "project_guid", "type": "uuid", "description": "Find languages associated with this project", "required": false },
+                        { "name": "project_guid", "type": "uuid", "description": "Find binaries associated with this project", "required": false },
                         { "name": "group_id", "type": "string", "description": "Find library with this group_id. Case sensitive. Exact match", "required": false },
                         { "name": "artifact_id", "type": "string", "description": "Find library with this artifact_id. Case sensitive. Exact match", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
@@ -439,8 +439,8 @@
                     "parameters": [
                         { "name": "guid", "type": "uuid", "description": "Find library version with this guid. Exact match", "required": false },
 			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
-                        { "name": "library_guid", "type": "uuid", "description": "Find languages associated with this language", "required": false },
-                        { "name": "project_guid", "type": "uuid", "description": "Find languages associated with this project", "required": false },
+                        { "name": "library_guid", "type": "uuid", "description": "Find binaries associated with this binary", "required": false },
+                        { "name": "project_guid", "type": "uuid", "description": "Find binaries associated with this project", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
@@ -464,31 +464,31 @@
             ]
         },
 
-	"language": {
+	"binary": {
             "operations": [
                 {
                     "method": "GET",
-                    "description": "Search languages. Results are paginated",
+                    "description": "Search binaries. Results are paginated",
                     "parameters": [
-                        { "name": "guid", "type": "uuid", "description": "Find language with this guid. Exact match", "required": false },
+                        { "name": "guid", "type": "uuid", "description": "Find binary with this guid. Exact match", "required": false },
 			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
-                        { "name": "project_guid", "type": "uuid", "description": "Find languages associated with this project", "required": false },
+                        { "name": "project_guid", "type": "uuid", "description": "Find binaries associated with this project", "required": false },
                         { "name": "name", "type": "string", "description": "Find project with this name. Case in-sensitive. Exact match", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
                     "responses": {
-                        "200": { "type": "[language]" },
+                        "200": { "type": "[binary]" },
                         "401": { "type": "unit" }
                     }
                 },
 
                 {
                     "method": "GET",
-                    "description": "Returns information about the language with this guid.",
+                    "description": "Returns information about the binary with this guid.",
                     "path": "/:guid",
                     "responses": {
-                        "200": { "type": "language" },
+                        "200": { "type": "binary" },
                         "401": { "type": "unit" },
                         "404": { "type": "unit" }
                     }
@@ -496,10 +496,10 @@
 
                 {
                     "method": "POST",
-                    "description": "Create a new language.",
-                    "body": { "type": "language_form" },
+                    "description": "Create a new binary.",
+                    "body": { "type": "binary_form" },
                     "responses": {
-                        "201": { "type": "language" },
+                        "201": { "type": "binary" },
                         "401": { "type": "unit" },
                         "409": { "type": "[io.flow.common.v0.models.error]" }
                     }
@@ -537,31 +537,31 @@
 	    ]
 	},
 
-	"language_version": {
+	"binary_version": {
             "operations": [
                 {
                     "method": "GET",
-                    "description": "Search language versions. Results are paginated",
+                    "description": "Search binary versions. Results are paginated",
                     "parameters": [
-                        { "name": "guid", "type": "uuid", "description": "Find language version with this guid. Exact match", "required": false },
+                        { "name": "guid", "type": "uuid", "description": "Find binary version with this guid. Exact match", "required": false },
 			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
-                        { "name": "language_guid", "type": "uuid", "description": "Find languages associated with this language", "required": false },
-                        { "name": "project_guid", "type": "uuid", "description": "Find languages associated with this project", "required": false },
+                        { "name": "binary_guid", "type": "uuid", "description": "Find binaries associated with this binary", "required": false },
+                        { "name": "project_guid", "type": "uuid", "description": "Find binaries associated with this project", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
                     "responses": {
-                        "200": { "type": "[language_version]" },
+                        "200": { "type": "[binary_version]" },
                         "401": { "type": "unit" }
                     }
                 },
 
                 {
                     "method": "GET",
-                    "description": "Returns information about the language version with this guid.",
+                    "description": "Returns information about the binary version with this guid.",
                     "path": "/:guid",
                     "responses": {
-                        "200": { "type": "language_version" },
+                        "200": { "type": "binary_version" },
                         "401": { "type": "unit" },
                         "404": { "type": "unit" }
                     }
@@ -570,20 +570,20 @@
             ]
         },
 
-	"project_language_version": {
+	"project_binary_version": {
 	    "operations": [
 		{
                     "method": "GET",
-                    "description": "Get detailed information on every project using this language, including the precise version",
+                    "description": "Get detailed information on every project using this binary, including the precise version",
                     "parameters": [
 			{ "name": "project_guid", "type": "uuid", "description": "Filter for this project", "required": false },
-			{ "name": "language_guid", "type": "uuid", "description": "Filter for this language", "required": false },
-			{ "name": "language_version_guid", "type": "uuid", "description": "Filter for this language version", "required": false },
+			{ "name": "binary_guid", "type": "uuid", "description": "Filter for this binary", "required": false },
+			{ "name": "binary_version_guid", "type": "uuid", "description": "Filter for this binary version", "required": false },
 			{ "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
 			{ "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
                     "responses": {
-			"200": { "type": "[project_language_version]" },
+			"200": { "type": "[project_binary_version]" },
 			"401": { "type": "unit" }
                     }
 		}
@@ -609,19 +609,19 @@
 	    ]
 	},
 	
-	"language_recommendation": {
-	    "path": "/recommendations/languages",
+	"binary_recommendation": {
+	    "path": "/recommendations/binaries",
 
 	    "operations": [
 		{
                     "method": "GET",
 		    "path": "/projects/:project_guid",
-                    "description": "Get recommendations for which languages to upgrade",
+                    "description": "Get recommendations for which binaries to upgrade",
                     "parameters": [
 			{ "name": "project_guid", "type": "uuid" }
                     ],
                     "responses": {
-			"200": { "type": "[language_recommendation]" },
+			"200": { "type": "[binary_recommendation]" },
 			"401": { "type": "unit" }
                     }
 		}
@@ -655,7 +655,7 @@
 		{
                     "method": "GET",
                     "parameters": [
-                        { "name": "guid", "type": "uuid", "description": "Find language version with this guid. Exact match", "required": false },
+                        { "name": "guid", "type": "uuid", "description": "Find binary version with this guid. Exact match", "required": false },
 			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
 			{ "name": "user_guid", "type": "uuid", "required": false },
 			{ "name": "project_guid", "type": "uuid", "required": false },

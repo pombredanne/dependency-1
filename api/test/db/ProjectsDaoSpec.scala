@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{LanguageVersion, LibraryVersion, Project, Scms, VersionForm}
+import com.bryzek.dependency.v0.models.{BinaryVersion, LibraryVersion, Project, Scms, VersionForm}
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -79,24 +79,24 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "setDependencies" must {
 
-    "set languages" in {
+    "set binaries" in {
       val project = createProject()
-      val language = createLanguageForm()
-      ProjectsDao.setDependencies(systemUser, project, languages = Some(Seq(language)))
-      LanguagesDao.findAll(projectGuid = Some(project.guid)).map(_.name.toString) must be(Seq(language.name.toString))
+      val binary = createBinaryForm()
+      ProjectsDao.setDependencies(systemUser, project, binaries = Some(Seq(binary)))
+      BinariesDao.findAll(projectGuid = Some(project.guid)).map(_.name.toString) must be(Seq(binary.name.toString))
 
       // Make sure we can reset w/out error
-      ProjectsDao.setDependencies(systemUser, project, languages = Some(Seq(language)))
+      ProjectsDao.setDependencies(systemUser, project, binaries = Some(Seq(binary)))
     }
 
-    "set languages can upgrade version" in {
+    "set binaries can upgrade version" in {
       val project = createProject()
-      val language = createLanguageForm().copy(version = "2.11.6")
-      ProjectsDao.setDependencies(systemUser, project, languages = Some(Seq(language)))
-      LanguageVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.version.toString) must be(Seq("2.11.6"))
+      val binary = createBinaryForm().copy(version = "2.11.6")
+      ProjectsDao.setDependencies(systemUser, project, binaries = Some(Seq(binary)))
+      BinaryVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.version.toString) must be(Seq("2.11.6"))
 
-      ProjectsDao.setDependencies(systemUser, project, languages = Some(Seq(language.copy(version = "2.11.7"))))
-      LanguageVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.version.toString) must be(Seq("2.11.7"))
+      ProjectsDao.setDependencies(systemUser, project, binaries = Some(Seq(binary.copy(version = "2.11.7"))))
+      BinaryVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.version.toString) must be(Seq("2.11.7"))
     }
 
     "set libraries" in {
@@ -202,36 +202,36 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       }
     }
 
-    "with language" must {
+    "with binary" must {
 
-      "language name" in {
-        val (project, version) = createProjectWithLanguage()
+      "binary name" in {
+        val (project, version) = createProjectWithBinary()
 
-        ProjectsDao.findAll(language = Some(version.language.name.toString)).map(_.guid) must be(
+        ProjectsDao.findAll(binary = Some(version.binary.name.toString)).map(_.guid) must be(
           Seq(project.guid)
         )
 
-        ProjectsDao.findAll(language = Some(UUID.randomUUID.toString)) must be(Nil)
+        ProjectsDao.findAll(binary = Some(UUID.randomUUID.toString)) must be(Nil)
       }
 
-      "language guid" in {
-        val (project, version) = createProjectWithLanguage()
+      "binary guid" in {
+        val (project, version) = createProjectWithBinary()
 
-        ProjectsDao.findAll(languageGuid = Some(version.language.guid)).map(_.guid) must be(
+        ProjectsDao.findAll(binaryGuid = Some(version.binary.guid)).map(_.guid) must be(
           Seq(project.guid)
         )
 
-        ProjectsDao.findAll(languageGuid = Some(UUID.randomUUID)) must be(Nil)
+        ProjectsDao.findAll(binaryGuid = Some(UUID.randomUUID)) must be(Nil)
       }
 
-      "language version guid" in {
-        val (project, version) = createProjectWithLanguage()
+      "binary version guid" in {
+        val (project, version) = createProjectWithBinary()
 
-        ProjectsDao.findAll(languageVersionGuid = Some(version.guid)).map(_.guid) must be(
+        ProjectsDao.findAll(binaryVersionGuid = Some(version.guid)).map(_.guid) must be(
           Seq(project.guid)
         )
 
-        ProjectsDao.findAll(languageVersionGuid = Some(UUID.randomUUID)) must be(Nil)
+        ProjectsDao.findAll(binaryVersionGuid = Some(UUID.randomUUID)) must be(Nil)
       }
 
     }

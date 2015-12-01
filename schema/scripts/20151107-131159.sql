@@ -1,4 +1,4 @@
-create or replace function enum(p_value text) returns boolean immutable cost 1 language plpgsql as $$
+create or replace function enum(p_value text) returns boolean immutable cost 1 binary plpgsql as $$
   begin
     if p_value is null then
       return true;
@@ -12,7 +12,7 @@ create or replace function enum(p_value text) returns boolean immutable cost 1 l
   end
 $$;
 
-create or replace function non_empty_trimmed_string(p_value text) returns boolean immutable cost 1 language plpgsql as $$
+create or replace function non_empty_trimmed_string(p_value text) returns boolean immutable cost 1 binary plpgsql as $$
   begin
     if p_value is null or trim(p_value) = '' or trim(p_value) != p_value then
       return false;

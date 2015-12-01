@@ -1,6 +1,6 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.LanguageForm
+import com.bryzek.dependency.v0.models.BinaryForm
 import org.specs2.mutable._
 
 class BuildSbtScalaParserSpec extends Specification {
@@ -16,7 +16,7 @@ lazy val root = project
 
     "parse dependencies" in {
       val result = BuildSbtScalaParser("test", contents)
-      result.languages must beEqualTo(Nil)
+      result.binaries must beEqualTo(Nil)
       result.libraries must beEqualTo(Nil)
     }
 
@@ -47,7 +47,7 @@ lazy val root = project
 
     "parse dependencies" in {
       val result = BuildSbtScalaParser("test", contents)
-      result.languages must beEqualTo(Seq(LanguageForm("scala", "2.11.7")))
+      result.binaries must beEqualTo(Seq(BinaryForm("scala", "2.11.7")))
       result.libraries must beEqualTo(
         Seq(
           Artifact("io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT", true),
@@ -73,7 +73,7 @@ lazy val root = project
 
     "parse dependencies" in {
       val result = BuildSbtScalaParser("test", contents)
-      result.languages must beEqualTo(Nil)
+      result.binaries must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
           Artifact("io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT", true),
@@ -108,7 +108,7 @@ lazy val www = project
 
     "parse dependencies" in {
       val result = BuildSbtScalaParser("test", contents)
-      result.languages must beEqualTo(Nil)
+      result.binaries must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
           Artifact("io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT", true),
@@ -135,7 +135,7 @@ lazy val avro = project
   )
 """
     val result = BuildSbtScalaParser("test", contents)
-    result.languages must beEqualTo(Nil)
+    result.binaries must beEqualTo(Nil)
     result.libraries must beEqualTo(
       Seq(
         Artifact("com.typesafe.akka", "akka-cluster", "2.3.4", true),
@@ -154,7 +154,7 @@ lazy val avro = project
 """
 
     val result = BuildSbtScalaParser("test", contents)
-    result.languages must beEqualTo(Nil)
+    result.binaries must beEqualTo(Nil)
     result.libraries must beEqualTo(
       Seq(
         Artifact("org.scalatest", "scalatest", "2.2.0", true)
@@ -182,7 +182,7 @@ lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
 
     "parse dependencies" in {
       val result = BuildSbtScalaParser("test", contents)
-      result.languages must beEqualTo(Nil)
+      result.binaries must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
           Artifact("io.dropwizard.metrics", "metrics-core", "3.1.0", false),

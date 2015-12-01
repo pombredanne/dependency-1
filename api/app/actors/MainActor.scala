@@ -26,9 +26,9 @@ object MainActor {
     case class LibraryDeleted(guid: UUID)
     case class LibrarySync(guid: UUID)
 
-    case class LanguageCreated(guid: UUID)
-    case class LanguageDeleted(guid: UUID)
-    case class LanguageSync(guid: UUID)
+    case class BinaryCreated(guid: UUID)
+    case class BinaryDeleted(guid: UUID)
+    case class BinarySync(guid: UUID)
 
   }
 }
@@ -41,7 +41,7 @@ class MainActor(name: String) extends Actor with ActorLogging {
 
   private[this] val projectActors = scala.collection.mutable.Map[UUID, ActorRef]()
   private[this] val libraryActors = scala.collection.mutable.Map[UUID, ActorRef]()
-  private[this] val languageActors = scala.collection.mutable.Map[UUID, ActorRef]()
+  private[this] val binaryActors = scala.collection.mutable.Map[UUID, ActorRef]()
 
   implicit val mainActorExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("main-actor-context")
 
@@ -93,22 +93,22 @@ class MainActor(name: String) extends Actor with ActorLogging {
       upsertLibraryActor(guid) ! LibraryActor.Messages.Sync
     }
 
-    case MainActor.Messages.LanguageCreated(guid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.LanguageCreated($guid)"
+    case MainActor.Messages.BinaryCreated(guid) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.BinaryCreated($guid)"
     ) {
-      upsertLanguageActor(guid) ! LanguageActor.Messages.Sync
+      upsertBinaryActor(guid) ! BinaryActor.Messages.Sync
     }
 
-    case MainActor.Messages.LanguageSync(guid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.LanguageSync($guid)"
+    case MainActor.Messages.BinarySync(guid) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.BinarySync($guid)"
     ) {
-      languageActors -= guid
+      binaryActors -= guid
     }
 
-    case MainActor.Messages.LanguageDeleted(guid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.LanguageDeleted($guid)"
+    case MainActor.Messages.BinaryDeleted(guid) => Util.withVerboseErrorHandler(
+      s"MainActor.Messages.BinaryDeleted($guid)"
     ) {
-      upsertLanguageActor(guid) ! LanguageActor.Messages.Sync
+      upsertBinaryActor(guid) ! BinaryActor.Messages.Sync
     }
 
     case m: Any => {
@@ -135,11 +135,11 @@ class MainActor(name: String) extends Actor with ActorLogging {
     }
   }
 
-  def upsertLanguageActor(guid: UUID): ActorRef = {
-    languageActors.lift(guid).getOrElse {
-      val ref = Akka.system.actorOf(Props[LanguageActor], name = s"$name:languageActor:$guid")
-      ref ! LanguageActor.Messages.Data(guid)
-      languageActors += (guid -> ref)
+  def upsertBinaryActor(guid: UUID): ActorRef = {
+    binaryActors.lift(guid).getOrElse {
+      val ref = Akka.system.actorOf(Props[BinaryActor], name = s"$name:binaryActor:$guid")
+      ref ! BinaryActor.Messages.Data(guid)
+      binaryActors += (guid -> ref)
       ref
     }
   }

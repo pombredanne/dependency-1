@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.lib.Version
-import com.bryzek.dependency.v0.models.{Language, LanguageVersion}
+import com.bryzek.dependency.v0.models.{Binary, BinaryVersion}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
@@ -11,48 +11,48 @@ import play.api.libs.json._
 import java.util.UUID
 import scala.util.{Failure, Success, Try}
 
-object LanguageVersionsDao {
+object BinaryVersionsDao {
 
   private[this] val BaseQuery = s"""
-    select language_versions.guid,
-           language_versions.version,
-           ${AuditsDao.all("language_versions")},
-           languages.guid as language_versions_language_guid,
-           languages.name as language_versions_language_name,
-           ${AuditsDao.all("languages", Some("language_versions_language"))}
-      from language_versions
-      join languages on languages.deleted_at is null and languages.guid = language_versions.language_guid
+    select binary_versions.guid,
+           binary_versions.version,
+           ${AuditsDao.all("binary_versions")},
+           binaries.guid as binary_versions_binary_guid,
+           binaries.name as binary_versions_binary_name,
+           ${AuditsDao.all("binaries", Some("binary_versions_binary"))}
+      from binary_versions
+      join binaries on binaries.deleted_at is null and binaries.guid = binary_versions.binary_guid
      where true
   """
 
   private[this] val InsertQuery = s"""
-    insert into language_versions
-    (guid, language_guid, version, sort_key, created_by_guid, updated_by_guid)
+    insert into binary_versions
+    (guid, binary_guid, version, sort_key, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {language_guid}::uuid, {version}, {sort_key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {binary_guid}::uuid, {version}, {sort_key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  def upsert(createdBy: User, languageGuid: UUID, version: String): LanguageVersion = {
+  def upsert(createdBy: User, binaryGuid: UUID, version: String): BinaryVersion = {
     DB.withConnection { implicit c =>
-      upsertWithConnection(createdBy, languageGuid, version)
+      upsertWithConnection(createdBy, binaryGuid, version)
     }
   }
 
-  private[db] def upsertWithConnection(createdBy: User, languageGuid: UUID, version: String)(
+  private[db] def upsertWithConnection(createdBy: User, binaryGuid: UUID, version: String)(
     implicit c: java.sql.Connection
-  ): LanguageVersion = {
+  ): BinaryVersion = {
     findAllWithConnection(
-      languageGuid = Some(languageGuid),
+      binaryGuid = Some(binaryGuid),
       version = Some(version),
       limit = 1
     ).headOption.getOrElse {
       Try {
-        createWithConnection(createdBy, languageGuid, version)
+        createWithConnection(createdBy, binaryGuid, version)
       } match {
         case Success(version) => version
         case Failure(ex) => {
           findAllWithConnection(
-            languageGuid = Some(languageGuid),
+            binaryGuid = Some(binaryGuid),
             version = Some(version),
             limit = 1
           ).headOption.getOrElse {
@@ -64,19 +64,19 @@ object LanguageVersionsDao {
     }
   }
 
-  def create(createdBy: User, languageGuid: UUID, version: String): LanguageVersion = {
+  def create(createdBy: User, binaryGuid: UUID, version: String): BinaryVersion = {
     DB.withConnection { implicit c =>
-      createWithConnection(createdBy, languageGuid, version)
+      createWithConnection(createdBy, binaryGuid, version)
     }
   }
 
-  def createWithConnection(createdBy: User, languageGuid: UUID, version: String)(implicit c: java.sql.Connection): LanguageVersion = {
+  def createWithConnection(createdBy: User, binaryGuid: UUID, version: String)(implicit c: java.sql.Connection): BinaryVersion = {
     assert(!version.trim.isEmpty, "Version must be non empty")
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
       'guid -> guid,
-      'language_guid -> languageGuid,
+      'binary_guid -> binaryGuid,
       'version -> version.trim,
       'sort_key -> Version(version.trim).sortKey,
       'created_by_guid -> createdBy.guid
@@ -88,14 +88,14 @@ object LanguageVersionsDao {
   }
 
   def softDelete(deletedBy: User, guid: UUID) {
-    SoftDelete.delete("language_versions", deletedBy.guid, guid)
+    SoftDelete.delete("binary_versions", deletedBy.guid, guid)
   }
 
-  def findByLanguageAndVersion(
-    language: Language, version: String
-  ): Option[LanguageVersion] = {
+  def findByBinaryAndVersion(
+    binary: Binary, version: String
+  ): Option[BinaryVersion] = {
     findAll(
-      languageGuid = Some(language.guid),
+      binaryGuid = Some(binary.guid),
       version = Some(version),
       limit = 1
     ).headOption
@@ -103,7 +103,7 @@ object LanguageVersionsDao {
 
   def findByGuid(
     guid: UUID
-  ): Option[LanguageVersion] = {
+  ): Option[BinaryVersion] = {
     DB.withConnection { implicit c =>
       findByGuidWithConnection(guid)
     }
@@ -113,17 +113,17 @@ object LanguageVersionsDao {
     guid: UUID
   ) (
     implicit c: java.sql.Connection
-  ): Option[LanguageVersion] = {
+  ): Option[BinaryVersion] = {
     findAllWithConnection(guid = Some(guid), limit = 1).headOption
   }
 
   def findAll(
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    languageGuid: Option[UUID] = None,
+    binaryGuid: Option[UUID] = None,
     projectGuid: Option[UUID] = None,
     version: Option[String] = None,
-    greaterThanVersion: Option[LanguageVersion] = None,
+    greaterThanVersion: Option[BinaryVersion] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -132,7 +132,7 @@ object LanguageVersionsDao {
       findAllWithConnection(
         guid = guid,
         guids = guids,
-        languageGuid = languageGuid,
+        binaryGuid = binaryGuid,
         projectGuid = projectGuid,
         version = version,
         greaterThanVersion = greaterThanVersion,
@@ -146,40 +146,40 @@ object LanguageVersionsDao {
   def findAllWithConnection(
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    languageGuid: Option[UUID] = None,
+    binaryGuid: Option[UUID] = None,
     projectGuid: Option[UUID] = None,
     version: Option[String] = None,
-    greaterThanVersion: Option[LanguageVersion] = None,
+    greaterThanVersion: Option[BinaryVersion] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ) (
     implicit c: java.sql.Connection
-  ): Seq[LanguageVersion] = {
+  ): Seq[BinaryVersion] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      guid.map { v => s"and language_versions.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids(s"language_versions.guid", _) },
-      languageGuid.map { v => s"and language_versions.language_guid = {language_guid}::uuid" },
-      projectGuid.map { v => s"and language_versions.guid in (select language_version_guid from project_language_versions where deleted_at is null and project_guid = {project_guid}::uuid)" },
-      version.map { v => s"and lower(language_versions.version) = lower(trim({version}))" },
+      guid.map { v => s"and binary_versions.guid = {guid}::uuid" },
+      guids.map { Filters.multipleGuids(s"binary_versions.guid", _) },
+      binaryGuid.map { v => s"and binary_versions.binary_guid = {binary_guid}::uuid" },
+      projectGuid.map { v => s"and binary_versions.guid in (select binary_version_guid from project_binary_versions where deleted_at is null and project_guid = {project_guid}::uuid)" },
+      version.map { v => s"and lower(binary_versions.version) = lower(trim({version}))" },
       greaterThanVersion.map { v =>
-        s"and language_versions.sort_key > (select sort_key from language_versions where guid = {greater_than_version_guid}::uuid)"
+        s"and binary_versions.sort_key > (select sort_key from binary_versions where guid = {greater_than_version_guid}::uuid)"
       },
-      isDeleted.map(Filters.isDeleted("language_versions", _)),
-      Some(s"order by language_versions.sort_key desc, language_versions.created_at limit ${limit} offset ${offset}")
+      isDeleted.map(Filters.isDeleted("binary_versions", _)),
+      Some(s"order by binary_versions.sort_key desc, binary_versions.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
-      languageGuid.map('language_guid -> _.toString),
+      binaryGuid.map('binary_guid -> _.toString),
       projectGuid.map('project_guid -> _.toString),
       version.map('version -> _.toString),
       greaterThanVersion.map('greater_than_version_guid -> _.guid)
     ).flatten
 
     SQL(sql).on(bind: _*).as(
-      com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.table("language_versions").*
+      com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.table("binary_versions").*
     )
   }
 

@@ -1,14 +1,14 @@
 package com.bryzek.dependency.actors
 
-import com.bryzek.dependency.lib.DefaultLanguageVersionProvider
-import com.bryzek.dependency.v0.models.Language
+import com.bryzek.dependency.lib.DefaultBinaryVersionProvider
+import com.bryzek.dependency.v0.models.Binary
 import io.flow.play.postgresql.Pager
-import db.{LanguagesDao, LanguageVersionsDao, UsersDao}
+import db.{BinariesDao, BinaryVersionsDao, UsersDao}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
 
-object LanguageActor {
+object BinaryActor {
 
   object Messages {
     case class Data(guid: UUID)
@@ -17,33 +17,33 @@ object LanguageActor {
 
 }
 
-class LanguageActor extends Actor {
+class BinaryActor extends Actor {
 
-  var dataLanguage: Option[Language] = None
+  var dataBinary: Option[Binary] = None
 
   def receive = {
 
-    case LanguageActor.Messages.Data(guid: UUID) => Util.withVerboseErrorHandler(
-      s"LanguageActor.Messages.Data($guid)"
+    case BinaryActor.Messages.Data(guid: UUID) => Util.withVerboseErrorHandler(
+      s"BinaryActor.Messages.Data($guid)"
     ) {
-      dataLanguage = LanguagesDao.findByGuid(guid)
-      self ! LanguageActor.Messages.Sync
+      dataBinary = BinariesDao.findByGuid(guid)
+      self ! BinaryActor.Messages.Sync
     }
 
-    case LanguageActor.Messages.Sync => Util.withVerboseErrorHandler(
-      s"LanguageActor.Messages.Sync"
+    case BinaryActor.Messages.Sync => Util.withVerboseErrorHandler(
+      s"BinaryActor.Messages.Sync"
     ) {
-      dataLanguage.foreach { lang =>
-        DefaultLanguageVersionProvider.versions(lang.name).foreach { version =>
-          // TODO: fetch all versions for this language and store them
+      dataBinary.foreach { lang =>
+        DefaultBinaryVersionProvider.versions(lang.name).foreach { version =>
+          // TODO: fetch all versions for this binary and store them
           println(s"Store version[${version.value}] from lang[$lang]")
-          LanguageVersionsDao.upsert(UsersDao.systemUser, lang.guid, version.value)
+          BinaryVersionsDao.upsert(UsersDao.systemUser, lang.guid, version.value)
         }
       }
     }
 
     case m: Any => {
-      Logger.error("Language actor got an unhandled mesage: " + m)
+      Logger.error("Binary actor got an unhandled mesage: " + m)
     }
   }
 

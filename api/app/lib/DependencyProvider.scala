@@ -1,11 +1,11 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm, ProgrammingLanguage, Project}
+import com.bryzek.dependency.v0.models.{BinaryForm, LibraryForm, BinaryType, Project}
 import play.api.Logger
 import scala.concurrent.{ExecutionContext, Future}
 
 case class Dependencies(
-  languages: Option[Seq[LanguageForm]] = None,
+  binaries: Option[Seq[BinaryForm]] = None,
   libraries: Option[Seq[Artifact]] = None,
   resolverUris: Option[Seq[String]] = None,
   plugins: Option[Seq[Artifact]] = None
@@ -21,10 +21,10 @@ case class Dependencies(
   }
 
   def crossBuildVersion(): Option[Version] = {
-    languages match {
+    binaries match {
       case None => None
       case Some(langs) => {
-        langs.sortBy { l => Version(l.version) }.reverse.find(_.name == ProgrammingLanguage.Scala.toString).headOption.map { lang =>
+        langs.sortBy { l => Version(l.version) }.reverse.find(_.name == BinaryType.Scala.toString).headOption.map { lang =>
           DependencyHelper.crossBuildVersion(lang)
         }
       }
@@ -35,10 +35,10 @@ case class Dependencies(
 
 private[lib] object DependencyHelper {
 
-  def crossBuildVersion(lang: LanguageForm): Version = {
+  def crossBuildVersion(lang: BinaryForm): Version = {
     val version = Version(lang.version)
-    ProgrammingLanguage(lang.name) match {
-      case ProgrammingLanguage.Scala |  ProgrammingLanguage.Sbt=> {
+    BinaryType(lang.name) match {
+      case BinaryType.Scala |  BinaryType.Sbt=> {
         version.tags.head match {
           case Tag.Semver(major, minor, _, _) => {
             // This is most common. We just want major and minor
@@ -48,7 +48,7 @@ private[lib] object DependencyHelper {
           case _ => version
         }
       }
-      case ProgrammingLanguage.UNDEFINED(_) => {
+      case BinaryType.UNDEFINED(_) => {
         version
       }
     }

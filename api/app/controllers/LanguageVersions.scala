@@ -1,10 +1,10 @@
 package controllers
 
-import db.LanguageVersionsDao
+import db.BinaryVersionsDao
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
-import com.bryzek.dependency.v0.models.LanguageVersion
+import com.bryzek.dependency.v0.models.BinaryVersion
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
@@ -12,24 +12,24 @@ import play.api.libs.json._
 import java.util.UUID
 
 @javax.inject.Singleton
-class LanguageVersions @javax.inject.Inject() (
+class BinaryVersions @javax.inject.Inject() (
   val userTokensClient: UserTokensClient
 ) extends Controller with IdentifiedRestController {
 
   def get(
     guid: Option[UUID],
     guids: Option[Seq[UUID]],
-    languageGuid: Option[UUID],
+    binaryGuid: Option[UUID],
     projectGuid: Option[UUID],
     limit: Long = 25,
     offset: Long = 0
   ) = Identified { request =>
     Ok(
       Json.toJson(
-        LanguageVersionsDao.findAll(
+        BinaryVersionsDao.findAll(
           guid = guid,
           guids = optionalGuids(guids),
-          languageGuid = languageGuid,
+          binaryGuid = binaryGuid,
           projectGuid = projectGuid,
           limit = limit,
           offset = offset
@@ -39,20 +39,20 @@ class LanguageVersions @javax.inject.Inject() (
   }
 
   def getByGuid(guid: UUID) = Identified { request =>
-    withLanguageVersion(guid) { language =>
-      Ok(Json.toJson(language))
+    withBinaryVersion(guid) { binary =>
+      Ok(Json.toJson(binary))
     }
   }
 
-  def withLanguageVersion(guid: UUID)(
-    f: LanguageVersion => Result
+  def withBinaryVersion(guid: UUID)(
+    f: BinaryVersion => Result
   ): Result = {
-    LanguageVersionsDao.findByGuid(guid) match {
+    BinaryVersionsDao.findByGuid(guid) match {
       case None => {
         NotFound
       }
-      case Some(languageVersion) => {
-        f(languageVersion)
+      case Some(binaryVersion) => {
+        f(binaryVersion)
       }
     }
   }

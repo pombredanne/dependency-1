@@ -1,6 +1,6 @@
 package controllers
 
-import db.ProjectLanguageVersionsDao
+import db.ProjectBinaryVersionsDao
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import com.bryzek.dependency.v0.models.json._
@@ -10,23 +10,23 @@ import play.api.libs.json._
 import java.util.UUID
 
 @javax.inject.Singleton
-class ProjectLanguageVersions @javax.inject.Inject() (
+class ProjectBinaryVersions @javax.inject.Inject() (
   val userTokensClient: UserTokensClient
 ) extends Controller with IdentifiedRestController {
 
   def get(
     projectGuid: Option[UUID],
-    languageGuid: Option[UUID],
-    languageVersionGuid: Option[UUID],
+    binaryGuid: Option[UUID],
+    binaryVersionGuid: Option[UUID],
     limit: Long = 25,
     offset: Long = 0
   ) = Identified { request =>
     Ok(
       Json.toJson(
-        ProjectLanguageVersionsDao.findAll(
+        ProjectBinaryVersionsDao.findAll(
           projectGuid = projectGuid,
-          languageGuid = languageGuid,
-          languageVersionGuid = languageVersionGuid,
+          binaryGuid = binaryGuid,
+          binaryVersionGuid = binaryVersionGuid,
           limit = limit,
           offset = offset
         )

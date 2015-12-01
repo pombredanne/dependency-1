@@ -2,8 +2,8 @@
   data: com.bryzek.dependency.lib.UiData,
   project: com.bryzek.dependency.v0.models.Project,
   libraryRecommendations: Seq[com.bryzek.dependency.v0.models.LibraryRecommendation],
-  languageRecommendations: Seq[com.bryzek.dependency.v0.models.LanguageRecommendation],
-  languageVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LanguageVersion],
+  binaryRecommendations: Seq[com.bryzek.dependency.v0.models.BinaryRecommendation],
+  binaryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.BinaryVersion],
   libraryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LibraryVersion],
   isWatching: Boolean
 )(implicit flash: Flash, messages: Messages)
@@ -25,33 +25,33 @@
     <li>@audit(project.audit)</li>
   </ul>
 
-  @if(!languageVersions.isEmpty || !libraryVersions.isEmpty) {
+  @if(!binaryVersions.isEmpty || !libraryVersions.isEmpty) {
     <h3>Recommendations</h3>
-    @if(libraryRecommendations.isEmpty && languageRecommendations.isEmpty) {
+    @if(libraryRecommendations.isEmpty && binaryRecommendations.isEmpty) {
       <em>Awesome - your project is fully up to date!</em>
     } else {
       @if(!libraryRecommendations.isEmpty) {
         @views.html.libraries.recommendationsTable(libraryRecommendations)
       }
-      @if(!languageRecommendations.isEmpty) {
-        @views.html.languages.recommendationsTable(languageRecommendations)
+      @if(!binaryRecommendations.isEmpty) {
+        @views.html.binaries.recommendationsTable(binaryRecommendations)
       }
     }
   }
 
   <h3>Dependencies</h3>
-  @if(languageVersions.isEmpty && libraryVersions.isEmpty) {
+  @if(binaryVersions.isEmpty && libraryVersions.isEmpty) {
     <em>No dependencies found</em>
   } else {
-    @if(!languageVersions.isEmpty) {
-      @views.html.languages.versions.table(languageVersions)
-      @if(languageVersions.hasPrevious || languageVersions.hasNext) {
+    @if(!binaryVersions.isEmpty) {
+      @views.html.binaries.versions.table(binaryVersions)
+      @if(binaryVersions.hasPrevious || binaryVersions.hasNext) {
         <ul class="pager">
-          @if(languageVersions.hasPrevious) {
-            <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = languageVersions.page - 1, librariesPage = libraryVersions.page)">Previous</a></li>
+          @if(binaryVersions.hasPrevious) {
+            <li><a href="@routes.ProjectsController.show(project.guid, binariesPage = binaryVersions.page - 1, librariesPage = libraryVersions.page)">Previous</a></li>
           }
-          @if(languageVersions.hasNext) {
-            <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = languageVersions.page + 1, librariesPage = libraryVersions.page)">Next</a></li>
+          @if(binaryVersions.hasNext) {
+            <li><a href="@routes.ProjectsController.show(project.guid, binariesPage = binaryVersions.page + 1, librariesPage = libraryVersions.page)">Next</a></li>
           }
         </ul>
       }
@@ -62,10 +62,10 @@
       @if(libraryVersions.hasPrevious || libraryVersions.hasNext) {
         <ul class="pager">
           @if(libraryVersions.hasPrevious) {
-            <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = libraryVersions.page, librariesPage = libraryVersions.page - 1)">Previous</a></li>
+            <li><a href="@routes.ProjectsController.show(project.guid, binariesPage = libraryVersions.page, librariesPage = libraryVersions.page - 1)">Previous</a></li>
           }
           @if(libraryVersions.hasNext) {
-            <li><a href="@routes.ProjectsController.show(project.guid, languagesPage = libraryVersions.page, librariesPage = libraryVersions.page + 1)">Next</a></li>
+            <li><a href="@routes.ProjectsController.show(project.guid, binariesPage = libraryVersions.page, librariesPage = libraryVersions.page + 1)">Next</a></li>
           }
         </ul>
       }

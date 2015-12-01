@@ -26,24 +26,24 @@ trait Helpers {
     }
   }
 
-  def createLanguage(
-    form: LanguageForm = createLanguageForm()
-  ): Language = {
-    LanguagesDao.create(systemUser, form).right.getOrElse {
-      sys.error("Failed to create language")
+  def createBinary(
+    form: BinaryForm = createBinaryForm()
+  ): Binary = {
+    BinariesDao.create(systemUser, form).right.getOrElse {
+      sys.error("Failed to create binary")
     }
   }
 
-  def createLanguageForm() = LanguageForm(
-    name = s"z-test-language-${UUID.randomUUID}".toLowerCase,
+  def createBinaryForm() = BinaryForm(
+    name = s"z-test-binary-${UUID.randomUUID}".toLowerCase,
     version = "0.0.1"
   )
 
-  def createLanguageVersion(
-    language: Language = createLanguage(),
+  def createBinaryVersion(
+    binary: Binary = createBinary(),
     version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
-  ): LanguageVersion = {
-    LanguageVersionsDao.create(systemUser, language.guid, version)
+  ): BinaryVersion = {
+    BinaryVersionsDao.create(systemUser, binary.guid, version)
   }
 
   def createLibrary(
@@ -114,24 +114,24 @@ trait Helpers {
     (project, libraryVersion)
   }
 
-  def createProjectWithLanguage(): (Project, LanguageVersion) = {
-    val languageForm = createLanguageForm().copy(
+  def createProjectWithBinary(): (Project, BinaryVersion) = {
+    val binaryForm = createBinaryForm().copy(
       name = createTestName(),
       version = UUID.randomUUID.toString
     )
 
     val project = createProject()
-    ProjectsDao.setDependencies(systemUser, project, languages = Some(Seq(languageForm)))
+    ProjectsDao.setDependencies(systemUser, project, binaries = Some(Seq(binaryForm)))
 
-    val language = LanguagesDao.findByName(languageForm.name).getOrElse {
-      sys.error("Failed to find language")
+    val binary = BinariesDao.findByName(binaryForm.name).getOrElse {
+      sys.error("Failed to find binary")
     }
 
-    val languageVersion = LanguageVersionsDao.findByLanguageAndVersion(language, languageForm.version).getOrElse {
-      sys.error("Failed to find language version")
+    val binaryVersion = BinaryVersionsDao.findByBinaryAndVersion(binary, binaryForm.version).getOrElse {
+      sys.error("Failed to find binary version")
     }
 
-    (project, languageVersion)
+    (project, binaryVersion)
   }
 
   def createUser(

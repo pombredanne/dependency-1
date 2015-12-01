@@ -1,4 +1,4 @@
-@(recommendations: Seq[com.bryzek.dependency.v0.models.LanguageRecommendation])
+@(recommendations: Seq[com.bryzek.dependency.v0.models.BinaryRecommendation])
 
 @if(recommendations.isEmpty) {
   <em>No recommendations</em>
@@ -7,7 +7,7 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Language</th>
+          <th>Binary</th>
           <th>Current</th>
           <th>Recommended</th>
           <th>Latest</th>
@@ -15,7 +15,7 @@
       </thead>
       @recommendations.map { rec =>
         <tr>
-          <td><a href="@routes.LanguagesController.show(rec.from.language.guid)">@rec.from.language.name</a></td>
+          <td><a href="@routes.BinariesController.show(rec.from.binary.guid)">@rec.from.binary.name</a></td>
           <td>@rec.from.version</td>
           <td>@rec.to.version</td>
           <td>@rec.latest.version</td>

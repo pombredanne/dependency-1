@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.actors.MainActor
-import com.bryzek.dependency.v0.models.{Scms, Language, LanguageForm, Library, LibraryForm, Project, ProjectForm}
+import com.bryzek.dependency.v0.models.{Scms, Binary, BinaryForm, Library, LibraryForm, Project, ProjectForm}
 import com.bryzek.dependency.lib.GithubUtil
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
@@ -46,11 +46,11 @@ object ProjectsDao {
     ({guid}::uuid, {project_guid}::uuid, {library_version_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  private[this] val InsertLanguageVersionQuery = """
-    insert into project_language_versions
-    (guid, project_guid, language_version_guid, created_by_guid, updated_by_guid)
+  private[this] val InsertBinaryVersionQuery = """
+    insert into project_binary_versions
+    (guid, project_guid, binary_version_guid, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {project_guid}::uuid, {language_version_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {project_guid}::uuid, {binary_version_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[db] def validate(
@@ -92,47 +92,47 @@ object ProjectsDao {
   def setDependencies(
     createdBy: User,
     project: Project,
-    languages: Option[Seq[LanguageForm]] = None,
+    binaries: Option[Seq[BinaryForm]] = None,
     libraries: Option[Seq[LibraryForm]] = None
   ) {
     DB.withTransaction { implicit c =>
-      languages.map { setLanguageVersions(c, createdBy, project, _) }
+      binaries.map { setBinaryVersions(c, createdBy, project, _) }
       libraries.map { setLibraryVersions(c, createdBy, project, _) }
     }
   }
 
-  private[this] def setLanguageVersions(
+  private[this] def setBinaryVersions(
     implicit c: java.sql.Connection,
     createdBy: User,
     project: Project,
-    languages: Seq[LanguageForm]
+    binaries: Seq[BinaryForm]
   ) {
-    val newGuids = languages.map { form =>
-      val language = LanguagesDao.upsert(createdBy, form) match {
+    val newGuids = binaries.map { form =>
+      val binary = BinariesDao.upsert(createdBy, form) match {
         case Left(errors) => sys.error(errors.mkString(", n"))
-        case Right(language) => language
+        case Right(binary) => binary
       }
-      LanguageVersionsDao.findByLanguageAndVersion(language, form.version).getOrElse {
-        sys.error("Could not create language version")
+      BinaryVersionsDao.findByBinaryAndVersion(binary, form.version).getOrElse {
+        sys.error("Could not create binary version")
       }.guid
     }
 
-    val existingGuids = LanguageVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.guid)
+    val existingGuids = BinaryVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.guid)
 
     val toAdd = newGuids.filter { guid => !existingGuids.contains(guid) }
     val toRemove = existingGuids.filter { guid => !newGuids.contains(guid) }
 
     toAdd.distinct.foreach { guid =>
-      SQL(InsertLanguageVersionQuery).on(
+      SQL(InsertBinaryVersionQuery).on(
         'guid -> UUID.randomUUID,
         'project_guid -> project.guid,
-        'language_version_guid -> guid,
+        'binary_version_guid -> guid,
         'created_by_guid -> createdBy.guid
       ).execute()
     }
 
     toRemove.distinct.foreach { guid =>
-      SoftDelete.delete(c, "project_language_versions", createdBy.guid, ("language_version_guid", Some("::uuid"), guid.toString))
+      SoftDelete.delete(c, "project_binary_versions", createdBy.guid, ("binary_version_guid", Some("::uuid"), guid.toString))
     }
   }
 
@@ -249,14 +249,14 @@ object ProjectsDao {
                              and %s)
   """.trim
 
-  private val FilterLanguageVersions = """
-    and projects.guid in (select project_language_versions.project_guid
-                            from project_language_versions
-                            join language_versions on language_versions.deleted_at is null
-                                                 and language_versions.guid = project_language_versions.language_version_guid
-                            join languages on languages.deleted_at is null
-                                                 and languages.guid = language_versions.language_guid
-                           where project_language_versions.deleted_at is null
+  private val FilterBinaryVersions = """
+    and projects.guid in (select project_binary_versions.project_guid
+                            from project_binary_versions
+                            join binary_versions on binary_versions.deleted_at is null
+                                                 and binary_versions.guid = project_binary_versions.binary_version_guid
+                            join binaries on binaries.deleted_at is null
+                                                 and binaries.guid = binary_versions.binary_guid
+                           where project_binary_versions.deleted_at is null
                              and %s)
   """.trim
 
@@ -269,9 +269,9 @@ object ProjectsDao {
     version: _root_.scala.Option[String] = None,
     libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
     libraryVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-    language: _root_.scala.Option[String] = None,
-    languageGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-    languageVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+    binary: _root_.scala.Option[String] = None,
+    binaryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+    binaryVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -286,9 +286,9 @@ object ProjectsDao {
       version.map { v => FilterLibraryVersions.format("library_versions.version = trim({version})") },
       libraryGuid.map { v => FilterLibraryVersions.format("libraries.guid = {library_guid}::uuid") },
       libraryVersionGuid.map { v => FilterLibraryVersions.format("library_versions.guid = {library_version_guid}::uuid") },
-      language.map { v => FilterLanguageVersions.format("lower(languages.name) = lower(trim({language}))") },
-      languageGuid.map { v => FilterLanguageVersions.format("languages.guid = {language_guid}::uuid") },
-      languageVersionGuid.map { v => FilterLanguageVersions.format("language_versions.guid = {language_version_guid}::uuid") },
+      binary.map { v => FilterBinaryVersions.format("lower(binaries.name) = lower(trim({binary}))") },
+      binaryGuid.map { v => FilterBinaryVersions.format("binaries.guid = {binary_guid}::uuid") },
+      binaryVersionGuid.map { v => FilterBinaryVersions.format("binary_versions.guid = {binary_version_guid}::uuid") },
       isDeleted.map(Filters.isDeleted("projects", _)),
       Some(s"order by projects.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -301,9 +301,9 @@ object ProjectsDao {
       version.map('version -> _.toString),
       libraryGuid.map('library_guid -> _.toString),
       libraryVersionGuid.map('library_version_guid -> _.toString),
-      language.map('language -> _.toString),
-      languageGuid.map('language_guid -> _.toString),
-      languageVersionGuid.map('language_version_guid -> _.toString)
+      binary.map('binary -> _.toString),
+      binaryGuid.map('binary_guid -> _.toString),
+      binaryVersionGuid.map('binary_version_guid -> _.toString)
     ).flatten
 
     DB.withConnection { implicit c =>

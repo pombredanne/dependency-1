@@ -4,7 +4,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   import com.bryzek.dependency.v0.anorm.conversions.Json._
 
-  object ProgrammingLanguage {
+  object BinaryType {
 
     case class Mappings(value: String)
 
@@ -22,9 +22,9 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def table(table: String) = parser(Mappings.prefix(table, "."))
 
-    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ProgrammingLanguage] = {
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.BinaryType] = {
       SqlParser.str(mappings.value) map {
-        case value => com.bryzek.dependency.v0.models.ProgrammingLanguage(value)
+        case value => com.bryzek.dependency.v0.models.BinaryType(value)
       }
     }
 
@@ -50,6 +50,166 @@ package com.bryzek.dependency.v0.anorm.parsers {
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Scms] = {
       SqlParser.str(mappings.value) map {
         case value => com.bryzek.dependency.v0.models.Scms(value)
+      }
+    }
+
+  }
+
+  object Binary {
+
+    case class Mappings(
+      guid: String = "guid",
+      name: String = "name",
+      audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        guid = s"${prefix}${sep}guid",
+        name = s"${prefix}${sep}name",
+        audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Binary] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      com.bryzek.dependency.v0.anorm.parsers.BinaryType.parser(com.bryzek.dependency.v0.anorm.parsers.BinaryType.Mappings(mappings.name)) ~
+      io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
+        case guid ~ name ~ audit => {
+          com.bryzek.dependency.v0.models.Binary(
+            guid = guid,
+            name = name,
+            audit = audit
+          )
+        }
+      }
+    }
+
+  }
+
+  object BinaryForm {
+
+    case class Mappings(
+      name: String = "name",
+      version: String = "version"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        name = s"${prefix}${sep}name",
+        version = s"${prefix}${sep}version"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.BinaryForm] = {
+      SqlParser.str(mappings.name) ~
+      SqlParser.str(mappings.version) map {
+        case name ~ version => {
+          com.bryzek.dependency.v0.models.BinaryForm(
+            name = name,
+            version = version
+          )
+        }
+      }
+    }
+
+  }
+
+  object BinaryRecommendation {
+
+    case class Mappings(
+      from: com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings,
+      to: com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings,
+      latest: com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        from = com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings.prefix(Seq(prefix, "from").filter(!_.isEmpty).mkString("_"), "_"),
+        to = com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings.prefix(Seq(prefix, "to").filter(!_.isEmpty).mkString("_"), "_"),
+        latest = com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings.prefix(Seq(prefix, "latest").filter(!_.isEmpty).mkString("_"), "_")
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.BinaryRecommendation] = {
+      com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.parser(mappings.from) ~
+      com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.parser(mappings.to) ~
+      com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.parser(mappings.latest) map {
+        case from ~ to ~ latest => {
+          com.bryzek.dependency.v0.models.BinaryRecommendation(
+            from = from,
+            to = to,
+            latest = latest
+          )
+        }
+      }
+    }
+
+  }
+
+  object BinaryVersion {
+
+    case class Mappings(
+      guid: String = "guid",
+      binary: com.bryzek.dependency.v0.anorm.parsers.Binary.Mappings,
+      version: String = "version",
+      audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        guid = s"${prefix}${sep}guid",
+        binary = com.bryzek.dependency.v0.anorm.parsers.Binary.Mappings.prefix(Seq(prefix, "binary").filter(!_.isEmpty).mkString("_"), "_"),
+        version = s"${prefix}${sep}version",
+        audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.BinaryVersion] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      com.bryzek.dependency.v0.anorm.parsers.Binary.parser(mappings.binary) ~
+      SqlParser.str(mappings.version) ~
+      io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
+        case guid ~ binary ~ version ~ audit => {
+          com.bryzek.dependency.v0.models.BinaryVersion(
+            guid = guid,
+            binary = binary,
+            version = version,
+            audit = audit
+          )
+        }
       }
     }
 
@@ -168,166 +328,6 @@ package com.bryzek.dependency.v0.anorm.parsers {
             userGuid = userGuid,
             id = id,
             login = login
-          )
-        }
-      }
-    }
-
-  }
-
-  object Language {
-
-    case class Mappings(
-      guid: String = "guid",
-      name: String = "name",
-      audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
-    )
-
-    object Mappings {
-
-      val base = prefix("", "")
-
-      def table(table: String) = prefix(table, ".")
-
-      def prefix(prefix: String, sep: String) = Mappings(
-        guid = s"${prefix}${sep}guid",
-        name = s"${prefix}${sep}name",
-        audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
-      )
-
-    }
-
-    def table(table: String) = parser(Mappings.prefix(table, "."))
-
-    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Language] = {
-      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
-      com.bryzek.dependency.v0.anorm.parsers.ProgrammingLanguage.parser(com.bryzek.dependency.v0.anorm.parsers.ProgrammingLanguage.Mappings(mappings.name)) ~
-      io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
-        case guid ~ name ~ audit => {
-          com.bryzek.dependency.v0.models.Language(
-            guid = guid,
-            name = name,
-            audit = audit
-          )
-        }
-      }
-    }
-
-  }
-
-  object LanguageForm {
-
-    case class Mappings(
-      name: String = "name",
-      version: String = "version"
-    )
-
-    object Mappings {
-
-      val base = prefix("", "")
-
-      def table(table: String) = prefix(table, ".")
-
-      def prefix(prefix: String, sep: String) = Mappings(
-        name = s"${prefix}${sep}name",
-        version = s"${prefix}${sep}version"
-      )
-
-    }
-
-    def table(table: String) = parser(Mappings.prefix(table, "."))
-
-    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LanguageForm] = {
-      SqlParser.str(mappings.name) ~
-      SqlParser.str(mappings.version) map {
-        case name ~ version => {
-          com.bryzek.dependency.v0.models.LanguageForm(
-            name = name,
-            version = version
-          )
-        }
-      }
-    }
-
-  }
-
-  object LanguageRecommendation {
-
-    case class Mappings(
-      from: com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings,
-      to: com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings,
-      latest: com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings
-    )
-
-    object Mappings {
-
-      val base = prefix("", "")
-
-      def table(table: String) = prefix(table, ".")
-
-      def prefix(prefix: String, sep: String) = Mappings(
-        from = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings.prefix(Seq(prefix, "from").filter(!_.isEmpty).mkString("_"), "_"),
-        to = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings.prefix(Seq(prefix, "to").filter(!_.isEmpty).mkString("_"), "_"),
-        latest = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings.prefix(Seq(prefix, "latest").filter(!_.isEmpty).mkString("_"), "_")
-      )
-
-    }
-
-    def table(table: String) = parser(Mappings.prefix(table, "."))
-
-    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LanguageRecommendation] = {
-      com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.parser(mappings.from) ~
-      com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.parser(mappings.to) ~
-      com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.parser(mappings.latest) map {
-        case from ~ to ~ latest => {
-          com.bryzek.dependency.v0.models.LanguageRecommendation(
-            from = from,
-            to = to,
-            latest = latest
-          )
-        }
-      }
-    }
-
-  }
-
-  object LanguageVersion {
-
-    case class Mappings(
-      guid: String = "guid",
-      language: com.bryzek.dependency.v0.anorm.parsers.Language.Mappings,
-      version: String = "version",
-      audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
-    )
-
-    object Mappings {
-
-      val base = prefix("", "")
-
-      def table(table: String) = prefix(table, ".")
-
-      def prefix(prefix: String, sep: String) = Mappings(
-        guid = s"${prefix}${sep}guid",
-        language = com.bryzek.dependency.v0.anorm.parsers.Language.Mappings.prefix(Seq(prefix, "language").filter(!_.isEmpty).mkString("_"), "_"),
-        version = s"${prefix}${sep}version",
-        audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
-      )
-
-    }
-
-    def table(table: String) = parser(Mappings.prefix(table, "."))
-
-    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LanguageVersion] = {
-      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
-      com.bryzek.dependency.v0.anorm.parsers.Language.parser(mappings.language) ~
-      SqlParser.str(mappings.version) ~
-      io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
-        case guid ~ language ~ version ~ audit => {
-          com.bryzek.dependency.v0.models.LanguageVersion(
-            guid = guid,
-            language = language,
-            version = version,
-            audit = audit
           )
         }
       }
@@ -555,6 +555,42 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
+  object ProjectBinaryVersion {
+
+    case class Mappings(
+      project: com.bryzek.dependency.v0.anorm.parsers.Project.Mappings,
+      binaryVersion: com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        project = com.bryzek.dependency.v0.anorm.parsers.Project.Mappings.prefix(Seq(prefix, "project").filter(!_.isEmpty).mkString("_"), "_"),
+        binaryVersion = com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings.prefix(Seq(prefix, "binary_version").filter(!_.isEmpty).mkString("_"), "_")
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ProjectBinaryVersion] = {
+      com.bryzek.dependency.v0.anorm.parsers.Project.parser(mappings.project) ~
+      com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.parser(mappings.binaryVersion) map {
+        case project ~ binaryVersion => {
+          com.bryzek.dependency.v0.models.ProjectBinaryVersion(
+            project = project,
+            binaryVersion = binaryVersion
+          )
+        }
+      }
+    }
+
+  }
+
   object ProjectForm {
 
     case class Mappings(
@@ -588,42 +624,6 @@ package com.bryzek.dependency.v0.anorm.parsers {
             name = name,
             scms = scms,
             uri = uri
-          )
-        }
-      }
-    }
-
-  }
-
-  object ProjectLanguageVersion {
-
-    case class Mappings(
-      project: com.bryzek.dependency.v0.anorm.parsers.Project.Mappings,
-      languageVersion: com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings
-    )
-
-    object Mappings {
-
-      val base = prefix("", "")
-
-      def table(table: String) = prefix(table, ".")
-
-      def prefix(prefix: String, sep: String) = Mappings(
-        project = com.bryzek.dependency.v0.anorm.parsers.Project.Mappings.prefix(Seq(prefix, "project").filter(!_.isEmpty).mkString("_"), "_"),
-        languageVersion = com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.Mappings.prefix(Seq(prefix, "language_version").filter(!_.isEmpty).mkString("_"), "_")
-      )
-
-    }
-
-    def table(table: String) = parser(Mappings.prefix(table, "."))
-
-    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ProjectLanguageVersion] = {
-      com.bryzek.dependency.v0.anorm.parsers.Project.parser(mappings.project) ~
-      com.bryzek.dependency.v0.anorm.parsers.LanguageVersion.parser(mappings.languageVersion) map {
-        case project ~ languageVersion => {
-          com.bryzek.dependency.v0.models.ProjectLanguageVersion(
-            project = project,
-            languageVersion = languageVersion
           )
         }
       }

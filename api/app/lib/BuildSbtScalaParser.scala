@@ -1,17 +1,17 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.LanguageForm
+import com.bryzek.dependency.v0.models.BinaryForm
 
 /**
   * Takes the contents of a build.sbt file and parses it, providing
-  * access to its dependencies (libraries, languages and versions).
+  * access to its dependencies (libraries, binaries and versions).
   */
 case class BuildSbtScalaParser(
   override val description: String,
   contents: String
 ) extends SimpleScalaParser {
 
-  private val LanguageScala = "scala"
+  private val BinaryScala = "scala"
 
   private lazy val pluginParser = ProjectPluginsSbtScalaParser(description, contents)
 
@@ -19,15 +19,15 @@ case class BuildSbtScalaParser(
 
   val libraries: Seq[Artifact] = parseLibraries
 
-  val languages: Seq[LanguageForm] = {
+  val binaries: Seq[BinaryForm] = {
     lines.
       filter(_.startsWith("scalaVersion")).
       flatMap { line =>
       line.split(":=").map(_.trim).toList match {
         case head :: version :: Nil => {
           Some(
-            LanguageForm(
-              name = LanguageScala,
+            BinaryForm(
+              name = BinaryScala,
               version = interpolate(version)
             )
           )

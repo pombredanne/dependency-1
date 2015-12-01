@@ -1,37 +1,37 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.ProgrammingLanguage
+import com.bryzek.dependency.v0.models.BinaryType
 import org.apache.commons.lang3.StringUtils
 import play.api.Logger
 
 
-trait LanguageVersionProvider {
+trait BinaryVersionProvider {
 
   /**
-    * Returns the versions for this language, fetching them from
+    * Returns the versions for this binary, fetching them from
     * appropriate remote locations.
     */
-  def versions(language: ProgrammingLanguage): Seq[Version]
+  def versions(binary: BinaryType): Seq[Version]
 
 }
 
-object DefaultLanguageVersionProvider extends LanguageVersionProvider {
+object DefaultBinaryVersionProvider extends BinaryVersionProvider {
 
   private[this] val ScalaUrl = "http://www.scala-lang.org/download/all.html"
   private[this] val SbtUrl = "https://dl.bintray.com/sbt/native-packages/sbt/"
 
   override def versions(
-    language: ProgrammingLanguage
+    binary: BinaryType
   ) : Seq[Version] = {
-    language match {
-      case ProgrammingLanguage.Scala => {
+    binary match {
+      case BinaryType.Scala => {
         fetchScalaVersions()
       }
-      case ProgrammingLanguage.Sbt => {
+      case BinaryType.Sbt => {
         fetchSbtVersions()
       }
-      case ProgrammingLanguage.UNDEFINED(name) => {
-        Logger.warn(s"Do not know how to find versions for the programming language[$name]")
+      case BinaryType.UNDEFINED(name) => {
+        Logger.warn(s"Do not know how to find versions for the programming binary[$name]")
         Nil
       }
     }

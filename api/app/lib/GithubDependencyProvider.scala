@@ -1,7 +1,7 @@
 package com.bryzek.dependency.lib
 
 import io.flow.user.v0.models.User
-import com.bryzek.dependency.v0.models.{LanguageForm, LibraryForm, Project}
+import com.bryzek.dependency.v0.models.{BinaryForm, LibraryForm, Project}
 import io.flow.github.v0.Client
 import io.flow.github.v0.errors.UnitResponse
 import io.flow.github.v0.models.{Contents, Encoding}
@@ -86,7 +86,7 @@ private[lib] case class GithubDependencyProvider(
         all.copy(
           resolverUris = Some((all.resolverUris.getOrElse(Nil) ++ dep.resolverUris.getOrElse(Nil)).distinct),
           plugins = Some((all.plugins.getOrElse(Nil) ++ dep.plugins.getOrElse(Nil)).distinct),
-          languages = Some((all.languages.getOrElse(Nil) ++ dep.languages.getOrElse(Nil)).distinct)
+          binaries = Some((all.binaries.getOrElse(Nil) ++ dep.binaries.getOrElse(Nil)).distinct)
         )
       }
     }
@@ -105,7 +105,7 @@ private[lib] case class GithubDependencyProvider(
         )
         Some(
           Dependencies(
-            languages = Some(result.languages),
+            binaries = Some(result.binaries),
             libraries = Some(result.libraries),
             resolverUris = Some(result.resolverUris)
           )
@@ -129,7 +129,7 @@ private[lib] case class GithubDependencyProvider(
           Dependencies(
             Some(
               Seq(
-                LanguageForm(
+                BinaryForm(
                   name = "sbt",
                   version = value
                 )

@@ -1,7 +1,7 @@
 package controllers
 
 import com.bryzek.dependency.v0.errors.UnitResponse
-import com.bryzek.dependency.v0.models.Language
+import com.bryzek.dependency.v0.models.Binary
 import com.bryzek.dependency.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
@@ -12,7 +12,7 @@ import play.api._
 import play.api.i18n.MessagesApi
 import play.api.mvc._
 
-class LanguagesController @javax.inject.Inject() (
+class BinariesController @javax.inject.Inject() (
   val messagesApi: MessagesApi,
   override val userTokensClient: UserTokensClient,
   override val dependencyClientProvider: DependencyClientProvider
@@ -22,15 +22,15 @@ class LanguagesController @javax.inject.Inject() (
 
   def index(page: Int = 0) = Identified.async { implicit request =>
     for {
-      languages <- dependencyClient(request).languages.get(
+      binaries <- dependencyClient(request).binaries.get(
         limit = Pagination.DefaultLimit+1,
         offset = page * Pagination.DefaultLimit
       )
     } yield {
       Ok(
-        views.html.languages.index(
+        views.html.binaries.index(
           uiData(request),
-          PaginatedCollection(page, languages)
+          PaginatedCollection(page, binaries)
         )
       )
     }
@@ -40,42 +40,42 @@ class LanguagesController @javax.inject.Inject() (
     guid: UUID,
     projectsPage: Int = 0
   ) = Identified.async { implicit request =>
-    withLanguage(request, guid) { language =>
+    withBinary(request, guid) { binary =>
       for {
-        versions <- dependencyClient(request).languageVersions.get(
-          languageGuid = Some(guid),
+        versions <- dependencyClient(request).binaryVersions.get(
+          binaryGuid = Some(guid),
           limit = 5+1,
           offset = 0
         )
-        projectLanguageVersions <- dependencyClient(request).projectLanguageVersions.get(
-          languageGuid = Some(guid),
+        projectBinaryVersions <- dependencyClient(request).projectBinaryVersions.get(
+          binaryGuid = Some(guid),
           limit = Pagination.DefaultLimit+1,
           offset = projectsPage * Pagination.DefaultLimit
         )
       } yield {
         Ok(
-          views.html.languages.show(
+          views.html.binaries.show(
             uiData(request),
-            language,
+            binary,
             PaginatedCollection(0, versions, 5),
-            PaginatedCollection(projectsPage, projectLanguageVersions)
+            PaginatedCollection(projectsPage, projectBinaryVersions)
           )
         )
       }
     }
   }
 
-  def withLanguage[T](
+  def withBinary[T](
     request: IdentifiedRequest[T],
     guid: UUID
   )(
-    f: Language => Future[Result]
+    f: Binary => Future[Result]
   ) = {
-    dependencyClient(request).languages.getByGuid(guid).flatMap { language =>
-      f(language)
+    dependencyClient(request).binaries.getByGuid(guid).flatMap { binary =>
+      f(binary)
     }.recover {
       case UnitResponse(404) => {
-        Redirect(routes.LanguagesController.index()).flashing("warning" -> s"Language not found")
+        Redirect(routes.BinariesController.index()).flashing("warning" -> s"Binary not found")
       }
     }
   }

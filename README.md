@@ -5,9 +5,9 @@ project is designed to keep track for you.
 
 The core entity is the project - add a project from github, and the
 dependency app will begin tracking all of your dependencies -
-including the programming languages you use. It also regularly
+including the programming binaries you use. It also regularly
 searches all of the resolvers your project uses to find all of the
-available versions of each dependency and language.
+available versions of each dependency and binary.
 
 Whenever a newer version is found - that information is highlighted
 for you as a task... and when you update your project, the dependency

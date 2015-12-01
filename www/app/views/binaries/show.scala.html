@@ -1,0 +1,46 @@
+@(
+  data: com.bryzek.dependency.lib.UiData,
+  binary: com.bryzek.dependency.v0.models.Binary,
+  versions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.BinaryVersion],
+  projectBinaryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectBinaryVersion]
+)(implicit flash: Flash, messages: Messages)
+
+@main(data.copy(title = Some(s"Binary: ${binary.name}"))) {
+
+  <ul>
+    <li>Name: @binary.name</li>
+    <li>Versions:
+      @versions.items.map { version =>
+        @version.version
+      }
+      @if(versions.hasNext) {
+        [<a href="@routes.SearchController.index(q = Some(com.bryzek.dependency.lib.SearchQuery(binary = Some(binary.name.toString)).query))">More</a>]
+      }
+    </li>
+    <li>@audit(binary.audit)</li>
+  </ul>
+
+  <h3>Projects</h3>
+  <div class="table-responsive">
+    <table class="table">
+      @projectBinaryVersions.items.map { rec =>
+        <tr>
+          <td><a href="@routes.ProjectsController.show(rec.project.guid)">@{rec.project.name}</a></td>
+          <td><a href="">@{rec.binaryVersion.version}</a></td>
+        </tr>
+      }
+    </table>
+  </div>
+
+  @if(projectBinaryVersions.hasPrevious || projectBinaryVersions.hasNext) {
+    <ul class="pager">
+      @if(projectBinaryVersions.hasPrevious) {
+        <li><a href="@routes.LibrariesController.show(binary.guid, projectsPage = projectBinaryVersions.page - 1)">Previous</a></li>
+      }
+      @if(projectBinaryVersions.hasNext) {
+        <li><a href="@routes.LibrariesController.show(binary.guid, projectsPage = projectBinaryVersions.page + 1)">Next</a></li>
+      }
+    </ul>
+  }
+
+}

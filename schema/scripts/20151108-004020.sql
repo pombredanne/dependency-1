@@ -1,6 +1,6 @@
 drop table if exists resolvers;
-drop table if exists language_versions;
-drop table if exists languages;
+drop table if exists binary_versions;
+drop table if exists binaries;
 drop table if exists library_versions;
 drop table if exists libraries;
 drop table if exists projects;
@@ -103,33 +103,33 @@ create unique index library_versions_library_guid_lower_version_lower_cross_buil
     on library_versions(library_guid, lower(version), lower(cross_build_version))
  where deleted_at is null and cross_build_version is not null;
 
-create table languages (
+create table binaries (
   guid                    uuid primary key,
   name                    text not null check(non_empty_trimmed_string(name))
 );
 
-comment on table languages is '
-  Stores all languages that we are tracking in some way (e.g. scala)
+comment on table binaries is '
+  Stores all binaries that we are tracking in some way (e.g. scala)
 ';
 
-select schema_evolution_manager.create_basic_audit_data('public', 'languages');
-create index on languages(name);
-create unique index languages_lower_name_not_deleted_un_idx on languages(lower(name)) where deleted_at is null;
+select schema_evolution_manager.create_basic_audit_data('public', 'binaries');
+create index on binaries(name);
+create unique index binaries_lower_name_not_deleted_un_idx on binaries(lower(name)) where deleted_at is null;
 
-create table language_versions (
+create table binary_versions (
   guid                    uuid primary key,
-  language_guid           uuid not null references languages,
+  binary_guid           uuid not null references binaries,
   version                 text not null check(non_empty_trimmed_string(version)),
   sort_key                text not null
 );
 
-comment on table language_versions is '
-  Stores all language_versions of a given language - e.g. 2.11.7
+comment on table binary_versions is '
+  Stores all binary_versions of a given binary - e.g. 2.11.7
 ';
 
-select schema_evolution_manager.create_basic_audit_data('public', 'language_versions');
-create index on language_versions(language_guid);
-create unique index language_versions_language_guid_version_not_deleted_un_idx on language_versions(language_guid, version) where deleted_at is null;
+select schema_evolution_manager.create_basic_audit_data('public', 'binary_versions');
+create index on binary_versions(binary_guid);
+create unique index binary_versions_binary_guid_version_not_deleted_un_idx on binary_versions(binary_guid, version) where deleted_at is null;
 
 create table resolvers (
   guid                    uuid primary key,

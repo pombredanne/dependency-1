@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.actors.MainActor
-import com.bryzek.dependency.v0.models.{Language, LanguageForm}
+import com.bryzek.dependency.v0.models.{Binary, BinaryForm}
 import io.flow.user.v0.models.User
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import anorm._
@@ -10,52 +10,52 @@ import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
 
-object LanguagesDao {
+object BinariesDao {
 
   private[this] val BaseQuery = s"""
-    select languages.guid,
-           languages.name,
-           ${AuditsDao.all("languages")}
-      from languages
+    select binaries.guid,
+           binaries.name,
+           ${AuditsDao.all("binaries")}
+      from binaries
      where true
   """
 
   private[this] val InsertQuery = """
-    insert into languages
+    insert into binaries
     (guid, name, created_by_guid, updated_by_guid)
     values
     ({guid}::uuid, {name}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[db] def validate(
-    form: LanguageForm
+    form: BinaryForm
   ): Seq[String] = {
     if (form.name.trim == "") {
       Seq("Name cannot be empty")
 
     } else {
-      LanguagesDao.findByName(form.name) match {
+      BinariesDao.findByName(form.name) match {
         case None => Seq.empty
-        case Some(_) => Seq("Language with this name already exists")
+        case Some(_) => Seq("Binary with this name already exists")
       }
     }
   }
 
-  def upsert(createdBy: User, form: LanguageForm): Either[Seq[String], Language] = {
-    LanguagesDao.findByName(form.name) match {
+  def upsert(createdBy: User, form: BinaryForm): Either[Seq[String], Binary] = {
+    BinariesDao.findByName(form.name) match {
       case None => {
         create(createdBy, form)
       }
       case Some(lang) => {
         DB.withConnection { implicit c =>
-          LanguageVersionsDao.upsertWithConnection(createdBy, lang.guid, form.version)
+          BinaryVersionsDao.upsertWithConnection(createdBy, lang.guid, form.version)
         }
         Right(lang)
       }
     }
   }
 
-  def create(createdBy: User, form: LanguageForm): Either[Seq[String], Language] = {
+  def create(createdBy: User, form: BinaryForm): Either[Seq[String], Binary] = {
     validate(form) match {
       case Nil => {
         val guid = UUID.randomUUID
@@ -67,14 +67,14 @@ object LanguagesDao {
             'created_by_guid -> createdBy.guid
           ).execute()
 
-          LanguageVersionsDao.upsertWithConnection(createdBy, guid, form.version)
+          BinaryVersionsDao.upsertWithConnection(createdBy, guid, form.version)
         }
 
-        MainActor.ref ! MainActor.Messages.LanguageCreated(guid)
+        MainActor.ref ! MainActor.Messages.BinaryCreated(guid)
 
         Right(
           findByGuid(guid).getOrElse {
-            sys.error("Failed to create language")
+            sys.error("Failed to create binary")
           }
         )
       }
@@ -82,16 +82,16 @@ object LanguagesDao {
     }
   }
 
-  def softDelete(deletedBy: User, language: Language) {
-    SoftDelete.delete("languages", deletedBy.guid, language.guid)
-    MainActor.ref ! MainActor.Messages.LanguageDeleted(language.guid)
+  def softDelete(deletedBy: User, binary: Binary) {
+    SoftDelete.delete("binaries", deletedBy.guid, binary.guid)
+    MainActor.ref ! MainActor.Messages.BinaryDeleted(binary.guid)
   }
 
-  def findByName(name: String): Option[Language] = {
+  def findByName(name: String): Option[Binary] = {
     findAll(name = Some(name), limit = 1).headOption
   }
 
-  def findByGuid(guid: UUID): Option[Language] = {
+  def findByGuid(guid: UUID): Option[Binary] = {
     findAll(guid = Some(guid), limit = 1).headOption
   }
 
@@ -103,25 +103,25 @@ object LanguagesDao {
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
-  ): Seq[Language] = {
+  ): Seq[Binary] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      guid.map { v => "and languages.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("languages.guid", _) },
+      guid.map { v => "and binaries.guid = {guid}::uuid" },
+      guids.map { Filters.multipleGuids("binaries.guid", _) },
       projectGuid.map { v => """
-        and languages.guid in (
-          select language_versions.language_guid
-            from language_versions
-            join project_language_versions
-              on project_language_versions.language_version_guid = language_versions.guid
-             and project_language_versions.deleted_at is null
-             and project_language_versions.project_guid = {project_guid}::uuid
-           where language_versions.deleted_at is null
+        and binaries.guid in (
+          select binary_versions.binary_guid
+            from binary_versions
+            join project_binary_versions
+              on project_binary_versions.binary_version_guid = binary_versions.guid
+             and project_binary_versions.deleted_at is null
+             and project_binary_versions.project_guid = {project_guid}::uuid
+           where binary_versions.deleted_at is null
         )
       """.trim },
-      name.map { v => "and lower(languages.name) = lower(trim({name}))" },
-      isDeleted.map(Filters.isDeleted("languages", _)),
-      Some(s"order by lower(languages.name), languages.created_at limit ${limit} offset ${offset}")
+      name.map { v => "and lower(binaries.name) = lower(trim({name}))" },
+      isDeleted.map(Filters.isDeleted("binaries", _)),
+      Some(s"order by lower(binaries.name), binaries.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
@@ -132,7 +132,7 @@ object LanguagesDao {
 
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.Language.table("languages").*
+        com.bryzek.dependency.v0.anorm.parsers.Binary.table("binaries").*
       )
     }
   }

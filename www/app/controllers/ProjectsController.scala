@@ -40,15 +40,15 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def show(guid: UUID, languagesPage: Int = 0, librariesPage: Int = 0) = Identified.async { implicit request =>
+  def show(guid: UUID, binariesPage: Int = 0, librariesPage: Int = 0) = Identified.async { implicit request =>
     withProject(request, guid) { project =>
       for {
         libraryRecommendations <- dependencyClient(request).libraryRecommendations.getRecommendationsAndLibrariesAndProjectsByProjectGuid(project.guid)
-        languageRecommendations <- dependencyClient(request).languageRecommendations.getRecommendationsAndLanguagesAndProjectsByProjectGuid(project.guid)
-        languages <- dependencyClient(request).languageVersions.get(
+        binaryRecommendations <- dependencyClient(request).binaryRecommendations.getRecommendationsAndBinariesAndProjectsByProjectGuid(project.guid)
+        binaries <- dependencyClient(request).binaryVersions.get(
           projectGuid = Some(guid),
           limit = Pagination.DefaultLimit+1,
-          offset = languagesPage * Pagination.DefaultLimit
+          offset = binariesPage * Pagination.DefaultLimit
         )
         libraries <- dependencyClient(request).libraryVersions.get(
           projectGuid = Some(guid),
@@ -65,8 +65,8 @@ class ProjectsController @javax.inject.Inject() (
             uiData(request),
             project,
             libraryRecommendations,
-            languageRecommendations,
-            PaginatedCollection(languagesPage, languages),
+            binaryRecommendations,
+            PaginatedCollection(binariesPage, binaries),
             PaginatedCollection(librariesPage, libraries),
             isWatching = !watches.isEmpty
           )

@@ -17,18 +17,18 @@ update library_versions
       where libraries.deleted_at is null
   );
 
-update languages
+update binaries
    set deleted_at=now(), deleted_by_guid = created_by_guid
  where deleted_at is null
    and (lower(name) like 'z-test%' or lower(name) like 'z test%'); 
 
-update language_versions
+update binary_versions
    set deleted_at=now(), deleted_by_guid = created_by_guid
  where deleted_at is null
-   and language_guid not in (
-     select languages.guid
-       from languages
-      where languages.deleted_at is null
+   and binary_guid not in (
+     select binaries.guid
+       from binaries
+      where binaries.deleted_at is null
   );
 
 update users

@@ -1,10 +1,10 @@
 package controllers
 
-import db.LanguagesDao
+import db.BinariesDao
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
-import com.bryzek.dependency.v0.models.{Language, LanguageForm}
+import com.bryzek.dependency.v0.models.{Binary, BinaryForm}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
@@ -12,7 +12,7 @@ import play.api.libs.json._
 import java.util.UUID
 
 @javax.inject.Singleton
-class Languages @javax.inject.Inject() (
+class Binaries @javax.inject.Inject() (
   val userTokensClient: UserTokensClient
 ) extends Controller with IdentifiedRestController {
 
@@ -26,7 +26,7 @@ class Languages @javax.inject.Inject() (
   ) = Identified { request =>
     Ok(
       Json.toJson(
-        LanguagesDao.findAll(
+        BinariesDao.findAll(
           guid = guid,
           guids = optionalGuids(guids),
           projectGuid = projectGuid,
@@ -39,42 +39,42 @@ class Languages @javax.inject.Inject() (
   }
 
   def getByGuid(guid: UUID) = Identified { request =>
-    withLanguage(guid) { language =>
-      Ok(Json.toJson(language))
+    withBinary(guid) { binary =>
+      Ok(Json.toJson(binary))
     }
   }
 
   def post() = Identified(parse.json) { request =>
-    request.body.validate[LanguageForm] match {
+    request.body.validate[BinaryForm] match {
       case e: JsError => {
         Conflict(Json.toJson(Validation.invalidJson(e)))
       }
-      case s: JsSuccess[LanguageForm] => {
+      case s: JsSuccess[BinaryForm] => {
         val form = s.get
-        LanguagesDao.create(request.user, form) match {
+        BinariesDao.create(request.user, form) match {
           case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
-          case Right(language) => Created(Json.toJson(language))
+          case Right(binary) => Created(Json.toJson(binary))
         }
       }
     }
   }
 
   def deleteByGuid(guid: UUID) = Identified { request =>
-    withLanguage(guid) { language =>
-      LanguagesDao.softDelete(request.user, language)
+    withBinary(guid) { binary =>
+      BinariesDao.softDelete(request.user, binary)
       NoContent
     }
   }
 
-  def withLanguage(guid: UUID)(
-    f: Language => Result
+  def withBinary(guid: UUID)(
+    f: Binary => Result
   ): Result = {
-    LanguagesDao.findByGuid(guid) match {
+    BinariesDao.findByGuid(guid) match {
       case None => {
         NotFound
       }
-      case Some(language) => {
-        f(language)
+      case Some(binary) => {
+        f(binary)
       }
     }
   }

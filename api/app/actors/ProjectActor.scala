@@ -57,7 +57,7 @@ class ProjectActor extends Actor {
             ProjectsDao.setDependencies(
               createdBy = MainActor.SystemUser,
               project = project,
-              languages = dependencies.languages,
+              binaries = dependencies.binaries,
               libraries = dependencies.librariesAndPlugins.map(_.map { artifact =>
                 artifact.toLibraryForm(
                   crossBuildVersion = dependencies.crossBuildVersion()

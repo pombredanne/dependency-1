@@ -7,7 +7,7 @@ sealed trait Section
 object Section {
   case object Dashboard extends Section
   case object Projects extends Section
-  case object Languages extends Section
+  case object Binaries extends Section
   case object Libraries extends Section
 }
 
