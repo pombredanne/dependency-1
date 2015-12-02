@@ -29,6 +29,31 @@ package com.bryzek.dependency.v0.anorm.parsers {
     }
 
   }
+  object RecommendationType {
+
+    case class Mappings(value: String)
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        value = s"${prefix}${sep}value"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.RecommendationType] = {
+      SqlParser.str(mappings.value) map {
+        case value => com.bryzek.dependency.v0.models.RecommendationType(value)
+      }
+    }
+
+  }
   object Scms {
 
     case class Mappings(value: String)
@@ -1022,6 +1047,34 @@ package com.bryzek.dependency.v0.anorm.parsers {
             projectGuid = projectGuid
           )
         }
+      }
+    }
+
+  }
+
+  object Recommendation {
+
+    case class Mappings(
+      libraryRecommendation: com.bryzek.dependency.v0.anorm.parsers.LibraryRecommendation.Mappings,
+      binaryRecommendation: com.bryzek.dependency.v0.anorm.parsers.BinaryRecommendation.Mappings
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        libraryRecommendation = com.bryzek.dependency.v0.anorm.parsers.LibraryRecommendation.Mappings.prefix(prefix, sep),
+        binaryRecommendation = com.bryzek.dependency.v0.anorm.parsers.BinaryRecommendation.Mappings.prefix(prefix, sep)
+      )
+    }
+
+    def parser(mappings: Mappings = Mappings.base): RowParser[com.bryzek.dependency.v0.models.Recommendation] = {
+      com.bryzek.dependency.v0.anorm.parsers.LibraryRecommendation.parser(mappings.libraryRecommendation) |
+      com.bryzek.dependency.v0.anorm.parsers.BinaryRecommendation.parser(mappings.binaryRecommendation) map {
+        case (recommendation) => recommendation
       }
     }
 

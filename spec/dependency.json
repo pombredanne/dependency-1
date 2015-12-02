@@ -6,6 +6,15 @@
 	{ "uri": "http://www.apidoc.me/flow/user/0.0.1-dev/service.json" }
     ],
 
+    "unions": {
+	"recommendation": {
+	    "types": [
+		{ "type": "library_recommendation" },
+		{ "type": "binary_recommendation" }
+	    ]
+	}
+    },
+
     "enums": {
 	"scms": {
 	    "values": [
@@ -18,7 +27,15 @@
 		{ "name": "scala", "description": "See http://www.scala-lang.org/" },
 		{ "name": "sbt", "description": "See http://www.scala-sbt.org/" }
 	    ]
+	},
+
+	"recommendation_type": {
+	    "values": [
+		{ "name": "library" },
+		{ "name": "binary" }
+	    ]
 	}
+
     },
 
     "models": {
@@ -700,8 +717,27 @@
                 }
 		
 	    ]
-	}	
-	    
+	},
+
+	"recommendation": {
+	    "operations": [
+		{
+                    "method": "GET",
+                    "description": "Returns a list of recommendations for this user across all of the projects the user is watching",
+                    "parameters": [
+			{ "name": "project_guid", "type": "uuid", "required": false, "description": "Optionally filter by project" },
+			{ "name": "type", "type": "recommendation_type", "required": false, "description": "Optionally filter by type of recommendation." },
+			{ "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+			{ "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+			"200": { "type": "[recommendation]" },
+			"401": { "type": "unit" }
+                    }
+		}
+	    ]
+	}
+
     }
 
 }
