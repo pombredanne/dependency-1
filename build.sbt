@@ -30,7 +30,7 @@ lazy val api = project
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       "io.flow" %% "lib-play-postgresql" % "0.0.1-SNAPSHOT",
-      "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.15",
+      "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.16",
       "org.postgresql" % "postgresql" % "9.4-1206-jdbc42",
       "org.scalatestplus" %% "play" % "1.4.0-M4" % "test"
     )
