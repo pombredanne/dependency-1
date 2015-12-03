@@ -1,11 +1,13 @@
 package com.bryzek.dependency.actors
 
+import io.flow.play.util.DefaultConfig
 import play.api.libs.concurrent.Akka
 import akka.actor._
 import play.api.Logger
 import play.api.Play.current
 import java.util.UUID
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
 
 object MainActor {
 
@@ -45,9 +47,28 @@ class MainActor(name: String) extends Actor with ActorLogging {
 
   implicit val mainActorExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("main-actor-context")
 
-  Akka.system.scheduler.schedule(5.minutes, 1.hour, periodicActor, PeriodicActor.Messages.SyncProjects)
-  Akka.system.scheduler.schedule(5.minutes, 1.hour, periodicActor, PeriodicActor.Messages.SyncLibraries)
+  /**
+   * Helper to schedule a message to be sent on a recurring interval
+   * based on a configuration parameter.
+   *
+   * @param configName The name of the configuration parameter containing the number
+   *        of seconds between runs. You can also optionally add a configuration
+   *        parameter of the same name with "_inital" appended to set the initial
+   *        interval if you wish it to be different.
+   */
+  private[this] def scheduleRecurring(configName: String, message: PeriodicActor.Message) {
+    val seconds = DefaultConfig.requiredString(configName).toInt
+    val initial = DefaultConfig.optionalString(s"${configName}_initial").map(_.toInt).getOrElse(seconds)
+    println(s"scheduling a periodic message[$message]. Initial[$initial seconds], recurring[$seconds seconds]")
+    Akka.system.scheduler.schedule(
+      FiniteDuration(initial, SECONDS),
+      FiniteDuration(seconds, SECONDS),
+      periodicActor, message
+    )
+  }
 
+  scheduleRecurring("com.bryzek.dependency.project.sync.seconds", PeriodicActor.Messages.SyncProjects)
+  scheduleRecurring("com.bryzek.dependency.library.sync.seconds", PeriodicActor.Messages.SyncLibraries)
   def receive = akka.event.LoggingReceive {
 
     case MainActor.Messages.ProjectCreated(guid) => Util.withVerboseErrorHandler(

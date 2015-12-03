@@ -8,9 +8,11 @@ import java.util.UUID
 
 object PeriodicActor {
 
+  sealed trait Message
+
   object Messages {
-    case object SyncLibraries
-    case object SyncProjects
+    case object SyncLibraries extends Message
+    case object SyncProjects extends Message
   }
 
 }
