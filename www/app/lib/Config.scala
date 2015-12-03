@@ -24,9 +24,10 @@ object Config {
   }
 
   def recommendationUrl(recommendation: Recommendation): String = {
+    
     recommendation.`type` match {
-      case RecommendationType.Library => s"/libraries/${recommendation.guid}"
-      case RecommendationType.Binary => s"/binaries/${recommendation.guid}"
+      case RecommendationType.Library => controllers.routes.LibrariesController.show(recommendation.`object`.guid).url
+      case RecommendationType.Binary => controllers.routes.BinariesController.show(recommendation.`object`.guid).url
       case RecommendationType.UNDEFINED(_) => "#"
     }
   }
