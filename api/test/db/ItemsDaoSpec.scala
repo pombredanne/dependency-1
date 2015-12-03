@@ -23,7 +23,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     item2.guid must not be(item3.guid)
     item2.label must be(form.label)
   }
-/*
+
   "findByGuid" in {
     val item = createItem()
     ItemsDao.findByGuid(item.guid).map(_.guid) must be(
@@ -49,13 +49,13 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val item1 = createItem()
     val item2 = createItem()
 
-    ItemsDao.findAll(guids = Some(Seq(item1.guid, item2.guid))).map(_.guid) must be(
-      Seq(item1.guid, item2.guid)
+    ItemsDao.findAll(guids = Some(Seq(item1.guid, item2.guid))).map(_.guid).sorted must be(
+      Seq(item1.guid, item2.guid).sorted
     )
 
     ItemsDao.findAll(guids = Some(Nil)) must be(Nil)
     ItemsDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
     ItemsDao.findAll(guids = Some(Seq(item1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(item1.guid))
   }
- */
+
 }
