@@ -1,2 +1,2 @@
- - Add events object and use that to build dashboard from watched projects
  - Implement search
+ - Add link to delete a project
