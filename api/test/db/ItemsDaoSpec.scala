@@ -1,5 +1,6 @@
 package db
 
+import com.bryzek.dependency.v0.models.{BinarySummary, LibrarySummary, ProjectSummary}
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -9,7 +10,7 @@ import java.util.UUID
 class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
-
+/*
   "upsert" in {
     val form = createItemForm()
     val item1 = ItemsDao.create(systemUser, form)
@@ -58,4 +59,52 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     ItemsDao.findAll(guids = Some(Seq(item1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(item1.guid))
   }
 
+  "supports binaries" in {
+    val binary = createBinary()
+    val detail = BinarySummary(
+      guid = binary.guid,
+      name = binary.name
+    )
+    val itemBinary = createItem(createItemForm(detail))
+
+    val actual = ItemsDao.findByObjectGuid(binary.guid).getOrElse {
+      sys.error("Failed to create binary")
+    }
+    actual.label must be(binary.name.toString)
+    actual.detail must be(detail)
+  }
+
+  "supports libraries" in {
+    val library = createLibrary()
+    val detail = LibrarySummary(
+      guid = library.guid,
+      groupId = library.groupId,
+      artifactId = library.artifactId
+    )
+
+    val itemLibrary = createItem(createItemForm(detail))
+    val actual = ItemsDao.findByObjectGuid(library.guid).getOrElse {
+      sys.error("Failed to create library")
+    }
+    actual.label must be(Seq(library.groupId, library.artifactId).mkString("."))
+    actual.detail must be(detail)
+  }
+ */
+
+  "supports projects" in {
+    val project = createProject()
+    val detail = ProjectSummary(
+      guid = project.guid,
+      name = project.name
+    )
+
+    val itemProject = createItem(createItemForm(detail))
+    val actual = ItemsDao.findByObjectGuid(project.guid).getOrElse {
+      sys.error("Failed to create project")
+    }
+    actual.label must be(project.name)
+    actual.detail must be(detail)
+  }
+
 }
+
