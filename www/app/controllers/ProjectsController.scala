@@ -91,7 +91,7 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def createFromRepo(
+  def postCreateFromRepo(
     name: String,
     repositoriesPage: Int = 0
   ) = Identified.async { implicit request =>
@@ -194,6 +194,16 @@ class ProjectsController @javax.inject.Inject() (
   ) = {
     dependencyClient(request).projects.getByGuid(guid).flatMap { project =>
       f(project)
+    }.recover {
+      case UnitResponse(404) => {
+        Redirect(routes.ProjectsController.index()).flashing("warning" -> s"Project not found")
+      }
+    }
+  }
+
+  def postDelete(guid: UUID) = Identified.async { implicit request =>
+    dependencyClient(request).projects.deleteByGuid(guid).map { response =>
+      Redirect(routes.ProjectsController.index()).flashing("success" -> s"Project deleted")
     }.recover {
       case UnitResponse(404) => {
         Redirect(routes.ProjectsController.index()).flashing("warning" -> s"Project not found")

@@ -12,10 +12,11 @@ GET     /binaries/:guid                        controllers.BinariesController.sh
 GET     /projects                               controllers.ApplicationController.redirect
 GET     /projects/                              controllers.ProjectsController.index(page: Int ?= 0)
 GET     /projects/create                        controllers.ProjectsController.create(repositoriesPage: Int ?= 0)
-GET     /projects/createFromRepo                controllers.ProjectsController.createFromRepo(name: String, repositoriesPage: Int ?= 0)
+POST    /projects/postCreateFromRepo            controllers.ProjectsController.postCreateFromRepo(name: String, repositoriesPage: Int ?= 0)
 GET     /projects/:guid                         controllers.ProjectsController.show(guid: java.util.UUID, binariesPage: Int ?= 0, librariesPage: Int ?= 0)
 GET     /projects/:guid/edit                    controllers.ProjectsController.edit(guid: java.util.UUID)
 POST    /projects/:guid/postEdit                controllers.ProjectsController.postEdit(guid: java.util.UUID)
+POST    /projects/:guid/delete                  controllers.ProjectsController.postDelete(guid: java.util.UUID)
 
 GET     /watches/projects/create/:projectGuid   controllers.WatchProjectsController.create(projectGuid: java.util.UUID)
 GET     /watches/projects/delete/:projectGuid   controllers.WatchProjectsController.delete(projectGuid: java.util.UUID)
