@@ -220,4 +220,32 @@ trait Helpers {
     )
   }
 
+  def createLibraryWithMultipleVersions(
+    versions: Seq[String] = Seq("1.0.0", "1.0.1", "1.0.2")
+  ): Seq[LibraryVersion] = {
+    val library = createLibrary(createLibraryForm().copy(version = None))
+    versions.map { version =>
+      createLibraryVersion(
+        library = library,
+        version = VersionForm(version = version)
+      )
+    }
+  }
+
+  def addLibraryVersion(project: Project, libraryVersion: LibraryVersion) {
+    ProjectsDao.setDependencies(
+      systemUser,
+      project,
+      libraries = Some(
+        Seq(
+          LibraryForm(
+            groupId = libraryVersion.library.groupId,
+            artifactId = libraryVersion.library.artifactId,
+            version = Some(VersionForm(version = libraryVersion.version))
+          )
+        )
+      )
+    )
+  }
+
 }

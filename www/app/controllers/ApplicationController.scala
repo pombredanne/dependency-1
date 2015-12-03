@@ -2,6 +2,7 @@ package controllers
 
 import com.bryzek.dependency.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
+import io.flow.play.util.{Pagination, PaginatedCollection}
 import play.api._
 import play.api.i18n.MessagesApi
 import play.api.mvc._
@@ -18,12 +19,20 @@ class ApplicationController @javax.inject.Inject() (
     Redirect(request.path + "/")
   }
 
-  def index() = Identified { implicit request =>
-    Ok(
-      views.html.index(
-        uiData(request)
+  def index(page: Int = 0) = Identified.async { implicit request =>
+    for {
+      recommendations <- dependencyClient(request).recommendations.get(
+        limit = Pagination.DefaultLimit+1,
+        offset = page * Pagination.DefaultLimit
       )
-    )
+    } yield {
+      Ok(
+        views.html.index(
+          uiData(request),
+          PaginatedCollection(page, recommendations)
+        )
+      )
+    }
   }
 
 }

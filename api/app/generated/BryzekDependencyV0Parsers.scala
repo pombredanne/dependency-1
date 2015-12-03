@@ -732,6 +732,102 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
+  object ProjectSummary {
+
+    case class Mappings(
+      guid: String = "guid",
+      name: String = "name"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        guid = s"${prefix}${sep}guid",
+        name = s"${prefix}${sep}name"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ProjectSummary] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      SqlParser.str(mappings.name) map {
+        case guid ~ name => {
+          com.bryzek.dependency.v0.models.ProjectSummary(
+            guid = guid,
+            name = name
+          )
+        }
+      }
+    }
+
+  }
+
+  object Recommendation {
+
+    case class Mappings(
+      guid: String = "guid",
+      project: com.bryzek.dependency.v0.anorm.parsers.ProjectSummary.Mappings,
+      `type`: String = "`type`",
+      `object`: io.flow.common.v0.anorm.parsers.Reference.Mappings,
+      name: String = "name",
+      from: String = "from",
+      to: String = "to",
+      audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        guid = s"${prefix}${sep}guid",
+        project = com.bryzek.dependency.v0.anorm.parsers.ProjectSummary.Mappings.prefix(Seq(prefix, "project").filter(!_.isEmpty).mkString("_"), "_"),
+        `type` = s"${prefix}${sep}type",
+        `object` = io.flow.common.v0.anorm.parsers.Reference.Mappings.prefix(Seq(prefix, "object").filter(!_.isEmpty).mkString("_"), "_"),
+        name = s"${prefix}${sep}name",
+        from = s"${prefix}${sep}from",
+        to = s"${prefix}${sep}to",
+        audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Recommendation] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      com.bryzek.dependency.v0.anorm.parsers.ProjectSummary.parser(mappings.project) ~
+      com.bryzek.dependency.v0.anorm.parsers.RecommendationType.parser(com.bryzek.dependency.v0.anorm.parsers.RecommendationType.Mappings(mappings.`type`)) ~
+      io.flow.common.v0.anorm.parsers.Reference.parser(mappings.`object`) ~
+      SqlParser.str(mappings.name) ~
+      SqlParser.str(mappings.from) ~
+      SqlParser.str(mappings.to) ~
+      io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
+        case guid ~ project ~ typeInstance ~ objectInstance ~ name ~ from ~ to ~ audit => {
+          com.bryzek.dependency.v0.models.Recommendation(
+            guid = guid,
+            project = project,
+            `type` = typeInstance,
+            `object` = objectInstance,
+            name = name,
+            from = from,
+            to = to,
+            audit = audit
+          )
+        }
+      }
+    }
+
+  }
+
   object Repository {
 
     case class Mappings(
@@ -1047,34 +1143,6 @@ package com.bryzek.dependency.v0.anorm.parsers {
             projectGuid = projectGuid
           )
         }
-      }
-    }
-
-  }
-
-  object Recommendation {
-
-    case class Mappings(
-      libraryRecommendation: com.bryzek.dependency.v0.anorm.parsers.LibraryRecommendation.Mappings,
-      binaryRecommendation: com.bryzek.dependency.v0.anorm.parsers.BinaryRecommendation.Mappings
-    )
-
-    object Mappings {
-
-      val base = prefix("", "")
-
-      def table(table: String) = prefix(table, ".")
-
-      def prefix(prefix: String, sep: String) = Mappings(
-        libraryRecommendation = com.bryzek.dependency.v0.anorm.parsers.LibraryRecommendation.Mappings.prefix(prefix, sep),
-        binaryRecommendation = com.bryzek.dependency.v0.anorm.parsers.BinaryRecommendation.Mappings.prefix(prefix, sep)
-      )
-    }
-
-    def parser(mappings: Mappings = Mappings.base): RowParser[com.bryzek.dependency.v0.models.Recommendation] = {
-      com.bryzek.dependency.v0.anorm.parsers.LibraryRecommendation.parser(mappings.libraryRecommendation) |
-      com.bryzek.dependency.v0.anorm.parsers.BinaryRecommendation.parser(mappings.binaryRecommendation) map {
-        case (recommendation) => recommendation
       }
     }
 

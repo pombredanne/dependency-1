@@ -1,5 +1,6 @@
 package com.bryzek.dependency.lib
 
+import com.bryzek.dependency.v0.models.{Recommendation, RecommendationType}
 import io.flow.play.util.DefaultConfig
 import java.net.URLEncoder
 
@@ -20,6 +21,14 @@ object Config {
         s"$key=" + URLEncoder.encode(value, "UTF-8")
     }.mkString("&")
 
+  }
+
+  def recommendationUrl(recommendation: Recommendation): String = {
+    recommendation.`type` match {
+      case RecommendationType.Library => s"/libraries/${recommendation.guid}"
+      case RecommendationType.Binary => s"/binaries/${recommendation.guid}"
+      case RecommendationType.UNDEFINED(_) => "#"
+    }
   }
 
 }

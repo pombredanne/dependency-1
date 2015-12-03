@@ -2,7 +2,7 @@ package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.lib.{Dependencies, GithubDependencyProviderClient}
 import com.bryzek.dependency.v0.models.{Project, WatchProjectForm}
-import db.{ProjectsDao, UsersDao, WatchProjectsDao}
+import db.{ProjectsDao, RecommendationsDao, UsersDao, WatchProjectsDao}
 import play.api.Logger
 import play.libs.Akka
 import akka.actor.Actor
@@ -70,6 +70,8 @@ class ProjectActor extends Actor {
             }
           }
         }
+
+        RecommendationsDao.sync(MainActor.SystemUser, project)
       }
     }
 

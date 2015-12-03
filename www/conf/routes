@@ -1,5 +1,5 @@
 GET     /_internal_/healthcheck                 controllers.HealthchecksController.index()
-GET     /                                       controllers.ApplicationController.index()
+GET     /                                       controllers.ApplicationController.index(page: Int ?= 0)
 
 GET     /libraries                              controllers.ApplicationController.redirect
 GET     /libraries/                             controllers.LibrariesController.index(page: Int ?= 0)

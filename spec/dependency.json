@@ -6,15 +6,6 @@
 	{ "uri": "http://www.apidoc.me/flow/user/0.0.1-dev/service.json" }
     ],
 
-    "unions": {
-	"recommendation": {
-	    "types": [
-		{ "type": "library_recommendation" },
-		{ "type": "binary_recommendation" }
-	    ]
-	}
-    },
-
     "enums": {
 	"scms": {
 	    "values": [
@@ -133,6 +124,13 @@
 	    ]
 	},
 
+	"project_summary": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "name", "type": "string" }
+	    ]
+	},
+
 	"project_library_version": {
 	    "description": "A projection of projects and the specific library versions the project is dependent on",
 	    "fields": [
@@ -161,6 +159,20 @@
 		{ "name": "name", "type": "string", "required": false },
 		{ "name": "scms", "type": "scms", "required": false },
 		{ "name": "uri", "type": "string", "required": false }
+	    ]
+	},
+
+	"recommendation": {
+	    "description": "Summary of a specific recommendations for a project. Designed for display in the project dashboard",
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "project", "type": "project_summary" },
+		{ "name": "type", "type": "recommendation_type" },
+		{ "name": "object", "type": "io.flow.common.v0.models.reference" },
+		{ "name": "name", "type": "string", "description": "The name of the library or binary to upgrade" },
+		{ "name": "from", "type": "string", "description": "The current version" },
+		{ "name": "to", "type": "string", "description": "The version to which we recommend upgrading" },
+                { "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},
 

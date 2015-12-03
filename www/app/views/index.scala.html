@@ -1,7 +1,55 @@
-@(data: com.bryzek.dependency.lib.UiData)(implicit flash: Flash, messages: Messages)
+@(
+  data: com.bryzek.dependency.lib.UiData,
+  recommendations: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Recommendation]
+)(implicit flash: Flash, messages: Messages)
 
 @main(data) {
 
-  <p>TODO</p>
+  @if(recommendations.isEmpty) {
+
+    <p><em>We do not have any upgrade recommendations for
+    you. Recommendations are made by first adding and watching
+    projects - then as we find new versions of your dependencies, you
+    will see them here.</em></p>
+
+    <p>
+      <a href="@routes.ProjectsController.create()">Add a project</a>
+    </p>
+
+  } else {
+    <div class="table-responsive">
+      <table class="table">
+	<thead>
+	  <tr>
+	    <th>Date</th>
+	    <th>Project</th>
+	    <th>Name</th>
+	    <th>Current</th>
+	    <th>Recommended</th>
+	  </tr>
+	</thead>
+        @recommendations.items.map { rec =>
+          <tr>
+            <td>@com.bryzek.dependency.lib.DateHelper.shortDate(rec.audit.createdAt)</td>
+            <td><a href="@routes.ProjectsController.show(rec.project.guid)">@{rec.project.name}</a></td>
+            <td><a href="@com.bryzek.dependency.lib.Config.recommendationUrl(rec)">@com.bryzek.dependency.lib.Text.truncate(rec.name, 50)</a></td>
+            <td>@rec.from</td>
+            <td>@rec.to</td>
+          </tr>
+        }
+      </table>
+    </div>
+
+    @if(recommendations.hasPrevious || recommendations.hasNext) {
+      <ul class="pager">
+        @if(recommendations.hasPrevious) {
+          <li><a href="@routes.ApplicationController.index(recommendations.page - 1)">Previous</a></li>
+       }
+        @if(recommendations.hasNext) {
+         <li><a href="@routes.ApplicationController.index(recommendations.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
 
 }
