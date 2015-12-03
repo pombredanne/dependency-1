@@ -45,8 +45,8 @@ class MainActor(name: String) extends Actor with ActorLogging {
 
   implicit val mainActorExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("main-actor-context")
 
-  Akka.system.scheduler.schedule(15.minutes, 1.hour, periodicActor, PeriodicActor.Messages.SyncProjects)
-  Akka.system.scheduler.schedule(15.minutes, 1.hour, periodicActor, PeriodicActor.Messages.SyncLibraries)
+  Akka.system.scheduler.schedule(5.minutes, 1.hour, periodicActor, PeriodicActor.Messages.SyncProjects)
+  Akka.system.scheduler.schedule(5.minutes, 1.hour, periodicActor, PeriodicActor.Messages.SyncLibraries)
 
   def receive = akka.event.LoggingReceive {
 
