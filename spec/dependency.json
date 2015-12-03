@@ -6,6 +6,16 @@
 	{ "uri": "http://www.apidoc.me/flow/user/0.0.1-dev/service.json" }
     ],
 
+    "unions": {
+	"item_detail": {
+	    "types": [
+		{ "type": "binary_summary" },
+		{ "type": "library_summary" },
+		{ "type": "project_summary" }
+	    ]
+	}
+    },
+
     "enums": {
 	"scms": {
 	    "values": [
@@ -63,6 +73,13 @@
 	    ]
 	},
 
+	"binary_summary": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "name", "type": "binary_type" }
+	    ]
+	},
+
 	"binary_version": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
@@ -94,6 +111,14 @@
 		{ "name": "group_id", "type": "string" },
 		{ "name": "artifact_id", "type": "string" },
 		{ "name": "version", "type": "version_form", "required": false, "description": "If provided, we automatically record this version of this library." }
+	    ]
+	},
+
+	"library_summary": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "group_id", "type": "string" },
+		{ "name": "artifact_id", "type": "string" }
 	    ]
 	},
 
@@ -249,8 +274,18 @@
 		{ "name": "user_guid", "type": "uuid" },
 		{ "name": "project_guid", "type": "uuid" }
 	    ]
-	}
+	},
 	
+        "item": {
+            "description": "A denormalization of item content for search",
+            "fields": [
+                { "name": "guid", "type": "uuid", "description": "Unique identifer for this item." },
+                { "name": "detail", "type": "item_detail" },
+                { "name": "label", "type": "string" },
+                { "name": "description", "type": "string", "required": false }
+            ]
+        }
+
     },
 
     "resources": {

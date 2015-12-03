@@ -129,7 +129,6 @@ package io.flow.common.v0.anorm.parsers {
     }
 
   }
-
   object Address {
 
     case class Mappings(

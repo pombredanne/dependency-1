@@ -51,3 +51,8 @@ update tokens
  where deleted_at is null
    and tag like 'z test%';
 
+update items
+   set deleted_at=now(), deleted_by_guid = created_by_guid
+ where deleted_at is null
+   and label like 'z-test%';
+

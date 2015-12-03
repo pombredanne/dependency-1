@@ -29,7 +29,6 @@ package io.flow.user.v0.anorm.parsers {
     }
 
   }
-
   object Name {
 
     case class Mappings(

@@ -248,4 +248,34 @@ trait Helpers {
     )
   }
 
+  def createItem(
+    form: ItemForm = createItemForm()
+  ): Item = {
+    ItemsDao.create(systemUser, form)
+  }
+
+  def createItemDetail(
+    binary: Binary = createBinary()
+  ): ItemDetail = {
+    BinarySummary(
+      guid = binary.guid,
+      name = binary.name
+    )
+  }
+
+  def createItemForm(
+    detail: ItemDetail = createItemDetail()
+  ): ItemForm = {
+    ItemForm(
+      detail = detail,
+      label = detail match {
+        case BinarySummary(_, name) => name.toString
+        case LibrarySummary(_, groupId, artifactId) => Seq(groupId, artifactId).mkString(".")
+        case ProjectSummary(_, name) => name
+        case ItemDetailUndefinedType(name) => name
+      },
+      description = None
+    )
+  }
+
 }

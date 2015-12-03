@@ -79,7 +79,6 @@ package com.bryzek.dependency.v0.anorm.parsers {
     }
 
   }
-
   object Binary {
 
     case class Mappings(
@@ -189,6 +188,42 @@ package com.bryzek.dependency.v0.anorm.parsers {
             from = from,
             to = to,
             latest = latest
+          )
+        }
+      }
+    }
+
+  }
+
+  object BinarySummary {
+
+    case class Mappings(
+      guid: String = "guid",
+      name: String = "name"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        guid = s"${prefix}${sep}guid",
+        name = s"${prefix}${sep}name"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.BinarySummary] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      com.bryzek.dependency.v0.anorm.parsers.BinaryType.parser(com.bryzek.dependency.v0.anorm.parsers.BinaryType.Mappings(mappings.name)) map {
+        case guid ~ name => {
+          com.bryzek.dependency.v0.models.BinarySummary(
+            guid = guid,
+            name = name
           )
         }
       }
@@ -360,6 +395,50 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
+  object Item {
+
+    case class Mappings(
+      guid: String = "guid",
+      detail: com.bryzek.dependency.v0.anorm.parsers.ItemDetail.Mappings,
+      label: String = "label",
+      description: String = "description"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        guid = s"${prefix}${sep}guid",
+        detail = com.bryzek.dependency.v0.anorm.parsers.ItemDetail.Mappings.prefix(Seq(prefix, "detail").filter(!_.isEmpty).mkString("_"), "_"),
+        label = s"${prefix}${sep}label",
+        description = s"${prefix}${sep}description"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Item] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      com.bryzek.dependency.v0.anorm.parsers.ItemDetail.parser(mappings.detail) ~
+      SqlParser.str(mappings.label) ~
+      SqlParser.str(mappings.description).? map {
+        case guid ~ detail ~ label ~ description => {
+          com.bryzek.dependency.v0.models.Item(
+            guid = guid,
+            detail = detail,
+            label = label,
+            description = description
+          )
+        }
+      }
+    }
+
+  }
+
   object Library {
 
     case class Mappings(
@@ -477,6 +556,46 @@ package com.bryzek.dependency.v0.anorm.parsers {
             from = from,
             to = to,
             latest = latest
+          )
+        }
+      }
+    }
+
+  }
+
+  object LibrarySummary {
+
+    case class Mappings(
+      guid: String = "guid",
+      groupId: String = "groupId",
+      artifactId: String = "artifactId"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        guid = s"${prefix}${sep}guid",
+        groupId = s"${prefix}${sep}group_id",
+        artifactId = s"${prefix}${sep}artifact_id"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LibrarySummary] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      SqlParser.str(mappings.groupId) ~
+      SqlParser.str(mappings.artifactId) map {
+        case guid ~ groupId ~ artifactId => {
+          com.bryzek.dependency.v0.models.LibrarySummary(
+            guid = guid,
+            groupId = groupId,
+            artifactId = artifactId
           )
         }
       }
@@ -1142,6 +1261,42 @@ package com.bryzek.dependency.v0.anorm.parsers {
             userGuid = userGuid,
             projectGuid = projectGuid
           )
+        }
+      }
+    }
+
+  }
+
+  object ItemDetail {
+
+    case class Mappings(
+      binarySummary: com.bryzek.dependency.v0.anorm.parsers.BinarySummary.Mappings,
+      librarySummary: com.bryzek.dependency.v0.anorm.parsers.LibrarySummary.Mappings,
+      projectSummary: com.bryzek.dependency.v0.anorm.parsers.ProjectSummary.Mappings
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        binarySummary = com.bryzek.dependency.v0.anorm.parsers.BinarySummary.Mappings.prefix(prefix, sep),
+        librarySummary = com.bryzek.dependency.v0.anorm.parsers.LibrarySummary.Mappings.prefix(prefix, sep),
+        projectSummary = com.bryzek.dependency.v0.anorm.parsers.ProjectSummary.Mappings.prefix(prefix, sep)
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ItemDetail] = {
+      com.bryzek.dependency.v0.anorm.parsers.BinarySummary.parser(mappings.binarySummary) |
+      com.bryzek.dependency.v0.anorm.parsers.LibrarySummary.parser(mappings.librarySummary) |
+      com.bryzek.dependency.v0.anorm.parsers.ProjectSummary.parser(mappings.projectSummary) map {
+        case value => {
+          value
         }
       }
     }

@@ -5,6 +5,8 @@
  */
 package com.bryzek.dependency.v0.models {
 
+  sealed trait ItemDetail
+
   case class Binary(
     guid: _root_.java.util.UUID,
     name: com.bryzek.dependency.v0.models.BinaryType,
@@ -21,6 +23,11 @@ package com.bryzek.dependency.v0.models {
     to: com.bryzek.dependency.v0.models.BinaryVersion,
     latest: com.bryzek.dependency.v0.models.BinaryVersion
   )
+
+  case class BinarySummary(
+    guid: _root_.java.util.UUID,
+    name: com.bryzek.dependency.v0.models.BinaryType
+  ) extends ItemDetail
 
   case class BinaryVersion(
     guid: _root_.java.util.UUID,
@@ -50,6 +57,16 @@ package com.bryzek.dependency.v0.models {
     login: String
   )
 
+  /**
+   * A denormalization of item content for search
+   */
+  case class Item(
+    guid: _root_.java.util.UUID,
+    detail: com.bryzek.dependency.v0.models.ItemDetail,
+    label: String,
+    description: _root_.scala.Option[String] = None
+  )
+
   case class Library(
     guid: _root_.java.util.UUID,
     groupId: String,
@@ -68,6 +85,12 @@ package com.bryzek.dependency.v0.models {
     to: com.bryzek.dependency.v0.models.LibraryVersion,
     latest: com.bryzek.dependency.v0.models.LibraryVersion
   )
+
+  case class LibrarySummary(
+    guid: _root_.java.util.UUID,
+    groupId: String,
+    artifactId: String
+  ) extends ItemDetail
 
   case class LibraryVersion(
     guid: _root_.java.util.UUID,
@@ -118,7 +141,7 @@ package com.bryzek.dependency.v0.models {
   case class ProjectSummary(
     guid: _root_.java.util.UUID,
     name: String
-  )
+  ) extends ItemDetail
 
   /**
    * Summary of a specific recommendations for a project. Designed for display in the
@@ -182,6 +205,15 @@ package com.bryzek.dependency.v0.models {
     userGuid: _root_.java.util.UUID,
     projectGuid: _root_.java.util.UUID
   )
+
+  /**
+   * Provides future compatibility in clients - in the future, when a type is added
+   * to the union ItemDetail, it will need to be handled in the client code. This
+   * implementation will deserialize these future types as an instance of this class.
+   */
+  case class ItemDetailUndefinedType(
+    description: String
+  ) extends ItemDetail
 
   sealed trait BinaryType
 
@@ -383,6 +415,20 @@ package com.bryzek.dependency.v0.models {
       )(unlift(BinaryRecommendation.unapply _))
     }
 
+    implicit def jsonReadsDependencyBinarySummary: play.api.libs.json.Reads[BinarySummary] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "name").read[com.bryzek.dependency.v0.models.BinaryType]
+      )(BinarySummary.apply _)
+    }
+
+    implicit def jsonWritesDependencyBinarySummary: play.api.libs.json.Writes[BinarySummary] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "name").write[com.bryzek.dependency.v0.models.BinaryType]
+      )(unlift(BinarySummary.unapply _))
+    }
+
     implicit def jsonReadsDependencyBinaryVersion: play.api.libs.json.Reads[BinaryVersion] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
@@ -447,6 +493,24 @@ package com.bryzek.dependency.v0.models {
       )(unlift(GithubUserForm.unapply _))
     }
 
+    implicit def jsonReadsDependencyItem: play.api.libs.json.Reads[Item] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "detail").read[com.bryzek.dependency.v0.models.ItemDetail] and
+        (__ \ "label").read[String] and
+        (__ \ "description").readNullable[String]
+      )(Item.apply _)
+    }
+
+    implicit def jsonWritesDependencyItem: play.api.libs.json.Writes[Item] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "detail").write[com.bryzek.dependency.v0.models.ItemDetail] and
+        (__ \ "label").write[String] and
+        (__ \ "description").writeNullable[String]
+      )(unlift(Item.unapply _))
+    }
+
     implicit def jsonReadsDependencyLibrary: play.api.libs.json.Reads[Library] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
@@ -495,6 +559,22 @@ package com.bryzek.dependency.v0.models {
         (__ \ "to").write[com.bryzek.dependency.v0.models.LibraryVersion] and
         (__ \ "latest").write[com.bryzek.dependency.v0.models.LibraryVersion]
       )(unlift(LibraryRecommendation.unapply _))
+    }
+
+    implicit def jsonReadsDependencyLibrarySummary: play.api.libs.json.Reads[LibrarySummary] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "group_id").read[String] and
+        (__ \ "artifact_id").read[String]
+      )(LibrarySummary.apply _)
+    }
+
+    implicit def jsonWritesDependencyLibrarySummary: play.api.libs.json.Writes[LibrarySummary] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "group_id").write[String] and
+        (__ \ "artifact_id").write[String]
+      )(unlift(LibrarySummary.unapply _))
     }
 
     implicit def jsonReadsDependencyLibraryVersion: play.api.libs.json.Reads[LibraryVersion] = {
@@ -763,6 +843,27 @@ package com.bryzek.dependency.v0.models {
         (__ \ "user_guid").write[_root_.java.util.UUID] and
         (__ \ "project_guid").write[_root_.java.util.UUID]
       )(unlift(WatchProjectForm.unapply _))
+    }
+
+    implicit def jsonReadsDependencyItemDetail: play.api.libs.json.Reads[ItemDetail] = {
+      (
+        (__ \ "binary_summary").read(jsonReadsDependencyBinarySummary).asInstanceOf[play.api.libs.json.Reads[ItemDetail]]
+        orElse
+        (__ \ "library_summary").read(jsonReadsDependencyLibrarySummary).asInstanceOf[play.api.libs.json.Reads[ItemDetail]]
+        orElse
+        (__ \ "project_summary").read(jsonReadsDependencyProjectSummary).asInstanceOf[play.api.libs.json.Reads[ItemDetail]]
+        orElse
+        play.api.libs.json.Reads(jsValue => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.ItemDetailUndefinedType(jsValue.toString))).asInstanceOf[play.api.libs.json.Reads[ItemDetail]]
+      )
+    }
+
+    implicit def jsonWritesDependencyItemDetail: play.api.libs.json.Writes[ItemDetail] = new play.api.libs.json.Writes[ItemDetail] {
+      def writes(obj: ItemDetail) = obj match {
+        case x: com.bryzek.dependency.v0.models.BinarySummary => play.api.libs.json.Json.obj("binary_summary" -> jsonWritesDependencyBinarySummary.writes(x))
+        case x: com.bryzek.dependency.v0.models.LibrarySummary => play.api.libs.json.Json.obj("library_summary" -> jsonWritesDependencyLibrarySummary.writes(x))
+        case x: com.bryzek.dependency.v0.models.ProjectSummary => play.api.libs.json.Json.obj("project_summary" -> jsonWritesDependencyProjectSummary.writes(x))
+        case x: com.bryzek.dependency.v0.models.ItemDetailUndefinedType => sys.error(s"The type[com.bryzek.dependency.v0.models.ItemDetailUndefinedType] should never be serialized")
+      }
     }
   }
 }
