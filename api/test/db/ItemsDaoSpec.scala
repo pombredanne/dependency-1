@@ -36,9 +36,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "findByObjectGuid" in {
     val binary = createBinary()
-    val detail = createItemDetail(binary)
-    val form = createItemForm(detail)
-    val item = createItem(form)
+    val item = ItemsDao.upsertBinary(systemUser, binary)
     ItemsDao.findByObjectGuid(binary.guid).map(_.guid) must be(
       Some(item.guid)
     )
@@ -61,48 +59,51 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "supports binaries" in {
     val binary = createBinary()
-    val detail = BinarySummary(
-      guid = binary.guid,
-      name = binary.name
-    )
-    val itemBinary = createItem(createItemForm(detail))
+    val itemBinary = ItemsDao.upsertBinary(systemUser, binary)
 
     val actual = ItemsDao.findByObjectGuid(binary.guid).getOrElse {
       sys.error("Failed to create binary")
     }
     actual.label must be(binary.name.toString)
-    actual.detail must be(detail)
+    actual.detail must be(
+      BinarySummary(
+        guid = binary.guid,
+        name = binary.name
+      )
+    )
   }
 
   "supports libraries" in {
     val library = createLibrary()
-    val detail = LibrarySummary(
-      guid = library.guid,
-      groupId = library.groupId,
-      artifactId = library.artifactId
-    )
 
-    val itemLibrary = createItem(createItemForm(detail))
+    val itemLibrary = ItemsDao.upsertLibrary(systemUser, library)
     val actual = ItemsDao.findByObjectGuid(library.guid).getOrElse {
       sys.error("Failed to create library")
     }
     actual.label must be(Seq(library.groupId, library.artifactId).mkString("."))
-    actual.detail must be(detail)
+    actual.detail must be(
+      LibrarySummary(
+        guid = library.guid,
+        groupId = library.groupId,
+        artifactId = library.artifactId
+      )
+    )
   }
 
   "supports projects" in {
     val project = createProject()
-    val detail = ProjectSummary(
-      guid = project.guid,
-      name = project.name
-    )
 
-    val itemProject = createItem(createItemForm(detail))
+    val itemProject = ItemsDao.upsertProject(systemUser, project)
     val actual = ItemsDao.findByObjectGuid(project.guid).getOrElse {
       sys.error("Failed to create project")
     }
     actual.label must be(project.name)
-    actual.detail must be(detail)
+    actual.detail must be(
+      ProjectSummary(
+        guid = project.guid,
+        name = project.name
+      )
+    )
   }
 
 }

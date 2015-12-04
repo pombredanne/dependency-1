@@ -40,10 +40,11 @@ class MainActor(name: String) extends Actor with ActorLogging {
   import scala.concurrent.duration._
 
   private[this] val periodicActor = Akka.system.actorOf(Props[PeriodicActor], name = s"$name:periodicActor")
+  private[this] val searchActor = Akka.system.actorOf(Props[SearchActor], name = s"$name:SearchActor")
 
-  private[this] val projectActors = scala.collection.mutable.Map[UUID, ActorRef]()
-  private[this] val libraryActors = scala.collection.mutable.Map[UUID, ActorRef]()
   private[this] val binaryActors = scala.collection.mutable.Map[UUID, ActorRef]()
+  private[this] val libraryActors = scala.collection.mutable.Map[UUID, ActorRef]()
+  private[this] val projectActors = scala.collection.mutable.Map[UUID, ActorRef]()
 
   implicit val mainActorExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("main-actor-context")
 
@@ -59,7 +60,7 @@ class MainActor(name: String) extends Actor with ActorLogging {
   private[this] def scheduleRecurring(configName: String, message: PeriodicActor.Message) {
     val seconds = DefaultConfig.requiredString(configName).toInt
     val initial = DefaultConfig.optionalString(s"${configName}_initial").map(_.toInt).getOrElse(seconds)
-    println(s"scheduling a periodic message[$message]. Initial[$initial seconds], recurring[$seconds seconds]")
+    Logger.info(s"scheduling a periodic message[$message]. Initial[$initial seconds], recurring[$seconds seconds]")
     Akka.system.scheduler.schedule(
       FiniteDuration(initial, SECONDS),
       FiniteDuration(seconds, SECONDS),
@@ -67,27 +68,33 @@ class MainActor(name: String) extends Actor with ActorLogging {
     )
   }
 
-  scheduleRecurring("com.bryzek.dependency.project.sync.seconds", PeriodicActor.Messages.SyncProjects)
+  scheduleRecurring("com.bryzek.dependency.binary.sync.seconds", PeriodicActor.Messages.SyncBinaries)
   scheduleRecurring("com.bryzek.dependency.library.sync.seconds", PeriodicActor.Messages.SyncLibraries)
+  scheduleRecurring("com.bryzek.dependency.project.sync.seconds", PeriodicActor.Messages.SyncProjects)
+
   def receive = akka.event.LoggingReceive {
 
     case MainActor.Messages.ProjectCreated(guid) => Util.withVerboseErrorHandler(
       s"MainActor.Messages.ProjectCreated($guid)"
     ) {
-      upsertProjectActor(guid) ! ProjectActor.Messages.Watch
-      upsertProjectActor(guid) ! ProjectActor.Messages.Sync
+      val actor = upsertProjectActor(guid)
+      actor ! ProjectActor.Messages.Watch
+      actor ! ProjectActor.Messages.Sync
+      searchActor ! SearchActor.Messages.SyncProject(guid)
     }
 
     case MainActor.Messages.ProjectUpdated(guid) => Util.withVerboseErrorHandler(
       s"MainActor.Messages.ProjectUpdated($guid)"
     ) {
       upsertProjectActor(guid) ! ProjectActor.Messages.Sync
+      searchActor ! SearchActor.Messages.SyncProject(guid)
     }
 
     case MainActor.Messages.ProjectDeleted(guid) => Util.withVerboseErrorHandler(
       s"MainActor.Messages.ProjectDeleted($guid)"
     ) {
       projectActors -= guid
+      searchActor ! SearchActor.Messages.SyncProject(guid)
     }
 
     case MainActor.Messages.ProjectSync(guid) => Util.withVerboseErrorHandler(
@@ -100,6 +107,7 @@ class MainActor(name: String) extends Actor with ActorLogging {
       s"MainActor.Messages.LibraryCreated($guid)"
     ) {
       upsertLibraryActor(guid) ! LibraryActor.Messages.Sync
+      searchActor ! SearchActor.Messages.SyncLibrary(guid)
     }
 
     case MainActor.Messages.LibrarySync(guid) => Util.withVerboseErrorHandler(
@@ -112,12 +120,14 @@ class MainActor(name: String) extends Actor with ActorLogging {
       s"MainActor.Messages.LibraryDeleted($guid)"
     ) {
       upsertLibraryActor(guid) ! LibraryActor.Messages.Sync
+      searchActor ! SearchActor.Messages.SyncLibrary(guid)
     }
 
     case MainActor.Messages.BinaryCreated(guid) => Util.withVerboseErrorHandler(
       s"MainActor.Messages.BinaryCreated($guid)"
     ) {
       upsertBinaryActor(guid) ! BinaryActor.Messages.Sync
+      searchActor ! SearchActor.Messages.SyncBinary(guid)
     }
 
     case MainActor.Messages.BinarySync(guid) => Util.withVerboseErrorHandler(
@@ -130,6 +140,7 @@ class MainActor(name: String) extends Actor with ActorLogging {
       s"MainActor.Messages.BinaryDeleted($guid)"
     ) {
       upsertBinaryActor(guid) ! BinaryActor.Messages.Sync
+      searchActor ! SearchActor.Messages.SyncBinary(guid)
     }
 
     case m: Any => {

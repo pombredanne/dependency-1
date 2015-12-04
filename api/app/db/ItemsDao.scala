@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{BinarySummary, Item, ItemDetail, ItemDetailUndefinedType, LibrarySummary, Project, ProjectSummary}
+import com.bryzek.dependency.v0.models.{Binary, BinarySummary, Item, ItemDetail, ItemDetailUndefinedType, Library, LibrarySummary, Project, ProjectSummary}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.user.v0.models.User
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
@@ -9,6 +9,7 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+import scala.util.{Failure, Success, Try}
 
 case class ItemForm(
   detail: ItemDetail,
@@ -46,10 +47,62 @@ object ItemsDao {
     }
   }
 
+  def upsertBinary(user: User, binary: Binary): Item = {
+    upsert(
+      user,
+      ItemForm(
+        detail = BinarySummary(
+          guid = binary.guid,
+          name = binary.name
+        ),
+        label = binary.name.toString,
+        description = None
+      )
+    )
+  }
+
+  def upsertLibrary(user: User, library: Library): Item = {
+    upsert(
+      user,
+      ItemForm(
+        detail = LibrarySummary(
+          guid = library.guid,
+          groupId = library.groupId,
+          artifactId = library.artifactId
+        ),
+        label = Seq(library.groupId, library.artifactId).mkString("."),
+        description = None
+      )
+    )
+  }
+
+  def upsertProject(user: User, project: Project): Item = {
+    upsert(
+      user,
+      ItemForm(
+        detail = ProjectSummary(
+          guid = project.guid,
+          name = project.name
+        ),
+        label = project.name,
+        description = Some(project.uri)
+      )
+    )
+  }
+
   def upsert(user: User, form: ItemForm): Item = {
     findByObjectGuid(objectGuid(form.detail)) match {
       case Some(item) => item
-      case None => create(user, form)
+      case None => {
+        Try(create(user, form)) match {
+          case Success(item) => item
+          case Failure(ex) => {
+            findByObjectGuid(objectGuid(form.detail)).getOrElse {
+              sys.error(s"Failed to upsert item: $ex")
+            }
+          }
+        }
+      }
     }
   }
 
@@ -69,6 +122,16 @@ object ItemsDao {
 
     findByGuid(guid).getOrElse {
       sys.error("Failed to create item")
+    }
+  }
+
+  def softDelete(deletedBy: User, item: Item) {
+    SoftDelete.delete("items", deletedBy.guid, item.guid)
+  }
+
+  def softDeleteByObjectGuid(deletedBy: User, objectGuid: UUID) {
+    findByObjectGuid(objectGuid).map { item =>
+      softDelete(deletedBy, item)
     }
   }
 

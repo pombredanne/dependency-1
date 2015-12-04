@@ -79,7 +79,6 @@ package com.bryzek.dependency.v0.anorm.parsers {
     }
 
   }
-
   object Binary {
 
     case class Mappings(
