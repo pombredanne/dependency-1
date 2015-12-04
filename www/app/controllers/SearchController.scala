@@ -29,7 +29,7 @@ class SearchController @javax.inject.Inject() (
     } yield {
       Ok(
         views.html.search.index(
-          uiData(request),
+          uiData(request).copy(query = q),
           q,
           PaginatedCollection(page, items)
         )
