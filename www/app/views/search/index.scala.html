@@ -1,0 +1,36 @@
+@(
+  data: com.bryzek.dependency.lib.UiData,
+  query: Option[String],
+  items: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Item]
+)(implicit flash: Flash, messages: Messages)
+
+@main(data) {
+
+  @if(items.isEmpty) {
+
+    <em>No results found</e,>
+
+  } else {
+    <div class="table-responsive">
+      <table class="table">
+        @items.items.map { item =>
+          <tr>
+            <td>@item.label</td>
+          </tr>
+        }
+      </table>
+    </div>
+
+    @if(items.hasPrevious || items.hasNext) {
+      <ul class="pager">
+        @if(items.hasPrevious) {
+          <li><a href="@routes.SearchController.index(query, items.page - 1)">Previous</a></li>
+       }
+        @if(items.hasNext) {
+         <li><a href="@routes.SearchController.index(query, items.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
+
+}

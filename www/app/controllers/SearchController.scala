@@ -14,12 +14,30 @@ class SearchController @javax.inject.Inject() (
   override val dependencyClientProvider: DependencyClientProvider
 ) extends BaseController(userTokensClient, dependencyClientProvider) {
 
+  import scala.concurrent.ExecutionContext.Implicits.global
+
   def index(
     q: Option[String],
     page: Int
-  ) = Anonymous.async { implicit request =>
+  ) = Identified.async { implicit request =>
     val query = SearchQuery.parse(q.getOrElse(""))
-    sys.error("TODO: " + query)
+    println("QUERY: " + query)
+
+    for {
+      items <- dependencyClient(request).items.getSearch(
+        q = q,
+        limit = Pagination.DefaultLimit+1,
+        offset = page * Pagination.DefaultLimit
+      )
+    } yield {
+      Ok(
+        views.html.search.index(
+          uiData(request),
+          q,
+          PaginatedCollection(page, items)
+        )
+      )
+    }
   }
 
 }

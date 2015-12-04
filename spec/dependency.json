@@ -790,6 +790,25 @@
                     }
 		}
 	    ]
+	},
+
+	"item": {
+	    "path": "/search",
+	    "operations": [
+		{
+                    "method": "GET",
+                    "description": "Returns a list of all matching items",
+                    "parameters": [
+			{ "name": "q", "type": "string", "required": false, "description": "Actual search query" },
+			{ "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+			{ "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+			"200": { "type": "[item]" },
+			"401": { "type": "unit" }
+                    }
+		}
+	    ]
 	}
 
     }
