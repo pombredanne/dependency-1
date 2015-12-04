@@ -7,7 +7,7 @@
     ],
 
     "unions": {
-	"item_detail": {
+	"item_summary": {
 	    "types": [
 		{ "type": "binary_summary" },
 		{ "type": "library_summary" },
@@ -287,7 +287,7 @@
             "description": "A denormalization of item content for search",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Unique identifer for this item." },
-                { "name": "detail", "type": "item_detail" },
+                { "name": "summary", "type": "item_summary" },
                 { "name": "label", "type": "string" },
                 { "name": "description", "type": "string", "required": false }
             ]

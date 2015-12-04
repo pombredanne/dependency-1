@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{Binary, BinarySummary, Item, ItemDetail, ItemDetailUndefinedType, Library, LibrarySummary, Project, ProjectSummary}
+import com.bryzek.dependency.v0.models.{Binary, BinarySummary, Item, ItemSummary, ItemSummaryUndefinedType, Library, LibrarySummary, Project, ProjectSummary}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.user.v0.models.User
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
@@ -12,7 +12,7 @@ import java.util.UUID
 import scala.util.{Failure, Success, Try}
 
 case class ItemForm(
-  detail: ItemDetail,
+  detail: ItemSummary,
   label: String,
   description: Option[String]
 )
@@ -38,12 +38,12 @@ object ItemsDao {
     ({guid}::uuid, {object_guid}::uuid, {label}, {description}, {detail}::json, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  private[this] def objectGuid(detail: ItemDetail): UUID = {
+  private[this] def objectGuid(detail: ItemSummary): UUID = {
     detail match {
       case BinarySummary(guid, _) => guid
       case LibrarySummary(guid, _, _) => guid
       case ProjectSummary(guid, _) => guid
-      case ItemDetailUndefinedType(name) => sys.error(s"Cannot get a guid from type[$name]")
+      case ItemSummaryUndefinedType(name) => sys.error(s"Cannot get a guid from ItemSummaryUndefinedType($name)")
     }
   }
 

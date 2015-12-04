@@ -254,9 +254,9 @@ trait Helpers {
     ItemsDao.create(systemUser, form)
   }
 
-  def createItemDetail(
+  def createItemSummary(
     binary: Binary = createBinary()
-  ): ItemDetail = {
+  ): ItemSummary = {
     BinarySummary(
       guid = binary.guid,
       name = binary.name
@@ -264,7 +264,7 @@ trait Helpers {
   }
 
   def createItemForm(
-    detail: ItemDetail = createItemDetail()
+    detail: ItemSummary = createItemSummary()
   ): ItemForm = {
     ItemForm(
       detail = detail,
@@ -272,7 +272,7 @@ trait Helpers {
         case BinarySummary(_, name) => name.toString
         case LibrarySummary(_, groupId, artifactId) => Seq(groupId, artifactId).mkString(".")
         case ProjectSummary(_, name) => name
-        case ItemDetailUndefinedType(name) => name
+        case ItemSummaryUndefinedType(name) => name
       },
       description = None
     )

@@ -399,7 +399,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       guid: String = "guid",
-      detail: String = "detail",
+      summary: String = "summary",
       label: String = "label",
       description: String = "description"
     )
@@ -412,7 +412,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         guid = s"${prefix}${sep}guid",
-        detail = s"${prefix}${sep}detail",
+        summary = s"${prefix}${sep}summary",
         label = s"${prefix}${sep}label",
         description = s"${prefix}${sep}description"
       )
@@ -423,13 +423,13 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Item] = {
       SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
-      SqlParser.get[com.bryzek.dependency.v0.models.ItemDetail](mappings.detail) ~
+      SqlParser.get[com.bryzek.dependency.v0.models.ItemSummary](mappings.summary) ~
       SqlParser.str(mappings.label) ~
       SqlParser.str(mappings.description).? map {
-        case guid ~ detail ~ label ~ description => {
+        case guid ~ summary ~ label ~ description => {
           com.bryzek.dependency.v0.models.Item(
             guid = guid,
-            detail = detail,
+            summary = summary,
             label = label,
             description = description
           )

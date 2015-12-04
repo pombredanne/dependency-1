@@ -65,7 +65,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       sys.error("Failed to create binary")
     }
     actual.label must be(binary.name.toString)
-    actual.detail must be(
+    actual.summary must be(
       BinarySummary(
         guid = binary.guid,
         name = binary.name
@@ -81,7 +81,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       sys.error("Failed to create library")
     }
     actual.label must be(Seq(library.groupId, library.artifactId).mkString("."))
-    actual.detail must be(
+    actual.summary must be(
       LibrarySummary(
         guid = library.guid,
         groupId = library.groupId,
@@ -98,7 +98,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       sys.error("Failed to create project")
     }
     actual.label must be(project.name)
-    actual.detail must be(
+    actual.summary must be(
       ProjectSummary(
         guid = project.guid,
         name = project.name
