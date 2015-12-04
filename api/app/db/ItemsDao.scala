@@ -1,6 +1,7 @@
 package db
 
 import com.bryzek.dependency.v0.models.{BinarySummary, Item, ItemDetail, ItemDetailUndefinedType, LibrarySummary, Project, ProjectSummary}
+import com.bryzek.dependency.v0.models.json._
 import io.flow.user.v0.models.User
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import anorm._
@@ -22,22 +23,18 @@ object ItemsDao {
            items.object_guid,
            items.label,
            items.description,
-           items.metadata,
+           items.detail,
            items.created_at,
-           items.deleted_at,
-           items.object_guid as items_detail_guid,
-           items.metadata->>'name' items_detail_name,
-           items.metadata->>'group_id' items_detail_group_id,
-           items.metadata->>'artifact_id' items_detail_artifact_id
+           items.deleted_at
       from items
      where true
   """
 
   private[this] val InsertQuery = """
     insert into items
-    (guid, object_guid, label, description, metadata, created_by_guid, updated_by_guid)
+    (guid, object_guid, label, description, detail, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {object_guid}::uuid, {label}, {description}, {metadata}::json, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {object_guid}::uuid, {label}, {description}, {detail}::json, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[this] def objectGuid(detail: ItemDetail): UUID = {
@@ -46,24 +43,6 @@ object ItemsDao {
       case LibrarySummary(guid, _, _) => guid
       case ProjectSummary(guid, _) => guid
       case ItemDetailUndefinedType(name) => sys.error(s"Cannot get a guid from type[$name]")
-    }
-  }
-
-  private[this] def metadata(detail: ItemDetail): Option[Map[String, String]] = {
-    detail match {
-      case BinarySummary(_, binaryType) => Some(
-        Map("name" -> binaryType.toString)
-      )
-      case LibrarySummary(_, groupId, artifactId) => Some(
-        Map(
-          "group_id" -> groupId,
-          "artifact_id" -> artifactId
-        )
-      )
-      case ProjectSummary(_, name) => Some(
-        Map("name" -> name)
-      )
-      case ItemDetailUndefinedType(name) => None
     }
   }
 
@@ -83,7 +62,7 @@ object ItemsDao {
         'object_guid -> objectGuid(form.detail),
         'label -> form.label,
         'description -> form.description,
-        'metadata -> metadata(form.detail).map { data => Json.stringify(Json.toJson(data)) },
+        'detail -> Json.stringify(Json.toJson(form.detail)),
         'created_by_guid -> createdBy.guid
       ).execute()
     }

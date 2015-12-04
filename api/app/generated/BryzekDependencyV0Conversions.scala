@@ -63,6 +63,9 @@ package com.bryzek.dependency.v0.anorm.conversions {
     implicit val columnToSeqUUID: Column[Seq[_root_.java.util.UUID]] = parser { _.as[Seq[_root_.java.util.UUID]] }
     implicit val columnToMapUUID: Column[Map[String, _root_.java.util.UUID]] = parser { _.as[Map[String, _root_.java.util.UUID]] }
 
+    import com.bryzek.dependency.v0.models.json._
+    implicit val columnToItemDetail: Column[com.bryzek.dependency.v0.models.ItemDetail] = parser { _.as[com.bryzek.dependency.v0.models.ItemDetail] }
+
   }
 
 }

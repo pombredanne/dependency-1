@@ -5,7 +5,7 @@ create table items (
   object_guid                uuid not null,
   label                      text not null check(non_empty_trimmed_string(label)),
   description                text check(trim(description) = description),
-  metadata                   json
+  detail                     json
 );
 
 comment on table items is '
@@ -15,8 +15,8 @@ comment on table items is '
   denormalized here.
 ';
 
-comment on column items.metadata is '
-  Additional metadata specific to the type of object indexed. See the
+comment on column items.detail is '
+  Detail specific to the type of object indexed. See the
   item_detail union type at http://apidoc.me/bryzek/dependency/latest
 ';
 

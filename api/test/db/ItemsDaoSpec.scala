@@ -10,7 +10,7 @@ import java.util.UUID
 class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
-/*
+
   "upsert" in {
     val form = createItemForm()
     val item1 = ItemsDao.create(systemUser, form)
@@ -89,7 +89,6 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     actual.label must be(Seq(library.groupId, library.artifactId).mkString("."))
     actual.detail must be(detail)
   }
- */
 
   "supports projects" in {
     val project = createProject()
