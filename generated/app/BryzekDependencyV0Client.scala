@@ -117,6 +117,11 @@ package com.bryzek.dependency.v0.models {
     binaryVersion: com.bryzek.dependency.v0.models.BinaryVersion
   )
 
+  case class ProjectDetail(
+    guid: _root_.java.util.UUID,
+    name: String
+  )
+
   case class ProjectForm(
     name: String,
     scms: com.bryzek.dependency.v0.models.Scms,
@@ -149,7 +154,7 @@ package com.bryzek.dependency.v0.models {
    */
   case class Recommendation(
     guid: _root_.java.util.UUID,
-    project: com.bryzek.dependency.v0.models.ProjectSummary,
+    project: com.bryzek.dependency.v0.models.ProjectDetail,
     `type`: com.bryzek.dependency.v0.models.RecommendationType,
     `object`: io.flow.common.v0.models.Reference,
     name: String,
@@ -631,6 +636,20 @@ package com.bryzek.dependency.v0.models {
       )(unlift(ProjectBinaryVersion.unapply _))
     }
 
+    implicit def jsonReadsDependencyProjectDetail: play.api.libs.json.Reads[ProjectDetail] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "name").read[String]
+      )(ProjectDetail.apply _)
+    }
+
+    implicit def jsonWritesDependencyProjectDetail: play.api.libs.json.Writes[ProjectDetail] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "name").write[String]
+      )(unlift(ProjectDetail.unapply _))
+    }
+
     implicit def jsonReadsDependencyProjectForm: play.api.libs.json.Reads[ProjectForm] = {
       (
         (__ \ "name").read[String] and
@@ -694,7 +713,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyRecommendation: play.api.libs.json.Reads[Recommendation] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "project").read[com.bryzek.dependency.v0.models.ProjectSummary] and
+        (__ \ "project").read[com.bryzek.dependency.v0.models.ProjectDetail] and
         (__ \ "type").read[com.bryzek.dependency.v0.models.RecommendationType] and
         (__ \ "object").read[io.flow.common.v0.models.Reference] and
         (__ \ "name").read[String] and
@@ -707,7 +726,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyRecommendation: play.api.libs.json.Writes[Recommendation] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "project").write[com.bryzek.dependency.v0.models.ProjectSummary] and
+        (__ \ "project").write[com.bryzek.dependency.v0.models.ProjectDetail] and
         (__ \ "type").write[com.bryzek.dependency.v0.models.RecommendationType] and
         (__ \ "object").write[io.flow.common.v0.models.Reference] and
         (__ \ "name").write[String] and

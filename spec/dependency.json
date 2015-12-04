@@ -149,6 +149,13 @@
 	    ]
 	},
 
+	"project_detail": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "name", "type": "string" }
+	    ]
+	},
+
 	"project_summary": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
@@ -191,7 +198,7 @@
 	    "description": "Summary of a specific recommendations for a project. Designed for display in the project dashboard",
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
-		{ "name": "project", "type": "project_summary" },
+		{ "name": "project", "type": "project_detail" },
 		{ "name": "type", "type": "recommendation_type" },
 		{ "name": "object", "type": "io.flow.common.v0.models.reference" },
 		{ "name": "name", "type": "string", "description": "The name of the library or binary to upgrade" },

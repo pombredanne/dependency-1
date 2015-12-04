@@ -735,6 +735,42 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
+  object ProjectDetail {
+
+    case class Mappings(
+      guid: String = "guid",
+      name: String = "name"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        guid = s"${prefix}${sep}guid",
+        name = s"${prefix}${sep}name"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ProjectDetail] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      SqlParser.str(mappings.name) map {
+        case guid ~ name => {
+          com.bryzek.dependency.v0.models.ProjectDetail(
+            guid = guid,
+            name = name
+          )
+        }
+      }
+    }
+
+  }
+
   object ProjectForm {
 
     case class Mappings(
@@ -891,7 +927,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       guid: String = "guid",
-      project: com.bryzek.dependency.v0.anorm.parsers.ProjectSummary.Mappings,
+      project: com.bryzek.dependency.v0.anorm.parsers.ProjectDetail.Mappings,
       `type`: String = "`type`",
       `object`: io.flow.common.v0.anorm.parsers.Reference.Mappings,
       name: String = "name",
@@ -908,7 +944,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         guid = s"${prefix}${sep}guid",
-        project = com.bryzek.dependency.v0.anorm.parsers.ProjectSummary.Mappings.prefix(Seq(prefix, "project").filter(!_.isEmpty).mkString("_"), "_"),
+        project = com.bryzek.dependency.v0.anorm.parsers.ProjectDetail.Mappings.prefix(Seq(prefix, "project").filter(!_.isEmpty).mkString("_"), "_"),
         `type` = s"${prefix}${sep}type",
         `object` = io.flow.common.v0.anorm.parsers.Reference.Mappings.prefix(Seq(prefix, "object").filter(!_.isEmpty).mkString("_"), "_"),
         name = s"${prefix}${sep}name",
@@ -923,7 +959,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Recommendation] = {
       SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
-      com.bryzek.dependency.v0.anorm.parsers.ProjectSummary.parser(mappings.project) ~
+      com.bryzek.dependency.v0.anorm.parsers.ProjectDetail.parser(mappings.project) ~
       com.bryzek.dependency.v0.anorm.parsers.RecommendationType.parser(com.bryzek.dependency.v0.anorm.parsers.RecommendationType.Mappings(mappings.`type`)) ~
       io.flow.common.v0.anorm.parsers.Reference.parser(mappings.`object`) ~
       SqlParser.str(mappings.name) ~
