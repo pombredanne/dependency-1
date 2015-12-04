@@ -17,8 +17,7 @@ object Recommendations {
       filter(v => matchesCrossBuild(v.crossBuildVersion, current.crossBuildVersion)).
       map(v => Version(v.version)).
       filter(_ > currentTag).
-      filter(currentTag.tags.size == _.tags.size).
-      filter(matchesText(currentTag, _)).
+      filter(v => isSimple(v) || (currentTag.tags.size == v.tags.size && matchesText(currentTag, v))).
       sorted.
       reverse.
       headOption.
@@ -34,6 +33,14 @@ object Recommendations {
         case (_, _) => false
       }
     }.forall( el => el )
+  }
+
+  private[this] def isSimple(version: Version): Boolean = {
+    version.tags match {
+      case Seq(t: Tag.Semver) => true
+      case Seq(t: Tag.Date) => true
+      case _ => false
+    }
   }
 
   private[this] def matchesCrossBuild(current: Option[String], other: Option[String]): Boolean = {

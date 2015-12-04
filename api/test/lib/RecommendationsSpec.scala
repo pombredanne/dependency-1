@@ -42,6 +42,13 @@ class RecommendationsSpec extends Specification {
     ) must beEqualTo(Some("1.4.0-M4"))
   }
 
+  "slick example - respects major version when textual" in {
+    simpleRecs(
+      "2.1.0-M3",
+      Seq("2.1.0-M3", "3.1.0-M4", "3.1")
+    ) must beEqualTo(Some("3.1"))
+  }
+
   "matches on cross build version" in {
     Recommendations.version(
       VersionForm("1.0.1", Some("2.11.7")),
