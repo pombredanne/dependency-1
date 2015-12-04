@@ -12,7 +12,7 @@ import java.util.UUID
 import scala.util.{Failure, Success, Try}
 
 case class ItemForm(
-  detail: ItemSummary,
+  summary: ItemSummary,
   label: String,
   description: Option[String]
 )
@@ -24,7 +24,7 @@ object ItemsDao {
            items.object_guid,
            items.label,
            items.description,
-           items.detail,
+           items.summary,
            items.created_at,
            items.deleted_at
       from items
@@ -33,13 +33,13 @@ object ItemsDao {
 
   private[this] val InsertQuery = """
     insert into items
-    (guid, object_guid, label, description, detail, created_by_guid, updated_by_guid)
+    (guid, object_guid, label, description, summary, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {object_guid}::uuid, {label}, {description}, {detail}::json, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {object_guid}::uuid, {label}, {description}, {summary}::json, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  private[this] def objectGuid(detail: ItemSummary): UUID = {
-    detail match {
+  private[this] def objectGuid(summary: ItemSummary): UUID = {
+    summary match {
       case BinarySummary(guid, _) => guid
       case LibrarySummary(guid, _, _) => guid
       case ProjectSummary(guid, _) => guid
@@ -51,7 +51,7 @@ object ItemsDao {
     upsert(
       user,
       ItemForm(
-        detail = BinarySummary(
+        summary = BinarySummary(
           guid = binary.guid,
           name = binary.name
         ),
@@ -65,7 +65,7 @@ object ItemsDao {
     upsert(
       user,
       ItemForm(
-        detail = LibrarySummary(
+        summary = LibrarySummary(
           guid = library.guid,
           groupId = library.groupId,
           artifactId = library.artifactId
@@ -80,7 +80,7 @@ object ItemsDao {
     upsert(
       user,
       ItemForm(
-        detail = ProjectSummary(
+        summary = ProjectSummary(
           guid = project.guid,
           name = project.name
         ),
@@ -91,13 +91,13 @@ object ItemsDao {
   }
 
   def upsert(user: User, form: ItemForm): Item = {
-    findByObjectGuid(objectGuid(form.detail)) match {
+    findByObjectGuid(objectGuid(form.summary)) match {
       case Some(item) => item
       case None => {
         Try(create(user, form)) match {
           case Success(item) => item
           case Failure(ex) => {
-            findByObjectGuid(objectGuid(form.detail)).getOrElse {
+            findByObjectGuid(objectGuid(form.summary)).getOrElse {
               sys.error(s"Failed to upsert item: $ex")
             }
           }
@@ -112,10 +112,10 @@ object ItemsDao {
     DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
-        'object_guid -> objectGuid(form.detail),
+        'object_guid -> objectGuid(form.summary),
         'label -> form.label,
         'description -> form.description,
-        'detail -> Json.stringify(Json.toJson(form.detail)),
+        'summary -> Json.stringify(Json.toJson(form.summary)),
         'created_by_guid -> createdBy.guid
       ).execute()
     }

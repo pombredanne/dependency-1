@@ -264,11 +264,11 @@ trait Helpers {
   }
 
   def createItemForm(
-    detail: ItemSummary = createItemSummary()
+    summary: ItemSummary = createItemSummary()
   ): ItemForm = {
     ItemForm(
-      detail = detail,
-      label = detail match {
+      summary = summary,
+      label = summary match {
         case BinarySummary(_, name) => name.toString
         case LibrarySummary(_, groupId, artifactId) => Seq(groupId, artifactId).mkString(".")
         case ProjectSummary(_, name) => name
