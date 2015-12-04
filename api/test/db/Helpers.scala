@@ -248,10 +248,10 @@ trait Helpers {
     )
   }
 
-  def createItem(
+  def upsertItem(
     form: ItemForm = createItemForm()
   ): Item = {
-    ItemsDao.create(systemUser, form)
+    ItemsDao.upsert(systemUser, form)
   }
 
   def createItemSummary(
@@ -266,15 +266,17 @@ trait Helpers {
   def createItemForm(
     summary: ItemSummary = createItemSummary()
   ): ItemForm = {
+    val label = summary match {
+      case BinarySummary(_, name) => name.toString
+      case LibrarySummary(_, groupId, artifactId) => Seq(groupId, artifactId).mkString(".")
+      case ProjectSummary(_, name) => name
+      case ItemSummaryUndefinedType(name) => name
+    }
     ItemForm(
       summary = summary,
-      label = summary match {
-        case BinarySummary(_, name) => name.toString
-        case LibrarySummary(_, groupId, artifactId) => Seq(groupId, artifactId).mkString(".")
-        case ProjectSummary(_, name) => name
-        case ItemSummaryUndefinedType(name) => name
-      },
-      description = None
+      label = label,
+      description = None,
+      contents = label
     )
   }
 

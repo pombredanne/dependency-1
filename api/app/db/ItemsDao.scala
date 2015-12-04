@@ -14,7 +14,8 @@ import scala.util.{Failure, Success, Try}
 case class ItemForm(
   summary: ItemSummary,
   label: String,
-  description: Option[String]
+  description: Option[String],
+  contents: String
 )
 
 object ItemsDao {
@@ -24,6 +25,7 @@ object ItemsDao {
            items.object_guid,
            items.label,
            items.description,
+           items.contents,
            items.summary,
            items.created_at,
            items.deleted_at
@@ -33,9 +35,9 @@ object ItemsDao {
 
   private[this] val InsertQuery = """
     insert into items
-    (guid, object_guid, label, description, summary, created_by_guid, updated_by_guid)
+    (guid, object_guid, label, description, contents, summary, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {object_guid}::uuid, {label}, {description}, {summary}::json, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {object_guid}::uuid, {label}, {description}, {contents}, {summary}::json, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[this] def objectGuid(summary: ItemSummary): UUID = {
@@ -48,6 +50,7 @@ object ItemsDao {
   }
 
   def upsertBinary(user: User, binary: Binary): Item = {
+    val label = binary.name.toString
     upsert(
       user,
       ItemForm(
@@ -55,13 +58,15 @@ object ItemsDao {
           guid = binary.guid,
           name = binary.name
         ),
-        label = binary.name.toString,
-        description = None
+        label = label,
+        description = None,
+        contents = Seq(binary.guid.toString, label).mkString(" ")
       )
     )
   }
 
   def upsertLibrary(user: User, library: Library): Item = {
+    val label = Seq(library.groupId, library.artifactId).mkString(".")
     upsert(
       user,
       ItemForm(
@@ -70,13 +75,17 @@ object ItemsDao {
           groupId = library.groupId,
           artifactId = library.artifactId
         ),
-        label = Seq(library.groupId, library.artifactId).mkString("."),
-        description = None
+        label = label,
+        description = None,
+        contents = Seq(library.guid.toString, label).mkString(" ")
       )
     )
   }
 
   def upsertProject(user: User, project: Project): Item = {
+    val label = project.name
+    val description = project.uri
+
     upsert(
       user,
       ItemForm(
@@ -84,8 +93,9 @@ object ItemsDao {
           guid = project.guid,
           name = project.name
         ),
-        label = project.name,
-        description = Some(project.uri)
+        label = label,
+        description = Some(description),
+        contents = Seq(project.guid.toString, label, description).mkString(" ")
       )
     )
   }
@@ -115,6 +125,7 @@ object ItemsDao {
         'object_guid -> objectGuid(form.summary),
         'label -> form.label,
         'description -> form.description,
+        'contents -> form.contents.trim.toLowerCase,
         'summary -> Json.stringify(Json.toJson(form.summary)),
         'created_by_guid -> createdBy.guid
       ).execute()
@@ -146,6 +157,7 @@ object ItemsDao {
   def findAll(
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
+    q: Option[String] = None,
     objectGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
@@ -155,6 +167,7 @@ object ItemsDao {
       Some(BaseQuery.trim),
       guid.map { v =>  "and items.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("items.guid", _) },
+      q.map { v => "and items.contents like '%' || lower(trim({q})) || '%' " },
       objectGuid.map { v => "and items.object_guid = {object_guid}::uuid" },
       isDeleted.map(Filters.isDeleted("items", _)),
       (limit >= 0) match {
@@ -165,6 +178,7 @@ object ItemsDao {
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
+      q.map('q -> _),
       objectGuid.map('object_guid -> _.toString)
     ).flatten
 

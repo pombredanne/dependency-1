@@ -5,7 +5,8 @@ create table items (
   object_guid                uuid not null,
   label                      text not null check(non_empty_trimmed_string(label)),
   description                text check(trim(description) = description),
-  summary                    json
+  summary                    json,
+  contents                   text not null check(non_empty_trimmed_string(contents)) check(lower(contents) = contents)
 );
 
 comment on table items is '
@@ -18,6 +19,10 @@ comment on table items is '
 comment on column items.summary is '
   Information specific to the type of object indexed. See the
   item_detail union type at http://apidoc.me/bryzek/dependency/latest
+';
+
+comment on column items.contents is '
+  All of the actual textual contents we search.
 ';
 
 select schema_evolution_manager.create_basic_audit_data('public', 'items');

@@ -1,2 +1,2 @@
  - Implement search
- - Add link to delete a project
+ - Some way for UI to know when initial sync of project is done.

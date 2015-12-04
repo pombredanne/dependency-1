@@ -20,9 +20,6 @@ class SearchController @javax.inject.Inject() (
     q: Option[String],
     page: Int
   ) = Identified.async { implicit request =>
-    val query = SearchQuery.parse(q.getOrElse(""))
-    println("QUERY: " + query)
-
     for {
       items <- dependencyClient(request).items.getSearch(
         q = q,

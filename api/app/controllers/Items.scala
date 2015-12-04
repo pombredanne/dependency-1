@@ -21,6 +21,7 @@ class Items @javax.inject.Inject() (
     Ok(
       Json.toJson(
         ItemsDao.findAll(
+          q = q,
           limit = limit,
           offset = offset
         )

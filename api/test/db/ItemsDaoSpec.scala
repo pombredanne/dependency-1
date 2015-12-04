@@ -18,7 +18,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val item2 = ItemsDao.upsert(systemUser, form)
     item1.guid must be(item2.guid)
 
-    val item3 = createItem()
+    val item3 = upsertItem()
 
     item1.guid must be(item2.guid)
     item2.guid must not be(item3.guid)
@@ -26,7 +26,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findByGuid" in {
-    val item = createItem()
+    val item = upsertItem()
     ItemsDao.findByGuid(item.guid).map(_.guid) must be(
       Some(item.guid)
     )
@@ -45,8 +45,8 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by guids" in {
-    val item1 = createItem()
-    val item2 = createItem()
+    val item1 = upsertItem()
+    val item2 = upsertItem()
 
     ItemsDao.findAll(guids = Some(Seq(item1.guid, item2.guid))).map(_.guid).sorted must be(
       Seq(item1.guid, item2.guid).sorted
@@ -71,6 +71,9 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
         name = binary.name
       )
     )
+
+    ItemsDao.findAll(q = Some(binary.guid.toString)).headOption.map(_.guid) must be(Some(actual.guid))
+    ItemsDao.findAll(q = Some(UUID.randomUUID.toString)) must be(Nil)
   }
 
   "supports libraries" in {
@@ -88,6 +91,9 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
         artifactId = library.artifactId
       )
     )
+
+    ItemsDao.findAll(q = Some(library.guid.toString)).headOption.map(_.guid) must be(Some(actual.guid))
+    ItemsDao.findAll(q = Some(UUID.randomUUID.toString)) must be(Nil)
   }
 
   "supports projects" in {
@@ -104,6 +110,9 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
         name = project.name
       )
     )
+
+    ItemsDao.findAll(q = Some(project.guid.toString)).headOption.map(_.guid) must be(Some(actual.guid))
+    ItemsDao.findAll(q = Some(UUID.randomUUID.toString)) must be(Nil)
   }
 
 }
