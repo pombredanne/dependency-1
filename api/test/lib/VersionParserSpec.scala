@@ -136,6 +136,7 @@ class VersionParserSpec extends FunSpec with Matchers {
 
   it("scalatestplus version numbers") {
     assertSorted(Seq("1.4.0-M4", "1.4.0-M3"), "1.4.0-M3 1.4.0-M4")
+    assertSorted(Seq("1.4.0-M4", "1.4.0-M10"), "1.4.0-M4 1.4.0-M10")
   }
 
   it("parses major from semver versions") {
