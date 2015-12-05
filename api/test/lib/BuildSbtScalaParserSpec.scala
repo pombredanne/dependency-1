@@ -197,4 +197,20 @@ lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
 
   }
 
+  "with inline seq" should {
+    val contents = """
+    libraryDependencies ++= Seq(ws, "com.typesafe.play" %% "play-json" % "2.2.2"),
+"""
+
+    "parse dependencies" in {
+      val result = BuildSbtScalaParser("test", contents)
+      result.binaries must beEqualTo(Nil)
+      result.libraries must beEqualTo(
+        Seq(
+          Artifact("com.typesafe.play", "play-json", "2.2.2", true)
+        )
+      )
+      result.resolverUris must be(Nil)
+    }
+  }
 }
