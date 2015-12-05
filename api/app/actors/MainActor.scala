@@ -32,6 +32,8 @@ object MainActor {
     case class BinaryDeleted(guid: UUID)
     case class BinarySync(guid: UUID)
 
+    case class SyncCreateProjectWatch(objectGuid: UUID)
+    case class SyncDeleteProjectWatch(objectGuid: UUID)
   }
 }
 
@@ -41,6 +43,7 @@ class MainActor(name: String) extends Actor with ActorLogging {
 
   private[this] val periodicActor = Akka.system.actorOf(Props[PeriodicActor], name = s"$name:periodicActor")
   private[this] val searchActor = Akka.system.actorOf(Props[SearchActor], name = s"$name:SearchActor")
+  private[this] val syncActor = Akka.system.actorOf(Props[SyncActor], name = s"$name:SyncActor")
 
   private[this] val binaryActors = scala.collection.mutable.Map[UUID, ActorRef]()
   private[this] val libraryActors = scala.collection.mutable.Map[UUID, ActorRef]()
@@ -75,73 +78,63 @@ class MainActor(name: String) extends Actor with ActorLogging {
 
   def receive = akka.event.LoggingReceive {
 
-    case MainActor.Messages.ProjectCreated(guid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.ProjectCreated($guid)"
-    ) {
+    case m @ MainActor.Messages.ProjectCreated(guid) => Util.withVerboseErrorHandler(m) {
       val actor = upsertProjectActor(guid)
       actor ! ProjectActor.Messages.Watch
       actor ! ProjectActor.Messages.Sync
       searchActor ! SearchActor.Messages.SyncProject(guid)
     }
 
-    case MainActor.Messages.ProjectUpdated(guid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.ProjectUpdated($guid)"
-    ) {
+    case m @ MainActor.Messages.ProjectUpdated(guid) => Util.withVerboseErrorHandler(m) {
       upsertProjectActor(guid) ! ProjectActor.Messages.Sync
       searchActor ! SearchActor.Messages.SyncProject(guid)
     }
 
-    case MainActor.Messages.ProjectDeleted(guid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.ProjectDeleted($guid)"
-    ) {
+    case m @ MainActor.Messages.ProjectDeleted(guid) => Util.withVerboseErrorHandler(m) {
       projectActors -= guid
       searchActor ! SearchActor.Messages.SyncProject(guid)
     }
 
-    case MainActor.Messages.ProjectSync(guid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.ProjectSync($guid)"
-    ) {
+    case m @ MainActor.Messages.ProjectSync(guid) => Util.withVerboseErrorHandler(m) {
       upsertProjectActor(guid) ! ProjectActor.Messages.Sync
     }
 
-    case MainActor.Messages.LibraryCreated(guid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.LibraryCreated($guid)"
-    ) {
+    case m @ MainActor.Messages.LibraryCreated(guid) => Util.withVerboseErrorHandler(m) {
       upsertLibraryActor(guid) ! LibraryActor.Messages.Sync
       searchActor ! SearchActor.Messages.SyncLibrary(guid)
+      syncActor ! SyncActor.Messages.Broadcast
     }
 
-    case MainActor.Messages.LibrarySync(guid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.LibrarySync($guid)"
-    ) {
+    case m @ MainActor.Messages.LibrarySync(guid) => Util.withVerboseErrorHandler(m) {
       libraryActors -= guid
     }
 
-    case MainActor.Messages.LibraryDeleted(guid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.LibraryDeleted($guid)"
-    ) {
+    case m @ MainActor.Messages.LibraryDeleted(guid) => Util.withVerboseErrorHandler(m) {
       upsertLibraryActor(guid) ! LibraryActor.Messages.Sync
       searchActor ! SearchActor.Messages.SyncLibrary(guid)
     }
 
-    case MainActor.Messages.BinaryCreated(guid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.BinaryCreated($guid)"
-    ) {
+    case m @ MainActor.Messages.BinaryCreated(guid) => Util.withVerboseErrorHandler(m) {
       upsertBinaryActor(guid) ! BinaryActor.Messages.Sync
       searchActor ! SearchActor.Messages.SyncBinary(guid)
+      syncActor ! SyncActor.Messages.Broadcast
     }
 
-    case MainActor.Messages.BinarySync(guid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.BinarySync($guid)"
-    ) {
+    case m @ MainActor.Messages.BinarySync(guid) => Util.withVerboseErrorHandler(m) {
       binaryActors -= guid
     }
 
-    case MainActor.Messages.BinaryDeleted(guid) => Util.withVerboseErrorHandler(
-      s"MainActor.Messages.BinaryDeleted($guid)"
-    ) {
+    case m @ MainActor.Messages.BinaryDeleted(guid) => Util.withVerboseErrorHandler(m) {
       upsertBinaryActor(guid) ! BinaryActor.Messages.Sync
       searchActor ! SearchActor.Messages.SyncBinary(guid)
+    }
+
+    case m @ MainActor.Messages.SyncCreateProjectWatch(objectGuid) => Util.withVerboseErrorHandler(m) {
+      syncActor ! SyncActor.Messages.CreateProjectWatch(objectGuid)
+    }
+
+    case m @ MainActor.Messages.SyncDeleteProjectWatch(objectGuid) => Util.withVerboseErrorHandler(m) {
+      syncActor ! SyncActor.Messages.DeleteProjectWatch(objectGuid)
     }
 
     case m: Any => {

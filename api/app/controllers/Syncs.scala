@@ -21,6 +21,7 @@ class Syncs @javax.inject.Inject() (
     limit: Long = 25,
     offset: Long = 0
   ) = Identified { request =>
+    println(s"get(objectGuid[$objectGuid] event[$event]")
     Ok(
       Json.toJson(
         SyncsDao.findAll(
