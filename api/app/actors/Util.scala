@@ -16,7 +16,7 @@ trait Util {
       f
     } catch {
       case t: Throwable => {
-        Logger.error(s"$description: ${t}" , t)
+        Logger.error(msg(s"$description: ${t}") , t)
       }
     }
   }
@@ -26,8 +26,12 @@ trait Util {
   ) (
     f: => T
   ) {
-    Logger.info(description.toString)
+    Logger.info(msg(description.toString))
     withErrorHandler(description)(f)
+  }
+
+  private[this] def msg(value: String) = {
+    "${getClass.name}: $value"
   }
 
 }
