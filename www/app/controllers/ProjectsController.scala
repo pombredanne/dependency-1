@@ -75,7 +75,7 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def create(repositoriesPage: Int = 0) = Identified.async { implicit request =>
+  def github(repositoriesPage: Int = 0) = Identified.async { implicit request =>
     for {
       repositories <- dependencyClient(request).repositories.getGithub(
         existingProject = Some(false),
@@ -84,14 +84,14 @@ class ProjectsController @javax.inject.Inject() (
       )
     } yield {
       Ok(
-        views.html.projects.create(
+        views.html.projects.github(
           uiData(request), PaginatedCollection(repositoriesPage, repositories)
         )
       )
     }
   }
 
-  def postCreateFromRepo(
+  def postGithub(
     name: String,
     repositoriesPage: Int = 0
   ) = Identified.async { implicit request =>
@@ -106,7 +106,7 @@ class ProjectsController @javax.inject.Inject() (
         selected.headOption match {
           case None => Future {
             Ok(
-              views.html.projects.create(
+              views.html.projects.github(
                 uiData(request),
                 PaginatedCollection(repositoriesPage, repositories),
                 Seq("Repository with selected name was not found")
@@ -125,7 +125,7 @@ class ProjectsController @javax.inject.Inject() (
             }.recover {
               case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
                 Ok(
-                  views.html.projects.create(
+                  views.html.projects.github(
                     uiData(request),
                     PaginatedCollection(repositoriesPage, repositories),
                     response.errors.map(_.message)

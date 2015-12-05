@@ -13,7 +13,7 @@
       <table class="table">
         @repositories.items.map { repo =>
           <tr>
-            <td><a class="postForm" href="@routes.ProjectsController.postCreateFromRepo(repo.name, repositories.page)">@{repo.name}</a></td>
+            <td><a class="postForm" href="@routes.ProjectsController.postGithub(repo.name, repositories.page)">@{repo.name}</a></td>
             <td>@repo.uri</td>
           </tr>
         }
@@ -22,10 +22,10 @@
       @if(repositories.hasPrevious || repositories.hasNext) {
         <ul class="pager">
           @if(repositories.hasPrevious) {
-            <li><a href="@routes.ProjectsController.create(repositories.page - 1)">Previous</a></li>
+            <li><a href="@routes.ProjectsController.github(repositories.page - 1)">Previous</a></li>
          }
           @if(repositories.hasNext) {
-           <li><a href="@routes.ProjectsController.create(repositories.page + 1)">Next</a></li>
+           <li><a href="@routes.ProjectsController.github(repositories.page + 1)">Next</a></li>
           }
         </ul>
       }
