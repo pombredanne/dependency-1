@@ -79,15 +79,14 @@ class ProjectActor extends Actor with Util {
                 )
               })
             )
+
+            pendingSync = Some(true)
+            processPendingSync(project)
           }.recover {
             case e => {
               Logger.error(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")
             }
           }
-
-          println("Setting pendingSync to true")
-          pendingSync = Some(true)
-          processPendingSync(project)
         }
 
       }
@@ -97,19 +96,15 @@ class ProjectActor extends Actor with Util {
   }
 
   def processPendingSync(project: Project) {
-    println(s"processPendingSync for project[${project.name}]")
     pendingSync.foreach { _ =>
       dependenciesPendingCompletion(project) match {
         case Nil => {
-          println(s" -- all dependencies are synced.")
           RecommendationsDao.sync(MainActor.SystemUser, project)
-          pendingSync.map { _ =>
-            SyncsDao.recordCompleted(MainActor.SystemUser, project.guid)
-            pendingSync = None
-          }
+          SyncsDao.recordCompleted(MainActor.SystemUser, project.guid)
+          pendingSync = None
         }
         case deps => {
-          println(s" -- still waiting on " + deps.mkString(", "))
+          println(s" -- project[${project.name}] guid[${project.guid}] waiting on dependencies to sync: " + deps.mkString(", "))
         }
       }
     }
