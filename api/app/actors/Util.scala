@@ -31,7 +31,7 @@ trait Util {
   }
 
   private[this] def msg(value: String) = {
-    "${getClass.name}: $value"
+    s"${getClass.getName}: $value"
   }
 
 }
