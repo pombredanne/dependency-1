@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.lib.Version
-import com.bryzek.dependency.v0.models.{Library, LibraryForm}
+import com.bryzek.dependency.v0.models.{Library, LibraryForm, SyncEvent}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
@@ -127,6 +127,7 @@ object LibrariesDao {
     projectGuid: Option[UUID] = None,
     groupId: Option[String] = None,
     artifactId: Option[String] = None,
+    isSynced: Option[Boolean] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -148,6 +149,13 @@ object LibrariesDao {
       """.trim },
       groupId.map { v => "and lower(libraries.group_id) = lower(trim({group_id}))" },
       artifactId.map { v => "and lower(libraries.artifact_id) = lower(trim({artifact_id}))" },
+      isSynced.map { value =>
+        val clause = "select 1 from syncs where object_guid = libraries.guid and event = {sync_event_completed}"
+        value match {
+          case true => s"and exists ($clause)"
+          case false => s"and not exists ($clause)"
+        }
+      },
       isDeleted.map(Filters.isDeleted("libraries", _)),
       Some(s"order by lower(libraries.group_id), lower(libraries.artifact_id), libraries.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -156,7 +164,8 @@ object LibrariesDao {
       guid.map('guid -> _.toString),
       projectGuid.map('project_guid -> _.toString),
       groupId.map('group_id -> _.toString),
-      artifactId.map('artifact_id -> _.toString)
+      artifactId.map('artifact_id -> _.toString),
+      isSynced.map(_ => ('sync_event_completed -> SyncEvent.Completed.toString))
     ).flatten
 
     DB.withConnection { implicit c =>

@@ -1,5 +1,6 @@
 package db
 
+import com.bryzek.dependency.v0.models.SyncEvent
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -48,6 +49,14 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     LibrariesDao.findAll(guids = Some(Nil)) must be(Nil)
     LibrariesDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
     LibrariesDao.findAll(guids = Some(Seq(library1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(library1.guid))
+  }
+
+  "findAll by isSynced" in {
+    val library = createLibrary()
+    createSync(createSyncForm(objectGuid = library.guid, event = SyncEvent.Completed))
+
+    LibrariesDao.findAll(guid = Some(library.guid), isSynced = Some(true)).map(_.guid) must be(Seq(library.guid))
+    LibrariesDao.findAll(guid = Some(library.guid), isSynced = Some(false)) must be(Nil)
   }
 
   "create" must {

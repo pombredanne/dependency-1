@@ -52,24 +52,19 @@ class ProjectActor extends Actor with Util {
 
     case m @ ProjectActor.Messages.LibrarySynced(guid) => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
-        LibrariesDao.findAll(guid = Some(guid), projectGuid = Some(project.guid), limit = 1).headOption.map { _ =>
-          processPendingSync(project)
-        }
+        processPendingSync(project)
       }
     }
 
     case m @ ProjectActor.Messages.BinarySynced(guid) => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
-        BinariesDao.findAll(guid = Some(guid), projectGuid = Some(project.guid), limit = 1).headOption.map { _ =>
-          processPendingSync(project)
-        }
+        processPendingSync(project)
       }
     }
 
     case m @ ProjectActor.Messages.Sync => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         SyncsDao.recordStarted(MainActor.SystemUser, project.guid)
-        pendingSync = Some(true)
 
         UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
           GithubDependencyProviderClient.instance(user).dependencies(project).map { dependencies =>
@@ -89,25 +84,47 @@ class ProjectActor extends Actor with Util {
               Logger.error(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")
             }
           }
-          // RecommendationsDao.sync(MainActor.SystemUser, project)
-          // TODO: Need to mark sync complete if all libraries / binaries are already present
+
+          println("Setting pendingSync to true")
+          pendingSync = Some(true)
+          processPendingSync(project)
         }
 
       }
     }
 
-    case m: Any => {
-      Logger.error("Project actor got an unhandled message: " + m)
-    }
+    case m: Any => logUnhandledMessage(m)
   }
 
   def processPendingSync(project: Project) {
     println(s"processPendingSync for project[${project.name}]")
-    RecommendationsDao.sync(MainActor.SystemUser, project)
-    pendingSync.map { _ =>
-      SyncsDao.recordCompleted(MainActor.SystemUser, project.guid)
-      pendingSync = None
+    pendingSync.foreach { _ =>
+      dependenciesPendingCompletion(project) match {
+        case Nil => {
+          println(s" -- all dependencies are synced.")
+          RecommendationsDao.sync(MainActor.SystemUser, project)
+          pendingSync.map { _ =>
+            SyncsDao.recordCompleted(MainActor.SystemUser, project.guid)
+            pendingSync = None
+          }
+        }
+        case deps => {
+          println(s" -- still waiting on " + deps.mkString(", "))
+        }
+      }
     }
+  }
+
+  // NB: We don't return ALL dependencies
+  private[this] def dependenciesPendingCompletion(project: Project): Seq[String] = {
+    LibrariesDao.findAll(
+      projectGuid = Some(project.guid),
+      isSynced = Some(false)
+    ).map( lib => s"Library ${lib.groupId}.${lib.artifactId}" ) ++ 
+    BinariesDao.findAll(
+      projectGuid = Some(project.guid),
+      isSynced = Some(false)
+    ).map( bin => s"Binary ${bin.name}" )
   }
 
 }

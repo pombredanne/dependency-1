@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.actors.MainActor
-import com.bryzek.dependency.v0.models.{Binary, BinaryForm}
+import com.bryzek.dependency.v0.models.{Binary, BinaryForm, SyncEvent}
 import io.flow.user.v0.models.User
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import anorm._
@@ -100,6 +100,7 @@ object BinariesDao {
     guids: Option[Seq[UUID]] = None,
     projectGuid: Option[UUID] = None,
     name: Option[String] = None,
+    isSynced: Option[Boolean] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -120,6 +121,13 @@ object BinariesDao {
         )
       """.trim },
       name.map { v => "and lower(binaries.name) = lower(trim({name}))" },
+      isSynced.map { value =>
+        val clause = "select 1 from syncs where object_guid = binaries.guid and event = {sync_event_completed}"
+        value match {
+          case true => s"and exists ($clause)"
+          case false => s"and not exists ($clause)"
+        }
+      },
       isDeleted.map(Filters.isDeleted("binaries", _)),
       Some(s"order by lower(binaries.name), binaries.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -127,7 +135,8 @@ object BinariesDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       projectGuid.map('project_guid -> _.toString),
-      name.map('name -> _.toString)
+      name.map('name -> _.toString),
+      isSynced.map(_ => ('sync_event_completed -> SyncEvent.Completed.toString))
     ).flatten
 
     DB.withConnection { implicit c =>

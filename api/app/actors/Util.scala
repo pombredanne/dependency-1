@@ -30,7 +30,13 @@ trait Util {
     withErrorHandler(description)(f)
   }
 
-  private[this] def msg(value: String) = {
+  def logUnhandledMessage[T](
+    description: Any
+  ) {
+    Logger.error(msg(s"got an unhandled message: $description"))
+  }
+
+private[this] def msg(value: String) = {
     s"${getClass.getName}: $value"
   }
 
