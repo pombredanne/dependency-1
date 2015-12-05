@@ -186,6 +186,22 @@ trait Helpers {
     )
   }
 
+  def createSync(
+    form: SyncForm = createSyncForm()
+  ): Sync = {
+    SyncsDao.create(systemUser, form)
+  }
+
+  def createSyncForm(
+    objectGuid: UUID = createProject().guid,
+    event: SyncEvent = SyncEvent.Started
+  ) = {
+    SyncForm(
+      objectGuid = objectGuid,
+      event = event
+    )
+  }
+
   def createResolver(
     form: ResolverForm = createResolverForm()
   ): Resolver = {

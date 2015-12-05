@@ -180,6 +180,15 @@ package com.bryzek.dependency.v0.models {
     uri: String
   )
 
+  /**
+   * Records when we start and complete each sync of a module (e.g. project)
+   */
+  case class Sync(
+    guid: _root_.java.util.UUID,
+    event: com.bryzek.dependency.v0.models.SyncEvent,
+    audit: io.flow.common.v0.models.Audit
+  )
+
   case class Token(
     guid: _root_.java.util.UUID,
     user: io.flow.common.v0.models.Reference,
@@ -327,6 +336,40 @@ package com.bryzek.dependency.v0.models {
 
   }
 
+  sealed trait SyncEvent
+
+  object SyncEvent {
+
+    case object Started extends SyncEvent { override def toString = "started" }
+    case object Completed extends SyncEvent { override def toString = "completed" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends SyncEvent
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(Started, Completed)
+
+    private[this]
+    val byName = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): SyncEvent = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[SyncEvent] = byName.get(value.toLowerCase)
+
+  }
+
 }
 
 package com.bryzek.dependency.v0.models {
@@ -372,6 +415,11 @@ package com.bryzek.dependency.v0.models {
     implicit val jsonReadsDependencyScms = __.read[String].map(Scms.apply)
     implicit val jsonWritesDependencyScms = new Writes[Scms] {
       def writes(x: Scms) = JsString(x.toString)
+    }
+
+    implicit val jsonReadsDependencySyncEvent = __.read[String].map(SyncEvent.apply)
+    implicit val jsonWritesDependencySyncEvent = new Writes[SyncEvent] {
+      def writes(x: SyncEvent) = JsString(x.toString)
     }
 
     implicit def jsonReadsDependencyBinary: play.api.libs.json.Reads[Binary] = {
@@ -782,6 +830,22 @@ package com.bryzek.dependency.v0.models {
       )(unlift(ResolverForm.unapply _))
     }
 
+    implicit def jsonReadsDependencySync: play.api.libs.json.Reads[Sync] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "event").read[com.bryzek.dependency.v0.models.SyncEvent] and
+        (__ \ "audit").read[io.flow.common.v0.models.Audit]
+      )(Sync.apply _)
+    }
+
+    implicit def jsonWritesDependencySync: play.api.libs.json.Writes[Sync] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "event").write[com.bryzek.dependency.v0.models.SyncEvent] and
+        (__ \ "audit").write[io.flow.common.v0.models.Audit]
+      )(unlift(Sync.unapply _))
+    }
+
     implicit def jsonReadsDependencyToken: play.api.libs.json.Reads[Token] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
@@ -945,6 +1009,17 @@ package com.bryzek.dependency.v0 {
 
     implicit val queryStringBindableEnumScms = new QueryStringBindable.Parsing[com.bryzek.dependency.v0.models.Scms](
       Scms.fromString(_).get, _.toString, enumScmsNotFound
+    )
+
+    // Enum: SyncEvent
+    private[this] val enumSyncEventNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.bryzek.dependency.v0.models.SyncEvent.all.mkString(", ")}"
+
+    implicit val pathBindableEnumSyncEvent = new PathBindable.Parsing[com.bryzek.dependency.v0.models.SyncEvent] (
+      SyncEvent.fromString(_).get, _.toString, enumSyncEventNotFound
+    )
+
+    implicit val queryStringBindableEnumSyncEvent = new QueryStringBindable.Parsing[com.bryzek.dependency.v0.models.SyncEvent](
+      SyncEvent.fromString(_).get, _.toString, enumSyncEventNotFound
     )
 
   }

@@ -79,6 +79,31 @@ package com.bryzek.dependency.v0.anorm.parsers {
     }
 
   }
+  object SyncEvent {
+
+    case class Mappings(value: String)
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        value = s"${prefix}${sep}value"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.SyncEvent] = {
+      SqlParser.str(mappings.value) map {
+        case value => com.bryzek.dependency.v0.models.SyncEvent(value)
+      }
+    }
+
+  }
   object Binary {
 
     case class Mappings(
@@ -1092,6 +1117,46 @@ package com.bryzek.dependency.v0.anorm.parsers {
           com.bryzek.dependency.v0.models.ResolverForm(
             userGuid = userGuid,
             uri = uri
+          )
+        }
+      }
+    }
+
+  }
+
+  object Sync {
+
+    case class Mappings(
+      guid: String = "guid",
+      event: String = "event",
+      audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        guid = s"${prefix}${sep}guid",
+        event = s"${prefix}${sep}event",
+        audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Sync] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      com.bryzek.dependency.v0.anorm.parsers.SyncEvent.parser(com.bryzek.dependency.v0.anorm.parsers.SyncEvent.Mappings(mappings.event)) ~
+      io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
+        case guid ~ event ~ audit => {
+          com.bryzek.dependency.v0.models.Sync(
+            guid = guid,
+            event = event,
+            audit = audit
           )
         }
       }
