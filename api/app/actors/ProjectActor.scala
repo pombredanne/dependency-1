@@ -2,7 +2,7 @@ package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.lib.{Dependencies, GithubDependencyProviderClient}
 import com.bryzek.dependency.v0.models.{Project, WatchProjectForm}
-import db.{ProjectsDao, RecommendationsDao, UsersDao, WatchProjectsDao}
+import db.{ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
 import play.api.Logger
 import play.libs.Akka
 import akka.actor.Actor
@@ -51,27 +51,29 @@ class ProjectActor extends Actor {
       s"ProjectActor.Messages.Sync"
     ) {
       dataProject.foreach { project =>
-        UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
-          GithubDependencyProviderClient.instance(user).dependencies(project).map { dependencies =>
-            println(s" - project[${project.guid}] name[${project.name}] dependencies: $dependencies")
-            ProjectsDao.setDependencies(
-              createdBy = MainActor.SystemUser,
-              project = project,
-              binaries = dependencies.binaries,
-              libraries = dependencies.librariesAndPlugins.map(_.map { artifact =>
-                artifact.toLibraryForm(
-                  crossBuildVersion = dependencies.crossBuildVersion()
-                )
-              })
-            )
-          }.recover {
-            case e => {
-              Logger.error(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")
+        SyncsDao.withStartedAndCompleted(MainActor.SystemUser, project.guid) {
+          UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
+            GithubDependencyProviderClient.instance(user).dependencies(project).map { dependencies =>
+              println(s" - project[${project.guid}] name[${project.name}] dependencies: $dependencies")
+              ProjectsDao.setDependencies(
+                createdBy = MainActor.SystemUser,
+                project = project,
+                binaries = dependencies.binaries,
+                libraries = dependencies.librariesAndPlugins.map(_.map { artifact =>
+                  artifact.toLibraryForm(
+                    crossBuildVersion = dependencies.crossBuildVersion()
+                  )
+                })
+              )
+            }.recover {
+              case e => {
+                Logger.error(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")
+              }
             }
           }
-        }
 
-        RecommendationsDao.sync(MainActor.SystemUser, project)
+          RecommendationsDao.sync(MainActor.SystemUser, project)
+        }
       }
     }
 

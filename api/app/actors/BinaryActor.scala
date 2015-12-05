@@ -3,7 +3,7 @@ package com.bryzek.dependency.actors
 import com.bryzek.dependency.lib.DefaultBinaryVersionProvider
 import com.bryzek.dependency.v0.models.Binary
 import io.flow.play.postgresql.Pager
-import db.{BinariesDao, BinaryVersionsDao, UsersDao}
+import db.{BinariesDao, BinaryVersionsDao, SyncsDao, UsersDao}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -33,11 +33,13 @@ class BinaryActor extends Actor {
     case BinaryActor.Messages.Sync => Util.withVerboseErrorHandler(
       s"BinaryActor.Messages.Sync"
     ) {
-      dataBinary.foreach { lang =>
-        DefaultBinaryVersionProvider.versions(lang.name).foreach { version =>
-          // TODO: fetch all versions for this binary and store them
-          println(s"Store version[${version.value}] from lang[$lang]")
-          BinaryVersionsDao.upsert(UsersDao.systemUser, lang.guid, version.value)
+      dataBinary.foreach { binary =>
+        SyncsDao.withStartedAndCompleted(MainActor.SystemUser, binary.guid) {
+          DefaultBinaryVersionProvider.versions(binary.name).foreach { version =>
+            // TODO: fetch all versions for this binary and store them
+            println(s"Store version[${version.value}] from binary[$binary]")
+            BinaryVersionsDao.upsert(UsersDao.systemUser, binary.guid, version.value)
+          }
         }
       }
     }

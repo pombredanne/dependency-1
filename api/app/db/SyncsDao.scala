@@ -33,7 +33,34 @@ object SyncsDao {
     ({guid}::uuid, {object_guid}::uuid, {event}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
+  def withStartedAndCompleted[T](
+    createdBy: User, guid: UUID
+  ) (
+    f: => T
+  ): T = {
+    recordStarted(createdBy, guid)
+    val result = f
+    recordCompleted(createdBy, guid)
+    result
+  }
+
+  def recordStarted(createdBy: User, guid: UUID) {
+    createInternal(createdBy, SyncForm(guid, SyncEvent.Started))
+  }
+
+  def recordCompleted(createdBy: User, guid: UUID) {
+    createInternal(createdBy, SyncForm(guid, SyncEvent.Completed))
+  }
+
   def create(createdBy: User, form: SyncForm): Sync = {
+    val guid = createInternal(createdBy, form)
+    findByGuid(guid).getOrElse {
+      sys.error("Failed to create sync")
+    }
+
+  }
+
+  private[this] def createInternal(createdBy: User, form: SyncForm): UUID = {
     val guid = UUID.randomUUID
 
     DB.withConnection { implicit c =>
@@ -45,9 +72,7 @@ object SyncsDao {
       ).execute()
     }
 
-    findByGuid(guid).getOrElse {
-      sys.error("Failed to create sync")
-    }
+    guid
   }
 
   def softDelete(deletedBy: User, sync: Sync) {
