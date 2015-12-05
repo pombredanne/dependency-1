@@ -18,31 +18,25 @@ object SearchActor {
 
 }
 
-class SearchActor extends Actor {
+class SearchActor extends Actor with Util {
 
   def receive = {
 
-    case SearchActor.Messages.SyncBinary(guid) => Util.withVerboseErrorHandler(
-      s"SearchActor.Messages.SyncBinary($guid)"
-    ) {
+    case m @ SearchActor.Messages.SyncBinary(guid) => withVerboseErrorHandler(m) {
       BinariesDao.findByGuid(guid) match {
         case None => ItemsDao.softDeleteByObjectGuid(MainActor.SystemUser, guid)
         case Some(binary) => ItemsDao.upsertBinary(MainActor.SystemUser, binary)
       }
     }
 
-    case SearchActor.Messages.SyncLibrary(guid) => Util.withVerboseErrorHandler(
-      s"SearchActor.Messages.SyncLibrary($guid)"
-    ) {
+    case m @ SearchActor.Messages.SyncLibrary(guid) => withVerboseErrorHandler(m) {
       LibrariesDao.findByGuid(guid) match {
         case None => ItemsDao.softDeleteByObjectGuid(MainActor.SystemUser, guid)
         case Some(library) => ItemsDao.upsertLibrary(MainActor.SystemUser, library)
       }
     }
 
-    case SearchActor.Messages.SyncProject(guid) => Util.withVerboseErrorHandler(
-      s"SearchActor.Messages.SyncProject($guid)"
-    ) {
+    case m @ SearchActor.Messages.SyncProject(guid) => withVerboseErrorHandler(m) {
       ProjectsDao.findByGuid(guid) match {
         case None => ItemsDao.softDeleteByObjectGuid(MainActor.SystemUser, guid)
         case Some(project) => ItemsDao.upsertProject(MainActor.SystemUser, project)

@@ -37,7 +37,7 @@ object MainActor {
 }
 
 
-class MainActor(name: String) extends Actor with ActorLogging {
+class MainActor(name: String) extends Actor with ActorLogging with Util {
   import scala.concurrent.duration._
 
   private[this] val periodicActor = Akka.system.actorOf(Props[PeriodicActor], name = s"$name:periodicActor")
@@ -76,56 +76,56 @@ class MainActor(name: String) extends Actor with ActorLogging {
 
   def receive = akka.event.LoggingReceive {
 
-    case m @ MainActor.Messages.ProjectCreated(guid) => Util.withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ProjectCreated(guid) => withVerboseErrorHandler(m) {
       val actor = upsertProjectActor(guid)
       actor ! ProjectActor.Messages.Watch
       actor ! ProjectActor.Messages.Sync
       searchActor ! SearchActor.Messages.SyncProject(guid)
     }
 
-    case m @ MainActor.Messages.ProjectUpdated(guid) => Util.withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ProjectUpdated(guid) => withVerboseErrorHandler(m) {
       upsertProjectActor(guid) ! ProjectActor.Messages.Sync
       searchActor ! SearchActor.Messages.SyncProject(guid)
     }
 
-    case m @ MainActor.Messages.ProjectDeleted(guid) => Util.withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ProjectDeleted(guid) => withVerboseErrorHandler(m) {
       projectActors.remove(guid).map { context.stop(_) }
       searchActor ! SearchActor.Messages.SyncProject(guid)
     }
 
-    case m @ MainActor.Messages.ProjectSync(guid) => Util.withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ProjectSync(guid) => withVerboseErrorHandler(m) {
       upsertProjectActor(guid) ! ProjectActor.Messages.Sync
     }
 
-    case m @ MainActor.Messages.LibraryCreated(guid) => Util.withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.LibraryCreated(guid) => withVerboseErrorHandler(m) {
       syncLibrary(guid)
     }
 
-    case m @ MainActor.Messages.LibrarySync(guid) => Util.withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.LibrarySync(guid) => withVerboseErrorHandler(m) {
       syncLibrary(guid)
     }
 
-    case m @ MainActor.Messages.LibrarySyncCompleted(guid) => Util.withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.LibrarySyncCompleted(guid) => withVerboseErrorHandler(m) {
       projectBroadcast(ProjectActor.Messages.LibrarySynced(guid))
     }
 
-    case m @ MainActor.Messages.LibraryDeleted(guid) => Util.withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.LibraryDeleted(guid) => withVerboseErrorHandler(m) {
       libraryActors.remove(guid).map { context.stop(_) }
     }
 
-    case m @ MainActor.Messages.BinaryCreated(guid) => Util.withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.BinaryCreated(guid) => withVerboseErrorHandler(m) {
       syncBinary(guid)
     }
 
-    case m @ MainActor.Messages.BinarySync(guid) => Util.withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.BinarySync(guid) => withVerboseErrorHandler(m) {
       syncBinary(guid)
     }
 
-    case m @ MainActor.Messages.BinarySyncCompleted(guid) => Util.withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.BinarySyncCompleted(guid) => withVerboseErrorHandler(m) {
       projectBroadcast(ProjectActor.Messages.BinarySynced(guid))
     }
 
-    case m @ MainActor.Messages.BinaryDeleted(guid) => Util.withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.BinaryDeleted(guid) => withVerboseErrorHandler(m) {
       binaryActors.remove(guid).map { context.stop(_) }
     }
 

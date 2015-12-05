@@ -25,7 +25,7 @@ object ProjectActor {
 
 }
 
-class ProjectActor extends Actor {
+class ProjectActor extends Actor with Util {
 
   implicit val projectExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("project-actor-context")
 
@@ -34,11 +34,11 @@ class ProjectActor extends Actor {
 
   def receive = {
 
-    case m @ ProjectActor.Messages.Data(guid) => Util.withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.Data(guid) => withVerboseErrorHandler(m.toString) {
       dataProject = ProjectsDao.findByGuid(guid)
     }
 
-    case m @ ProjectActor.Messages.Watch => Util.withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.Watch => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         WatchProjectsDao.upsert(
           MainActor.SystemUser,
@@ -50,7 +50,7 @@ class ProjectActor extends Actor {
       }
     }
 
-    case m @ ProjectActor.Messages.LibrarySynced(guid) => Util.withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.LibrarySynced(guid) => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         LibrariesDao.findAll(guid = Some(guid), projectGuid = Some(project.guid), limit = 1).headOption.map { _ =>
           processPendingSync(project)
@@ -58,7 +58,7 @@ class ProjectActor extends Actor {
       }
     }
 
-    case m @ ProjectActor.Messages.BinarySynced(guid) => Util.withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.BinarySynced(guid) => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         BinariesDao.findAll(guid = Some(guid), projectGuid = Some(project.guid), limit = 1).headOption.map { _ =>
           processPendingSync(project)
@@ -66,7 +66,7 @@ class ProjectActor extends Actor {
       }
     }
 
-    case m @ ProjectActor.Messages.Sync => Util.withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.Sync => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         SyncsDao.recordStarted(MainActor.SystemUser, project.guid)
         pendingSync = Some(true)

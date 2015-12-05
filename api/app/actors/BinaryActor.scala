@@ -17,17 +17,17 @@ object BinaryActor {
 
 }
 
-class BinaryActor extends Actor {
+class BinaryActor extends Actor with Util {
 
   var dataBinary: Option[Binary] = None
 
   def receive = {
 
-    case m @ BinaryActor.Messages.Data(guid: UUID) => Util.withVerboseErrorHandler(m) {
+    case m @ BinaryActor.Messages.Data(guid: UUID) => withVerboseErrorHandler(m) {
       dataBinary = BinariesDao.findByGuid(guid)
     }
 
-    case m @ BinaryActor.Messages.Sync => Util.withVerboseErrorHandler(m) {
+    case m @ BinaryActor.Messages.Sync => withVerboseErrorHandler(m) {
       dataBinary.foreach { binary =>
         SyncsDao.withStartedAndCompleted(MainActor.SystemUser, binary.guid) {
           DefaultBinaryVersionProvider.versions(binary.name).foreach { version =>

@@ -5,7 +5,7 @@ import play.api.Logger
 /**
   * TODO: Extract to lib. Maybe lib-play-actors ??
   */
-object Util {
+trait Util {
 
   def withErrorHandler[T](
     description: Any

@@ -17,17 +17,17 @@ object LibraryActor {
 
 }
 
-class LibraryActor extends Actor {
+class LibraryActor extends Actor with Util {
 
   var dataLibrary: Option[Library] = None
 
   def receive = {
 
-    case m @ LibraryActor.Messages.Data(guid: UUID) => Util.withVerboseErrorHandler(m) {
+    case m @ LibraryActor.Messages.Data(guid: UUID) => withVerboseErrorHandler(m) {
       dataLibrary = LibrariesDao.findByGuid(guid)
     }
 
-    case m @ LibraryActor.Messages.Sync => Util.withVerboseErrorHandler(m) {
+    case m @ LibraryActor.Messages.Sync => withVerboseErrorHandler(m) {
       var resolvers = scala.collection.mutable.Map[UUID, Seq[Resolver]]()
 
       dataLibrary.foreach { lib =>

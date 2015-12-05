@@ -19,13 +19,11 @@ object PeriodicActor {
 
 }
 
-class PeriodicActor extends Actor {
+class PeriodicActor extends Actor with Util {
 
   def receive = {
 
-    case PeriodicActor.Messages.SyncProjects => Util.withVerboseErrorHandler(
-      s"PeriodicActor.Messages.SyncProjects"
-    ) {
+    case m @ PeriodicActor.Messages.SyncProjects => withVerboseErrorHandler(m) {
       Pager.eachPage { offset =>
         ProjectsDao.findAll(offset = offset)
       } { project =>
@@ -33,9 +31,7 @@ class PeriodicActor extends Actor {
       }
     }
 
-    case PeriodicActor.Messages.SyncBinaries => Util.withVerboseErrorHandler(
-      s"PeriodicActor.Messages.SyncBinaries"
-    ) {
+    case m @ PeriodicActor.Messages.SyncBinaries => withVerboseErrorHandler(m) {
       Pager.eachPage { offset =>
         BinariesDao.findAll(offset = offset)
       } { bin =>
@@ -43,9 +39,7 @@ class PeriodicActor extends Actor {
       }
     }
 
-    case PeriodicActor.Messages.SyncLibraries => Util.withVerboseErrorHandler(
-      s"PeriodicActor.Messages.SyncLibraries"
-    ) {
+    case m @ PeriodicActor.Messages.SyncLibraries => withVerboseErrorHandler(m) {
       Pager.eachPage { offset =>
         LibrariesDao.findAll(offset = offset)
       } { library =>
@@ -53,9 +47,7 @@ class PeriodicActor extends Actor {
       }
     }
 
-    case PeriodicActor.Messages.Purge => Util.withVerboseErrorHandler(
-      s"PeriodicActor.Messages.Purge"
-    ) {
+    case m @ PeriodicActor.Messages.Purge => withVerboseErrorHandler(m) {
       SyncsDao.purgeOld()
     }
 
