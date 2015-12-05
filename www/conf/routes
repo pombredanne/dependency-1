@@ -13,6 +13,8 @@ GET     /projects                               controllers.ApplicationControlle
 GET     /projects/                              controllers.ProjectsController.index(page: Int ?= 0)
 GET     /projects/github                        controllers.ProjectsController.github(repositoriesPage: Int ?= 0)
 POST    /projects/postGithub                    controllers.ProjectsController.postGithub(name: String, repositoriesPage: Int ?= 0)
+GET     /projects/create                        controllers.ProjectsController.create()
+POST    /projects/postCreate                    controllers.ProjectsController.postCreate()
 GET     /projects/:guid                         controllers.ProjectsController.show(guid: java.util.UUID, binariesPage: Int ?= 0, librariesPage: Int ?= 0)
 GET     /projects/:guid/edit                    controllers.ProjectsController.edit(guid: java.util.UUID)
 POST    /projects/:guid/postEdit                controllers.ProjectsController.postEdit(guid: java.util.UUID)

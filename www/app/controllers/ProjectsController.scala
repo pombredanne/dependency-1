@@ -139,6 +139,40 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
+  def create() = Identified { implicit request =>
+    Ok(
+      views.html.projects.create(
+        uiData(request), ProjectsController.uiForm
+      )
+    )
+  }
+
+  def postCreate() = Identified.async { implicit request =>
+    val boundForm = ProjectsController.uiForm.bindFromRequest
+    boundForm.fold (
+
+      formWithErrors => Future {
+        Ok(views.html.projects.create(uiData(request), formWithErrors))
+      },
+
+      uiForm => {
+        dependencyClient(request).projects.post(
+          projectForm = ProjectForm(
+            name = uiForm.name,
+            scms = Scms(uiForm.scms),
+            uri = uiForm.uri
+          )
+        ).map { project =>
+          Redirect(routes.ProjectsController.show(project.guid)).flashing("success" -> "Project created")
+        }.recover {
+          case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
+            Ok(views.html.projects.create(uiData(request), boundForm, response.errors.map(_.message)))
+          }
+        }
+      }
+    )
+  }
+
   def edit(guid: UUID) = Identified.async { implicit request =>
     withProject(request, guid) { project =>
       Future {

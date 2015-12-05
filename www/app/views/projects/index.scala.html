@@ -6,7 +6,7 @@
 @main(data.copy(title = Some("Projects"))) {
 
   <div class="pull-right">
-    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.ProjectsController.create()">Add project</a>
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.ProjectsController.github()">Add project</a>
   </div>
 
   @if(projects.isEmpty) {

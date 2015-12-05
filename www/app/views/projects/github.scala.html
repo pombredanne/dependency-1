@@ -6,6 +6,10 @@
 
 @main(data.copy(title = Some("Add project")), errorMessages = errorMessages) {
 
+  <div class="pull-right">
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.ProjectsController.create()">Add project manually</a>
+  </div>
+
   @if(repositories.items.isEmpty) {
     <em>No repositories were found that are not already added as projects.</em>
   } else {
