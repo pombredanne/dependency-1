@@ -53,13 +53,47 @@ class SyncsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val sync1 = createSync()
     val sync2 = createSync()
 
-    SyncsDao.findAll(guids = Some(Seq(sync1.guid, sync2.guid))).map(_.guid) must be(
-      Seq(sync1.guid, sync2.guid)
+    SyncsDao.findAll(guids = Some(Seq(sync1.guid, sync2.guid))).map(_.guid).sorted must be(
+      Seq(sync1.guid, sync2.guid).sorted
     )
 
     SyncsDao.findAll(guids = Some(Nil)) must be(Nil)
     SyncsDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
     SyncsDao.findAll(guids = Some(Seq(sync1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(sync1.guid))
+  }
+
+  "findAll by objectGuid and event" in {
+    val start = createSync(createSyncForm(event = SyncEvent.Started))
+    val completed = createSync(createSyncForm(event = SyncEvent.Completed))
+
+    SyncsDao.findAll(
+      guids = Some(Seq(start.guid, completed.guid)),
+      event = Some(SyncEvent.Started)
+    ).map(_.guid) must be(Seq(start.guid))
+
+    SyncsDao.findAll(
+      guids = Some(Seq(start.guid, completed.guid)),
+      event = Some(SyncEvent.Completed)
+    ).map(_.guid) must be(Seq(completed.guid))
+
+    SyncsDao.findAll(
+      guids = Some(Seq(start.guid, completed.guid)),
+      event = Some(SyncEvent.UNDEFINED("other"))
+    ) must be(Nil)
+  }
+
+  "findAll by objectGuid" in {
+    val form = createSyncForm()
+    val sync = createSync(form)
+
+    SyncsDao.findAll(
+      guids = Some(Seq(sync.guid)),
+      objectGuid = Some(form.objectGuid)
+    ).map(_.guid) must be(Seq(sync.guid))
+
+    SyncsDao.findAll(
+      objectGuid = Some(UUID.randomUUID)
+    ) must be(Nil)
   }
 
   "purge executes" in {
