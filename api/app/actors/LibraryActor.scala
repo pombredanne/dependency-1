@@ -56,9 +56,7 @@ class LibraryActor extends Actor with Util {
       }
     }
 
-    case m: Any => {
-      Logger.error("Library actor got an unhandled mesage: " + m)
-    }
+    case m: Any => logUnhandledMessage(m)
   }
 
 }

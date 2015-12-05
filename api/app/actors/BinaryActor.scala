@@ -40,9 +40,7 @@ class BinaryActor extends Actor with Util {
       }
     }
 
-    case m: Any => {
-      Logger.error("Binary actor got an unhandled mesage: " + m)
-    }
+    case m: Any => logUnhandledMessage(m)
   }
 
 }

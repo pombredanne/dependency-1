@@ -43,9 +43,7 @@ class SearchActor extends Actor with Util {
       }
     }
 
-    case m: Any => {
-      Logger.error("Search actor got an unhandled message: " + m)
-    }
+    case m: Any => logUnhandledMessage(m)
   }
 
 }

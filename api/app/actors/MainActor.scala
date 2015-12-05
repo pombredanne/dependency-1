@@ -129,9 +129,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
       binaryActors.remove(guid).map { context.stop(_) }
     }
 
-    case m: Any => {
-      Logger.error("Main actor got an unhandled message: " + m)
-    }
+    case m: Any => logUnhandledMessage(m)
 
   }
 

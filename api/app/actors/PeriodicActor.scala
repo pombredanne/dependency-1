@@ -51,9 +51,7 @@ class PeriodicActor extends Actor with Util {
       SyncsDao.purgeOld()
     }
 
-    case m: Any => {
-      Logger.error("Periodic actor got an unhandled message: " + m)
-    }
+    case m: Any => logUnhandledMessage(m)
   }
 
 }
