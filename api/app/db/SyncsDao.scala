@@ -102,7 +102,8 @@ object SyncsDao {
       guid.map { v =>  "and syncs.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("syncs.guid", _) },
       objectGuid.map { v => "and syncs.object_guid = {object_guid}::uuid" },
-      event.map { v => "and syncs.event = {event}" }
+      event.map { v => "and syncs.event = {event}" },
+      Some("order by syncs.created_at desc")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](

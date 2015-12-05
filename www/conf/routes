@@ -19,6 +19,7 @@ GET     /projects/:guid                         controllers.ProjectsController.s
 GET     /projects/:guid/edit                    controllers.ProjectsController.edit(guid: java.util.UUID)
 POST    /projects/:guid/postEdit                controllers.ProjectsController.postEdit(guid: java.util.UUID)
 POST    /projects/:guid/delete                  controllers.ProjectsController.postDelete(guid: java.util.UUID)
+GET     /projects/:guid/sync                    controllers.ProjectsController.sync(guid: java.util.UUID, page: Int ?= 0)
 
 GET     /watches/projects/create/:projectGuid   controllers.WatchProjectsController.create(projectGuid: java.util.UUID)
 GET     /watches/projects/delete/:projectGuid   controllers.WatchProjectsController.delete(projectGuid: java.util.UUID)

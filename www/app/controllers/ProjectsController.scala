@@ -1,7 +1,7 @@
 package controllers
 
 import com.bryzek.dependency.v0.errors.UnitResponse
-import com.bryzek.dependency.v0.models.{Project, ProjectForm, Scms}
+import com.bryzek.dependency.v0.models.{Project, ProjectForm, Scms, SyncEvent}
 import com.bryzek.dependency.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
@@ -241,6 +241,33 @@ class ProjectsController @javax.inject.Inject() (
     }.recover {
       case UnitResponse(404) => {
         Redirect(routes.ProjectsController.index()).flashing("warning" -> s"Project not found")
+      }
+    }
+  }
+
+  /**
+    * Waits for the latest sync to complete for this project.
+    */
+  def sync(guid: UUID, page: Int) = Identified.async { implicit request =>
+    for {
+      syncs <- dependencyClient(request).syncs.get(
+        objectGuid = Some(guid),
+        limit = Pagination.DefaultLimit+1,
+        offset = page * Pagination.DefaultLimit
+      )
+    } yield {
+      syncs.find { _.event == SyncEvent.Completed } match {
+        case Some(_) => {
+          Redirect(routes.ProjectsController.show(guid))
+        }
+        case None => {
+          Ok(
+            views.html.projects.sync(
+              uiData(request),
+              syncs.find { _.event == SyncEvent.Started }
+            )
+          )
+        }
       }
     }
   }
