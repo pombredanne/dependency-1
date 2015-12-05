@@ -121,7 +121,7 @@ class ProjectsController @javax.inject.Inject() (
                 uri = repo.uri
             )
             ).map { project =>
-              Redirect(routes.ProjectsController.show(project.guid)).flashing("success" -> "Project added")
+              Redirect(routes.ProjectsController.sync(project.guid)).flashing("success" -> "Project added")
             }.recover {
               case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
                 Ok(
@@ -163,7 +163,7 @@ class ProjectsController @javax.inject.Inject() (
             uri = uiForm.uri
           )
         ).map { project =>
-          Redirect(routes.ProjectsController.show(project.guid)).flashing("success" -> "Project created")
+          Redirect(routes.ProjectsController.sync(project.guid)).flashing("success" -> "Project created")
         }.recover {
           case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
             Ok(views.html.projects.create(uiData(request), boundForm, response.errors.map(_.message)))
@@ -248,22 +248,24 @@ class ProjectsController @javax.inject.Inject() (
   /**
     * Waits for the latest sync to complete for this project.
     */
-  def sync(guid: UUID, page: Int) = Identified.async { implicit request =>
+  def sync(guid: UUID, n: Int) = Identified.async { implicit request =>
     for {
       syncs <- dependencyClient(request).syncs.get(
-        objectGuid = Some(guid),
-        limit = Pagination.DefaultLimit+1,
-        offset = page * Pagination.DefaultLimit
+        objectGuid = Some(guid)
       )
     } yield {
+      println(s"sync($guid)")
       syncs.find { _.event == SyncEvent.Completed } match {
-        case Some(_) => {
+        case Some(rec) => {
+          println(s" - found $rec")
           Redirect(routes.ProjectsController.show(guid))
         }
         case None => {
           Ok(
             views.html.projects.sync(
               uiData(request),
+              guid,
+              n,
               syncs.find { _.event == SyncEvent.Started }
             )
           )
