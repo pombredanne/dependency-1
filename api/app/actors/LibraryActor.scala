@@ -23,16 +23,11 @@ class LibraryActor extends Actor {
 
   def receive = {
 
-    case LibraryActor.Messages.Data(guid: UUID) => Util.withVerboseErrorHandler(
-      s"LibraryActor.Messages.Data($guid)"
-    ) {
+    case m @ LibraryActor.Messages.Data(guid: UUID) => Util.withVerboseErrorHandler(m) {
       dataLibrary = LibrariesDao.findByGuid(guid)
-      self ! LibraryActor.Messages.Sync
     }
 
-    case LibraryActor.Messages.Sync => Util.withVerboseErrorHandler(
-      s"LibraryActor.Messages.Sync"
-    ) {
+    case m @ LibraryActor.Messages.Sync => Util.withVerboseErrorHandler(m) {
       var resolvers = scala.collection.mutable.Map[UUID, Seq[Resolver]]()
 
       dataLibrary.foreach { lib =>
@@ -45,9 +40,9 @@ class LibraryActor extends Actor {
             all
           }
 
-          println(s"Syncing library[$lib] for user[${lib.audit.createdBy.guid}] resolvers[${userResolvers.map(_.uri)}]")
+          // println(s"Syncing library[$lib] for user[${lib.audit.createdBy.guid}] resolvers[${userResolvers.map(_.uri)}]")
           DefaultLibraryArtifactProvider().artifacts(lib, userResolvers).map { version =>
-            println(s" groupId[${lib.groupId}] artifactId[${lib.artifactId}] version[${version.tag.value}] crossBuilt[${version.crossBuildVersion.map(_.value).getOrElse("")}]")
+            // println(s" groupId[${lib.groupId}] artifactId[${lib.artifactId}] version[${version.tag.value}] crossBuilt[${version.crossBuildVersion.map(_.value).getOrElse("")}]")
             LibraryVersionsDao.upsert(
               createdBy = MainActor.SystemUser,
               libraryGuid = lib.guid,
@@ -55,6 +50,9 @@ class LibraryActor extends Actor {
             )
           }
         }
+
+        // TODO: Should we only send if something changed?
+        sender ! MainActor.Messages.LibrarySyncCompleted(lib.guid)
       }
     }
 

@@ -23,24 +23,20 @@ class BinaryActor extends Actor {
 
   def receive = {
 
-    case BinaryActor.Messages.Data(guid: UUID) => Util.withVerboseErrorHandler(
-      s"BinaryActor.Messages.Data($guid)"
-    ) {
+    case m @ BinaryActor.Messages.Data(guid: UUID) => Util.withVerboseErrorHandler(m) {
       dataBinary = BinariesDao.findByGuid(guid)
-      self ! BinaryActor.Messages.Sync
     }
 
-    case BinaryActor.Messages.Sync => Util.withVerboseErrorHandler(
-      s"BinaryActor.Messages.Sync"
-    ) {
+    case m @ BinaryActor.Messages.Sync => Util.withVerboseErrorHandler(m) {
       dataBinary.foreach { binary =>
         SyncsDao.withStartedAndCompleted(MainActor.SystemUser, binary.guid) {
           DefaultBinaryVersionProvider.versions(binary.name).foreach { version =>
-            // TODO: fetch all versions for this binary and store them
-            println(s"Store version[${version.value}] from binary[$binary]")
             BinaryVersionsDao.upsert(UsersDao.systemUser, binary.guid, version.value)
           }
         }
+
+        // TODO: Should we only send if something changed?
+        sender ! MainActor.Messages.BinarySyncCompleted(binary.guid)
       }
     }
 

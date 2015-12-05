@@ -2,7 +2,7 @@ package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.lib.{Dependencies, GithubDependencyProviderClient}
 import com.bryzek.dependency.v0.models.{Project, WatchProjectForm}
-import db.{ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
+import db.{BinariesDao, LibrariesDao, ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
 import play.api.Logger
 import play.libs.Akka
 import akka.actor.Actor
@@ -11,11 +11,16 @@ import scala.concurrent.ExecutionContext
 
 object ProjectActor {
 
+  trait Message
+
   object Messages {
-    case class Data(guid: UUID)
-    case object Sync
-    case object SyncCompleted
-    case object Watch
+    case class Data(guid: UUID) extends Message
+    case object Sync extends Message
+    case object SyncCompleted extends Message
+    case object Watch extends Message
+
+    case class LibrarySynced(guid: UUID) extends Message
+    case class BinarySynced(guid: UUID) extends Message
   }
 
 }
@@ -25,6 +30,7 @@ class ProjectActor extends Actor {
   implicit val projectExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("project-actor-context")
 
   var dataProject: Option[Project] = None
+  var pendingSync: Option[Boolean] = None
 
   def receive = {
 
@@ -44,18 +50,26 @@ class ProjectActor extends Actor {
       }
     }
 
-    case m @ ProjectActor.Messages.SyncCompleted => Util.withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.LibrarySynced(guid) => Util.withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
-        sender ! MainActor.Messages.SyncDeleteProjectWatch(project.guid)
-        RecommendationsDao.sync(MainActor.SystemUser, project)
-        SyncsDao.recordCompleted(MainActor.SystemUser, project.guid)
+        LibrariesDao.findAll(guid = Some(guid), projectGuid = Some(project.guid), limit = 1).headOption.map { _ =>
+          processPendingSync(project)
+        }
+      }
+    }
+
+    case m @ ProjectActor.Messages.BinarySynced(guid) => Util.withVerboseErrorHandler(m.toString) {
+      dataProject.foreach { project =>
+        BinariesDao.findAll(guid = Some(guid), projectGuid = Some(project.guid), limit = 1).headOption.map { _ =>
+          processPendingSync(project)
+        }
       }
     }
 
     case m @ ProjectActor.Messages.Sync => Util.withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         SyncsDao.recordStarted(MainActor.SystemUser, project.guid)
-        sender ! MainActor.Messages.SyncCreateProjectWatch(project.guid)
+        pendingSync = Some(true)
 
         UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
           GithubDependencyProviderClient.instance(user).dependencies(project).map { dependencies =>
@@ -75,6 +89,8 @@ class ProjectActor extends Actor {
               Logger.error(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")
             }
           }
+          // RecommendationsDao.sync(MainActor.SystemUser, project)
+          // TODO: Need to mark sync complete if all libraries / binaries are already present
         }
 
       }
@@ -82,6 +98,15 @@ class ProjectActor extends Actor {
 
     case m: Any => {
       Logger.error("Project actor got an unhandled message: " + m)
+    }
+  }
+
+  def processPendingSync(project: Project) {
+    println(s"processPendingSync for project[${project.name}]")
+    RecommendationsDao.sync(MainActor.SystemUser, project)
+    pendingSync.map { _ =>
+      SyncsDao.recordCompleted(MainActor.SystemUser, project.guid)
+      pendingSync = None
     }
   }
 
