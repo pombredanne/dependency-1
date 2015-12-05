@@ -58,18 +58,12 @@ trait SimpleScalaParser {
       filter(!_.startsWith(".dependsOn")).
       map(_.stripSuffix(",")).
       map(_.trim).
-      flatMap { line =>
-        toArtifact(line) match {
-          case Left(error) => {
-            Logger.warn(error)
-            None
-          }
-          case Right(library) => Some(library)
-        }
-      }.distinct.sortBy { l => (l.groupId, l.artifactId, l.version) }
+      map {
+        toArtifacts(_)
+      }.flatten.distinct.sortBy { l => (l.groupId, l.artifactId, l.version) }
   }
 
-  def toArtifact(value: String): Either[String, Artifact] = {
+  def toArtifacts(value: String): Seq[Artifact] = {
     val firstParen = value.indexOf("(")
     val lastParen = value.lastIndexOf(")")
 
@@ -79,27 +73,30 @@ trait SimpleScalaParser {
       value
     }
 
-    val isCrossBuilt = substring.indexOf("%%") >= 0
-
-    substring.replaceAll("%%", "%").split("%").map(_.trim).toList match {
-      case Nil => {
-        Left(s"$description: Could not parse library from[$value]")
-      }
-      case groupId :: Nil => {
-        Left(s"$description: Could not parse library from[$value] - only found groupId[$groupId] but missing artifactId and version")
-      }
-      case groupId :: artifactId :: Nil => {
-        Left(s"$description: Could not parse library from[$value] - only found groupId[$groupId] and artifactId[$artifactId] but missing version")
-      }
-      case groupId :: artifactId :: version :: more => {
-        Right(
-          Artifact(
-            groupId = interpolate(groupId),
-            artifactId = interpolate(artifactId),
-            version = interpolate(version),
-            isCrossBuilt = isCrossBuilt
+    substring.split(",").map(_.trim).filter(!_.isEmpty).flatMap { el =>
+      el.replaceAll("%%", "%").split("%").map(_.trim).toList match {
+        case Nil => {
+          Logger.warn(s"$description: Could not parse library from[$value]")
+          None
+        }
+        case groupId :: Nil => {
+          Logger.warn(s"$description: Could not parse library from[$value] - only found groupId[$groupId] but missing artifactId and version")
+          None
+        }
+        case groupId :: artifactId :: Nil => {
+          Logger.warn(s"$description: Could not parse library from[$value] - only found groupId[$groupId] and artifactId[$artifactId] but missing version")
+          None
+        }
+        case groupId :: artifactId :: version :: more => {
+          Some(
+            Artifact(
+              groupId = interpolate(groupId),
+              artifactId = interpolate(artifactId),
+              version = interpolate(version),
+              isCrossBuilt = (el.indexOf("%%") >= 0)
+            )
           )
-        )
+        }
       }
     }
   }
