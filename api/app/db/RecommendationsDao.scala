@@ -131,7 +131,7 @@ object RecommendationsDao {
       objectGuid.map { v => "and recommendations.object_guid = {object_guid}::uuid" },
       isDeleted.map(Filters.isDeleted("recommendations", _)),
       (limit >= 0) match {
-        case true => Some(s"order by recommendations.created_at, lower(projects.name), lower(recommendations.name) limit ${limit} offset ${offset}")
+        case true => Some(s"order by recommendations.created_at desc, lower(projects.name), lower(recommendations.name) limit ${limit} offset ${offset}")
         case false => None
       }
     ).flatten.mkString("\n   ")

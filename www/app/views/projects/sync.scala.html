@@ -6,7 +6,7 @@
 )(implicit flash: Flash, messages: Messages)
 
 @main(data) {
-  <meta http-equiv="refresh" content="@n; url=@routes.ProjectsController.sync(guid, n * 2)" />
+  <meta http-equiv="refresh" content="@n; url=@routes.ProjectsController.sync(guid, (n * 1.1).toInt)" />
 
   @if(syncStarted.isEmpty) {
     <em>Waiting for project to be synced.</em>

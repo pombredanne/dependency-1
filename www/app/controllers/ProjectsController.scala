@@ -254,10 +254,13 @@ class ProjectsController @javax.inject.Inject() (
         objectGuid = Some(guid)
       )
     } yield {
-      println(s"sync($guid)")
+      val nextN = (n * 1.1).toInt match {
+        case `n` => n + 1
+        case other => other
+      }
+
       syncs.find { _.event == SyncEvent.Completed } match {
         case Some(rec) => {
-          println(s" - found $rec")
           Redirect(routes.ProjectsController.show(guid))
         }
         case None => {
@@ -265,7 +268,7 @@ class ProjectsController @javax.inject.Inject() (
             views.html.projects.sync(
               uiData(request),
               guid,
-              n,
+              nextN,
               syncs.find { _.event == SyncEvent.Started }
             )
           )
