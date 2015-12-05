@@ -62,4 +62,10 @@ class SyncsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     SyncsDao.findAll(guids = Some(Seq(sync1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(sync1.guid))
   }
 
+  "purge executes" in {
+    val sync = createSync()
+    SyncsDao.purgeOld()
+    SyncsDao.findByGuid(sync.guid).map(_.guid) must be(Some(sync.guid))
+  }
+
 }

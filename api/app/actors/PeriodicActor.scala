@@ -1,7 +1,7 @@
 package com.bryzek.dependency.actors
 
 import io.flow.play.postgresql.Pager
-import db.{BinariesDao, LibrariesDao, ProjectsDao}
+import db.{BinariesDao, LibrariesDao, ProjectsDao, SyncsDao}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -14,6 +14,7 @@ object PeriodicActor {
     case object SyncBinaries extends Message
     case object SyncLibraries extends Message
     case object SyncProjects extends Message
+    case object Purge extends Message
   }
 
 }
@@ -50,6 +51,12 @@ class PeriodicActor extends Actor {
       } { library =>
         sender ! MainActor.Messages.LibrarySync(library.guid)
       }
+    }
+
+    case PeriodicActor.Messages.Purge => Util.withVerboseErrorHandler(
+      s"PeriodicActor.Messages.Purge"
+    ) {
+      SyncsDao.purgeOld()
     }
 
     case m: Any => {

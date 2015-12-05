@@ -71,6 +71,7 @@ class MainActor(name: String) extends Actor with ActorLogging {
   scheduleRecurring("com.bryzek.dependency.binary.sync.seconds", PeriodicActor.Messages.SyncBinaries)
   scheduleRecurring("com.bryzek.dependency.library.sync.seconds", PeriodicActor.Messages.SyncLibraries)
   scheduleRecurring("com.bryzek.dependency.project.sync.seconds", PeriodicActor.Messages.SyncProjects)
+  scheduleRecurring("com.bryzek.dependency.purge.seconds", PeriodicActor.Messages.Purge)
 
   def receive = akka.event.LoggingReceive {
 
