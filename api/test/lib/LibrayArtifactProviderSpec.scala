@@ -2,6 +2,7 @@ package com.bryzek.dependency.lib
 
 import com.bryzek.dependency.v0.models.Library
 import io.flow.common.v0.models.{Audit, Reference}
+import io.flow.play.clients.MockUserClient
 import org.joda.time.DateTime
 import java.util.UUID
 
@@ -9,17 +10,6 @@ import play.api.libs.ws._
 import play.api.test._
 
 class LibrayArtifactProviderSpec extends PlaySpecification {
-
-  def createAudit(): Audit = {
-    val reference = Reference(UUID.randomUUID())
-    val now = new DateTime()
-    Audit(
-      createdAt = now,
-      createdBy = reference,
-      updatedAt = now,
-      updatedBy = reference
-    )
-  }
 
   def createLibrary(
     groupId: String = UUID.randomUUID.toString,
@@ -29,7 +19,7 @@ class LibrayArtifactProviderSpec extends PlaySpecification {
       guid = UUID.randomUUID,
       groupId = groupId,
       artifactId = artifactId,
-      audit = createAudit()
+      audit = MockUserClient.makeAudit()
     )
   }
 

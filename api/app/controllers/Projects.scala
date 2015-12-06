@@ -82,6 +82,7 @@ class Projects @javax.inject.Inject() (
           val patch = s.get
           val form = ProjectForm(
             name = patch.name.getOrElse(project.name),
+            visibility = patch.visibility.getOrElse(project.visibility),
             scms = patch.scms.getOrElse(project.scms),
             uri = patch.uri.getOrElse(project.uri)
           )

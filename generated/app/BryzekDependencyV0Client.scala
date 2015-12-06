@@ -102,6 +102,7 @@ package com.bryzek.dependency.v0.models {
 
   case class Project(
     guid: _root_.java.util.UUID,
+    visibility: com.bryzek.dependency.v0.models.Visibility,
     scms: com.bryzek.dependency.v0.models.Scms,
     name: String,
     uri: String,
@@ -124,6 +125,7 @@ package com.bryzek.dependency.v0.models {
 
   case class ProjectForm(
     name: String,
+    visibility: com.bryzek.dependency.v0.models.Visibility,
     scms: com.bryzek.dependency.v0.models.Scms,
     uri: String
   )
@@ -139,6 +141,7 @@ package com.bryzek.dependency.v0.models {
 
   case class ProjectPatchForm(
     name: _root_.scala.Option[String] = None,
+    visibility: _root_.scala.Option[com.bryzek.dependency.v0.models.Visibility] = None,
     scms: _root_.scala.Option[com.bryzek.dependency.v0.models.Scms] = None,
     uri: _root_.scala.Option[String] = None
   )
@@ -370,6 +373,40 @@ package com.bryzek.dependency.v0.models {
 
   }
 
+  sealed trait Visibility
+
+  object Visibility {
+
+    case object Public extends Visibility { override def toString = "public" }
+    case object Private extends Visibility { override def toString = "private" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends Visibility
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(Public, Private)
+
+    private[this]
+    val byName = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): Visibility = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[Visibility] = byName.get(value.toLowerCase)
+
+  }
+
 }
 
 package com.bryzek.dependency.v0.models {
@@ -420,6 +457,11 @@ package com.bryzek.dependency.v0.models {
     implicit val jsonReadsDependencySyncEvent = __.read[String].map(SyncEvent.apply)
     implicit val jsonWritesDependencySyncEvent = new Writes[SyncEvent] {
       def writes(x: SyncEvent) = JsString(x.toString)
+    }
+
+    implicit val jsonReadsDependencyVisibility = __.read[String].map(Visibility.apply)
+    implicit val jsonWritesDependencyVisibility = new Writes[Visibility] {
+      def writes(x: Visibility) = JsString(x.toString)
     }
 
     implicit def jsonReadsDependencyBinary: play.api.libs.json.Reads[Binary] = {
@@ -653,6 +695,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyProject: play.api.libs.json.Reads[Project] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "scms").read[com.bryzek.dependency.v0.models.Scms] and
         (__ \ "name").read[String] and
         (__ \ "uri").read[String] and
@@ -663,6 +706,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyProject: play.api.libs.json.Writes[Project] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "scms").write[com.bryzek.dependency.v0.models.Scms] and
         (__ \ "name").write[String] and
         (__ \ "uri").write[String] and
@@ -701,6 +745,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyProjectForm: play.api.libs.json.Reads[ProjectForm] = {
       (
         (__ \ "name").read[String] and
+        (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "scms").read[com.bryzek.dependency.v0.models.Scms] and
         (__ \ "uri").read[String]
       )(ProjectForm.apply _)
@@ -709,6 +754,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyProjectForm: play.api.libs.json.Writes[ProjectForm] = {
       (
         (__ \ "name").write[String] and
+        (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "scms").write[com.bryzek.dependency.v0.models.Scms] and
         (__ \ "uri").write[String]
       )(unlift(ProjectForm.unapply _))
@@ -731,6 +777,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyProjectPatchForm: play.api.libs.json.Reads[ProjectPatchForm] = {
       (
         (__ \ "name").readNullable[String] and
+        (__ \ "visibility").readNullable[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "scms").readNullable[com.bryzek.dependency.v0.models.Scms] and
         (__ \ "uri").readNullable[String]
       )(ProjectPatchForm.apply _)
@@ -739,6 +786,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyProjectPatchForm: play.api.libs.json.Writes[ProjectPatchForm] = {
       (
         (__ \ "name").writeNullable[String] and
+        (__ \ "visibility").writeNullable[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "scms").writeNullable[com.bryzek.dependency.v0.models.Scms] and
         (__ \ "uri").writeNullable[String]
       )(unlift(ProjectPatchForm.unapply _))
@@ -1020,6 +1068,17 @@ package com.bryzek.dependency.v0 {
 
     implicit val queryStringBindableEnumSyncEvent = new QueryStringBindable.Parsing[com.bryzek.dependency.v0.models.SyncEvent](
       SyncEvent.fromString(_).get, _.toString, enumSyncEventNotFound
+    )
+
+    // Enum: Visibility
+    private[this] val enumVisibilityNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.bryzek.dependency.v0.models.Visibility.all.mkString(", ")}"
+
+    implicit val pathBindableEnumVisibility = new PathBindable.Parsing[com.bryzek.dependency.v0.models.Visibility] (
+      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
+    )
+
+    implicit val queryStringBindableEnumVisibility = new QueryStringBindable.Parsing[com.bryzek.dependency.v0.models.Visibility](
+      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
     )
 
   }

@@ -43,6 +43,7 @@ create unique index authorizations_user_guid_scms_token_not_deleted_un_idx
 
 create table projects (
   guid                    uuid primary key,
+  visibility              text not null check(enum(visibility)),
   scms                    text not null check(enum(scms)),
   name                    text not null check(non_empty_trimmed_string(name)),
   uri                     text not null check(non_empty_trimmed_string(uri))

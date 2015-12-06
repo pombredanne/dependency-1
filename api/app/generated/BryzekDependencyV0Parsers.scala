@@ -104,6 +104,31 @@ package com.bryzek.dependency.v0.anorm.parsers {
     }
 
   }
+  object Visibility {
+
+    case class Mappings(value: String)
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        value = s"${prefix}${sep}value"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Visibility] = {
+      SqlParser.str(mappings.value) map {
+        case value => com.bryzek.dependency.v0.models.Visibility(value)
+      }
+    }
+
+  }
   object Binary {
 
     case class Mappings(
@@ -680,6 +705,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       guid: String = "guid",
+      visibility: String = "visibility",
       scms: String = "scms",
       name: String = "name",
       uri: String = "uri",
@@ -694,6 +720,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         guid = s"${prefix}${sep}guid",
+        visibility = s"${prefix}${sep}visibility",
         scms = s"${prefix}${sep}scms",
         name = s"${prefix}${sep}name",
         uri = s"${prefix}${sep}uri",
@@ -706,13 +733,15 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Project] = {
       SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      com.bryzek.dependency.v0.anorm.parsers.Visibility.parser(com.bryzek.dependency.v0.anorm.parsers.Visibility.Mappings(mappings.visibility)) ~
       com.bryzek.dependency.v0.anorm.parsers.Scms.parser(com.bryzek.dependency.v0.anorm.parsers.Scms.Mappings(mappings.scms)) ~
       SqlParser.str(mappings.name) ~
       SqlParser.str(mappings.uri) ~
       io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
-        case guid ~ scms ~ name ~ uri ~ audit => {
+        case guid ~ visibility ~ scms ~ name ~ uri ~ audit => {
           com.bryzek.dependency.v0.models.Project(
             guid = guid,
+            visibility = visibility,
             scms = scms,
             name = name,
             uri = uri,
@@ -800,6 +829,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       name: String = "name",
+      visibility: String = "visibility",
       scms: String = "scms",
       uri: String = "uri"
     )
@@ -812,6 +842,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         name = s"${prefix}${sep}name",
+        visibility = s"${prefix}${sep}visibility",
         scms = s"${prefix}${sep}scms",
         uri = s"${prefix}${sep}uri"
       )
@@ -822,11 +853,13 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ProjectForm] = {
       SqlParser.str(mappings.name) ~
+      com.bryzek.dependency.v0.anorm.parsers.Visibility.parser(com.bryzek.dependency.v0.anorm.parsers.Visibility.Mappings(mappings.visibility)) ~
       com.bryzek.dependency.v0.anorm.parsers.Scms.parser(com.bryzek.dependency.v0.anorm.parsers.Scms.Mappings(mappings.scms)) ~
       SqlParser.str(mappings.uri) map {
-        case name ~ scms ~ uri => {
+        case name ~ visibility ~ scms ~ uri => {
           com.bryzek.dependency.v0.models.ProjectForm(
             name = name,
+            visibility = visibility,
             scms = scms,
             uri = uri
           )
@@ -876,6 +909,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       name: String = "name",
+      visibility: String = "visibility",
       scms: String = "scms",
       uri: String = "uri"
     )
@@ -888,6 +922,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         name = s"${prefix}${sep}name",
+        visibility = s"${prefix}${sep}visibility",
         scms = s"${prefix}${sep}scms",
         uri = s"${prefix}${sep}uri"
       )
@@ -898,11 +933,13 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ProjectPatchForm] = {
       SqlParser.str(mappings.name).? ~
+      com.bryzek.dependency.v0.anorm.parsers.Visibility.parser(com.bryzek.dependency.v0.anorm.parsers.Visibility.Mappings(mappings.visibility)).? ~
       com.bryzek.dependency.v0.anorm.parsers.Scms.parser(com.bryzek.dependency.v0.anorm.parsers.Scms.Mappings(mappings.scms)).? ~
       SqlParser.str(mappings.uri).? map {
-        case name ~ scms ~ uri => {
+        case name ~ visibility ~ scms ~ uri => {
           com.bryzek.dependency.v0.models.ProjectPatchForm(
             name = name,
+            visibility = visibility,
             scms = scms,
             uri = uri
           )

@@ -1,7 +1,7 @@
 package controllers
 
 import com.bryzek.dependency.v0.errors.UnitResponse
-import com.bryzek.dependency.v0.models.{Project, ProjectForm, Scms, SyncEvent}
+import com.bryzek.dependency.v0.models.{Project, ProjectForm, Scms, SyncEvent, Visibility}
 import com.bryzek.dependency.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
@@ -118,6 +118,7 @@ class ProjectsController @javax.inject.Inject() (
               ProjectForm(
                 name = repo.name,
                 scms = Scms.Github,
+                visibility = repo.private ? Visibility.Private : Visibility.Public,
                 uri = repo.uri
             )
             ).map { project =>
@@ -160,6 +161,7 @@ class ProjectsController @javax.inject.Inject() (
           projectForm = ProjectForm(
             name = uiForm.name,
             scms = Scms(uiForm.scms),
+            visibility = Visibility(uiForm.visibility),
             uri = uiForm.uri
           )
         ).map { project =>
@@ -182,6 +184,7 @@ class ProjectsController @javax.inject.Inject() (
               ProjectsController.UiForm(
                 name = project.name,
                 scms = project.scms.toString,
+                visibility = project.visibility.toString,
                 uri = project.uri
               )
             )
@@ -206,6 +209,7 @@ class ProjectsController @javax.inject.Inject() (
             ProjectForm(
               name = uiForm.name,
               scms = Scms(uiForm.scms),
+              visibility = Scms(uiForm.visibility),
               uri = uiForm.uri
             )
           ).map { project =>
@@ -284,6 +288,7 @@ object ProjectsController {
   case class UiForm(
     name: String,
     scms: String,
+    visibility: String,
     uri: String
   )
 
@@ -291,6 +296,7 @@ object ProjectsController {
     mapping(
       "name" -> nonEmptyText,
       "scms" -> nonEmptyText,
+      "visibility" -> nonEmptyText,
       "uri" -> nonEmptyText
     )(UiForm.apply)(UiForm.unapply)
   )

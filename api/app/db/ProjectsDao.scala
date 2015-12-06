@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.actors.MainActor
-import com.bryzek.dependency.v0.models.{Scms, Binary, BinaryForm, Library, LibraryForm, Project, ProjectForm}
+import com.bryzek.dependency.v0.models.{Scms, Binary, BinaryForm, Library, LibraryForm, Project, ProjectForm, Visibility}
 import com.bryzek.dependency.lib.GithubUtil
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
@@ -15,6 +15,7 @@ object ProjectsDao {
 
   private[this] val BaseQuery = s"""
     select projects.guid,
+           projects.visibility,
            projects.scms,
            projects.name,
            projects.uri,
@@ -25,14 +26,15 @@ object ProjectsDao {
 
   private[this] val InsertQuery = """
     insert into projects
-    (guid, scms, name, uri, created_by_guid, updated_by_guid)
+    (guid, visibility, scms, name, uri, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {scms}, {name}, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {visibility}, {scms}, {name}, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[this] val UpdateQuery = """
     update projects
-       set scms = {scms},
+       set visibility = {visibility},
+           scms = {scms},
            name = {name},
            uri = {uri},
            updated_by_guid = {updated_by_guid}::uuid
@@ -71,6 +73,11 @@ object ProjectsDao {
       }
     }
 
+    val visibilityErrors = form.visibility match {
+      case Visibility.UNDEFINED(_) => Seq("Visibility must be one of: ${Visibility.all.map(_.toString).mkString(", ")}")
+      case _ => Nil
+    }
+
     val nameErrors = if (form.name.trim == "") {
       Seq("Name cannot be empty")
 
@@ -86,7 +93,7 @@ object ProjectsDao {
       }
     }
 
-    nameErrors ++ uriErrors
+    nameErrors ++ visibilityErrors ++ uriErrors
   }
 
   def setDependencies(
@@ -181,6 +188,7 @@ object ProjectsDao {
         DB.withConnection { implicit c =>
           SQL(InsertQuery).on(
             'guid -> guid,
+            'visibility -> form.visibility.toString,
             'scms -> form.scms.toString,
             'name -> form.name.trim,
             'uri -> form.uri.trim,
@@ -206,6 +214,7 @@ object ProjectsDao {
         DB.withConnection { implicit c =>
           SQL(UpdateQuery).on(
             'guid -> project.guid,
+            'visibility -> form.visibility.toString,
             'scms -> form.scms.toString,
             'name -> form.name.trim,
             'uri -> form.uri.trim,

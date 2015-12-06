@@ -42,6 +42,13 @@
 		{ "name": "started" },
 		{ "name": "completed" }
 	    ]
+	},
+
+	"visibility": {
+	    "values": [
+		{ "name": "public" },
+		{ "name": "private" }
+	    ]
 	}
 
     },
@@ -149,6 +156,7 @@
 	"project": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
+		{ "name": "visibility", "type": "visibility" },
 		{ "name": "scms", "type": "scms" },
 		{ "name": "name", "type": "string" },
 		{ "name": "uri", "type": "string" },
@@ -181,6 +189,7 @@
 	"project_form": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
+		{ "name": "visibility", "type": "visibility" },
 		{ "name": "scms", "type": "scms" },
 		{ "name": "uri", "type": "string" }
 	    ]
@@ -196,6 +205,7 @@
 	"project_patch_form": {
 	    "fields": [
 		{ "name": "name", "type": "string", "required": false },
+		{ "name": "visibility", "type": "visibility", "required": false },
 		{ "name": "scms", "type": "scms", "required": false },
 		{ "name": "uri", "type": "string", "required": false }
 	    ]
