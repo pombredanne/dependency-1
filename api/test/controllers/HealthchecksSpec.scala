@@ -6,7 +6,7 @@ import io.flow.common.v0.models.Healthcheck
 import play.api.libs.ws._
 import play.api.test._
 
-class IoFlowCommonV0ModelsHealthchecksSpec extends PlaySpecification {
+class HealthchecksSpec extends PlaySpecification {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
