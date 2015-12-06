@@ -21,6 +21,7 @@ object ProjectLibraryVersionsDao {
            ${AuditsDao.all("libraries", Some("library_version_library"))},
            projects.guid as project_guid,
            projects.scms as project_scms,
+           projects.visibility as project_visibility,
            projects.name as project_name,
            projects.uri as project_uri,
            ${AuditsDao.all("projects", Some("project"))}

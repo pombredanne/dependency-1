@@ -19,6 +19,7 @@ object ProjectBinaryVersionsDao {
            ${AuditsDao.all("binaries", Some("binary_version_binary"))},
            projects.guid as project_guid,
            projects.scms as project_scms,
+           projects.visibility as project_visibility,
            projects.name as project_name,
            projects.uri as project_uri,
            ${AuditsDao.all("projects", Some("project"))}

@@ -16,6 +16,7 @@ object WatchProjectsDao {
            watch_projects.user_guid as watch_projects_user_guid,
            ${AuditsDao.all("watch_projects")},
            projects.guid as watch_projects_project_guid,
+           projects.visibility as watch_projects_project_visibility,
            projects.scms as watch_projects_project_scms,
            projects.name as watch_projects_project_name,
            projects.uri as watch_projects_project_uri,
