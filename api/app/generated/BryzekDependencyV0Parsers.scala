@@ -383,7 +383,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
   object GithubUserForm {
 
     case class Mappings(
-      userGuid: String = "userGuid",
+      userGuid: String = "user_guid",
       id: String = "id",
       login: String = "login"
     )
@@ -468,8 +468,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       guid: String = "guid",
-      groupId: String = "groupId",
-      artifactId: String = "artifactId",
+      groupId: String = "group_id",
+      artifactId: String = "artifact_id",
       audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
     )
 
@@ -511,8 +511,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
   object LibraryForm {
 
     case class Mappings(
-      groupId: String = "groupId",
-      artifactId: String = "artifactId",
+      groupId: String = "group_id",
+      artifactId: String = "artifact_id",
       version: com.bryzek.dependency.v0.anorm.parsers.VersionForm.Mappings
     )
 
@@ -592,8 +592,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       guid: String = "guid",
-      groupId: String = "groupId",
-      artifactId: String = "artifactId"
+      groupId: String = "group_id",
+      artifactId: String = "artifact_id"
     )
 
     object Mappings {
@@ -634,7 +634,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       guid: String = "guid",
       library: com.bryzek.dependency.v0.anorm.parsers.Library.Mappings,
       version: String = "version",
-      crossBuildVersion: String = "crossBuildVersion",
+      crossBuildVersion: String = "cross_build_version",
       audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
     )
 
@@ -953,7 +953,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
     case class Mappings(
       guid: String = "guid",
       project: com.bryzek.dependency.v0.anorm.parsers.ProjectDetail.Mappings,
-      `type`: String = "`type`",
+      `type`: String = "type",
       `object`: io.flow.common.v0.anorm.parsers.Reference.Mappings,
       name: String = "name",
       from: String = "from",
@@ -1091,7 +1091,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
   object ResolverForm {
 
     case class Mappings(
-      userGuid: String = "userGuid",
+      userGuid: String = "user_guid",
       uri: String = "uri"
     )
 
@@ -1215,7 +1215,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
   object TokenForm {
 
     case class Mappings(
-      userGuid: String = "userGuid",
+      userGuid: String = "user_guid",
       tag: String = "tag",
       token: String = "token"
     )
@@ -1256,7 +1256,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       version: String = "version",
-      crossBuildVersion: String = "crossBuildVersion"
+      crossBuildVersion: String = "cross_build_version"
     )
 
     object Mappings {
@@ -1335,8 +1335,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
   object WatchProjectForm {
 
     case class Mappings(
-      userGuid: String = "userGuid",
-      projectGuid: String = "projectGuid"
+      userGuid: String = "user_guid",
+      projectGuid: String = "project_guid"
     )
 
     object Mappings {

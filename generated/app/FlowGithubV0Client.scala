@@ -24,6 +24,7 @@ package io.flow.github.v0.models {
     owner: io.flow.github.v0.models.User,
     name: String,
     fullName: String,
+    `private`: Boolean,
     description: _root_.scala.Option[String] = None,
     url: String,
     htmlUrl: String
@@ -272,6 +273,7 @@ package io.flow.github.v0.models {
         (__ \ "owner").read[io.flow.github.v0.models.User] and
         (__ \ "name").read[String] and
         (__ \ "full_name").read[String] and
+        (__ \ "private").read[Boolean] and
         (__ \ "description").readNullable[String] and
         (__ \ "url").read[String] and
         (__ \ "html_url").read[String]
@@ -284,6 +286,7 @@ package io.flow.github.v0.models {
         (__ \ "owner").write[io.flow.github.v0.models.User] and
         (__ \ "name").write[String] and
         (__ \ "full_name").write[String] and
+        (__ \ "private").write[Boolean] and
         (__ \ "description").writeNullable[String] and
         (__ \ "url").write[String] and
         (__ \ "html_url").write[String]

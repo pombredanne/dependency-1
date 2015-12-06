@@ -150,7 +150,7 @@ package io.flow.user.v0.anorm.parsers {
     case class Mappings(
       email: String = "email",
       name: io.flow.user.v0.anorm.parsers.NameForm.Mappings,
-      avatarUrl: String = "avatarUrl"
+      avatarUrl: String = "avatar_url"
     )
 
     object Mappings {
