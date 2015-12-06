@@ -20,7 +20,7 @@ trait MockClient extends db.Helpers {
 
   lazy val anonClient = new Client(s"http://localhost:$port")
 
-    def expectErrors[T](
+  def expectErrors[T](
     f: => Future[T],
     duration: Duration = DefaultDuration
   ): ErrorsResponse = {
