@@ -10,11 +10,13 @@ object Config {
   lazy val dependencyWwwHost = DefaultConfig.requiredString("dependency.www.host")
   lazy val githubBaseUrl = s"$dependencyWwwHost/login/github"
 
+  private val GithubScopes = Seq("user:email", "repo")
+
   private[this] val GitHubOauthUrl = "https://github.com/login/oauth/authorize"
 
   def githubOauthUrl(returnUrl: Option[String]): String = {
     GitHubOauthUrl + "?" + Seq(
-      Some("scope" -> "user:email,repo"),
+      Some("scope" -> GithubScopes.mkString(",")),
       Some("client_id" -> githubClientId),
       returnUrl.map { url => ("redirect_uri" -> (s"$githubBaseUrl?return_url=" + URLEncoder.encode(url, "UTF-8"))) }
     ).flatten.map { case (key, value) =>
