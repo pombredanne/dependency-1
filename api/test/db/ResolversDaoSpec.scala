@@ -1,5 +1,6 @@
 package db
 
+import com.bryzek.dependency.v0.models.UsernamePassword
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -52,6 +53,18 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     ResolversDao.findAll(guids = Some(Nil)) must be(Nil)
     ResolversDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
     ResolversDao.findAll(guids = Some(Seq(resolver1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(resolver1.guid))
+  }
+
+  "with credentials" in {
+    val credentials = UsernamePassword(
+      username = "foo",
+      password = Some("bar")
+    )
+    val form = createResolverForm().copy(
+      credentials = Some(credentials)
+    )
+    val resolver = createResolver(form)
+    resolver.credentials must be(Some(credentials))
   }
 
 }
