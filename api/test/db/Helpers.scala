@@ -211,9 +211,11 @@ trait Helpers {
 
   def createResolverForm(
     user: User = createUser(),
+    visibility: Visibility = Visibility.Private,
     uri: String = s"http://${UUID.randomUUID}.z-test.flow.io"
   ) = {
     ResolverForm(
+      visibility = visibility,
       userGuid = user.guid,
       uri = uri
     )

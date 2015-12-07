@@ -495,6 +495,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       guid: String = "guid",
       groupId: String = "group_id",
       artifactId: String = "artifact_id",
+      resolver: com.bryzek.dependency.v0.anorm.parsers.ResolverSummary.Mappings,
       audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
     )
 
@@ -508,6 +509,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
         guid = s"${prefix}${sep}guid",
         groupId = s"${prefix}${sep}group_id",
         artifactId = s"${prefix}${sep}artifact_id",
+        resolver = com.bryzek.dependency.v0.anorm.parsers.ResolverSummary.Mappings.prefix(Seq(prefix, "resolver").filter(!_.isEmpty).mkString("_"), "_"),
         audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
       )
 
@@ -519,12 +521,14 @@ package com.bryzek.dependency.v0.anorm.parsers {
       SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
       SqlParser.str(mappings.groupId) ~
       SqlParser.str(mappings.artifactId) ~
+      com.bryzek.dependency.v0.anorm.parsers.ResolverSummary.parser(mappings.resolver).? ~
       io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
-        case guid ~ groupId ~ artifactId ~ audit => {
+        case guid ~ groupId ~ artifactId ~ resolver ~ audit => {
           com.bryzek.dependency.v0.models.Library(
             guid = guid,
             groupId = groupId,
             artifactId = artifactId,
+            resolver = resolver,
             audit = audit
           )
         }
@@ -538,6 +542,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
     case class Mappings(
       groupId: String = "group_id",
       artifactId: String = "artifact_id",
+      resolverGuid: String = "resolver_guid",
       version: com.bryzek.dependency.v0.anorm.parsers.VersionForm.Mappings
     )
 
@@ -550,6 +555,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       def prefix(prefix: String, sep: String) = Mappings(
         groupId = s"${prefix}${sep}group_id",
         artifactId = s"${prefix}${sep}artifact_id",
+        resolverGuid = s"${prefix}${sep}resolver_guid",
         version = com.bryzek.dependency.v0.anorm.parsers.VersionForm.Mappings.prefix(Seq(prefix, "version").filter(!_.isEmpty).mkString("_"), "_")
       )
 
@@ -560,11 +566,13 @@ package com.bryzek.dependency.v0.anorm.parsers {
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LibraryForm] = {
       SqlParser.str(mappings.groupId) ~
       SqlParser.str(mappings.artifactId) ~
+      SqlParser.get[_root_.java.util.UUID](mappings.resolverGuid).? ~
       com.bryzek.dependency.v0.anorm.parsers.VersionForm.parser(mappings.version).? map {
-        case groupId ~ artifactId ~ version => {
+        case groupId ~ artifactId ~ resolverGuid ~ version => {
           com.bryzek.dependency.v0.models.LibraryForm(
             groupId = groupId,
             artifactId = artifactId,
+            resolverGuid = resolverGuid,
             version = version
           )
         }
@@ -1089,6 +1097,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       guid: String = "guid",
+      visibility: String = "visibility",
       user: io.flow.common.v0.anorm.parsers.Reference.Mappings,
       uri: String = "uri",
       audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
@@ -1102,6 +1111,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         guid = s"${prefix}${sep}guid",
+        visibility = s"${prefix}${sep}visibility",
         user = io.flow.common.v0.anorm.parsers.Reference.Mappings.prefix(Seq(prefix, "user").filter(!_.isEmpty).mkString("_"), "_"),
         uri = s"${prefix}${sep}uri",
         audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
@@ -1113,12 +1123,14 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Resolver] = {
       SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      com.bryzek.dependency.v0.anorm.parsers.Visibility.parser(com.bryzek.dependency.v0.anorm.parsers.Visibility.Mappings(mappings.visibility)) ~
       io.flow.common.v0.anorm.parsers.Reference.parser(mappings.user) ~
       SqlParser.str(mappings.uri) ~
       io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
-        case guid ~ user ~ uri ~ audit => {
+        case guid ~ visibility ~ user ~ uri ~ audit => {
           com.bryzek.dependency.v0.models.Resolver(
             guid = guid,
+            visibility = visibility,
             user = user,
             uri = uri,
             audit = audit
@@ -1132,6 +1144,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
   object ResolverForm {
 
     case class Mappings(
+      visibility: String = "visibility",
       userGuid: String = "user_guid",
       uri: String = "uri"
     )
@@ -1143,6 +1156,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       def table(table: String) = prefix(table, ".")
 
       def prefix(prefix: String, sep: String) = Mappings(
+        visibility = s"${prefix}${sep}visibility",
         userGuid = s"${prefix}${sep}user_guid",
         uri = s"${prefix}${sep}uri"
       )
@@ -1152,11 +1166,53 @@ package com.bryzek.dependency.v0.anorm.parsers {
     def table(table: String) = parser(Mappings.prefix(table, "."))
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ResolverForm] = {
+      com.bryzek.dependency.v0.anorm.parsers.Visibility.parser(com.bryzek.dependency.v0.anorm.parsers.Visibility.Mappings(mappings.visibility)) ~
       SqlParser.get[_root_.java.util.UUID](mappings.userGuid) ~
       SqlParser.str(mappings.uri) map {
-        case userGuid ~ uri => {
+        case visibility ~ userGuid ~ uri => {
           com.bryzek.dependency.v0.models.ResolverForm(
+            visibility = visibility,
             userGuid = userGuid,
+            uri = uri
+          )
+        }
+      }
+    }
+
+  }
+
+  object ResolverSummary {
+
+    case class Mappings(
+      guid: String = "guid",
+      visibility: String = "visibility",
+      uri: String = "uri"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        guid = s"${prefix}${sep}guid",
+        visibility = s"${prefix}${sep}visibility",
+        uri = s"${prefix}${sep}uri"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ResolverSummary] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      com.bryzek.dependency.v0.anorm.parsers.Visibility.parser(com.bryzek.dependency.v0.anorm.parsers.Visibility.Mappings(mappings.visibility)) ~
+      SqlParser.str(mappings.uri) map {
+        case guid ~ visibility ~ uri => {
+          com.bryzek.dependency.v0.models.ResolverSummary(
+            guid = guid,
+            visibility = visibility,
             uri = uri
           )
         }

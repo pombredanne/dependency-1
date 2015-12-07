@@ -59,6 +59,15 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     LibrariesDao.findAll(guid = Some(library.guid), isSynced = Some(false)) must be(Nil)
   }
 
+  "update resolver" in {
+    val form = createLibraryForm()
+    val library = createLibrary(form)
+    val resolver = createResolver()
+    val updated = LibrariesDao.update(systemUser, library, form.copy(resolverGuid = Some(resolver.guid))).right.get
+    updated.guid must be(library.guid)
+    updated.resolver.map(_.guid) must be(Some(resolver.guid))
+  }
+
   "create" must {
     "validates empty group id" in {
       val form = createLibraryForm().copy(groupId = "   ")

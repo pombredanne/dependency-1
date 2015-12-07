@@ -25,6 +25,7 @@ object MainActor {
     case class ProjectSync(guid: UUID)
 
     case class LibraryCreated(guid: UUID)
+    case class LibraryUpdated(guid: UUID)
     case class LibraryDeleted(guid: UUID)
     case class LibrarySync(guid: UUID)
     case class LibrarySyncCompleted(guid: UUID)
@@ -99,6 +100,10 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
 
     case m @ MainActor.Messages.LibraryCreated(guid) => withVerboseErrorHandler(m) {
       syncLibrary(guid)
+    }
+
+    case m @ MainActor.Messages.LibraryUpdated(guid) => withVerboseErrorHandler(m) {
+      // No-op
     }
 
     case m @ MainActor.Messages.LibrarySync(guid) => withVerboseErrorHandler(m) {

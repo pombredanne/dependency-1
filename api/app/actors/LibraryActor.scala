@@ -3,7 +3,7 @@ package com.bryzek.dependency.actors
 import com.bryzek.dependency.v0.models.{Library, LibraryForm, Resolver, VersionForm}
 import com.bryzek.dependency.lib.DefaultLibraryArtifactProvider
 import io.flow.play.postgresql.Pager
-import db.{LibrariesDao, LibraryVersionsDao, ResolversDao, SyncsDao}
+import db.{LibrariesDao, LibraryVersionsDao, ResolversDao, SyncsDao, UsersDao}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -28,26 +28,36 @@ class LibraryActor extends Actor with Util {
     }
 
     case m @ LibraryActor.Messages.Sync => withVerboseErrorHandler(m) {
-      var resolvers = scala.collection.mutable.Map[UUID, Seq[Resolver]]()
-
       dataLibrary.foreach { lib =>
-        SyncsDao.withStartedAndCompleted(MainActor.SystemUser, lib.guid) {
-          val userResolvers = resolvers.get(lib.audit.createdBy.guid).getOrElse {
-            val all = ResolversDao.findAll(
-              userGuid = Some(lib.audit.createdBy.guid)
-            )
-            resolvers +== (lib.audit.createdBy.guid -> all)
-            all
-          }
+        val user = UsersDao.findByGuid(lib.audit.createdBy.guid)
 
-          // println(s"Syncing library[$lib] for user[${lib.audit.createdBy.guid}] resolvers[${userResolvers.map(_.uri)}]")
-          DefaultLibraryArtifactProvider().artifacts(lib, userResolvers).map { version =>
-            // println(s" groupId[${lib.groupId}] artifactId[${lib.artifactId}] version[${version.tag.value}] crossBuilt[${version.crossBuildVersion.map(_.value).getOrElse("")}]")
-            LibraryVersionsDao.upsert(
-              createdBy = MainActor.SystemUser,
-              libraryGuid = lib.guid,
-              form = VersionForm(version.tag.value, version.crossBuildVersion.map(_.value))
-            )
+        SyncsDao.withStartedAndCompleted(MainActor.SystemUser, lib.guid) {
+          DefaultLibraryArtifactProvider().artifacts(
+            lib,
+            user = user,
+            resolver = lib.resolver
+          ).map { resolution =>
+            println(s"Library[${lib.groupId}.${lib.artifactId}] resolver[${lib.resolver}] -- found[${resolution.resolver}]")
+
+            if (lib.resolver.map(_.guid) != Some(resolution.resolver.guid)) {
+              LibrariesDao.update(
+                MainActor.SystemUser,
+                lib,
+                LibraryForm(
+                  groupId = lib.groupId,
+                  artifactId = lib.artifactId,
+                  resolverGuid = Some(resolution.resolver.guid)
+                )
+              )
+            }
+
+            resolution.versions.foreach { version =>
+              LibraryVersionsDao.upsert(
+                createdBy = MainActor.SystemUser,
+                libraryGuid = lib.guid,
+                form = VersionForm(version.tag.value, version.crossBuildVersion.map(_.value))
+              )
+            }
           }
         }
 

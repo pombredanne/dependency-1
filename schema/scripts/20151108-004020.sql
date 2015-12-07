@@ -66,19 +66,47 @@ comment on column projects.name is '
 select schema_evolution_manager.create_basic_audit_data('public', 'projects');
 create unique index projects_scms_lower_name_not_deleted_un_idx on projects(scms, lower(name)) where deleted_at is null;
 
+create table resolvers (
+  guid                    uuid primary key,
+  visibility              text not null check(enum(visibility)),
+  user_guid               uuid not null references users,
+  uri                     text not null check(non_empty_trimmed_string(uri)),
+  position                integer not null check(position >= 0)
+);
+
+select schema_evolution_manager.create_basic_audit_data('public', 'resolvers');
+
+comment on table resolvers is '
+  Stores resolvers we use to find library versions. Resolvers can be
+  public or private - and if private follows the user that created the
+  resolver.
+';
+
+create index on resolvers(user_guid);
+create unique index resolvers_user_guid_uri_not_deleted_un_idx on resolvers(user_guid, uri) where deleted_at is null;
+
+create unique index resolvers_public_uri_un_idx on resolvers(uri) where deleted_at is null and visibility = 'public';
+create unique index resolvers_public_position_un_idx on resolvers(position) where deleted_at is null and visibility = 'public';
+
 create table libraries (
   guid                    uuid primary key,
   group_id                text not null check(non_empty_trimmed_string(group_id)),
-  artifact_id             text not null check(non_empty_trimmed_string(artifact_id))
+  artifact_id             text not null check(non_empty_trimmed_string(artifact_id)),
+  resolver_guid           uuid references resolvers
 );
 
 comment on table libraries is '
   Stores all libraries that we are tracking in some way.
 ';
 
+comment on column libraries.resolver_guid is '
+  The resolver we are using to identify versions of this library.
+';
+
 select schema_evolution_manager.create_basic_audit_data('public', 'libraries');
 create index on libraries(group_id);
 create index on libraries(artifact_id);
+create index on libraries(resolver_guid);
 create unique index libraries_group_id_artifact_id_not_deleted_un_idx on libraries(group_id, artifact_id) where deleted_at is null;
 
 create table library_versions (
@@ -131,19 +159,4 @@ comment on table binary_versions is '
 select schema_evolution_manager.create_basic_audit_data('public', 'binary_versions');
 create index on binary_versions(binary_guid);
 create unique index binary_versions_binary_guid_version_not_deleted_un_idx on binary_versions(binary_guid, version) where deleted_at is null;
-
-create table resolvers (
-  guid                    uuid primary key,
-  user_guid               uuid not null references users,
-  uri                     text not null check(non_empty_trimmed_string(uri))
-);
-
-select schema_evolution_manager.create_basic_audit_data('public', 'resolvers');
-
-comment on table resolvers is '
-  Stores a private list of resolvers that this user needs to resolve libraries.
-';
-
-create index on resolvers(user_guid);
-create unique index resolvers_user_guid_uri_not_deleted_un_idx on resolvers(user_guid, uri) where deleted_at is null;
 

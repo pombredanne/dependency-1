@@ -10,6 +10,13 @@
   <ul>
     <li>Group ID: <a href="@routes.SearchController.index(q = Some(library.groupId))">@library.groupId</a></li>
     <li>Artifact ID: <a href="@routes.SearchController.index(q = Some(library.artifactId))">@library.artifactId</a></li>
+    <li>Resolver:
+      @if(library.resolver.isEmpty) {
+        <em>N/A</em>
+      } else {
+        <a href="@library.resolver.get.uri">@library.resolver.get.uri</a>
+      }
+    </li>
     <li>@audit(library.audit)</li>
   </ul>
 

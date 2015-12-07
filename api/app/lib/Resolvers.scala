@@ -1,3 +1,4 @@
+/*
 package com.bryzek.dependency.lib
 
 object Resolvers {
@@ -15,3 +16,4 @@ object Resolvers {
   }
 
 }
+ */

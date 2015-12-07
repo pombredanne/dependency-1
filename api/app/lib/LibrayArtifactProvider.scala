@@ -1,23 +1,34 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.{Library, Resolver}
+import db.ResolversDao
+import com.bryzek.dependency.v0.models.{Library, ResolverSummary}
 import io.flow.play.util.Config
+import io.flow.play.postgresql.Pager
 import io.flow.user.v0.models.User
 
 import scala.util.{Failure, Success, Try}
 import java.net.URI
+
+case class ArtifactResolution(
+  resolver: ResolverSummary,
+  versions: Seq[ArtifactVersion]
+) {
+  assert(!versions.isEmpty, "Must have at least one version")
+}
 
 trait LibraryArtifactProvider {
 
   /**
     * Returns the artifacts for this library.
     * 
-    * @param resolvers User specific resolvers. If provided, we check these first.
+    * @param user Used to look up private resolvers for this user.
+    * @param resolver If specified, we search this resolver first
     */
   def artifacts(
     library: Library,
-    resolvers: Seq[Resolver]
-  ): Seq[ArtifactVersion]
+    user: Option[User],
+    resolver: Option[ResolverSummary]
+  ): Option[ArtifactResolution]
 
 }
 
@@ -25,15 +36,75 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
 
   override def artifacts(
     library: Library,
-    resolvers: Seq[Resolver]
-  ) : Seq[ArtifactVersion] = {
-    Resolvers.all(resolvers.map(_.uri)).map { resolver =>
+    user: Option[User],
+    resolver: Option[ResolverSummary]
+  ): Option[ArtifactResolution] = {
+    resolver.map { r =>
       RemoteVersions.fetch(
-        resolver = resolver,
+        resolver = r.uri,
         groupId = library.groupId,
         artifactId = library.artifactId
       )
-    }.flatten.distinct
+    }.getOrElse(Nil) match {
+      case Nil => {
+        internalArtifacts(
+          library = library,
+          user = user,
+          limit = 100,
+          offset = 0
+        )
+      }
+      case versions => {
+        Some(ArtifactResolution(resolver.get, versions))
+      }
+    }
+  }
+
+  private[this] def internalArtifacts(
+    library: Library,
+    user: Option[User],
+    limit: Long,
+    offset: Long
+  ): Option[ArtifactResolution] = {
+    ResolversDao.findAll(
+      userGuid = user.map(_.guid),
+      limit = limit,
+      offset = offset
+    ) match {
+      case Nil => {
+        None
+      }
+      case resolvers => {
+         resolvers.foreach { resolver =>
+          RemoteVersions.fetch(
+            resolver = resolver.uri,
+            groupId = library.groupId,
+            artifactId = library.artifactId
+          ) match {
+            case Nil => {}
+            case versions => {
+              return Some(
+                ArtifactResolution(
+                  ResolverSummary(
+                    guid = resolver.guid,
+                    visibility = resolver.visibility,
+                    uri = resolver.uri
+                  ),
+                  versions
+                )
+              )
+            }
+          }
+        }
+
+        internalArtifacts(
+          library = library,
+          user = user,
+          limit = limit,
+          offset = offset + limit
+        )
+      }
+    }
   }
 
 }

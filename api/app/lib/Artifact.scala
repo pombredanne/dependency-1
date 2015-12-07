@@ -1,6 +1,6 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.{LibraryForm, VersionForm}
+import com.bryzek.dependency.v0.models.{LibraryForm, Resolver, VersionForm}
 
 case class Artifact(
   groupId: String,

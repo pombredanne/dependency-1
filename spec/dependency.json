@@ -58,14 +58,24 @@
 	"resolver": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
+		{ "name": "visibility", "type": "visibility" },
                 { "name": "user", "type": "io.flow.common.v0.models.reference" },
 		{ "name": "uri", "type": "string", "example": "https://flow.artifactoryonline.com/flow/libs-release" },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},
 
+	"resolver_summary": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "visibility", "type": "visibility" },
+		{ "name": "uri", "type": "string" }
+	    ]
+	},
+
 	"resolver_form": {
 	    "fields": [
+		{ "name": "visibility", "type": "visibility" },
 		{ "name": "user_guid", "type": "uuid" },
 		{ "name": "uri", "type": "string" }
 	    ]
@@ -116,6 +126,7 @@
 		{ "name": "guid", "type": "uuid" },
 		{ "name": "group_id", "type": "string" },
 		{ "name": "artifact_id", "type": "string" },
+		{ "name": "resolver", "type": "resolver_summary", "required": false, "description": "Once we locate this library, we record the resolver and use it to find future versions" },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},
@@ -124,6 +135,7 @@
 	    "fields": [
 		{ "name": "group_id", "type": "string" },
 		{ "name": "artifact_id", "type": "string" },
+		{ "name": "resolver_guid", "type": "uuid", "required": false },
 		{ "name": "version", "type": "version_form", "required": false, "description": "If provided, we automatically record this version of this library." }
 	    ]
 	},

@@ -17,20 +17,34 @@ object LibrariesDao {
     select libraries.guid,
            libraries.group_id,
            libraries.artifact_id,
-           ${AuditsDao.all("libraries")}
+           ${AuditsDao.all("libraries")},
+           resolvers.guid as libraries_resolver_guid,
+           resolvers.visibility as libraries_resolver_visibility,
+           resolvers.uri as libraries_resolver_uri
       from libraries
+      left join resolvers on resolvers.deleted_at is null and resolvers.guid = libraries.resolver_guid
      where true
   """
 
   private[this] val InsertQuery = """
     insert into libraries
-    (guid, group_id, artifact_id, created_by_guid, updated_by_guid)
+    (guid, group_id, artifact_id, resolver_guid, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {group_id}, {artifact_id}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {group_id}, {artifact_id}, {resolver_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
+  """
+
+  private[this] val UpdateQuery = """
+    update libraries
+       set group_id = {group_id},
+           artifact_id = {artifact_id},
+           resolver_guid = {resolver_guid}::uuid,
+           updated_by_guid = {updated_by_guid}::uuid
+     where guid = {guid}::uuid
   """
 
   private[db] def validate(
-    form: LibraryForm
+    form: LibraryForm,
+    existing: Option[Library] = None
   ): Seq[String] = {
     val groupIdErrors = if (form.groupId.trim.isEmpty) {
       Seq("Group ID cannot be empty")
@@ -47,7 +61,13 @@ object LibrariesDao {
     val existsErrors = if (groupIdErrors.isEmpty && artifactIdErrors.isEmpty) {
       LibrariesDao.findByGroupIdAndArtifactId(form.groupId, form.artifactId) match {
         case None => Nil
-        case Some(_) => Seq("Library with this group id and artifact id already exists")
+        case Some(lib) => {
+          if (Some(lib.guid) == existing.map(_.guid)) {
+            Nil
+          } else {
+            Seq("Library with this group id and artifact id already exists")
+          }
+        }
       }
     } else {
       Nil
@@ -82,6 +102,7 @@ object LibrariesDao {
             'guid -> guid,
             'group_id -> form.groupId.trim,
             'artifact_id -> form.artifactId.trim,
+            'resolver_guid -> form.resolverGuid,
             'created_by_guid -> createdBy.guid
           ).execute()
           form.version.foreach { version =>
@@ -94,6 +115,35 @@ object LibrariesDao {
         Right(
           findByGuid(guid).getOrElse {
             sys.error("Failed to create library")
+          }
+        )
+      }
+      case errors => Left(errors)
+    }
+  }
+
+  def update(updatedBy: User, library: Library, form: LibraryForm): Either[Seq[String], Library] = {
+    validate(form, existing = Some(library)) match {
+      case Nil => {
+        DB.withTransaction { implicit c =>
+          SQL(UpdateQuery).on(
+            'guid -> library.guid,
+            'group_id -> form.groupId.trim,
+            'artifact_id -> form.artifactId.trim,
+            'resolver_guid -> form.resolverGuid,
+            'updated_by_guid -> updatedBy.guid
+          ).execute()
+
+          form.version.foreach { version =>
+            LibraryVersionsDao.upsertWithConnection(updatedBy, library.guid, version)
+          }
+        }
+
+        MainActor.ref ! MainActor.Messages.LibraryUpdated(library.guid)
+
+        Right(
+          findByGuid(library.guid).getOrElse {
+            sys.error("Failed to update library")
           }
         )
       }
