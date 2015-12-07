@@ -1,6 +1,6 @@
 package com.bryzek.dependency.lib
 
-import db.ResolversDao
+import db.{Authorization, ResolversDao}
 import com.bryzek.dependency.v0.models.{Library, ResolverSummary}
 import io.flow.play.util.Config
 import io.flow.play.postgresql.Pager
@@ -67,6 +67,7 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
     offset: Long
   ): Option[ArtifactResolution] = {
     ResolversDao.findAll(
+      Authorization(userGuid = user.map(_.guid)),
       userGuid = user.map(_.guid),
       limit = limit,
       offset = offset

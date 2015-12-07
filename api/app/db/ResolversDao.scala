@@ -34,7 +34,7 @@ object ResolversDao {
   """
 
   def upsert(createdBy: User, form: ResolverForm): Resolver = {
-    findByUserGuidAndUri(form.userGuid, form.uri).getOrElse {
+    findByUserGuidAndUri(Authorization.All, form.userGuid, form.uri).getOrElse {
       create(createdBy, form)
     }
   }
@@ -54,7 +54,7 @@ object ResolversDao {
       ).execute()
     }
 
-    findByGuid(guid).getOrElse {
+    findByGuid(Authorization.All, guid).getOrElse {
       sys.error("Failed to create resolver")
     }
   }
@@ -64,43 +64,64 @@ object ResolversDao {
   }
 
   def findByUserGuidAndUri(
+    auth: Authorization,
     userGuid: UUID,
     uri: String
   ): Option[Resolver] = {
     findAll(
+      auth,
       userGuid = Some(userGuid),
       uri = Some(uri),
       limit = 1
     ).headOption
   }
 
-  def findByGuid(guid: UUID): Option[Resolver] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+  def findByGuid(auth: Authorization, guid: UUID): Option[Resolver] = {
+    findAll(auth, guid = Some(guid), limit = 1).headOption
   }
 
   def findAll(
+    auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     userGuid: Option[UUID] = None,
+    visibility: Option[Visibility] = None,
     uri: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Resolver] = {
-      val sql = Seq(
+    val sql = Seq(
       Some(BaseQuery.trim),
+      auth match {
+        case Authorization.All => None
+        case Authorization.PublicOnly => Some("and resolvers.visibility = {public}")
+        case Authorization.User(guid) => Some("and (resolvers.visibility = {public} or resolvers.user_guid = {authorization_user_guid}::uuid)")
+      },
       guid.map { v =>  "and resolvers.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("resolvers.guid", _) },
       userGuid.map { v => "and resolvers.user_guid = {user_guid}::uuid" },
+      visibility.map { v => "and resolvers.visibility = {visibility}" },
       uri.map { v => "and resolvers.uri = trim({uri})" },
       isDeleted.map(Filters.isDeleted("resolvers", _)),
-      Some(s"order by lower(resolvers.uri), resolvers.created_at limit ${limit} offset ${offset}")
+        Some(s"""
+          order by case when visibility = '${Visibility.Public}' then 0
+                        when visibility = '${Visibility.Private}' then 1
+                        else 2 end, resolvers.position, lower(resolvers.uri), resolvers.created_at
+          limit ${limit} offset ${offset}
+        """)
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       userGuid.map('user_guid -> _.toString),
-      uri.map('uri -> _.toString)
+      visibility.map('visibility -> _.toString),
+      uri.map('uri -> _.toString),
+      auth match {
+        case Authorization.PublicOnly | Authorization.All => None
+        case Authorization.User(guid) => Some('authorization_user_guid -> guid.toString)
+      },
+      Some('public -> Visibility.Public.toString)
     ).flatten
 
     DB.withConnection { implicit c =>
