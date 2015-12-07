@@ -71,7 +71,8 @@ create table resolvers (
   visibility              text not null check(enum(visibility)),
   user_guid               uuid not null references users,
   uri                     text not null check(non_empty_trimmed_string(uri)),
-  position                integer not null check(position >= 0)
+  position                integer not null check(position >= 0),
+  credentials             json
 );
 
 select schema_evolution_manager.create_basic_audit_data('public', 'resolvers');

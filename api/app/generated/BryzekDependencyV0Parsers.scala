@@ -1100,6 +1100,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       visibility: String = "visibility",
       user: io.flow.common.v0.anorm.parsers.Reference.Mappings,
       uri: String = "uri",
+      credentials: String = "credentials",
       audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
     )
 
@@ -1114,6 +1115,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
         visibility = s"${prefix}${sep}visibility",
         user = io.flow.common.v0.anorm.parsers.Reference.Mappings.prefix(Seq(prefix, "user").filter(!_.isEmpty).mkString("_"), "_"),
         uri = s"${prefix}${sep}uri",
+        credentials = s"${prefix}${sep}credentials",
         audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
       )
 
@@ -1126,13 +1128,15 @@ package com.bryzek.dependency.v0.anorm.parsers {
       com.bryzek.dependency.v0.anorm.parsers.Visibility.parser(com.bryzek.dependency.v0.anorm.parsers.Visibility.Mappings(mappings.visibility)) ~
       io.flow.common.v0.anorm.parsers.Reference.parser(mappings.user) ~
       SqlParser.str(mappings.uri) ~
+      SqlParser.get[com.bryzek.dependency.v0.models.Credentials](mappings.credentials).? ~
       io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
-        case guid ~ visibility ~ user ~ uri ~ audit => {
+        case guid ~ visibility ~ user ~ uri ~ credentials ~ audit => {
           com.bryzek.dependency.v0.models.Resolver(
             guid = guid,
             visibility = visibility,
             user = user,
             uri = uri,
+            credentials = credentials,
             audit = audit
           )
         }
@@ -1146,7 +1150,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
     case class Mappings(
       visibility: String = "visibility",
       userGuid: String = "user_guid",
-      uri: String = "uri"
+      uri: String = "uri",
+      credentials: String = "credentials"
     )
 
     object Mappings {
@@ -1158,7 +1163,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
       def prefix(prefix: String, sep: String) = Mappings(
         visibility = s"${prefix}${sep}visibility",
         userGuid = s"${prefix}${sep}user_guid",
-        uri = s"${prefix}${sep}uri"
+        uri = s"${prefix}${sep}uri",
+        credentials = s"${prefix}${sep}credentials"
       )
 
     }
@@ -1168,12 +1174,14 @@ package com.bryzek.dependency.v0.anorm.parsers {
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ResolverForm] = {
       com.bryzek.dependency.v0.anorm.parsers.Visibility.parser(com.bryzek.dependency.v0.anorm.parsers.Visibility.Mappings(mappings.visibility)) ~
       SqlParser.get[_root_.java.util.UUID](mappings.userGuid) ~
-      SqlParser.str(mappings.uri) map {
-        case visibility ~ userGuid ~ uri => {
+      SqlParser.str(mappings.uri) ~
+      SqlParser.get[com.bryzek.dependency.v0.models.Credentials](mappings.credentials).? map {
+        case visibility ~ userGuid ~ uri ~ credentials => {
           com.bryzek.dependency.v0.models.ResolverForm(
             visibility = visibility,
             userGuid = userGuid,
-            uri = uri
+            uri = uri,
+            credentials = credentials
           )
         }
       }
@@ -1342,6 +1350,42 @@ package com.bryzek.dependency.v0.anorm.parsers {
             userGuid = userGuid,
             tag = tag,
             token = token
+          )
+        }
+      }
+    }
+
+  }
+
+  object UsernamePassword {
+
+    case class Mappings(
+      username: String = "username",
+      password: String = "password"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        username = s"${prefix}${sep}username",
+        password = s"${prefix}${sep}password"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.UsernamePassword] = {
+      SqlParser.str(mappings.username) ~
+      SqlParser.str(mappings.password).? map {
+        case username ~ password => {
+          com.bryzek.dependency.v0.models.UsernamePassword(
+            username = username,
+            password = password
           )
         }
       }

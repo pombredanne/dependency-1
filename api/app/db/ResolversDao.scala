@@ -1,6 +1,7 @@
 package db
 
 import com.bryzek.dependency.v0.models.{Resolver, ResolverForm, Visibility}
+import com.bryzek.dependency.v0.models.json._
 import io.flow.user.v0.models.User
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import anorm._
@@ -16,6 +17,7 @@ object ResolversDao {
   private[this] val BaseQuery = s"""
     select resolvers.guid,
            resolvers.visibility,
+           resolvers.credentials,
            resolvers.user_guid as resolvers_user_guid,
            resolvers.uri,
            resolvers.position,
@@ -26,9 +28,9 @@ object ResolversDao {
 
   private[this] val InsertQuery = """
     insert into resolvers
-    (guid, visibility, position, user_guid, uri, updated_by_guid, created_by_guid)
+    (guid, visibility, credentials, position, user_guid, uri, updated_by_guid, created_by_guid)
     values
-    ({guid}::uuid, {visibility}, {position}, {user_guid}::uuid, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {visibility}, {credentials}::json, {position}, {user_guid}::uuid, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def upsert(createdBy: User, form: ResolverForm): Resolver = {
@@ -45,6 +47,7 @@ object ResolversDao {
         'guid -> guid,
         'user_guid -> form.userGuid,
         'visibility -> form.visibility.toString,
+        'credentials -> form.credentials.map { cred => Json.stringify(Json.toJson(cred)) },
         'position -> nextPosition(form.userGuid, form.visibility),
         'uri -> form.uri.trim,
         'created_by_guid -> createdBy.guid

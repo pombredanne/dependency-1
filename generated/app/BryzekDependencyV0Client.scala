@@ -5,6 +5,8 @@
  */
 package com.bryzek.dependency.v0.models {
 
+  sealed trait Credentials
+
   sealed trait ItemSummary
 
   case class Binary(
@@ -179,13 +181,15 @@ package com.bryzek.dependency.v0.models {
     visibility: com.bryzek.dependency.v0.models.Visibility,
     user: io.flow.common.v0.models.Reference,
     uri: String,
+    credentials: _root_.scala.Option[com.bryzek.dependency.v0.models.Credentials] = None,
     audit: io.flow.common.v0.models.Audit
   )
 
   case class ResolverForm(
     visibility: com.bryzek.dependency.v0.models.Visibility,
     userGuid: _root_.java.util.UUID,
-    uri: String
+    uri: String,
+    credentials: _root_.scala.Option[com.bryzek.dependency.v0.models.Credentials] = None
   )
 
   case class ResolverSummary(
@@ -217,6 +221,11 @@ package com.bryzek.dependency.v0.models {
     token: String
   )
 
+  case class UsernamePassword(
+    username: String,
+    password: _root_.scala.Option[String] = None
+  ) extends Credentials
+
   case class VersionForm(
     version: String,
     crossBuildVersion: _root_.scala.Option[String] = None
@@ -233,6 +242,15 @@ package com.bryzek.dependency.v0.models {
     userGuid: _root_.java.util.UUID,
     projectGuid: _root_.java.util.UUID
   )
+
+  /**
+   * Provides future compatibility in clients - in the future, when a type is added
+   * to the union Credentials, it will need to be handled in the client code. This
+   * implementation will deserialize these future types as an instance of this class.
+   */
+  case class CredentialsUndefinedType(
+    description: String
+  ) extends Credentials
 
   /**
    * Provides future compatibility in clients - in the future, when a type is added
@@ -869,6 +887,7 @@ package com.bryzek.dependency.v0.models {
         (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "user").read[io.flow.common.v0.models.Reference] and
         (__ \ "uri").read[String] and
+        (__ \ "credentials").readNullable[com.bryzek.dependency.v0.models.Credentials] and
         (__ \ "audit").read[io.flow.common.v0.models.Audit]
       )(Resolver.apply _)
     }
@@ -879,6 +898,7 @@ package com.bryzek.dependency.v0.models {
         (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "user").write[io.flow.common.v0.models.Reference] and
         (__ \ "uri").write[String] and
+        (__ \ "credentials").writeNullable[com.bryzek.dependency.v0.models.Credentials] and
         (__ \ "audit").write[io.flow.common.v0.models.Audit]
       )(unlift(Resolver.unapply _))
     }
@@ -887,7 +907,8 @@ package com.bryzek.dependency.v0.models {
       (
         (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "user_guid").read[_root_.java.util.UUID] and
-        (__ \ "uri").read[String]
+        (__ \ "uri").read[String] and
+        (__ \ "credentials").readNullable[com.bryzek.dependency.v0.models.Credentials]
       )(ResolverForm.apply _)
     }
 
@@ -895,7 +916,8 @@ package com.bryzek.dependency.v0.models {
       (
         (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "user_guid").write[_root_.java.util.UUID] and
-        (__ \ "uri").write[String]
+        (__ \ "uri").write[String] and
+        (__ \ "credentials").writeNullable[com.bryzek.dependency.v0.models.Credentials]
       )(unlift(ResolverForm.unapply _))
     }
 
@@ -967,6 +989,20 @@ package com.bryzek.dependency.v0.models {
       )(unlift(TokenForm.unapply _))
     }
 
+    implicit def jsonReadsDependencyUsernamePassword: play.api.libs.json.Reads[UsernamePassword] = {
+      (
+        (__ \ "username").read[String] and
+        (__ \ "password").readNullable[String]
+      )(UsernamePassword.apply _)
+    }
+
+    implicit def jsonWritesDependencyUsernamePassword: play.api.libs.json.Writes[UsernamePassword] = {
+      (
+        (__ \ "username").write[String] and
+        (__ \ "password").writeNullable[String]
+      )(unlift(UsernamePassword.unapply _))
+    }
+
     implicit def jsonReadsDependencyVersionForm: play.api.libs.json.Reads[VersionForm] = {
       (
         (__ \ "version").read[String] and
@@ -1011,6 +1047,21 @@ package com.bryzek.dependency.v0.models {
         (__ \ "user_guid").write[_root_.java.util.UUID] and
         (__ \ "project_guid").write[_root_.java.util.UUID]
       )(unlift(WatchProjectForm.unapply _))
+    }
+
+    implicit def jsonReadsDependencyCredentials: play.api.libs.json.Reads[Credentials] = {
+      (
+        (__ \ "username_password").read(jsonReadsDependencyUsernamePassword).asInstanceOf[play.api.libs.json.Reads[Credentials]]
+        orElse
+        play.api.libs.json.Reads(jsValue => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.CredentialsUndefinedType(jsValue.toString))).asInstanceOf[play.api.libs.json.Reads[Credentials]]
+      )
+    }
+
+    implicit def jsonWritesDependencyCredentials: play.api.libs.json.Writes[Credentials] = new play.api.libs.json.Writes[Credentials] {
+      def writes(obj: Credentials) = obj match {
+        case x: com.bryzek.dependency.v0.models.UsernamePassword => play.api.libs.json.Json.obj("username_password" -> jsonWritesDependencyUsernamePassword.writes(x))
+        case x: com.bryzek.dependency.v0.models.CredentialsUndefinedType => sys.error(s"The type[com.bryzek.dependency.v0.models.CredentialsUndefinedType] should never be serialized")
+      }
     }
 
     implicit def jsonReadsDependencyItemSummary: play.api.libs.json.Reads[ItemSummary] = {
