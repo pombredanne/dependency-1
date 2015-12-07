@@ -168,6 +168,7 @@ package com.bryzek.dependency.v0.models {
 
   case class Repository(
     name: String,
+    visibility: com.bryzek.dependency.v0.models.Visibility,
     uri: String
   )
 
@@ -835,6 +836,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyRepository: play.api.libs.json.Reads[Repository] = {
       (
         (__ \ "name").read[String] and
+        (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "uri").read[String]
       )(Repository.apply _)
     }
@@ -842,6 +844,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyRepository: play.api.libs.json.Writes[Repository] = {
       (
         (__ \ "name").write[String] and
+        (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "uri").write[String]
       )(unlift(Repository.unapply _))
     }

@@ -198,6 +198,7 @@
 	"repository": {
 	    "fields": [
 		{ "name": "name", "type": "string" },
+		{ "name": "visibility", "type": "visibility" },
 		{ "name": "uri", "type": "string" }
 	    ]
 	},

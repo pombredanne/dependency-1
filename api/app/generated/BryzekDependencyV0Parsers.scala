@@ -1049,6 +1049,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       name: String = "name",
+      visibility: String = "visibility",
       uri: String = "uri"
     )
 
@@ -1060,6 +1061,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         name = s"${prefix}${sep}name",
+        visibility = s"${prefix}${sep}visibility",
         uri = s"${prefix}${sep}uri"
       )
 
@@ -1069,10 +1071,12 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Repository] = {
       SqlParser.str(mappings.name) ~
+      com.bryzek.dependency.v0.anorm.parsers.Visibility.parser(com.bryzek.dependency.v0.anorm.parsers.Visibility.Mappings(mappings.visibility)) ~
       SqlParser.str(mappings.uri) map {
-        case name ~ uri => {
+        case name ~ visibility ~ uri => {
           com.bryzek.dependency.v0.models.Repository(
             name = name,
+            visibility = visibility,
             uri = uri
           )
         }

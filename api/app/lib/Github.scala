@@ -1,7 +1,7 @@
 package com.bryzek.dependency.lib
 
 import db.{GithubUsersDao, TokensDao, UsersDao}
-import com.bryzek.dependency.v0.models.{GithubUserForm, Repository, TokenForm}
+import com.bryzek.dependency.v0.models.{GithubUserForm, Repository, TokenForm, Visibility}
 import io.flow.user.v0.models.{NameForm, User, UserForm}
 import io.flow.play.util.DefaultConfig
 import io.flow.github.oauth.v0.{Client => GithubOauthClient}
@@ -160,6 +160,7 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
           repos.map { repo =>
             Repository(
               name = s"${repo.owner.login}/${repo.name}",
+              visibility = if (repo.`private`) { Visibility.Private } else { Visibility.Public },
               uri = repo.htmlUrl
             )
           }

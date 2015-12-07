@@ -118,7 +118,7 @@ class ProjectsController @javax.inject.Inject() (
               ProjectForm(
                 name = repo.name,
                 scms = Scms.Github,
-                visibility = repo.private ? Visibility.Private : Visibility.Public,
+                visibility = repo.visibility,
                 uri = repo.uri
             )
             ).map { project =>
@@ -209,7 +209,7 @@ class ProjectsController @javax.inject.Inject() (
             ProjectForm(
               name = uiForm.name,
               scms = Scms(uiForm.scms),
-              visibility = Scms(uiForm.visibility),
+              visibility = Visibility(uiForm.visibility),
               uri = uiForm.uri
             )
           ).map { project =>
