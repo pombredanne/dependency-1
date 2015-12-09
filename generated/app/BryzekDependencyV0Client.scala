@@ -1393,6 +1393,7 @@ package com.bryzek.dependency.v0 {
         projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
         groupId: _root_.scala.Option[String] = None,
         artifactId: _root_.scala.Option[String] = None,
+        resolverGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Library]] = {
@@ -1401,6 +1402,7 @@ package com.bryzek.dependency.v0 {
           projectGuid.map("project_guid" -> _.toString),
           groupId.map("group_id" -> _),
           artifactId.map("artifact_id" -> _),
+          resolverGuid.map("resolver_guid" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
@@ -2058,6 +2060,7 @@ package com.bryzek.dependency.v0 {
       projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
       groupId: _root_.scala.Option[String] = None,
       artifactId: _root_.scala.Option[String] = None,
+      resolverGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Library]]

@@ -25,7 +25,7 @@ GET     /resolvers                              controllers.ApplicationControlle
 GET     /resolvers/                             controllers.ResolversController.index(page: Int ?= 0)
 GET     /resolvers/create                       controllers.ResolversController.create()
 POST    /resolvers/postCreate                   controllers.ResolversController.postCreate()
-GET     /resolvers/:guid                        controllers.ResolversController.show(guid: java.util.UUID)
+GET     /resolvers/:guid                        controllers.ResolversController.show(guid: java.util.UUID, librariesPage: Int ?= 0)
 POST    /resolvers/:guid/delete                 controllers.ResolversController.postDelete(guid: java.util.UUID)
 
 GET     /watches/projects/create/:projectGuid   controllers.WatchProjectsController.create(projectGuid: java.util.UUID)

@@ -177,6 +177,7 @@ object LibrariesDao {
     projectGuid: Option[UUID] = None,
     groupId: Option[String] = None,
     artifactId: Option[String] = None,
+    resolverGuid: Option[UUID] = None,
     isSynced: Option[Boolean] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
@@ -199,6 +200,7 @@ object LibrariesDao {
       """.trim },
       groupId.map { v => "and lower(libraries.group_id) = lower(trim({group_id}))" },
       artifactId.map { v => "and lower(libraries.artifact_id) = lower(trim({artifact_id}))" },
+      resolverGuid.map { v => "and libraries.resolver_guid = {resolver_guid}::uuid" },
       isSynced.map { value =>
         val clause = "select 1 from syncs where object_guid = libraries.guid and event = {sync_event_completed}"
         value match {
@@ -215,6 +217,7 @@ object LibrariesDao {
       projectGuid.map('project_guid -> _.toString),
       groupId.map('group_id -> _.toString),
       artifactId.map('artifact_id -> _.toString),
+      resolverGuid.map('resolver_guid -> _.toString),
       isSynced.map(_ => ('sync_event_completed -> SyncEvent.Completed.toString))
     ).flatten
 

@@ -41,13 +41,20 @@ class ResolversController @javax.inject.Inject() (
     }
   }
 
-  def show(guid: UUID, binariesPage: Int = 0, librariesPage: Int = 0) = Identified.async { implicit request =>
+  def show(guid: UUID, librariesPage: Int = 0) = Identified.async { implicit request =>
     withResolver(request, guid) { resolver =>
-      Future {
+      for {
+        libraries <- dependencyClient(request).libraries.get(
+          resolverGuid = Some(guid),
+          limit = Pagination.DefaultLimit+1,
+          offset = librariesPage * Pagination.DefaultLimit
+        )
+      } yield {
         Ok(
           views.html.resolvers.show(
             uiData(request),
-            resolver
+            resolver,
+            PaginatedCollection(librariesPage, libraries)
           )
         )
       }

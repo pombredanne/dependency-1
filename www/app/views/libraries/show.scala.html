@@ -14,7 +14,7 @@
       @if(library.resolver.isEmpty) {
         <em>N/A</em>
       } else {
-        <a href="@library.resolver.get.uri">@library.resolver.get.uri</a>
+        <a href="@routes.ResolversController.show(library.resolver.get.guid)">@library.resolver.get.uri</a>
       }
     </li>
     <li>@audit(library.audit)</li>

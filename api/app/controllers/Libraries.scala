@@ -22,6 +22,7 @@ class Libraries @javax.inject.Inject() (
     projectGuid: Option[UUID],
     groupId: Option[String],
     artifactId: Option[String],
+    resolverGuid: Option[UUID],
     limit: Long = 25,
     offset: Long = 0
   ) = Identified { request =>
@@ -33,6 +34,7 @@ class Libraries @javax.inject.Inject() (
           projectGuid = projectGuid,
           groupId = groupId,
           artifactId = artifactId,
+          resolverGuid = resolverGuid,
           limit = limit,
           offset = offset
         )

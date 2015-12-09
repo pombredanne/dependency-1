@@ -1,6 +1,7 @@
 @(
   data: com.bryzek.dependency.lib.UiData,
-  resolver: com.bryzek.dependency.v0.models.Resolver
+  resolver: com.bryzek.dependency.v0.models.Resolver,
+  libraries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Library]
 )(implicit flash: Flash, messages: Messages)
 
 @main(data.copy(title = Some("Resolver"))) {
@@ -12,8 +13,8 @@
   </div>
 
   <ul>
-    <li>Visbility: @resolver.visibility.toString</li>
     <li>URI: <a href="@resolver.uri">@resolver.uri</a></li>
+    <li>Visbility: @resolver.visibility.toString</li>
     <li>Credentials:
       @if(resolver.credentials.isEmpty) {
         N/A
@@ -28,4 +29,20 @@
     <li>@audit(resolver.audit)</li>
   </ul>
 
+  <h3>Libraries</h3>
+  @if(libraries.isEmpty) {
+    <em>No libraries have been resolved from this resolver</em>
+  } else {
+    @views.html.libraries.table(libraries)
+    @if(libraries.hasPrevious || libraries.hasNext) {
+      <ul class="pager">
+        @if(libraries.hasPrevious) {
+          <li><a href="@routes.ResolversController.show(resolver.guid, librariesPage = libraries.page - 1)">Previous</a></li>
+        }
+        @if(libraries.hasNext) {
+          <li><a href="@routes.ResolversController.show(resolver.guid, librariesPage = libraries.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
 }
