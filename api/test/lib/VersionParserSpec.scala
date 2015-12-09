@@ -81,7 +81,7 @@ class VersionParserSpec extends FunSpec with Matchers {
     VersionParser.parse("1.2.3.4").sortKey should be("60.10001.10002.10003.10004.99999")
 
     VersionParser.parse("1.0.0").sortKey should be("60.10001.10000.10000.99999")
-    VersionParser.parse("1.0.0-g-1").sortKey should be("60.10001.10000.10000.99997,20.g.99998,60.10001.10000.10000.99999")
+    VersionParser.parse("1.0.0-g-1").sortKey should be("60.10001.10000.10000.99998,20.g.99998,60.10001.10000.10000.99998")
   }
 
   it("sorts 1 element version") {
@@ -99,16 +99,6 @@ class VersionParserSpec extends FunSpec with Matchers {
   it("sorts 3 element version") {
     assertSorted(Seq("0.0.0", "0.0.1", "0.1.0", "5.1.0"), "0.0.0 0.0.1 0.1.0 5.1.0")
     assertSorted(Seq("10.10.10", "10.0.1", "1.1.50", "15.2.2", "1.0.10"), "1.0.10 1.1.50 10.0.1 10.10.10 15.2.2")
-  }
-
-  it("sorts developer tags before release tags (latest release tag should be last)") {
-    assertSorted(Seq("1.0.0", "1.0.0-g-1"), "1.0.0-g-1 1.0.0")
-    assertSorted(Seq("0.6.0-3-g3b52fba", "0.7.6"), "0.6.0-3-g3b52fba 0.7.6")
-
-    assertSorted(Seq("0.28.1", "0.28.1-dev"), "0.28.1-dev 0.28.1")
-    assertSorted(Seq("0.28.1-dev", "0.28.1"), "0.28.1-dev 0.28.1")
-
-    assertSorted(Seq("1.0.1", "1.0.1-dev", "1.0.2", "1.0.0"), "1.0.0 1.0.1-dev 1.0.1 1.0.2")
   }
 
   it("sorts string tags as strings") {
@@ -137,6 +127,10 @@ class VersionParserSpec extends FunSpec with Matchers {
   it("scalatestplus version numbers") {
     assertSorted(Seq("1.4.0-M4", "1.4.0-M3"), "1.4.0-M3 1.4.0-M4")
     assertSorted(Seq("1.4.0-M4", "1.4.0-M10"), "1.4.0-M4 1.4.0-M10")
+  }
+
+  it("webjars-play version numbers") {
+    assertSorted(Seq("2.4.0", "2.4.0-1", "2.4.0-2"), "2.4.0 2.4.0-1 2.4.0-2")
   }
 
   it("parses major from semver versions") {
@@ -176,6 +170,22 @@ class VersionParserSpec extends FunSpec with Matchers {
   it("can parse long ints") {
     VersionParser.parse("20131213005945") should be(Version("20131213005945", Seq(Tag.Date(20131213005945l, 0))))
   }
+
+  it("sorts developer tags before release tags (latest release tag should be last)") {
+    // test if there is no text, that we sort so that
+    // the -1, -2 are considered later version numbers
+    assertSorted(Seq("1.0.1", "1.0.1-1", "1.0.1-2", "1.0.1-10"), "1.0.1 1.0.1-1 1.0.1-2 1.0.1-10")
+
+    // test if there IS text, we consider those to be pre release versions.
+    // Common example here would be 1.0.0-RC1, 1.0.0-RC2, 1.0.0-RC3 then finally 1.0.0
+    assertSorted(Seq("1.0.0", "1.0.0-g-1"), "1.0.0-g-1 1.0.0")
+    assertSorted(Seq("0.6.0-3-g3b52fba", "0.7.6"), "0.6.0-3-g3b52fba 0.7.6")
+
+    assertSorted(Seq("0.28.1", "0.28.1-dev"), "0.28.1-dev 0.28.1")
+    assertSorted(Seq("0.28.1-dev", "0.28.1"), "0.28.1-dev 0.28.1")
+
+    assertSorted(Seq("1.0.1", "1.0.1-dev", "1.0.2", "1.0.0"), "1.0.0 1.0.1-dev 1.0.1 1.0.2")
+  }  
 
   def assertSorted(versions: Seq[String], target: String) {
     versions.map( VersionParser.parse(_) ).sorted.map(_.value).mkString(" ") should be(target)

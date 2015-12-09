@@ -53,8 +53,20 @@ case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
     * numbers).
     */
   val sortKey: String = {
+    var offset = tags.length
+
     tags.zipWithIndex.map { case (tag, i) =>
-      val remaining = Tag.MaxPadding - (tags.length - i - 1)
+      // If next tag is semver, we do not penalize the sort - see test
+      // cases. This is a hack for tags that are composed of multiple
+      // semver portions to just enable natural semver ordering.
+      offset = tags.lift(i + 1) match {
+        case None => offset
+        case Some(t: Tag.Text) => offset - 1
+        case Some(t: Tag.Date) => offset - 1
+        case Some(t: Tag.Semver) => offset
+      }
+
+      val remaining = Tag.MaxPadding - (tags.length - offset)
       tag match {
         case t: Tag.Text =>   Seq(20, t.sortKey, remaining).mkString(".")
         case t: Tag.Date =>   Seq(40, t.sortKey, remaining).mkString(".")
@@ -65,6 +77,13 @@ case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
 
   def compare(that: Version) = {
     sortKey.compare(that.sortKey)
+  }
+
+  private[this] def isSemver(tag: Tag): Boolean = {
+    tag match {
+      case Tag.Semver(_, _, _, _) => true
+      case Tag.Date(_, _) | Tag.Text(_) => false
+    }
   }
 
 }

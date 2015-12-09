@@ -42,6 +42,18 @@ class RecommendationsSpec extends Specification {
     ) must beEqualTo(Some("1.4.0-M4"))
   }
 
+  "webjars-play example" in {
+    simpleRecs(
+      "2.4.0",
+      Seq("2.4.0", "2.4.0-1", "2.4.0-2")
+    ) must beEqualTo(None)
+
+    simpleRecs(
+      "2.4.0-1",
+      Seq("2.4.0", "2.4.0-1", "2.4.0-2")
+    ) must beEqualTo(Some("2.4.0-2"))
+  }
+
   "slick example - respects major version when textual" in {
     simpleRecs(
       "2.1.0-M3",
