@@ -21,12 +21,12 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "upsert" in {
     val form = createResolverForm()
-    val resolver1 = ResolversDao.create(systemUser, form)
+    val resolver1 = ResolversDao.create(systemUser, form).right.get
 
-    val resolver2 = ResolversDao.upsert(systemUser, form)
+    val resolver2 = ResolversDao.upsert(systemUser, form).right.get
     resolver1.guid must be(resolver2.guid)
 
-    val resolver3 = createResolver()
+    val resolver3 = createResolver().right.get
 
     resolver2.guid must not be(resolver3.guid)
   }

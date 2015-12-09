@@ -48,29 +48,65 @@ object ResolversDao {
     }
   }
 
-  def upsert(createdBy: User, form: ResolverForm): Resolver = {
-    findByUserGuidAndUri(Authorization.All, form.userGuid, form.uri).getOrElse {
-      create(createdBy, form)
+  def validate(form: ResolverForm): Seq[String] = {
+    form.visibility match {
+      case Visibility.Public | Visibility.UNDEFINED(_) => {
+        findAll(
+          Authorization.All,
+          visibility = Some(Visibility.Public),
+          uri = Some(form.uri),
+          limit = 1
+        ).headOption match {
+          case None => Nil
+          case Some(_) => Seq(s"Public resolver with uri[${form.uri}] already exists")
+        }
+      }
+      case Visibility.Private => {
+        findAll(
+          Authorization.All,
+          visibility = Some(Visibility.Private),
+          userGuid = Some(form.userGuid),
+          uri = Some(form.uri),
+          limit = 1
+        ).headOption match {
+          case None => Nil
+          case Some(_) => Seq(s"User already has a resolver with uri[${form.uri}]")
+        }
+      }
     }
   }
 
-  def create(createdBy: User, form: ResolverForm): Resolver = {
-    val guid = UUID.randomUUID
-
-    DB.withConnection { implicit c =>
-      SQL(InsertQuery).on(
-        'guid -> guid,
-        'user_guid -> form.userGuid,
-        'visibility -> form.visibility.toString,
-        'credentials -> form.credentials.map { cred => Json.stringify(Json.toJson(cred)) },
-        'position -> nextPosition(form.userGuid, form.visibility),
-        'uri -> form.uri.trim,
-        'created_by_guid -> createdBy.guid
-      ).execute()
+  def upsert(createdBy: User, form: ResolverForm): Either[Seq[String], Resolver] = {
+    findByUserGuidAndUri(Authorization.All, form.userGuid, form.uri) match {
+      case Some(resolver) => Right(resolver)
+      case None => create(createdBy, form)
     }
+  }
 
-    findByGuid(Authorization.All, guid).getOrElse {
-      sys.error("Failed to create resolver")
+  def create(createdBy: User, form: ResolverForm): Either[Seq[String], Resolver] = {
+    validate(form) match {
+      case Nil => {
+        val guid = UUID.randomUUID
+
+        DB.withConnection { implicit c =>
+          SQL(InsertQuery).on(
+            'guid -> guid,
+            'user_guid -> form.userGuid,
+            'visibility -> form.visibility.toString,
+            'credentials -> form.credentials.map { cred => Json.stringify(Json.toJson(cred)) },
+            'position -> nextPosition(form.userGuid, form.visibility),
+            'uri -> form.uri.trim,
+            'created_by_guid -> createdBy.guid
+          ).execute()
+        }
+
+        Right(
+          findByGuid(Authorization.All, guid).getOrElse {
+            sys.error("Failed to create resolver")
+          }
+        )
+      }
+      case errors => Left(errors)
     }
   }
 

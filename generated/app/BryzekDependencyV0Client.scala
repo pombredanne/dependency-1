@@ -1225,6 +1225,8 @@ package com.bryzek.dependency.v0 {
 
     def repositories: Repositories = Repositories
 
+    def resolvers: Resolvers = Resolvers
+
     def syncs: Syncs = Syncs
 
     def users: Users = Users
@@ -1687,6 +1689,63 @@ package com.bryzek.dependency.v0 {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Repository]", r, _.validate[Seq[com.bryzek.dependency.v0.models.Repository]])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+        }
+      }
+    }
+
+    object Resolvers extends Resolvers {
+      override def get(
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+        limit: Long = 25,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Resolver]] = {
+        val queryParameters = Seq(
+          guid.map("guid" -> _.toString),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten ++
+          guids.getOrElse(Nil).map("guids" -> _.toString)
+
+        _executeRequest("GET", s"/resolvers", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Resolver]", r, _.validate[Seq[com.bryzek.dependency.v0.models.Resolver]])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+        }
+      }
+
+      override def getByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Resolver] = {
+        _executeRequest("GET", s"/resolvers/${guid}").map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Resolver", r, _.validate[com.bryzek.dependency.v0.models.Resolver])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+        }
+      }
+
+      override def post(
+        resolverForm: com.bryzek.dependency.v0.models.ResolverForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Resolver] = {
+        val payload = play.api.libs.json.Json.toJson(resolverForm)
+
+        _executeRequest("POST", s"/resolvers", body = Some(payload)).map {
+          case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Resolver", r, _.validate[com.bryzek.dependency.v0.models.Resolver])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 409")
+        }
+      }
+
+      override def deleteByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
+        _executeRequest("DELETE", s"/resolvers/${guid}").map {
+          case r if r.status == 204 => ()
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -2158,6 +2217,36 @@ package com.bryzek.dependency.v0 {
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Repository]]
+  }
+
+  trait Resolvers {
+    /**
+     * Search resolvers. Results are paginated
+     */
+    def get(
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+      limit: Long = 25,
+      offset: Long = 0
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Resolver]]
+
+    /**
+     * Returns information about the resolver with this guid.
+     */
+    def getByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Resolver]
+
+    /**
+     * Create a new resolver.
+     */
+    def post(
+      resolverForm: com.bryzek.dependency.v0.models.ResolverForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Resolver]
+
+    def deleteByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
   trait Syncs {

@@ -206,7 +206,9 @@ trait Helpers {
   def createResolver(
     form: ResolverForm = createResolverForm()
   ): Resolver = {
-    ResolversDao.create(systemUser, form)
+    ResolversDao.create(systemUser, form).right.getOrElse {
+      sys.error("Failed to create resolver")
+    }
   }
 
   def createResolverForm(
