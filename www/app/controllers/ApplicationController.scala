@@ -15,7 +15,7 @@ class ApplicationController @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
  
-  override def section = None
+  override def section = Some(com.bryzek.dependency.lib.Section.Dashboard)
 
   def redirect = Action { request =>
     Redirect(request.path + "/")
