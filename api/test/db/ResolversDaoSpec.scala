@@ -26,7 +26,7 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val resolver2 = ResolversDao.upsert(systemUser, form).right.get
     resolver1.guid must be(resolver2.guid)
 
-    val resolver3 = createResolver().right.get
+    val resolver3 = createResolver()
 
     resolver2.guid must not be(resolver3.guid)
   }
@@ -127,6 +127,35 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       password = Some("masked")
     )))
     ResolversDao.credentials(resolver) must be(Some(credentials))
+  }
+
+  "validates bad URL" in {
+    ResolversDao.validate(
+      createResolverForm().copy(uri = "foo")
+    ) must be(Seq("URI must start with http"))
+  }
+
+  "validates duplicate public resolver" in {
+    ResolversDao.validate(
+      createResolverForm().copy(
+        visibility = Visibility.Public,
+        uri = publicResolver.uri
+      )
+    ) must be(Seq(s"Public resolver with uri[${publicResolver.uri}] already exists"))
+  }
+
+  "validates duplicate private resolver" in {
+    val user = createUser()
+    val resolver = createResolver(
+      createResolverForm(user = user)
+    )
+    ResolversDao.validate(
+      createResolverForm().copy(
+        visibility = Visibility.Private,
+        userGuid = user.guid,
+        uri = resolver.uri
+      )
+    ) must be(Seq(s"User already has a resolver with uri[${resolver.uri}]"))
   }
 
 }

@@ -1,5 +1,6 @@
 package db
 
+import com.bryzek.dependency.lib.Validation
 import com.bryzek.dependency.v0.models.{Credentials, CredentialsUndefinedType, Resolver, ResolverForm, UsernamePassword, Visibility}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.user.v0.models.User
@@ -49,7 +50,15 @@ object ResolversDao {
   }
 
   def validate(form: ResolverForm): Seq[String] = {
-    form.visibility match {
+    val urlErrors = Validation.validateUri(form.uri) match {
+      case Left(errors) => errors
+      case Right(url) => {
+        println(s"${form.uri} is valid: $url")
+        Nil
+      }
+    }
+
+    val uniqueErrors = form.visibility match {
       case Visibility.Public | Visibility.UNDEFINED(_) => {
         findAll(
           Authorization.All,
@@ -74,6 +83,8 @@ object ResolversDao {
         }
       }
     }
+
+    urlErrors ++ uniqueErrors
   }
 
   def upsert(createdBy: User, form: ResolverForm): Either[Seq[String], Resolver] = {
