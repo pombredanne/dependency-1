@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{Resolver, ResolverForm, Visibility}
+import com.bryzek.dependency.v0.models.{Credentials, Resolver, ResolverForm, Visibility}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.user.v0.models.User
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
@@ -17,7 +17,6 @@ object ResolversDao {
   private[this] val BaseQuery = s"""
     select resolvers.guid,
            resolvers.visibility,
-           resolvers.credentials,
            resolvers.user_guid as resolvers_user_guid,
            resolvers.uri,
            resolvers.position,
@@ -26,12 +25,25 @@ object ResolversDao {
      where true
   """
 
+  private[this] val SelectCredentialsQuery = s"""
+    select credentials from resolvers where guid = {guid}::uuid
+  """
+
   private[this] val InsertQuery = """
     insert into resolvers
     (guid, visibility, credentials, position, user_guid, uri, updated_by_guid, created_by_guid)
     values
     ({guid}::uuid, {visibility}, {credentials}::json, {position}, {user_guid}::uuid, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
+
+  def credentials(resolver: Resolver): Option[Credentials] = {
+    import com.bryzek.dependency.v0.anorm.conversions.Json._
+    DB.withConnection { implicit c =>
+      SQL(SelectCredentialsQuery).on('guid -> resolver.guid.toString).as(
+        SqlParser.get[Credentials]("credentials").*
+      ).headOption
+    }
+  }
 
   def upsert(createdBy: User, form: ResolverForm): Resolver = {
     findByUserGuidAndUri(Authorization.All, form.userGuid, form.uri).getOrElse {

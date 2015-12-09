@@ -1100,7 +1100,6 @@ package com.bryzek.dependency.v0.anorm.parsers {
       visibility: String = "visibility",
       user: io.flow.common.v0.anorm.parsers.Reference.Mappings,
       uri: String = "uri",
-      credentials: String = "credentials",
       audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
     )
 
@@ -1115,7 +1114,6 @@ package com.bryzek.dependency.v0.anorm.parsers {
         visibility = s"${prefix}${sep}visibility",
         user = io.flow.common.v0.anorm.parsers.Reference.Mappings.prefix(Seq(prefix, "user").filter(!_.isEmpty).mkString("_"), "_"),
         uri = s"${prefix}${sep}uri",
-        credentials = s"${prefix}${sep}credentials",
         audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
       )
 
@@ -1128,15 +1126,13 @@ package com.bryzek.dependency.v0.anorm.parsers {
       com.bryzek.dependency.v0.anorm.parsers.Visibility.parser(com.bryzek.dependency.v0.anorm.parsers.Visibility.Mappings(mappings.visibility)) ~
       io.flow.common.v0.anorm.parsers.Reference.parser(mappings.user) ~
       SqlParser.str(mappings.uri) ~
-      SqlParser.get[com.bryzek.dependency.v0.models.Credentials](mappings.credentials).? ~
       io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
-        case guid ~ visibility ~ user ~ uri ~ credentials ~ audit => {
+        case guid ~ visibility ~ user ~ uri ~ audit => {
           com.bryzek.dependency.v0.models.Resolver(
             guid = guid,
             visibility = visibility,
             user = user,
             uri = uri,
-            credentials = credentials,
             audit = audit
           )
         }

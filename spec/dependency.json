@@ -19,6 +19,12 @@
 	    "types": [
 		{ "type": "username_password" }
 	    ]
+	},
+
+	"masked_credentials": {
+	    "types": [
+		{ "type": "masked_username_password" }
+	    ]
 	}
     },
 
@@ -68,13 +74,20 @@
 	    ]
 	},
 
+	"masked_username_password": {
+	    "fields": [
+		{ "name": "username", "type": "string" },
+		{ "name": "password", "type": "string", "required": false }
+	    ]
+	},
+
 	"resolver": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
 		{ "name": "visibility", "type": "visibility" },
                 { "name": "user", "type": "io.flow.common.v0.models.reference" },
 		{ "name": "uri", "type": "string", "example": "https://flow.artifactoryonline.com/flow/libs-release" },
-		{ "name": "credentials", "type": "credentials", "required": false },
+		{ "name": "credentials", "type": "masked_credentials", "required": false },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},

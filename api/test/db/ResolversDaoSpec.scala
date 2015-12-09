@@ -104,7 +104,7 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       credentials = Some(credentials)
     )
     val resolver = createResolver(form)
-    resolver.credentials must be(Some(credentials))
+    ResolversDao.credentials(resolver) must be(Some(credentials))
   }
 
 }
