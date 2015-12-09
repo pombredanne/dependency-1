@@ -9,6 +9,8 @@ package com.bryzek.dependency.v0.models {
 
   sealed trait ItemSummary
 
+  sealed trait MaskedCredentials
+
   case class Binary(
     guid: _root_.java.util.UUID,
     name: com.bryzek.dependency.v0.models.BinaryType,
@@ -104,6 +106,11 @@ package com.bryzek.dependency.v0.models {
     audit: io.flow.common.v0.models.Audit
   )
 
+  case class MaskedUsernamePassword(
+    username: String,
+    password: _root_.scala.Option[String] = None
+  ) extends MaskedCredentials
+
   case class Project(
     guid: _root_.java.util.UUID,
     visibility: com.bryzek.dependency.v0.models.Visibility,
@@ -181,6 +188,7 @@ package com.bryzek.dependency.v0.models {
     visibility: com.bryzek.dependency.v0.models.Visibility,
     user: io.flow.common.v0.models.Reference,
     uri: String,
+    credentials: _root_.scala.Option[com.bryzek.dependency.v0.models.MaskedCredentials] = None,
     audit: io.flow.common.v0.models.Audit
   )
 
@@ -259,6 +267,16 @@ package com.bryzek.dependency.v0.models {
   case class ItemSummaryUndefinedType(
     description: String
   ) extends ItemSummary
+
+  /**
+   * Provides future compatibility in clients - in the future, when a type is added
+   * to the union MaskedCredentials, it will need to be handled in the client code.
+   * This implementation will deserialize these future types as an instance of this
+   * class.
+   */
+  case class MaskedCredentialsUndefinedType(
+    description: String
+  ) extends MaskedCredentials
 
   sealed trait BinaryType
 
@@ -724,6 +742,20 @@ package com.bryzek.dependency.v0.models {
       )(unlift(LibraryVersion.unapply _))
     }
 
+    implicit def jsonReadsDependencyMaskedUsernamePassword: play.api.libs.json.Reads[MaskedUsernamePassword] = {
+      (
+        (__ \ "username").read[String] and
+        (__ \ "password").readNullable[String]
+      )(MaskedUsernamePassword.apply _)
+    }
+
+    implicit def jsonWritesDependencyMaskedUsernamePassword: play.api.libs.json.Writes[MaskedUsernamePassword] = {
+      (
+        (__ \ "username").write[String] and
+        (__ \ "password").writeNullable[String]
+      )(unlift(MaskedUsernamePassword.unapply _))
+    }
+
     implicit def jsonReadsDependencyProject: play.api.libs.json.Reads[Project] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
@@ -886,6 +918,7 @@ package com.bryzek.dependency.v0.models {
         (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "user").read[io.flow.common.v0.models.Reference] and
         (__ \ "uri").read[String] and
+        (__ \ "credentials").readNullable[com.bryzek.dependency.v0.models.MaskedCredentials] and
         (__ \ "audit").read[io.flow.common.v0.models.Audit]
       )(Resolver.apply _)
     }
@@ -896,6 +929,7 @@ package com.bryzek.dependency.v0.models {
         (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "user").write[io.flow.common.v0.models.Reference] and
         (__ \ "uri").write[String] and
+        (__ \ "credentials").writeNullable[com.bryzek.dependency.v0.models.MaskedCredentials] and
         (__ \ "audit").write[io.flow.common.v0.models.Audit]
       )(unlift(Resolver.unapply _))
     }
@@ -1079,6 +1113,21 @@ package com.bryzek.dependency.v0.models {
         case x: com.bryzek.dependency.v0.models.LibrarySummary => play.api.libs.json.Json.obj("library_summary" -> jsonWritesDependencyLibrarySummary.writes(x))
         case x: com.bryzek.dependency.v0.models.ProjectSummary => play.api.libs.json.Json.obj("project_summary" -> jsonWritesDependencyProjectSummary.writes(x))
         case x: com.bryzek.dependency.v0.models.ItemSummaryUndefinedType => sys.error(s"The type[com.bryzek.dependency.v0.models.ItemSummaryUndefinedType] should never be serialized")
+      }
+    }
+
+    implicit def jsonReadsDependencyMaskedCredentials: play.api.libs.json.Reads[MaskedCredentials] = {
+      (
+        (__ \ "masked_username_password").read(jsonReadsDependencyMaskedUsernamePassword).asInstanceOf[play.api.libs.json.Reads[MaskedCredentials]]
+        orElse
+        play.api.libs.json.Reads(jsValue => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.MaskedCredentialsUndefinedType(jsValue.toString))).asInstanceOf[play.api.libs.json.Reads[MaskedCredentials]]
+      )
+    }
+
+    implicit def jsonWritesDependencyMaskedCredentials: play.api.libs.json.Writes[MaskedCredentials] = new play.api.libs.json.Writes[MaskedCredentials] {
+      def writes(obj: MaskedCredentials) = obj match {
+        case x: com.bryzek.dependency.v0.models.MaskedUsernamePassword => play.api.libs.json.Json.obj("masked_username_password" -> jsonWritesDependencyMaskedUsernamePassword.writes(x))
+        case x: com.bryzek.dependency.v0.models.MaskedCredentialsUndefinedType => sys.error(s"The type[com.bryzek.dependency.v0.models.MaskedCredentialsUndefinedType] should never be serialized")
       }
     }
   }

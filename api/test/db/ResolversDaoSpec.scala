@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{UsernamePassword, Visibility}
+import com.bryzek.dependency.v0.models.{MaskedUsernamePassword, UsernamePassword, Visibility}
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -95,15 +95,40 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     ) must be(Nil)
   }
 
-  "with credentials" in {
+  "with username only" in {
+    val credentials = UsernamePassword(
+      username = "foo"
+    )
+    val resolver = createResolver(
+      createResolverForm().copy(
+        credentials = Some(
+          credentials
+        )
+      )
+    )
+    resolver.credentials must be(Some(MaskedUsernamePassword(
+      username = credentials.username,
+      password = None
+    )))
+    ResolversDao.credentials(resolver) must be(Some(credentials))
+  }
+
+  "with username and password" in {
     val credentials = UsernamePassword(
       username = "foo",
       password = Some("bar")
     )
-    val form = createResolverForm().copy(
-      credentials = Some(credentials)
+    val resolver = createResolver(
+      createResolverForm().copy(
+        credentials = Some(
+          credentials
+        )
+      )
     )
-    val resolver = createResolver(form)
+    resolver.credentials must be(Some(MaskedUsernamePassword(
+      username = credentials.username,
+      password = Some("masked")
+    )))
     ResolversDao.credentials(resolver) must be(Some(credentials))
   }
 

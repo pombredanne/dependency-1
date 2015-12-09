@@ -66,6 +66,7 @@ package com.bryzek.dependency.v0.anorm.conversions {
     import com.bryzek.dependency.v0.models.json._
     implicit val columnToCredentials: Column[com.bryzek.dependency.v0.models.Credentials] = parser { _.as[com.bryzek.dependency.v0.models.Credentials] }
     implicit val columnToItemSummary: Column[com.bryzek.dependency.v0.models.ItemSummary] = parser { _.as[com.bryzek.dependency.v0.models.ItemSummary] }
+    implicit val columnToMaskedCredentials: Column[com.bryzek.dependency.v0.models.MaskedCredentials] = parser { _.as[com.bryzek.dependency.v0.models.MaskedCredentials] }
 
   }
 

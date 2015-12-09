@@ -17,6 +17,7 @@ object ResolversDao {
   private[this] val BaseQuery = s"""
     select resolvers.guid,
            resolvers.visibility,
+           resolvers.credentials,
            resolvers.user_guid as resolvers_user_guid,
            resolvers.uri,
            resolvers.position,
@@ -139,7 +140,21 @@ object ResolversDao {
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*).as(
         com.bryzek.dependency.v0.anorm.parsers.Resolver.table("resolvers").*
-      )
+      ).map { resolver =>
+        resolver.credentials match {
+          case None => resolver
+          case Some(cred) => {
+            resolver.copy(
+              credentials = Some(
+                cred match {
+                  case CredentialsUndefinedType(value) => cred
+                  case UsernamePassword(username, password) => UsernamePassword(username, "masked")
+                }
+              )
+            )
+          }
+        }
+      }
     }
   }
 
