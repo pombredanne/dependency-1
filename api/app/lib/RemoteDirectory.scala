@@ -1,7 +1,8 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.Credentials
+import com.bryzek.dependency.v0.models.{Credentials, CredentialsUndefinedType, UsernamePassword}
 import org.htmlcleaner.HtmlCleaner
+import org.apache.commons.codec.binary.Base64
 import org.apache.commons.lang3.{StringEscapeUtils, StringUtils}
 import java.net.URL
 import scala.util.{Failure, Success, Try}
@@ -26,11 +27,24 @@ object RemoteDirectory {
   ) (
     filter: String => Boolean = { !_.startsWith(".") }
   ): Result = {
-    // TODO: Use credentials if present
     val base = Result()
     val cleaner = new HtmlCleaner()
 
-    Try(cleaner.clean(new URL(url))) match {
+    val uc = (new URL(url)).openConnection()
+    credentials.map { cred =>
+      cred match {
+        case UsernamePassword(username, password) =>{
+          val userpass = username + ":" + password.getOrElse("")
+          val basicAuth = "Basic " + new String(new Base64().encode(userpass.getBytes()))
+          uc.setRequestProperty ("Authorization", basicAuth)
+        }
+        case CredentialsUndefinedType(_) => {
+          // No-op
+        }
+      }
+    }
+
+    Try(cleaner.clean(uc.getInputStream())) match {
       case Failure(ex) => ex match {
         case e: java.io.FileNotFoundException => {
           base
