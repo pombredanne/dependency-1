@@ -90,6 +90,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
     }
 
     case m @ MainActor.Messages.ProjectDeleted(guid) => withVerboseErrorHandler(m) {
+      // TODO: Cleanup recommendations for this project
       projectActors.remove(guid).map { context.stop(_) }
       searchActor ! SearchActor.Messages.SyncProject(guid)
     }
