@@ -87,6 +87,10 @@ object RecommendationsDao {
     }
   }
 
+  def softDelete(deletedBy: User, rec: Recommendation) {
+    SoftDelete.delete("recommendations", deletedBy.guid, rec.guid)
+  }
+
   private[this] def create(
     createdBy: User,
     form: RecommendationForm

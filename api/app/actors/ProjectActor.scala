@@ -2,6 +2,7 @@ package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.lib.{Dependencies, GithubDependencyProviderClient}
 import com.bryzek.dependency.v0.models.{Project, WatchProjectForm}
+import io.flow.play.postgresql.Pager
 import db.{BinariesDao, LibrariesDao, ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
 import play.api.Logger
 import play.libs.Akka
@@ -15,6 +16,7 @@ object ProjectActor {
 
   object Messages {
     case class Data(guid: UUID) extends Message
+    case object Deleted extends Message
     case object Sync extends Message
     case object SyncCompleted extends Message
     case object Watch extends Message
@@ -47,12 +49,6 @@ class ProjectActor extends Actor with Util {
             projectGuid = project.guid
           )
         )
-      }
-    }
-
-    case m @ ProjectActor.Messages.LibrarySynced(guid) => withVerboseErrorHandler(m.toString) {
-      dataProject.foreach { project =>
-        processPendingSync(project)
       }
     }
 
@@ -89,6 +85,16 @@ class ProjectActor extends Actor with Util {
           }
         }
 
+      }
+    }
+
+    case m @ ProjectActor.Messages.Deleted => withVerboseErrorHandler(m.toString) {
+      dataProject.foreach { project =>
+        Pager.eachPage { offset =>
+          RecommendationsDao.findAll(projectGuid = Some(project.guid), offset = offset)
+        } { rec =>
+          RecommendationsDao.softDelete(MainActor.SystemUser, rec)
+        }
       }
     }
 
