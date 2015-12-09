@@ -52,10 +52,7 @@ object ResolversDao {
   def validate(form: ResolverForm): Seq[String] = {
     val urlErrors = Validation.validateUri(form.uri) match {
       case Left(errors) => errors
-      case Right(url) => {
-        println(s"${form.uri} is valid: $url")
-        Nil
-      }
+      case Right(url) => Nil
     }
 
     val uniqueErrors = form.visibility match {
