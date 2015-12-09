@@ -709,42 +709,6 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
-  object MaskedUsernamePassword {
-
-    case class Mappings(
-      username: String = "username",
-      password: String = "password"
-    )
-
-    object Mappings {
-
-      val base = prefix("", "")
-
-      def table(table: String) = prefix(table, ".")
-
-      def prefix(prefix: String, sep: String) = Mappings(
-        username = s"${prefix}${sep}username",
-        password = s"${prefix}${sep}password"
-      )
-
-    }
-
-    def table(table: String) = parser(Mappings.prefix(table, "."))
-
-    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.MaskedUsernamePassword] = {
-      SqlParser.str(mappings.username) ~
-      SqlParser.str(mappings.password).? map {
-        case username ~ password => {
-          com.bryzek.dependency.v0.models.MaskedUsernamePassword(
-            username = username,
-            password = password
-          )
-        }
-      }
-    }
-
-  }
-
   object Project {
 
     case class Mappings(
@@ -1164,7 +1128,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       com.bryzek.dependency.v0.anorm.parsers.Visibility.parser(com.bryzek.dependency.v0.anorm.parsers.Visibility.Mappings(mappings.visibility)) ~
       io.flow.common.v0.anorm.parsers.Reference.parser(mappings.user) ~
       SqlParser.str(mappings.uri) ~
-      SqlParser.get[com.bryzek.dependency.v0.models.MaskedCredentials](mappings.credentials).? ~
+      SqlParser.get[com.bryzek.dependency.v0.models.Credentials](mappings.credentials).? ~
       io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
         case guid ~ visibility ~ user ~ uri ~ credentials ~ audit => {
           com.bryzek.dependency.v0.models.Resolver(

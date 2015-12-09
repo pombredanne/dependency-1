@@ -1,5 +1,7 @@
 package db
 
+import com.bryzek.dependency.v0.models.{Credentials, CredentialsUndefinedType, UsernamePassword}
+
 object Util {
 
   def trimmedString(value: Option[String]): Option[String] = {
@@ -14,4 +16,17 @@ object Util {
     }
   }
 
+  private[db] def maskCredentials(cred: Credentials): Option[Credentials] = {
+    cred match {
+      case CredentialsUndefinedType(value) => None
+      case UsernamePassword(username, password) => {
+        Some(
+          UsernamePassword(
+            username,
+            password = password.map(_ => "masked")
+          )
+        )
+      }
+    }
+  }
 }

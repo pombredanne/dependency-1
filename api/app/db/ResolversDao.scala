@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{Credentials, Resolver, ResolverForm, Visibility}
+import com.bryzek.dependency.v0.models.{Credentials, CredentialsUndefinedType, Resolver, ResolverForm, UsernamePassword, Visibility}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.user.v0.models.User
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
@@ -145,12 +145,7 @@ object ResolversDao {
           case None => resolver
           case Some(cred) => {
             resolver.copy(
-              credentials = Some(
-                cred match {
-                  case CredentialsUndefinedType(value) => cred
-                  case UsernamePassword(username, password) => UsernamePassword(username, "masked")
-                }
-              )
+              credentials = Util.maskCredentials(cred)
             )
           }
         }
