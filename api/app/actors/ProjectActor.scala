@@ -52,6 +52,12 @@ class ProjectActor extends Actor with Util {
       }
     }
 
+    case m @ ProjectActor.Messages.LibrarySynced(guid) => withVerboseErrorHandler(m.toString) {
+      dataProject.foreach { project =>
+        processPendingSync(project)
+      }
+    }
+
     case m @ ProjectActor.Messages.BinarySynced(guid) => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         processPendingSync(project)
