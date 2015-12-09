@@ -30,6 +30,7 @@
             <li><a@if(data.section == Some(com.bryzek.dependency.lib.Section.Projects)) { class="active" } href="@routes.ProjectsController.index()">Projects</a></li>
             <li><a@if(data.section == Some(com.bryzek.dependency.lib.Section.Libraries)) { class="active" } href="@routes.LibrariesController.index()">Libraries</a></li>
             <li><a@if(data.section == Some(com.bryzek.dependency.lib.Section.Binaries)) { class="active" } href="@routes.BinariesController.index()">Binaries</a></li>
+            <li><a@if(data.section == Some(com.bryzek.dependency.lib.Section.Resolvers)) { class="active" } href="@routes.ResolversController.index()">Resolvers</a></li>
           </ul>
         </div>
 

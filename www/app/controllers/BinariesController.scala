@@ -20,6 +20,8 @@ class BinariesController @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  override def section = Some(com.bryzek.dependency.lib.Section.Binaries)
+
   def index(page: Int = 0) = Identified.async { implicit request =>
     for {
       binaries <- dependencyClient(request).binaries.get(

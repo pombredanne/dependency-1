@@ -17,6 +17,8 @@ class WatchProjectsController @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  override def section = None
+
   def create(projectGuid: UUID) = Identified.async { implicit request =>
     for {
       result <- dependencyClient(request).watchProjects.postWatchesAndProjects(

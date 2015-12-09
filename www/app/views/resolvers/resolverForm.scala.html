@@ -1,0 +1,31 @@
+@(form: Form[controllers.ResolversController.UiForm],
+  cancelUrl: play.api.mvc.Call
+)(implicit flash: Flash, messages: Messages)
+
+<fieldset>
+
+    @helper.inputText(
+        form("uri"),
+        '_label -> "Uri",
+        '_error -> form.error("uri")
+    )
+
+    @helper.inputText(
+        form("username"),
+        '_label -> "Username (optional)",
+        '_error -> form.error("username")
+    )
+
+    @helper.inputText(
+        form("password"),
+        '_label -> "Password (optional)",
+        '_error -> form.error("password")
+    )
+
+</fieldset>
+
+
+<div class="actions">
+  <button class="btn btn-large btn-primary" type="submit">Submit</button>
+  <a href="@cancelUrl" class="btn">Cancel</a>
+</div>

@@ -9,6 +9,7 @@ object Section {
   case object Projects extends Section
   case object Binaries extends Section
   case object Libraries extends Section
+  case object Resolvers extends Section
 }
 
 case class UiData(

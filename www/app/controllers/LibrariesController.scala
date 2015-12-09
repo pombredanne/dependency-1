@@ -24,6 +24,8 @@ class LibrariesController @javax.inject.Inject() (
 
   val VersionsPerPage = 5
 
+  override def section = Some(com.bryzek.dependency.lib.Section.Libraries)
+
   def index(page: Int = 0) = Identified.async { implicit request =>
     for {
       libraries <- dependencyClient(request).libraries.get(

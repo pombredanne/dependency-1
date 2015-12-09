@@ -1,8 +1,7 @@
 package controllers
 
 import com.bryzek.dependency.v0.Client
-import com.bryzek.dependency.lib.UiData
-import com.bryzek.dependency.lib.DependencyClientProvider
+import com.bryzek.dependency.lib.{DependencyClientProvider, Section, UiData}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedController
 import play.api._
@@ -16,6 +15,8 @@ abstract class BaseController(
     with IdentifiedController
     with I18nSupport
 {
+
+  def section: Option[Section]
 
   override def unauthorized[A](request: Request[A]): Result = {
     Redirect(routes.LoginController.index(return_url = Some(request.path))).flashing("warning" -> "Please login")
@@ -34,7 +35,11 @@ abstract class BaseController(
   }
 
   def uiData[T](request: IdentifiedRequest[T]): UiData = {
-    UiData(requestPath = request.path, user = Some(request.user))
+    UiData(
+      requestPath = request.path,
+      user = Some(request.user),
+      section = section
+    )
   }
 
   def dependencyClient[T](request: IdentifiedRequest[T]): Client = {

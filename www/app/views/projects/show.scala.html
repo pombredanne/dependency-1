@@ -16,8 +16,12 @@
     } else {
       <a href="@routes.WatchProjectsController.create(project.guid)">Watch</a>
     }
-    | <a href="@routes.ProjectsController.edit(project.guid)">Edit</a>
-    | <a class="delete" data-confirm="Are you sure?" href="@routes.ProjectsController.postDelete(project.guid)">Delete</a>
+    @if(com.bryzek.dependency.lib.Permissions.Project.edit(project, data.user)) {
+      | <a href="@routes.ProjectsController.edit(project.guid)">Edit</a>
+    }
+    @if(com.bryzek.dependency.lib.Permissions.Project.delete(project, data.user)) {
+      | <a class="delete" data-confirm="Are you sure?" href="@routes.ProjectsController.postDelete(project.guid)">Delete</a>
+    }
   </div>
 
   <ul>

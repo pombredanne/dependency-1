@@ -15,6 +15,8 @@ class ApplicationController @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
  
+  override def section = None
+
   def redirect = Action { request =>
     Redirect(request.path + "/")
   }

@@ -1,0 +1,11 @@
+@(resolvers: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Resolver])
+
+<div class="table-responsive">
+  <table class="table">
+    @resolvers.items.map { p =>
+      <tr>
+        <td><a href="@routes.ResolversController.show(p.guid)">@{p.uri}</a></td>
+      </tr>
+    }
+  </table>
+</div>

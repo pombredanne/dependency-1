@@ -1,0 +1,19 @@
+@(
+  data: com.bryzek.dependency.lib.UiData,
+  form: Form[controllers.ResolversController.UiForm],
+  errorMessages: Seq[String] = Nil
+)(implicit flash: Flash, messages: Messages)
+
+@main(data.copy(title = Some("Add resolver")), errorMessages = errorMessages) {
+
+  <div class="container">
+
+    @helper.form(action = routes.ResolversController.postCreate()) {
+
+      @resolverForm(form, routes.ResolversController.index())
+
+    }
+
+  </div>
+
+}

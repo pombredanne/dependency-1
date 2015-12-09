@@ -24,6 +24,8 @@ class ProjectsController @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  override def section = Some(com.bryzek.dependency.lib.Section.Projects)
+
   def index(page: Int = 0) = Identified.async { implicit request =>
     for {
       projects <- dependencyClient(request).projects.get(

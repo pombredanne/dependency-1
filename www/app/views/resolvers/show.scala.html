@@ -1,0 +1,31 @@
+@(
+  data: com.bryzek.dependency.lib.UiData,
+  resolver: com.bryzek.dependency.v0.models.Resolver
+)(implicit flash: Flash, messages: Messages)
+
+@main(data.copy(title = Some("Resolver"))) {
+
+  <div class="pull-right">
+    @if(com.bryzek.dependency.lib.Permissions.Resolver.delete(resolver, data.user)) {
+      <a class="delete" data-confirm="Are you sure?" href="@routes.ResolversController.postDelete(resolver.guid)">Delete</a>
+    }
+  </div>
+
+  <ul>
+    <li>Visbility: @resolver.visibility.toString</li>
+    <li>URI: <a href="@resolver.uri">@resolver.uri</a></li>
+    <li>Credentials:
+      @if(resolver.credentials.isEmpty) {
+        N/A
+      } else {
+        @{resolver.credentials.get match {
+          case com.bryzek.dependency.v0.models.UsernamePassword(username, None) => s"Username: $username"
+          case com.bryzek.dependency.v0.models.UsernamePassword(username, Some(_)) => s"Username: $username, password: masked"
+          case com.bryzek.dependency.v0.models.CredentialsUndefinedType(_) => "N/A"
+        }}
+      }
+    </li>
+    <li>@audit(resolver.audit)</li>
+  </ul>
+
+}
