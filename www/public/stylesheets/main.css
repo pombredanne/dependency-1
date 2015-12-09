@@ -48,7 +48,7 @@ body {
 .nav-sidebar > li > a {
   padding: auto 20px;
 }
-.nav-sidebar > .active > a {
+.nav-sidebar a.active {
   color: #fff;
   background-color: #428bca;
 }
