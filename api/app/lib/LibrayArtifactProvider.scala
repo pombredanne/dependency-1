@@ -39,11 +39,12 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
     user: Option[User],
     resolver: Option[ResolverSummary]
   ): Option[ArtifactResolution] = {
-    resolver.map { r =>
+    resolver.flatMap { r => ResolversDao.findByGuid(Authorization.All, r.guid) }.map { r =>
       RemoteVersions.fetch(
         resolver = r.uri,
         groupId = library.groupId,
-        artifactId = library.artifactId
+        artifactId = library.artifactId,
+        credentials = ResolversDao.credentials(r)
       )
     }.getOrElse(Nil) match {
       case Nil => {
@@ -80,7 +81,8 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
           RemoteVersions.fetch(
             resolver = resolver.uri,
             groupId = library.groupId,
-            artifactId = library.artifactId
+            artifactId = library.artifactId,
+            credentials = ResolversDao.credentials(resolver)
           ) match {
             case Nil => {}
             case versions => {

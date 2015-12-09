@@ -1,5 +1,6 @@
 package com.bryzek.dependency.lib
 
+import com.bryzek.dependency.v0.models.Credentials
 import org.apache.commons.lang3.StringUtils
 
 object RemoteVersions {
@@ -7,11 +8,16 @@ object RemoteVersions {
   def fetch(
     resolver: String,
     groupId: String,
-    artifactId: String
+    artifactId: String,
+    credentials: Option[Credentials]
   ): Seq[ArtifactVersion] = {
-    val versions = fetchUrl(joinUrl(resolver, groupId.replaceAll("\\.", "/")), artifactId) match {
+    val versions = fetchUrl(
+      joinUrl(resolver, groupId.replaceAll("\\.", "/")),
+      artifactId,
+      credentials
+    ) match {
       case Nil => {
-        fetchUrl(joinUrl(resolver, groupId), artifactId)
+        fetchUrl(joinUrl(resolver, groupId), artifactId, credentials)
       }
       case results => {
         results
@@ -22,15 +28,16 @@ object RemoteVersions {
 
   private[this] def fetchUrl(
     url: String,
-    artifactId: String
+    artifactId: String,
+    credentials: Option[Credentials]
   ): Seq[ArtifactVersion] = {
-    val result = RemoteDirectory.fetch(url)(
+    val result = RemoteDirectory.fetch(url, credentials = credentials)(
       filter = { name => name == artifactId || name.startsWith(artifactId + "_") }
     )
 
     result.directories.flatMap { dir =>
       val thisUrl = joinUrl(url, dir)
-      RemoteDirectory.fetch(thisUrl)().directories.map { d =>
+      RemoteDirectory.fetch(thisUrl, credentials = credentials)().directories.map { d =>
         ArtifactVersion(
           tag = Version(StringUtils.stripEnd(d, "/")),
           crossBuildVersion = crossBuildVersion(dir)

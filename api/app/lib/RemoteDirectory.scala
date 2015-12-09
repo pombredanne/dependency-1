@@ -1,5 +1,6 @@
 package com.bryzek.dependency.lib
 
+import com.bryzek.dependency.v0.models.Credentials
 import org.htmlcleaner.HtmlCleaner
 import org.apache.commons.lang3.{StringEscapeUtils, StringUtils}
 import java.net.URL
@@ -20,10 +21,12 @@ object RemoteDirectory {
   )
 
   def fetch(
-    url: String
+    url: String,
+    credentials: Option[Credentials] = None
   ) (
     filter: String => Boolean = { !_.startsWith(".") }
   ): Result = {
+    // TODO: Use credentials if present
     val base = Result()
     val cleaner = new HtmlCleaner()
 

@@ -38,11 +38,13 @@ object ResolversDao {
   """
 
   def credentials(resolver: Resolver): Option[Credentials] = {
-    import com.bryzek.dependency.v0.anorm.conversions.Json._
-    DB.withConnection { implicit c =>
-      SQL(SelectCredentialsQuery).on('guid -> resolver.guid.toString).as(
-        SqlParser.get[Credentials]("credentials").*
-      ).headOption
+    resolver.credentials.flatMap { _ =>
+      import com.bryzek.dependency.v0.anorm.conversions.Json._
+      DB.withConnection { implicit c =>
+        SQL(SelectCredentialsQuery).on('guid -> resolver.guid.toString).as(
+          SqlParser.get[Credentials]("credentials").*
+        ).headOption
+      }
     }
   }
 
