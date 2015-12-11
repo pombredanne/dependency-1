@@ -8,7 +8,7 @@ import java.util.UUID
 object EmailActor {
 
   object Messages {
-    case object SendRecommendationsSummary
+    case object ProcessDailySummary
   }
 
 }
@@ -17,7 +17,7 @@ class EmailActor extends Actor with Util {
 
   def receive = {
 
-    case m @ EmailActor.Messages.SendRecommendationsSummary => withVerboseErrorHandler(m) {
+    case m @ EmailActor.Messages.ProcessDailySummary => withVerboseErrorHandler(m) {
       println("TODO")
     }
 

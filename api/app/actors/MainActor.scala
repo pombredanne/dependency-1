@@ -41,6 +41,7 @@ object MainActor {
 class MainActor(name: String) extends Actor with ActorLogging with Util {
   import scala.concurrent.duration._
 
+  private[this] val emailActor = Akka.system.actorOf(Props[EmailActor], name = s"$name:emailActor")
   private[this] val periodicActor = Akka.system.actorOf(Props[PeriodicActor], name = s"$name:periodicActor")
   private[this] val searchActor = Akka.system.actorOf(Props[SearchActor], name = s"$name:SearchActor")
 
@@ -59,21 +60,26 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
    *        parameter of the same name with "_inital" appended to set the initial
    *        interval if you wish it to be different.
    */
-  private[this] def scheduleRecurring(configName: String, message: PeriodicActor.Message) {
+  private[this] def scheduleRecurring[T](
+    actor: ActorRef,
+    configName: String,
+    message: T
+  ) {
     val seconds = DefaultConfig.requiredString(configName).toInt
     val initial = DefaultConfig.optionalString(s"${configName}_initial").map(_.toInt).getOrElse(seconds)
     Logger.info(s"scheduling a periodic message[$message]. Initial[$initial seconds], recurring[$seconds seconds]")
     Akka.system.scheduler.schedule(
       FiniteDuration(initial, SECONDS),
       FiniteDuration(seconds, SECONDS),
-      periodicActor, message
+      actor, message
     )
   }
 
-  scheduleRecurring("com.bryzek.dependency.binary.sync.seconds", PeriodicActor.Messages.SyncBinaries)
-  scheduleRecurring("com.bryzek.dependency.library.sync.seconds", PeriodicActor.Messages.SyncLibraries)
-  scheduleRecurring("com.bryzek.dependency.project.sync.seconds", PeriodicActor.Messages.SyncProjects)
-  scheduleRecurring("com.bryzek.dependency.purge.seconds", PeriodicActor.Messages.Purge)
+  scheduleRecurring(periodicActor, "com.bryzek.dependency.binary.seconds", PeriodicActor.Messages.SyncBinaries)
+  scheduleRecurring(periodicActor, "com.bryzek.dependency.library.seconds", PeriodicActor.Messages.SyncLibraries)
+  scheduleRecurring(periodicActor, "com.bryzek.dependency.project.seconds", PeriodicActor.Messages.SyncProjects)
+  scheduleRecurring(periodicActor, "com.bryzek.dependency.purge.seconds", PeriodicActor.Messages.Purge)
+  scheduleRecurring(emailActor, "com.bryzek.dependency.email.seconds", EmailActor.Messages.ProcessDailySummary)
 
   def receive = akka.event.LoggingReceive {
 

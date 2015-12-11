@@ -11,10 +11,10 @@ object PeriodicActor {
   sealed trait Message
 
   object Messages {
+    case object Purge extends Message
     case object SyncBinaries extends Message
     case object SyncLibraries extends Message
     case object SyncProjects extends Message
-    case object Purge extends Message
   }
 
 }
@@ -22,6 +22,10 @@ object PeriodicActor {
 class PeriodicActor extends Actor with Util {
 
   def receive = {
+
+    case m @ PeriodicActor.Messages.Purge => withVerboseErrorHandler(m) {
+      SyncsDao.purgeOld()
+    }
 
     case m @ PeriodicActor.Messages.SyncProjects => withVerboseErrorHandler(m) {
       Pager.eachPage { offset =>
@@ -45,10 +49,6 @@ class PeriodicActor extends Actor with Util {
       } { library =>
         sender ! MainActor.Messages.LibrarySync(library.guid)
       }
-    }
-
-    case m @ PeriodicActor.Messages.Purge => withVerboseErrorHandler(m) {
-      SyncsDao.purgeOld()
     }
 
     case m: Any => logUnhandledMessage(m)
