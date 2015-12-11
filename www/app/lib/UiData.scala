@@ -10,6 +10,7 @@ object Section {
   case object Binaries extends Section
   case object Libraries extends Section
   case object Resolvers extends Section
+  case object Subscriptions extends Section
 }
 
 case class UiData(
