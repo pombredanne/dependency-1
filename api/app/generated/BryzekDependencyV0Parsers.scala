@@ -1259,6 +1259,86 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
+  object Subscription {
+
+    case class Mappings(
+      guid: String = "guid",
+      user: io.flow.common.v0.anorm.parsers.Reference.Mappings,
+      publication: String = "publication",
+      audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        guid = s"${prefix}${sep}guid",
+        user = io.flow.common.v0.anorm.parsers.Reference.Mappings.prefix(Seq(prefix, "user").filter(!_.isEmpty).mkString("_"), "_"),
+        publication = s"${prefix}${sep}publication",
+        audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Subscription] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      io.flow.common.v0.anorm.parsers.Reference.parser(mappings.user) ~
+      com.bryzek.dependency.v0.anorm.parsers.Publication.parser(com.bryzek.dependency.v0.anorm.parsers.Publication.Mappings(mappings.publication)) ~
+      io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
+        case guid ~ user ~ publication ~ audit => {
+          com.bryzek.dependency.v0.models.Subscription(
+            guid = guid,
+            user = user,
+            publication = publication,
+            audit = audit
+          )
+        }
+      }
+    }
+
+  }
+
+  object SubscriptionForm {
+
+    case class Mappings(
+      userGuid: String = "user_guid",
+      publication: String = "publication"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        userGuid = s"${prefix}${sep}user_guid",
+        publication = s"${prefix}${sep}publication"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.SubscriptionForm] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.userGuid) ~
+      com.bryzek.dependency.v0.anorm.parsers.Publication.parser(com.bryzek.dependency.v0.anorm.parsers.Publication.Mappings(mappings.publication)) map {
+        case userGuid ~ publication => {
+          com.bryzek.dependency.v0.models.SubscriptionForm(
+            userGuid = userGuid,
+            publication = publication
+          )
+        }
+      }
+    }
+
+  }
+
   object Sync {
 
     case class Mappings(

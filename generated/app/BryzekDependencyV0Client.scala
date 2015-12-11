@@ -199,6 +199,21 @@ package com.bryzek.dependency.v0.models {
   )
 
   /**
+   * Represents a user that is currently subscribed to a publication
+   */
+  case class Subscription(
+    guid: _root_.java.util.UUID,
+    user: io.flow.common.v0.models.Reference,
+    publication: com.bryzek.dependency.v0.models.Publication,
+    audit: io.flow.common.v0.models.Audit
+  )
+
+  case class SubscriptionForm(
+    userGuid: _root_.java.util.UUID,
+    publication: com.bryzek.dependency.v0.models.Publication
+  )
+
+  /**
    * Records when we start and complete each sync of a module (e.g. project)
    */
   case class Sync(
@@ -981,6 +996,38 @@ package com.bryzek.dependency.v0.models {
       )(unlift(ResolverSummary.unapply _))
     }
 
+    implicit def jsonReadsDependencySubscription: play.api.libs.json.Reads[Subscription] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "user").read[io.flow.common.v0.models.Reference] and
+        (__ \ "publication").read[com.bryzek.dependency.v0.models.Publication] and
+        (__ \ "audit").read[io.flow.common.v0.models.Audit]
+      )(Subscription.apply _)
+    }
+
+    implicit def jsonWritesDependencySubscription: play.api.libs.json.Writes[Subscription] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "user").write[io.flow.common.v0.models.Reference] and
+        (__ \ "publication").write[com.bryzek.dependency.v0.models.Publication] and
+        (__ \ "audit").write[io.flow.common.v0.models.Audit]
+      )(unlift(Subscription.unapply _))
+    }
+
+    implicit def jsonReadsDependencySubscriptionForm: play.api.libs.json.Reads[SubscriptionForm] = {
+      (
+        (__ \ "user_guid").read[_root_.java.util.UUID] and
+        (__ \ "publication").read[com.bryzek.dependency.v0.models.Publication]
+      )(SubscriptionForm.apply _)
+    }
+
+    implicit def jsonWritesDependencySubscriptionForm: play.api.libs.json.Writes[SubscriptionForm] = {
+      (
+        (__ \ "user_guid").write[_root_.java.util.UUID] and
+        (__ \ "publication").write[com.bryzek.dependency.v0.models.Publication]
+      )(unlift(SubscriptionForm.unapply _))
+    }
+
     implicit def jsonReadsDependencySync: play.api.libs.json.Reads[Sync] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
@@ -1281,6 +1328,8 @@ package com.bryzek.dependency.v0 {
     def repositories: Repositories = Repositories
 
     def resolvers: Resolvers = Resolvers
+
+    def subscriptions: Subscriptions = Subscriptions
 
     def syncs: Syncs = Syncs
 
@@ -1807,6 +1856,67 @@ package com.bryzek.dependency.v0 {
       }
     }
 
+    object Subscriptions extends Subscriptions {
+      override def get(
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+        userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        publication: _root_.scala.Option[com.bryzek.dependency.v0.models.Publication] = None,
+        limit: Long = 25,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Subscription]] = {
+        val queryParameters = Seq(
+          guid.map("guid" -> _.toString),
+          userGuid.map("user_guid" -> _.toString),
+          publication.map("publication" -> _.toString),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten ++
+          guids.getOrElse(Nil).map("guids" -> _.toString)
+
+        _executeRequest("GET", s"/subscriptions", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Subscription]", r, _.validate[Seq[com.bryzek.dependency.v0.models.Subscription]])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+        }
+      }
+
+      override def getByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Subscription] = {
+        _executeRequest("GET", s"/subscriptions/${guid}").map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Subscription", r, _.validate[com.bryzek.dependency.v0.models.Subscription])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+        }
+      }
+
+      override def post(
+        subscriptionForm: com.bryzek.dependency.v0.models.SubscriptionForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Subscription] = {
+        val payload = play.api.libs.json.Json.toJson(subscriptionForm)
+
+        _executeRequest("POST", s"/subscriptions", body = Some(payload)).map {
+          case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Subscription", r, _.validate[com.bryzek.dependency.v0.models.Subscription])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 409")
+        }
+      }
+
+      override def deleteByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
+        _executeRequest("DELETE", s"/subscriptions/${guid}").map {
+          case r if r.status == 204 => ()
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+        }
+      }
+    }
+
     object Syncs extends Syncs {
       override def get(
         objectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
@@ -2301,6 +2411,38 @@ package com.bryzek.dependency.v0 {
     def post(
       resolverForm: com.bryzek.dependency.v0.models.ResolverForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Resolver]
+
+    def deleteByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+  }
+
+  trait Subscriptions {
+    /**
+     * Search subscriptions. Always paginated.
+     */
+    def get(
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+      userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      publication: _root_.scala.Option[com.bryzek.dependency.v0.models.Publication] = None,
+      limit: Long = 25,
+      offset: Long = 0
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Subscription]]
+
+    /**
+     * Returns information about a specific subscription.
+     */
+    def getByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Subscription]
+
+    /**
+     * Create a new subscription.
+     */
+    def post(
+      subscriptionForm: com.bryzek.dependency.v0.models.SubscriptionForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Subscription]
 
     def deleteByGuid(
       guid: _root_.java.util.UUID

@@ -301,4 +301,22 @@ trait Helpers {
     )
   }
 
+  def createSubscription(
+    form: SubscriptionForm = createSubscriptionForm()
+  ): Subscription = {
+    SubscriptionsDao.create(systemUser, form).right.getOrElse {
+      sys.error("Failed to create subscription")
+    }
+  }
+
+  def createSubscriptionForm(
+    user: User = createUser(),
+    publication: Publication = Publication.DailySummary
+  ) = {
+    SubscriptionForm(
+      userGuid = user.guid,
+      publication = publication
+    )
+  }
+
 }
