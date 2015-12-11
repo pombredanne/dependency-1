@@ -36,6 +36,13 @@
 	    ]
 	},
 
+	"publication": {
+	    "description": "A publication represents something that a user can subscribe to.",
+	    "values": [
+		{ "name": "daily_summary", "description": "A daily summary of dependencies that can be upgraded" }
+	    ]
+	},
+
 	"recommendation_type": {
 	    "values": [
 		{ "name": "library" },
