@@ -1,0 +1,35 @@
+@(person: com.bryzek.dependency.lib.Person,
+  recommendations: Seq[com.bryzek.dependency.v0.models.Recommendation],
+  lastEmail: Option[db.LastEmail],
+  subscriptionsUrl: String
+)
+
+@if(!person.name.first.isEmpty) {
+  <p>Dear @person.name.first.get,</p>
+}
+
+@if(lastEmail.isEmpty) {
+  <p>
+
+    Thanks for subscribing to your personalized daily summary of
+    dependency recommendations. At any time, you can unsubscribe
+    by visiting <a href="@subscriptionsUrl">@subscriptionsUrl</a>
+
+  </p>
+
+} else {
+
+  <p>
+  </p>
+
+}
+ 
+<p>
+  <ul>
+    @recommendations.map { rec =>
+    <li> @rec</li>
+    }
+  </ul>
+</p>
+
+@footer(subscriptionsUrl)

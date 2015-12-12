@@ -33,6 +33,7 @@ GET     /watches/projects/delete/:projectGuid   controllers.WatchProjectsControl
 
 GET     /search                                 controllers.SearchController.index(q: Option[String] ?= None, page: Int ?= 0)
 
+GET     /subscriptions                          controllers.ApplicationController.redirect
 GET     /subscriptions/                         controllers.SubscriptionsController.index()
 POST    /subscriptions/:publication/toggle      controllers.SubscriptionsController.postToggle(publication: com.bryzek.dependency.v0.models.Publication)
 

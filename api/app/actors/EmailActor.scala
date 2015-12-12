@@ -1,7 +1,8 @@
 package com.bryzek.dependency.actors
 
+import io.flow.play.util.DefaultConfig
 import io.flow.play.postgresql.Pager
-import db.{LastEmailForm, LastEmailsDao, SubscriptionsDao, UsersDao}
+import db.{LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UsersDao}
 import com.bryzek.dependency.v0.models.Publication
 import com.bryzek.dependency.lib.{Email, Person}
 import play.api.Logger
@@ -9,6 +10,8 @@ import akka.actor.Actor
 import java.util.UUID
 
 object EmailActor {
+
+  private[actors] val SubscriptionsUrl = DefaultConfig.requiredString("dependency.www.host") + "/subscriptions"
 
   object Messages {
     case object ProcessDailySummary
@@ -43,13 +46,30 @@ case class EmailMessage(publication: Publication) {
       println(s"subscription: $subscription")
       UsersDao.findByGuid(subscription.user.guid).foreach { user =>
         println(s" - user[${user.guid}] email[${user.email}]")
-        user.email match {
+        Person.fromUser(user) match {
           case None => {
             println(" - user does not have an email address")
           }
-          case Some(email) => {
+          case Some(person) => {
             val lastEmail = LastEmailsDao.findByUserGuidAndPublication(user.guid, publication)
-            println(s" - user email is $email - last email sent at: " + lastEmail.map(_.audit.createdAt).getOrElse(""))
+            val recommendations = RecommendationsDao.findAll(
+              userGuid = Some(user.guid),
+              limit = 100
+            )
+
+            println(s" - person is $person - last email sent at: " + lastEmail.map(_.audit.createdAt).getOrElse(""))
+
+            Email.sendHtml(
+              to = person,
+              subject = s"Daily Summary",
+              body = views.html.emails.dailySummary(
+                person = person,
+                recommendations = recommendations,
+                lastEmail = lastEmail,
+                subscriptionsUrl = EmailActor.SubscriptionsUrl
+              ).toString
+            )
+            
             LastEmailsDao.record(
               MainActor.SystemUser,
               LastEmailForm(

@@ -29,8 +29,8 @@ object Email {
   private[this] val from = Person(
     email = DefaultConfig.requiredString("mail.default.from.email"),
     name = Name(
-      Some(DefaultConfig.requiredString("mail.default.name.first")),
-      Some(DefaultConfig.requiredString("mail.default.name.last"))
+      Some(DefaultConfig.requiredString("mail.default.from.name.first")),
+      Some(DefaultConfig.requiredString("mail.default.from.name.last"))
     )
   )
 
