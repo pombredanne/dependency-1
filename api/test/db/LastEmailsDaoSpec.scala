@@ -12,19 +12,6 @@ class LastEmailsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def createLastEmail(
-    form: LastEmailForm = createLastEmailForm()
-  ): LastEmail = {
-    LastEmailsDao.record(systemUser, form)
-  }
-
-  def createLastEmailForm(
-    user: User = createUser()
-  ) = LastEmailForm(
-    userGuid = user.guid,
-    publication = Publication.DailySummary
-  )
-
   "softDelete" in {
     val lastEmail = createLastEmail()
     LastEmailsDao.softDelete(systemUser, lastEmail)

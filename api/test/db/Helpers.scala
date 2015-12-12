@@ -319,4 +319,18 @@ trait Helpers {
     )
   }
 
+  def createLastEmail(
+    form: LastEmailForm = createLastEmailForm()
+  ): LastEmail = {
+    LastEmailsDao.record(systemUser, form)
+  }
+
+  def createLastEmailForm(
+    user: User = createUser(),
+    publication: Publication = Publication.DailySummary
+  ) = LastEmailForm(
+    userGuid = user.guid,
+    publication = publication
+  )
+
 }

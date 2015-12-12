@@ -104,6 +104,7 @@ object SubscriptionsDao {
     guids: Option[Seq[UUID]] = None,
     userGuid: Option[UUID] = None,
     publication: Option[Publication] = None,
+    minHoursSinceLastEmail: Option[Int] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -114,6 +115,14 @@ object SubscriptionsDao {
       guids.map { Filters.multipleGuids("subscriptions.guid", _) },
       userGuid.map { v => "and subscriptions.user_guid = {user_guid}::uuid" },
       publication.map { v => "and subscriptions.publication = {publication}" },
+      minHoursSinceLastEmail.map { v => """
+        and not exists (select 1
+                          from last_emails
+                         where last_emails.deleted_at is null
+                           and last_emails.user_guid = subscriptions.user_guid
+                           and last_emails.publication = subscriptions.publication
+                           and last_emails.created_at > now() - interval '1 hour' * {min_hours})
+      """.trim },
       isDeleted.map(Filters.isDeleted("subscriptions", _)),
       Some(s"order by subscriptions.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -121,7 +130,8 @@ object SubscriptionsDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       userGuid.map('user_guid -> _.toString),
-      publication.map('publication -> _.toString)
+      publication.map('publication -> _.toString),
+      minHoursSinceLastEmail.map('min_hours -> _)
     ).flatten
 
     DB.withConnection { implicit c =>
