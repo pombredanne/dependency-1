@@ -36,12 +36,16 @@
 }
   
 @if(!newRecommendations.isEmpty) {
-  @recommendations(urls, newRecommendations)
+  <blockquote>
+    @recommendations(urls, newRecommendations)
+  </blockquote>
 }
 
 @if(!oldRecommendations.isEmpty) {
   <p>As a reminder, here are your other outstanding upgrade recommendations</p>
-  @recommendations(urls, oldRecommendations)
+  <blockquote>
+    @recommendations(urls, oldRecommendations)
+  </blockquote>
 }
 
 <p>
