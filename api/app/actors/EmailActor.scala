@@ -90,7 +90,7 @@ trait EmailMessageGenerator {
 case class DailySummaryEmailMessage(user: User) extends EmailMessageGenerator {
 
   private[this] val PreferredHourToSendEst = {
-    val value = DefaultConfig.requiredString("com.bryzek.dependency.email.daily.summary.hour.est").toInt
+    val value = DefaultConfig.requiredString("com.bryzek.dependency.api.email.daily.summary.hour.est").toInt
     assert( value >= 0 && value < 23 )
     value
   }

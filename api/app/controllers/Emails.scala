@@ -16,7 +16,7 @@ class Emails @javax.inject.Inject() (
   val userTokensClient: UserTokensClient
 ) extends Controller with AnonymousController with Helpers {
 
-  private[this] val TestEmailAddressName = "com.bryzek.dependency.test.email"
+  private[this] val TestEmailAddressName = "com.bryzek.dependency.api.test.email"
   private[this] lazy val TestEmailAddress = DefaultConfig.optionalString(TestEmailAddressName)
 
   override def user(
