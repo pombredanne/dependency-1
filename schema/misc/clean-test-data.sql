@@ -61,3 +61,8 @@ update subscriptions
  where deleted_at is null
    and user_guid in (select guid from users where deleted_at is not null);
 
+update last_emails
+   set deleted_at=now(), deleted_by_guid = created_by_guid
+ where deleted_at is null
+   and user_guid in (select guid from users where deleted_at is not null);
+
