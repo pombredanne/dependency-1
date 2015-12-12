@@ -24,7 +24,11 @@ object Person {
 
 object Email {
 
-  private[this] val subjectPrefix = DefaultConfig.requiredString("mail.subject.prefix")
+  private[this] val SubjectPrefix = DefaultConfig.requiredString("mail.subject.prefix")
+
+  def subjectWithPrefix(subject: String): String = {
+    SubjectPrefix + " " + subject
+  }
 
   private[this] val from = Person(
     email = DefaultConfig.requiredString("mail.default.from.email"),
@@ -51,7 +55,7 @@ object Email {
     subject: String,
     body: String
   ) {
-    val prefixedSubject = subjectPrefix + " " + subject
+    val prefixedSubject = subjectWithPrefix(subject)
 
     val email = new SendGrid.Email()
     email.addTo(to.email)

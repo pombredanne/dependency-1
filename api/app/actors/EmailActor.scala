@@ -2,7 +2,8 @@ package com.bryzek.dependency.actors
 
 import io.flow.play.util.DefaultConfig
 import io.flow.play.postgresql.Pager
-import db.{LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UsersDao}
+import io.flow.user.v0.models.User
+import db.{LastEmail, LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UsersDao}
 import com.bryzek.dependency.v0.models.Publication
 import com.bryzek.dependency.api.lib.{Email, Person, Urls}
 import play.api.Logger
@@ -22,18 +23,26 @@ class EmailActor extends Actor with Util {
   def receive = {
 
     case m @ EmailActor.Messages.ProcessDailySummary => withVerboseErrorHandler(m) {
-      EmailMessage(Publication.DailySummary).deliver()
+      BatchEmailProcessor(
+        publication = Publication.DailySummary,
+        minHoursSinceLastEmail = 23
+      ) { user =>
+        DailySummaryEmailMessage(user)
+      }
     }
 
   }
 
 }
 
-case class EmailMessage(publication: Publication) {
+case class BatchEmailProcessor(
+  publication: Publication,
+  minHoursSinceLastEmail: Int
+) (
+  userGenerator: User => EmailMessageGenerator
+) {
 
-  private val minHoursSinceLastEmail = 23
-
-  def deliver() {
+  def process() {
     Pager.eachPage { offset =>
       SubscriptionsDao.findAll(
         publication = Some(publication),
@@ -44,15 +53,15 @@ case class EmailMessage(publication: Publication) {
       println(s"subscription: $subscription")
       UsersDao.findByGuid(subscription.user.guid).foreach { user =>
         println(s" - user[${user.guid}] email[${user.email}]")
-        Person.fromUser(user) match {
-          case None => {
-            println(" - user does not have an email address")
-          }
-          case Some(person) => {
+        val lastEmail = LastEmailsDao.findByUserGuidAndPublication(user.guid, publication)
+        val generator = userGenerator(user)
+        if (generator.shouldSend(lastEmail)) {
+          Person.fromUser(user).map { person =>
+
             Email.sendHtml(
               to = person,
-              subject = s"Daily Summary",
-              body = generate(user.guid, person).toString
+              subject = generator.subject(),
+              body = generator.body()
             )
 
             LastEmailsDao.record(
@@ -67,12 +76,30 @@ case class EmailMessage(publication: Publication) {
       }
     }
   }
+}
 
-  def generate(userGuid: UUID, person: Person): play.twirl.api.HtmlFormat.Appendable = {
-    val lastEmail = LastEmailsDao.findByUserGuidAndPublication(userGuid, publication)
+trait EmailMessageGenerator {
+  def shouldSend(lastEmail: Option[LastEmail]): Boolean
+  def subject(): String
+  def body(): String
+}
+
+/**
+  * Class which generates email message
+  */
+case class DailySummaryEmailMessage(user: User) extends EmailMessageGenerator {
+
+  private val minHoursSinceLastEmail = 23
+  private lazy val lastEmail = LastEmailsDao.findByUserGuidAndPublication(user.guid, Publication.DailySummary)
+
+  override def shouldSend(lastEmail: Option[LastEmail]) = true
+
+  override def subject() = "Daily Summary"
+
+  override def body() = {
     val recommendations = RecommendationsDao.findAll(
-      userGuid = Some(userGuid),
-      limit = 100
+      userGuid = Some(user.guid),
+      limit = 250
     )
     val (newRecommendations, oldRecommendations) = lastEmail match {
       case None => (recommendations, Nil)
@@ -84,15 +111,13 @@ case class EmailMessage(publication: Publication) {
       }
     }
 
-    println(s" - generate($userGuid, $person). last email sent at: " + lastEmail.map(_.audit.createdAt).getOrElse(""))
-
     views.html.emails.dailySummary(
-      person = person,
+      name = user.name,
       newRecommendations = newRecommendations,
       oldRecommendations = oldRecommendations,
       lastEmail = lastEmail,
       urls = Urls()
-    )
+    ).toString
   }
 
 }

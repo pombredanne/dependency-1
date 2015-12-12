@@ -1,12 +1,12 @@
-@(person: com.bryzek.dependency.api.lib.Person,
+@(name: io.flow.user.v0.models.Name,
   urls: com.bryzek.dependency.api.lib.Urls,
   newRecommendations: Seq[com.bryzek.dependency.v0.models.Recommendation],
   oldRecommendations: Seq[com.bryzek.dependency.v0.models.Recommendation],
   lastEmail: Option[db.LastEmail]
 )
 
-@if(!person.name.first.isEmpty) {
-  <p>Dear @person.name.first.get,</p>
+@if(!name.first.isEmpty) {
+  <p>Dear @name.first.get,</p>
 }
 
 @if(lastEmail.isEmpty) {
@@ -31,6 +31,10 @@
   </p>
 }
 
+@if(newRecommendations.isEmpty && oldRecommendations.isEmpty) {
+  <em>We currently have no upgrade recommendations for you.</em>
+}
+  
 @if(!newRecommendations.isEmpty) {
   @recommendations(urls, newRecommendations)
 }
@@ -39,5 +43,10 @@
   <p>As a reminder, here are your other outstanding upgrade recommendations</p>
   @recommendations(urls, oldRecommendations)
 }
+
+<p>
+  <a href="@urls.wwwHost">Visit your dependency dashboard</a>
+</p>
+  
 
 @footer(urls)
