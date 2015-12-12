@@ -34,6 +34,8 @@ class Emails @javax.inject.Inject() (
           case None => Ok(s"No user with email address[$email] found")
           case Some(user) => {
             val generator = DailySummaryEmailMessage(user)
+            generator.shouldSend()
+
             Ok(
               Seq(
                 "Subject: " + Email.subjectWithPrefix(generator.subject()),
