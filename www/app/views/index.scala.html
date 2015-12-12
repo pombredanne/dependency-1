@@ -30,9 +30,9 @@
 	</thead>
         @recommendations.items.map { rec =>
           <tr>
-            <td>@com.bryzek.dependency.www.lib.DateHelper.shortDate(rec.audit.createdAt)</td>
+            <td>@io.flow.play.util.DateHelper.shortDate(rec.audit.createdAt)</td>
             <td><a href="@routes.ProjectsController.show(rec.project.guid)">@{rec.project.name}</a></td>
-            <td><a href="@com.bryzek.dependency.www.lib.Config.recommendationUrl(rec)">@com.bryzek.dependency.www.lib.Text.truncate(rec.name, 50)</a></td>
+            <td><a href="@com.bryzek.dependency.lib.Urls.recommendationUrl(rec)">@com.bryzek.dependency.lib.Text.truncate(rec.name, 50)</a></td>
             <td>@rec.from</td>
             <td>@rec.to</td>
           </tr>
