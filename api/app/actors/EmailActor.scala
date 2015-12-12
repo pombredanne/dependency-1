@@ -58,18 +58,20 @@ case class BatchEmailProcessor(
         if (generator.shouldSend()) {
           Person.fromUser(user).map { person =>
 
-            Email.sendHtml(
-              to = person,
-              subject = generator.subject(),
-              body = generator.body()
-            )
-
+            // Record before send in case of crash - prevent loop of
+            // emails.
             LastEmailsDao.record(
               MainActor.SystemUser,
               LastEmailForm(
                 userGuid = user.guid,
                 publication = publication
               )
+            )
+
+            Email.sendHtml(
+              to = person,
+              subject = generator.subject(),
+              body = generator.body()
             )
           }
         }
