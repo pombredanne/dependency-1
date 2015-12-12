@@ -1,6 +1,7 @@
 @(person: com.bryzek.dependency.api.lib.Person,
   urls: com.bryzek.dependency.api.lib.Urls,
-  recommendations: Seq[com.bryzek.dependency.v0.models.Recommendation],
+  newRecommendations: Seq[com.bryzek.dependency.v0.models.Recommendation],
+  oldRecommendations: Seq[com.bryzek.dependency.v0.models.Recommendation],
   lastEmail: Option[db.LastEmail]
 )
 
@@ -13,35 +14,30 @@
 
     Thanks for subscribing to your personalized daily summary of
     dependency recommendations. At any time, you can unsubscribe
-    by visiting <a href="@urls.www(routes.SubscriptionsController.index())">@urls.wwwHost@routes.SubscriptionsController.index()</a>
+    by visiting <a href="@urls.www(routes.SubscriptionsController.index())">@urls.www(routes.SubscriptionsController.index())</a>
 
   </p>
 
 } else {
 
   <p>
+    @{newRecommendations.size match {
+      case 0 => "No new recommendations"
+      case 1 => "1 new recommendation"
+      case n => s"$n new recommendations"
+    }}
+    since your last summary sent on
+    @io.flow.play.util.DateHelper.longDateTime(lastEmail.get.audit.createdAt).
   </p>
-
 }
-<table class="table">
-  <thead>
-    <tr>
-      <th>Date</th>
-      <th>Project</th>
-      <th>Name</th>
-      <th>Current</th>
-      <th>Recommended</th>
-    </tr>
-  </thead>
-  @recommendations.map { rec =>
-    <tr>
-      <td>@io.flow.play.util.DateHelper.shortDate(rec.audit.createdAt)</td>
-      <td><a href="@urls.www(routes.ProjectsController.show(rec.project.guid))">@com.bryzek.dependency.lib.Text.truncate(rec.project.name, 50)</a></td>
-      <td><a href="@urls.www(com.bryzek.dependency.lib.Urls.recommendationUrl(rec))">@com.bryzek.dependency.lib.Text.truncate(rec.name, 50)</a></td>
-      <td>@rec.from</td>
-      <td>@rec.to</td>
-    </tr>
-  }
-</table>
-  
+
+@if(!newRecommendations.isEmpty) {
+  @recommendations(urls, newRecommendations)
+}
+
+@if(!oldRecommendations.isEmpty) {
+  <p>As a reminder, here are your other outstanding upgrade recommendations</p>
+  @recommendations(urls, oldRecommendations)
+}
+
 @footer(urls)

@@ -74,11 +74,22 @@ case class EmailMessage(publication: Publication) {
       userGuid = Some(userGuid),
       limit = 100
     )
+    val (newRecommendations, oldRecommendations) = lastEmail match {
+      case None => (recommendations, Nil)
+      case Some(email) => {
+        (
+          recommendations.filter { !_.audit.createdAt.isBefore(email.audit.createdAt) },
+          recommendations.filter { _.audit.createdAt.isBefore(email.audit.createdAt) }
+        )
+      }
+    }
+
     println(s" - generate($userGuid, $person). last email sent at: " + lastEmail.map(_.audit.createdAt).getOrElse(""))
 
     views.html.emails.dailySummary(
       person = person,
-      recommendations = recommendations,
+      newRecommendations = newRecommendations,
+      oldRecommendations = oldRecommendations,
       lastEmail = lastEmail,
       urls = Urls()
     )
