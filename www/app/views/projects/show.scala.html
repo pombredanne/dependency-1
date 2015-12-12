@@ -1,5 +1,5 @@
 @(
-  data: com.bryzek.dependency.lib.UiData,
+  data: com.bryzek.dependency.www.lib.UiData,
   project: com.bryzek.dependency.v0.models.Project,
   libraryRecommendations: Seq[com.bryzek.dependency.v0.models.LibraryRecommendation],
   binaryRecommendations: Seq[com.bryzek.dependency.v0.models.BinaryRecommendation],
@@ -16,10 +16,10 @@
     } else {
       <a href="@routes.WatchProjectsController.create(project.guid)">Watch</a>
     }
-    @if(com.bryzek.dependency.lib.Permissions.Project.edit(project, data.user)) {
+    @if(com.bryzek.dependency.www.lib.Permissions.Project.edit(project, data.user)) {
       | <a href="@routes.ProjectsController.edit(project.guid)">Edit</a>
     }
-    @if(com.bryzek.dependency.lib.Permissions.Project.delete(project, data.user)) {
+    @if(com.bryzek.dependency.www.lib.Permissions.Project.delete(project, data.user)) {
       | <a class="delete" data-confirm="Are you sure?" href="@routes.ProjectsController.postDelete(project.guid)">Delete</a>
     }
   </div>

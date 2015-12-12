@@ -1,4 +1,4 @@
-package com.bryzek.dependency.lib
+package com.bryzek.dependency.www.lib
 
 import org.joda.time.{DateTime, DateTimeZone}
 import org.joda.time.format.DateTimeFormat

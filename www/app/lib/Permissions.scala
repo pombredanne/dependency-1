@@ -1,4 +1,4 @@
-package com.bryzek.dependency.lib
+package com.bryzek.dependency.www.lib
 
 import com.bryzek.dependency.v0.models.{Project, Resolver, Visibility}
 import io.flow.user.v0.models.User

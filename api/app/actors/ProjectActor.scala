@@ -1,6 +1,6 @@
 package com.bryzek.dependency.actors
 
-import com.bryzek.dependency.lib.{Dependencies, GithubDependencyProviderClient}
+import com.bryzek.dependency.api.lib.{Dependencies, GithubDependencyProviderClient}
 import com.bryzek.dependency.v0.models.{Project, WatchProjectForm}
 import io.flow.play.postgresql.Pager
 import db.{BinariesDao, LibrariesDao, ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}

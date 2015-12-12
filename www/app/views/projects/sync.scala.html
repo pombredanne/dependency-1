@@ -1,5 +1,5 @@
 @(
-  data: com.bryzek.dependency.lib.UiData,
+  data: com.bryzek.dependency.www.lib.UiData,
   guid: java.util.UUID,
   n: Int,
   syncStarted: Option[com.bryzek.dependency.v0.models.Sync]
@@ -13,7 +13,7 @@
   } else {
     <em>
       Project sync started at
-      @com.bryzek.dependency.lib.DateHelper.longDateTimeOption(syncStarted.map(_.audit.createdAt)).
+      @com.bryzek.dependency.www.lib.DateHelper.longDateTimeOption(syncStarted.map(_.audit.createdAt)).
       Waiting for sync to complete.
     </em>
   }

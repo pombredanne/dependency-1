@@ -2,7 +2,7 @@ package controllers
 
 import com.bryzek.dependency.v0.errors.UnitResponse
 import com.bryzek.dependency.v0.models.{Library, LibraryForm, Scms}
-import com.bryzek.dependency.lib.DependencyClientProvider
+import com.bryzek.dependency.www.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
 import java.util.UUID
@@ -24,7 +24,7 @@ class LibrariesController @javax.inject.Inject() (
 
   val VersionsPerPage = 5
 
-  override def section = Some(com.bryzek.dependency.lib.Section.Libraries)
+  override def section = Some(com.bryzek.dependency.www.lib.Section.Libraries)
 
   def index(page: Int = 0) = Identified.async { implicit request =>
     for {

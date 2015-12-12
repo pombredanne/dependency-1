@@ -1,6 +1,6 @@
 package controllers
 
-import com.bryzek.dependency.lib.{DependencyClientProvider, UiData}
+import com.bryzek.dependency.www.lib.{DependencyClientProvider, UiData}
 import com.bryzek.dependency.v0.models.GithubAuthenticationForm
 import play.api._
 import play.api.i18n._

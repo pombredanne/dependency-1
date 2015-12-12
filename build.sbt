@@ -37,8 +37,8 @@ lazy val lib = project
 
 lazy val api = project
   .in(file("api"))
-  .dependsOn(generated, router)
-  .aggregate(generated, router)
+  .dependsOn(generated, lib, router)
+  .aggregate(generated, lib, router)
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(
@@ -63,7 +63,6 @@ lazy val www = project
     routesImport += "com.bryzek.dependency.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
-      "io.flow" %% "lib-play" % "0.0.1",
       "org.webjars" %% "webjars-play" % "2.4.0-2",
       "org.webjars" % "bootstrap" % "3.3.6",
       "org.webjars.bower" % "bootstrap-social" % "4.10.1",
@@ -75,7 +74,7 @@ lazy val www = project
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("dependency-" + _),
   libraryDependencies ++= Seq(
-    "io.flow" %% "lib-play" % "0.0.1",
+    "io.flow" %% "lib-play" % "0.0.3",
     specs2 % Test,
     "org.scalatest" %% "scalatest" % "2.2.5" % Test
   ),

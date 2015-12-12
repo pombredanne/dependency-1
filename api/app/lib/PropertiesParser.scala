@@ -1,4 +1,4 @@
-package com.bryzek.dependency.lib
+package com.bryzek.dependency.api.lib
 
 case class PropertiesParser(
   override val description: String,

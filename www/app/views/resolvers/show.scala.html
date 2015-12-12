@@ -1,5 +1,5 @@
 @(
-  data: com.bryzek.dependency.lib.UiData,
+  data: com.bryzek.dependency.www.lib.UiData,
   resolver: com.bryzek.dependency.v0.models.Resolver,
   libraries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Library]
 )(implicit flash: Flash, messages: Messages)
@@ -7,7 +7,7 @@
 @main(data.copy(title = Some("Resolver"))) {
 
   <div class="pull-right">
-    @if(com.bryzek.dependency.lib.Permissions.Resolver.delete(resolver, data.user)) {
+    @if(com.bryzek.dependency.www.lib.Permissions.Resolver.delete(resolver, data.user)) {
       <a class="delete" data-confirm="Are you sure?" href="@routes.ResolversController.postDelete(resolver.guid)">Delete</a>
     }
   </div>

@@ -1,6 +1,6 @@
 package controllers
 
-import com.bryzek.dependency.lib.DependencyClientProvider
+import com.bryzek.dependency.www.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
 

@@ -1,7 +1,7 @@
 package controllers
 
 import com.bryzek.dependency.v0.models.WatchProjectForm
-import com.bryzek.dependency.lib.DependencyClientProvider
+import com.bryzek.dependency.www.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import java.util.UUID
 

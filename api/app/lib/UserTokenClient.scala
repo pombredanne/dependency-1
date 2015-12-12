@@ -1,4 +1,4 @@
-package com.bryzek.dependency.lib
+package com.bryzek.dependency.api.lib
 
 import db.UsersDao
 import io.flow.play.clients.UserTokensClient

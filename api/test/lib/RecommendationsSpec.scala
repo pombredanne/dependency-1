@@ -1,4 +1,4 @@
-package com.bryzek.dependency.lib
+package com.bryzek.dependency.api.lib
 
 import com.bryzek.dependency.v0.models.VersionForm
 import org.specs2.mutable._

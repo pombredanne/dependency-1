@@ -1,4 +1,4 @@
-package com.bryzek.dependency.lib
+package com.bryzek.dependency.api.lib
 
 import io.flow.user.v0.models.{Name, User}
 import io.flow.play.util.DefaultConfig

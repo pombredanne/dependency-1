@@ -1,4 +1,4 @@
-package com.bryzek.dependency.lib
+package com.bryzek.dependency.api.lib
 
 import db.{GithubUsersDao, TokensDao, UsersDao}
 import com.bryzek.dependency.v0.models.{GithubUserForm, Repository, TokenForm, Visibility}

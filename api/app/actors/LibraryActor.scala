@@ -1,7 +1,7 @@
 package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.v0.models.{Library, LibraryForm, Resolver, VersionForm}
-import com.bryzek.dependency.lib.DefaultLibraryArtifactProvider
+import com.bryzek.dependency.api.lib.DefaultLibraryArtifactProvider
 import db.{LibrariesDao, LibraryVersionsDao, ResolversDao, SyncsDao, UsersDao}
 import play.api.Logger
 import akka.actor.Actor

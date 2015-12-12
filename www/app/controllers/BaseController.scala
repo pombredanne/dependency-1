@@ -1,7 +1,7 @@
 package controllers
 
 import com.bryzek.dependency.v0.Client
-import com.bryzek.dependency.lib.{DependencyClientProvider, Section, UiData}
+import com.bryzek.dependency.www.lib.{DependencyClientProvider, Section, UiData}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedController
 import play.api._

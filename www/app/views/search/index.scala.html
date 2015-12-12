@@ -1,5 +1,5 @@
 @(
-  data: com.bryzek.dependency.lib.UiData,
+  data: com.bryzek.dependency.www.lib.UiData,
   query: Option[String],
   items: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Item]
 )(implicit flash: Flash, messages: Messages)
@@ -15,7 +15,7 @@
       <table class="table">
         @items.items.map { item =>
           <tr>
-            <td><a href="@com.bryzek.dependency.lib.Config.itemSummaryUrl(item.summary)">@item.label</a></td>
+            <td><a href="@com.bryzek.dependency.www.lib.Config.itemSummaryUrl(item.summary)">@item.label</a></td>
           </tr>
         }
       </table>

@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.lib.Recommendations
+import com.bryzek.dependency.api.lib.Recommendations
 import com.bryzek.dependency.v0.models.{BinaryRecommendation, BinaryVersion, Project, VersionForm}
 import io.flow.play.postgresql.Pager
 import anorm._

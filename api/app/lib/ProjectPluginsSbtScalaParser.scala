@@ -1,4 +1,4 @@
-package com.bryzek.dependency.lib
+package com.bryzek.dependency.api.lib
 
 /**
   * Takes the contents of a project/plugins.sbt file and parses it, providing

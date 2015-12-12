@@ -1,4 +1,4 @@
-@(person: com.bryzek.dependency.lib.Person,
+@(person: com.bryzek.dependency.api.lib.Person,
   recommendations: Seq[com.bryzek.dependency.v0.models.Recommendation],
   lastEmail: Option[db.LastEmail],
   subscriptionsUrl: String
@@ -36,8 +36,8 @@
   @recommendations.map { rec =>
     <tr>
       <td>@rec.audit.createdAt</td>
-      <td><a href="@routes.ProjectsController.show(rec.project.guid)">@{rec.project.name}</a></td>
-      <td><a href="@com.bryzek.dependency.lib.Config.recommendationUrl(rec)">@com.bryzek.dependency.lib.Text.truncate(rec.name, 50)</a></td>
+      <td><a href="@routes.ProjectsController.show(rec.project.guid)">@com.bryzek.dependency.lib.Text.truncate(rec.project.name, 50)</a></td>
+      <td><a href="@com.bryzek.dependency.lib.Urls.recommendationUrl(rec)">@com.bryzek.dependency.lib.Text.truncate(rec.name, 50)</a></td>
       <td>@rec.from</td>
       <td>@rec.to</td>
     </tr>

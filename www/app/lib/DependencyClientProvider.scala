@@ -1,4 +1,4 @@
-package com.bryzek.dependency.lib
+package com.bryzek.dependency.www.lib
 
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.DefaultConfig

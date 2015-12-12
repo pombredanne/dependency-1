@@ -1,4 +1,4 @@
-package com.bryzek.dependency.lib
+package com.bryzek.dependency.api.lib
 
 import play.api.{Environment, Configuration, Mode}
 import play.api.inject.Module

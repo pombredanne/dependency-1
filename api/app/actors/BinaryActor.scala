@@ -1,6 +1,6 @@
 package com.bryzek.dependency.actors
 
-import com.bryzek.dependency.lib.DefaultBinaryVersionProvider
+import com.bryzek.dependency.api.lib.DefaultBinaryVersionProvider
 import com.bryzek.dependency.v0.models.Binary
 import io.flow.play.postgresql.Pager
 import db.{BinariesDao, BinaryVersionsDao, SyncsDao, UsersDao}

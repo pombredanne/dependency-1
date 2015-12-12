@@ -76,7 +76,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
   }
 
   scheduleRecurring(periodicActor, "com.bryzek.dependency.binary.seconds", PeriodicActor.Messages.SyncBinaries)
-  scheduleRecurring(periodicActor, "com.bryzek.dependency.library.seconds", PeriodicActor.Messages.SyncLibraries)
+  scheduleRecurring(periodicActor, "com.bryzek.dependency.api.library.seconds", PeriodicActor.Messages.SyncLibraries)
   scheduleRecurring(periodicActor, "com.bryzek.dependency.project.seconds", PeriodicActor.Messages.SyncProjects)
   scheduleRecurring(periodicActor, "com.bryzek.dependency.purge.seconds", PeriodicActor.Messages.Purge)
   scheduleRecurring(emailActor, "com.bryzek.dependency.email.seconds", EmailActor.Messages.ProcessDailySummary)

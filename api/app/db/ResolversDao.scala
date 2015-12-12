@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.lib.Validation
+import com.bryzek.dependency.api.lib.Validation
 import com.bryzek.dependency.v0.models.{Credentials, CredentialsUndefinedType, Resolver, ResolverForm, UsernamePassword, Visibility}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.user.v0.models.User

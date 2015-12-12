@@ -1,7 +1,7 @@
 package controllers
 
 import com.bryzek.dependency.v0.models.{Publication, SubscriptionForm}
-import com.bryzek.dependency.lib.DependencyClientProvider
+import com.bryzek.dependency.www.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
 import java.util.UUID
@@ -34,7 +34,7 @@ class SubscriptionsController @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  override def section = Some(com.bryzek.dependency.lib.Section.Subscriptions)
+  override def section = Some(com.bryzek.dependency.www.lib.Section.Subscriptions)
 
   def index() = Identified.async { implicit request =>
     for {

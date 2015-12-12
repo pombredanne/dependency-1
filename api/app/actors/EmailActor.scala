@@ -4,7 +4,7 @@ import io.flow.play.util.DefaultConfig
 import io.flow.play.postgresql.Pager
 import db.{LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UsersDao}
 import com.bryzek.dependency.v0.models.Publication
-import com.bryzek.dependency.lib.{Email, Person}
+import com.bryzek.dependency.api.lib.{Email, Person}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID

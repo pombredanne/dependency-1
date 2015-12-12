@@ -1,7 +1,7 @@
 package controllers
 
 import db.GithubUsersDao
-import com.bryzek.dependency.lib.MockGithubData
+import com.bryzek.dependency.api.lib.MockGithubData
 import com.bryzek.dependency.v0.Client
 import com.bryzek.dependency.v0.models.GithubAuthenticationForm
 import io.flow.play.util.Validation

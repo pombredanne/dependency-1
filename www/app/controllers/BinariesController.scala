@@ -2,7 +2,7 @@ package controllers
 
 import com.bryzek.dependency.v0.errors.UnitResponse
 import com.bryzek.dependency.v0.models.Binary
-import com.bryzek.dependency.lib.DependencyClientProvider
+import com.bryzek.dependency.www.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
 import java.util.UUID
@@ -20,7 +20,7 @@ class BinariesController @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  override def section = Some(com.bryzek.dependency.lib.Section.Binaries)
+  override def section = Some(com.bryzek.dependency.www.lib.Section.Binaries)
 
   def index(page: Int = 0) = Identified.async { implicit request =>
     for {
