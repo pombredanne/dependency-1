@@ -51,25 +51,12 @@ case class EmailMessage(publication: Publication) {
             println(" - user does not have an email address")
           }
           case Some(person) => {
-            val lastEmail = LastEmailsDao.findByUserGuidAndPublication(user.guid, publication)
-            val recommendations = RecommendationsDao.findAll(
-              userGuid = Some(user.guid),
-              limit = 100
-            )
-
-            println(s" - person is $person - last email sent at: " + lastEmail.map(_.audit.createdAt).getOrElse(""))
-
             Email.sendHtml(
               to = person,
               subject = s"Daily Summary",
-              body = views.html.emails.dailySummary(
-                person = person,
-                recommendations = recommendations,
-                lastEmail = lastEmail,
-                subscriptionsUrl = EmailActor.SubscriptionsUrl
-              ).toString
+              body = generate(user.guid, person).toString
             )
-            
+
             LastEmailsDao.record(
               MainActor.SystemUser,
               LastEmailForm(
@@ -81,7 +68,22 @@ case class EmailMessage(publication: Publication) {
         }
       }
     }
+  }
 
+  def generate(userGuid: UUID, person: Person): play.twirl.api.HtmlFormat.Appendable = {
+    val lastEmail = LastEmailsDao.findByUserGuidAndPublication(userGuid, publication)
+    val recommendations = RecommendationsDao.findAll(
+      userGuid = Some(userGuid),
+      limit = 100
+    )
+    println(s" - generate($userGuid, $person). last email sent at: " + lastEmail.map(_.audit.createdAt).getOrElse(""))
+
+    views.html.emails.dailySummary(
+      person = person,
+      recommendations = recommendations,
+      lastEmail = lastEmail,
+      subscriptionsUrl = EmailActor.SubscriptionsUrl
+    )
   }
 
 }
