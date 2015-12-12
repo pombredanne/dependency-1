@@ -1,7 +1,7 @@
 @(person: com.bryzek.dependency.api.lib.Person,
+  urls: com.bryzek.dependency.actors.EmailActor.Urls,
   recommendations: Seq[com.bryzek.dependency.v0.models.Recommendation],
-  lastEmail: Option[db.LastEmail],
-  subscriptionsUrl: String
+  lastEmail: Option[db.LastEmail]
 )
 
 @if(!person.name.first.isEmpty) {
@@ -13,7 +13,7 @@
 
     Thanks for subscribing to your personalized daily summary of
     dependency recommendations. At any time, you can unsubscribe
-    by visiting <a href="@subscriptionsUrl">@subscriptionsUrl</a>
+    by visiting <a href="@urls.wwwHost@routes.SubscriptionsController.index()">@urls.wwwHost@routes.SubscriptionsController.index()</a>
 
   </p>
 
@@ -35,13 +35,13 @@
   </thead>
   @recommendations.map { rec =>
     <tr>
-      <td>@rec.audit.createdAt</td>
-      <td><a href="@routes.ProjectsController.show(rec.project.guid)">@com.bryzek.dependency.lib.Text.truncate(rec.project.name, 50)</a></td>
-      <td><a href="@com.bryzek.dependency.lib.Urls.recommendationUrl(rec)">@com.bryzek.dependency.lib.Text.truncate(rec.name, 50)</a></td>
+      <td>@io.flow.play.util.DateHelper.shortDate(rec.audit.createdAt)</td>
+      <td><a href="@urls.wwwHost@routes.ProjectsController.show(rec.project.guid)">@com.bryzek.dependency.lib.Text.truncate(rec.project.name, 50)</a></td>
+      <td><a href="@urls.wwwHost@com.bryzek.dependency.lib.Urls.recommendationUrl(rec)">@com.bryzek.dependency.lib.Text.truncate(rec.name, 50)</a></td>
       <td>@rec.from</td>
       <td>@rec.to</td>
     </tr>
   }
 </table>
   
-@footer(subscriptionsUrl)
+@footer(urls)

@@ -11,7 +11,9 @@ import java.util.UUID
 
 object EmailActor {
 
-  private[actors] val SubscriptionsUrl = DefaultConfig.requiredString("dependency.www.host") + "/subscriptions"
+  case class Urls(
+    wwwHost: String = DefaultConfig.requiredString("dependency.www.host")
+  )
 
   object Messages {
     case object ProcessDailySummary
@@ -82,7 +84,7 @@ case class EmailMessage(publication: Publication) {
       person = person,
       recommendations = recommendations,
       lastEmail = lastEmail,
-      subscriptionsUrl = EmailActor.SubscriptionsUrl
+      urls = EmailActor.Urls()
     )
   }
 

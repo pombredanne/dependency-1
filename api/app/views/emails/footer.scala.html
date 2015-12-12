@@ -1,4 +1,4 @@
-@(subscriptionsUrl: String)
+@(urls: com.bryzek.dependency.actors.EmailActor.Urls)
 
 <hr size="1">
-<a href="@subscriptionsUrl">Manage your subscriptions</a>
+<a href="@urls.wwwHost@routes.SubscriptionsController.index()">Manage your subscriptions</a>
