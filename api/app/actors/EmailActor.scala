@@ -4,16 +4,12 @@ import io.flow.play.util.DefaultConfig
 import io.flow.play.postgresql.Pager
 import db.{LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UsersDao}
 import com.bryzek.dependency.v0.models.Publication
-import com.bryzek.dependency.api.lib.{Email, Person}
+import com.bryzek.dependency.api.lib.{Email, Person, Urls}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
 
 object EmailActor {
-
-  case class Urls(
-    wwwHost: String = DefaultConfig.requiredString("dependency.www.host")
-  )
 
   object Messages {
     case object ProcessDailySummary
@@ -84,7 +80,7 @@ case class EmailMessage(publication: Publication) {
       person = person,
       recommendations = recommendations,
       lastEmail = lastEmail,
-      urls = EmailActor.Urls()
+      urls = Urls()
     )
   }
 
