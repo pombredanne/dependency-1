@@ -23,13 +23,25 @@
   </p>
 
 }
- 
-<p>
-  <ul>
-    @recommendations.map { rec =>
-    <li> @rec</li>
-    }
-  </ul>
-</p>
-
+<table class="table">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Project</th>
+      <th>Name</th>
+      <th>Current</th>
+      <th>Recommended</th>
+    </tr>
+  </thead>
+  @recommendations.map { rec =>
+    <tr>
+      <td>@com.bryzek.dependency.lib.DateHelper.shortDate(rec.audit.createdAt)</td>
+      <td><a href="@routes.ProjectsController.show(rec.project.guid)">@{rec.project.name}</a></td>
+      <td><a href="@com.bryzek.dependency.lib.Config.recommendationUrl(rec)">@com.bryzek.dependency.lib.Text.truncate(rec.name, 50)</a></td>
+      <td>@rec.from</td>
+      <td>@rec.to</td>
+    </tr>
+  }
+</table>
+  
 @footer(subscriptionsUrl)
