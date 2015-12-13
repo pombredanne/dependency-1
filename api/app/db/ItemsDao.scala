@@ -29,8 +29,11 @@ object ItemsDao {
            items.contents,
            items.summary,
            items.created_at,
-           items.deleted_at
+           items.deleted_at,
+           organizations.guid as items_organization_guid,
+           organizations.key as items_organization_key
       from items
+      left join organizations on organizations.deleted_at is null and organizations.guid = items.organization_guid
      where true
   """
 
@@ -66,6 +69,7 @@ object ItemsDao {
       ItemForm(
         summary = BinarySummary(
           guid = binary.guid,
+          organization = binary.organization,
           name = binary.name
         ),
         label = label,
@@ -82,6 +86,7 @@ object ItemsDao {
       ItemForm(
         summary = LibrarySummary(
           guid = library.guid,
+          organization = library.organization,
           groupId = library.groupId,
           artifactId = library.artifactId
         ),
@@ -101,6 +106,7 @@ object ItemsDao {
       ItemForm(
         summary = ProjectSummary(
           guid = project.guid,
+          organization = project.organization,
           name = project.name
         ),
         label = label,

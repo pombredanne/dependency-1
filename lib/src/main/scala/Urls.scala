@@ -15,10 +15,10 @@ object Urls {
 
   def itemSummaryUrl(summary: ItemSummary): String = {
     summary match {
-      case BinarySummary(guid, _) => controllers.routes.BinariesController.show(guid).url
-      case LibrarySummary(guid, _, _) => controllers.routes.LibrariesController.show(guid).url
-      case ProjectSummary(guid, _) => controllers.routes.ProjectsController.show(guid).url
-      case ItemSummaryUndefinedType(_) => "#"
+      case BinarySummary(guid, org, name) => controllers.routes.BinariesController.show(guid).url
+      case LibrarySummary(guid, org, groupId, artifactId) => controllers.routes.LibrariesController.show(guid).url
+      case ProjectSummary(guid, org, name) => controllers.routes.ProjectsController.show(guid).url
+      case ItemSummaryUndefinedType(name) => sys.error(s"Cannot get a guid from ItemSummaryUndefinedType($name)")
     }
   }
 

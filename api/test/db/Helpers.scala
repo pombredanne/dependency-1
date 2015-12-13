@@ -346,6 +346,7 @@ trait Helpers {
   ): ItemSummary = {
     BinarySummary(
       guid = binary.guid,
+      organization = OrganizationSummary(org.guid, org.key),
       name = binary.name
     )
   }
@@ -356,9 +357,9 @@ trait Helpers {
     summary: ItemSummary = createItemSummary(org)()
   ): ItemForm = {
     val label = summary match {
-      case BinarySummary(_, name) => name.toString
-      case LibrarySummary(_, groupId, artifactId) => Seq(groupId, artifactId).mkString(".")
-      case ProjectSummary(_, name) => name
+      case BinarySummary(guid, org, name) => name.toString
+      case LibrarySummary(guid, org, groupId, artifactId) => Seq(groupId, artifactId).mkString(".")
+      case ProjectSummary(guid, org, name) => name
       case ItemSummaryUndefinedType(name) => name
     }
     ItemForm(

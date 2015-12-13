@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{BinarySummary, LibrarySummary, ProjectSummary}
+import com.bryzek.dependency.v0.models.{BinarySummary, LibrarySummary, OrganizationSummary, ProjectSummary}
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -70,6 +70,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     actual.summary must be(
       BinarySummary(
         guid = binary.guid,
+        organization = OrganizationSummary(org.guid, org.key),
         name = binary.name
       )
     )
@@ -89,6 +90,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     actual.summary must be(
       LibrarySummary(
         guid = library.guid,
+        organization = OrganizationSummary(org.guid, org.key),
         groupId = library.groupId,
         artifactId = library.artifactId
       )
@@ -109,6 +111,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     actual.summary must be(
       ProjectSummary(
         guid = project.guid,
+        organization = OrganizationSummary(org.guid, org.key),
         name = project.name
       )
     )

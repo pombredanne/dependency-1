@@ -30,7 +30,7 @@ package com.bryzek.dependency.v0.models {
 
   case class BinarySummary(
     guid: _root_.java.util.UUID,
-    organization: com.bryzek.dependency.v0.models.OrganizationSummary,    
+    organization: com.bryzek.dependency.v0.models.OrganizationSummary,
     name: com.bryzek.dependency.v0.models.BinaryType
   ) extends ItemSummary
 
@@ -147,6 +147,7 @@ package com.bryzek.dependency.v0.models {
 
   case class ProjectDetail(
     guid: _root_.java.util.UUID,
+    organization: com.bryzek.dependency.v0.models.OrganizationSummary,
     name: String
   )
 
@@ -630,6 +631,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyBinarySummary: play.api.libs.json.Reads[BinarySummary] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "name").read[com.bryzek.dependency.v0.models.BinaryType]
       )(BinarySummary.apply _)
     }
@@ -637,6 +639,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyBinarySummary: play.api.libs.json.Writes[BinarySummary] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "name").write[com.bryzek.dependency.v0.models.BinaryType]
       )(unlift(BinarySummary.unapply _))
     }
@@ -786,6 +789,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyLibrarySummary: play.api.libs.json.Reads[LibrarySummary] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "group_id").read[String] and
         (__ \ "artifact_id").read[String]
       )(LibrarySummary.apply _)
@@ -794,6 +798,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyLibrarySummary: play.api.libs.json.Writes[LibrarySummary] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "group_id").write[String] and
         (__ \ "artifact_id").write[String]
       )(unlift(LibrarySummary.unapply _))
@@ -900,6 +905,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyProjectDetail: play.api.libs.json.Reads[ProjectDetail] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "name").read[String]
       )(ProjectDetail.apply _)
     }
@@ -907,6 +913,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyProjectDetail: play.api.libs.json.Writes[ProjectDetail] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "name").write[String]
       )(unlift(ProjectDetail.unapply _))
     }
@@ -966,6 +973,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyProjectSummary: play.api.libs.json.Reads[ProjectSummary] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "name").read[String]
       )(ProjectSummary.apply _)
     }
@@ -973,6 +981,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyProjectSummary: play.api.libs.json.Writes[ProjectSummary] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "name").write[String]
       )(unlift(ProjectSummary.unapply _))
     }

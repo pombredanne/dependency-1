@@ -124,6 +124,7 @@
 	"binary_summary": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
+		{ "name": "organization", "type": "organization_summary" },
 		{ "name": "name", "type": "binary_type" }
 	    ]
 	},
@@ -169,6 +170,7 @@
 	"library_summary": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
+		{ "name": "organization", "type": "organization_summary" },
 		{ "name": "group_id", "type": "string" },
 		{ "name": "artifact_id", "type": "string" }
 	    ]
@@ -227,6 +229,7 @@
 	"project_detail": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
+		{ "name": "organization", "type": "organization_summary" },
 		{ "name": "name", "type": "string" }
 	    ]
 	},
@@ -234,6 +237,7 @@
 	"project_summary": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
+		{ "name": "organization", "type": "organization_summary" },
 		{ "name": "name", "type": "string" }
 	    ]
 	},
