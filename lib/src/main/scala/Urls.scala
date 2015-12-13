@@ -18,7 +18,7 @@ object Urls {
       case BinarySummary(guid, org, name) => controllers.routes.BinariesController.show(guid).url
       case LibrarySummary(guid, org, groupId, artifactId) => controllers.routes.LibrariesController.show(guid).url
       case ProjectSummary(guid, org, name) => controllers.routes.ProjectsController.show(guid).url
-      case ItemSummaryUndefinedType(name) => sys.error(s"Cannot get a guid from ItemSummaryUndefinedType($name)")
+      case ItemSummaryUndefinedType(name) => "#"
     }
   }
 
