@@ -38,15 +38,6 @@ trait Helpers {
     }
   }
 
-  def createOrganizationSummary(
-    org: Organization = createOrganization()
-  ): OrganizationSummary = {
-    OrganizationSummary(
-      guid = org.guid,
-      key = org.key
-    )
-  }
-
   def createOrganizationForm() = {
     OrganizationForm(
       key = createTestKey()

@@ -3,9 +3,9 @@ package com.bryzek.dependency.api.lib
 import com.bryzek.dependency.v0.models.BinaryForm
 import org.specs2.mutable._
 
-class DependencyHelperSpec extends Specification with db.Helpers {
+class DependencyHelperSpec extends Specification with Factories {
 
-  lazy val org = createOrganization()
+  lazy val org = makeOrganizationSummary()
 
   "crossBuildVersion for scala" in {
     Seq("2.10", "2.10.1", "2.10.1-RC1", "2.10.0-M3").map { tag =>

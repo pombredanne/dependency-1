@@ -3,9 +3,9 @@ package com.bryzek.dependency.api.lib
 import com.bryzek.dependency.v0.models.BinaryForm
 import org.specs2.mutable._
 
-class BuildSbtScalaParserSpec extends Specification with db.Helpers {
+class BuildSbtScalaParserSpec extends Specification with Factories {
 
-  lazy val orgSummary = createOrganizationSummary()
+  lazy val orgSummary = makeOrganizationSummary()
 
   "simple library with no dependencies" should {
 
