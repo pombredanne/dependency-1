@@ -7,10 +7,11 @@
 
   @if(recommendations.isEmpty) {
 
-    <p><em>We do not have any upgrade recommendations for
-    you. Recommendations are made by first adding and watching
-    projects - then as we find new versions of your dependencies, you
-    will see them here.</em></p>
+    <p><em>We do not have any upgrade recommendations for you. When
+    you add a project, we begin monitoring all of its dependencies,
+    creating recommendations for you. The Dashboard summarizes
+    recommendations from all of the projects you are
+    watching.</em></p>
 
     <p>
       <a href="@routes.ProjectsController.github()">Add a project</a>
