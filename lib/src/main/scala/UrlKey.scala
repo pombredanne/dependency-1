@@ -77,7 +77,12 @@ object UrlKey {
     }
   }
 
-  private def format(value: String): String = {
+  /**
+    * Takes a string and formats it to be url safe, removing non safe
+    * url characters and replacing while trying to maximize
+    * legibility.
+    */
+  def format(value: String): String = {
     RegexpTrailingSpaces.replaceAllIn(
       RegexpLeadingSpaces.replaceAllIn(
         Regexp3.replaceAllIn(

@@ -1,5 +1,6 @@
 package db
 
+import io.flow.user.v0.models.Name
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -9,6 +10,34 @@ import java.util.UUID
 class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
+
+  "defaultUserName" in {
+    val user = makeUser()
+
+    OrganizationsDao.defaultUserName(
+      user.copy(email = Some("mike@flow.io"))
+    ) must be("mike")
+
+    OrganizationsDao.defaultUserName(
+      user.copy(email = Some("mbryzek@alum.mit.edu"))
+    ) must be("mbryzek")
+
+    OrganizationsDao.defaultUserName(
+      user.copy(name = Name())
+    ).length must be(OrganizationsDao.DefaultUserNameLength)
+
+    OrganizationsDao.defaultUserName(
+      user.copy(name = Name(first = Some("Michael")))
+    ) must be("michael")
+
+    OrganizationsDao.defaultUserName(
+      user.copy(name = Name(last = Some("Bryzek")))
+    ) must be("bryzek")
+
+    OrganizationsDao.defaultUserName(
+      user.copy(name = Name(first = Some("Michael"), last = Some("Bryzek")))
+    ) must be("mbryzek")
+  }
 
   "create" in {
     val form = createOrganizationForm()

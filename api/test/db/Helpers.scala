@@ -1,5 +1,6 @@
 package db
 
+import io.flow.play.clients.MockUserClient
 import com.bryzek.dependency.v0.models._
 import io.flow.user.v0.models.{NameForm, User, UserForm}
 import java.util.UUID
@@ -178,6 +179,18 @@ trait Helpers {
 
     (project, binaryVersion)
   }
+
+  def makeUser(
+    form: UserForm = makeUserForm()
+  ): User = {
+    MockUserClient.makeUser(form)
+  }
+
+  def makeUserForm() = UserForm(
+    email = None,
+    name = None,
+    avatarUrl = None
+  )
 
   def createUser(
     form: UserForm = createUserForm()

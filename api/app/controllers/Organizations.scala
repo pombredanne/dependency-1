@@ -43,6 +43,12 @@ class Organizations @javax.inject.Inject() (
     }
   }
 
+  def getUsersByGuid(userGuid: UUID) = Identified { request =>
+    withUser(userGuid) { user =>
+      Ok(Json.toJson(OrganizationsDao.upsertForUser(user)))
+    }
+  }
+
   def post() = Identified(parse.json) { request =>
     request.body.validate[OrganizationForm] match {
       case e: JsError => {

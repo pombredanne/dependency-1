@@ -1,5 +1,6 @@
 package db
 
+import com.bryzek.dependency.lib.UrlKey
 import com.bryzek.dependency.v0.models.{Organization, OrganizationForm}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
@@ -10,6 +11,8 @@ import play.api.libs.json._
 import java.util.UUID
 
 object OrganizationsDao {
+
+  val DefaultUserNameLength = 8
 
   private[this] val BaseQuery = s"""
     select organizations.guid,
@@ -31,6 +34,13 @@ object OrganizationsDao {
        set key = {key},
            updated_by_guid = {updated_by_guid}::uuid
      where guid = {guid}::uuid
+  """
+
+  private[this] val InsertUserOrganizationQuery = """
+    insert into user_organizations
+    (guid, user_guid, organization_guid, created_by_guid, updated_by_guid)
+    values
+    ({guid}::uuid, {user_guid}::uuid, {organization_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[db] def validate(
@@ -56,16 +66,9 @@ object OrganizationsDao {
   def create(createdBy: User, form: OrganizationForm): Either[Seq[String], Organization] = {
     validate(form) match {
       case Nil => {
-        val guid = UUID.randomUUID
-
-        DB.withConnection { implicit c =>
-          SQL(InsertQuery).on(
-            'guid -> guid,
-            'key -> form.key.trim,
-            'created_by_guid -> createdBy.guid
-          ).execute()
+        val guid = DB.withConnection { implicit c =>
+          create(c, createdBy, form)
         }
-
         Right(
           findByGuid(guid).getOrElse {
             sys.error("Failed to create organization")
@@ -74,6 +77,16 @@ object OrganizationsDao {
       }
       case errors => Left(errors)
     }
+  }
+
+  private[this] def create(implicit c: java.sql.Connection, createdBy: User, form: OrganizationForm): UUID = {
+    val guid = UUID.randomUUID
+    SQL(InsertQuery).on(
+      'guid -> guid,
+      'key -> form.key.trim,
+      'created_by_guid -> createdBy.guid
+    ).execute()
+    guid
   }
 
   def update(createdBy: User, organization: Organization, form: OrganizationForm): Either[Seq[String], Organization] = {
@@ -101,6 +114,50 @@ object OrganizationsDao {
     SoftDelete.delete("organizations", deletedBy.guid, organization.guid)
   }
 
+  def upsertForUser(user: User): Organization = {
+    findAll(forUserGuid = Some(user.guid), limit = 1).headOption.getOrElse {
+      val key = UrlKey.generate(defaultUserName(user))
+      val orgGuid = DB.withConnection { implicit c =>
+        val orgGuid = create(c, user, OrganizationForm(
+          key = key
+        ))
+
+        SQL(InsertUserOrganizationQuery).on(
+          'guid -> UUID.randomUUID,
+          'user_guid -> user.guid,
+          'organization_guid -> orgGuid
+        ).execute()
+
+        orgGuid
+      }
+      findByGuid(orgGuid).getOrElse {
+        sys.error(s"Failed to create an organization for the user[$user]")
+      }
+    }
+  }
+
+  /**
+   * Generates a default username for this user based on email or
+   * name.
+   */
+  def defaultUserName(user: User): String = {
+    UrlKey.format(
+      user.email match {
+        case Some(email) => {
+          email.substring(0, email.indexOf("@"))
+        }
+        case None => {
+          (user.name.first, user.name.last) match {
+            case (None, None) => UrlKey.randomAlphanumericString(DefaultUserNameLength)
+            case (Some(first), None) => first
+            case (None, Some(last)) => last
+            case (Some(first), Some(last)) => first(0) + last
+          }
+        }
+      }
+    )
+  }
+
   def findByKey(key: String): Option[Organization] = {
     findAll(key = Some(key), limit = 1).headOption
   }
@@ -113,6 +170,7 @@ object OrganizationsDao {
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     key: Option[String] = None,
+    forUserGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -122,13 +180,15 @@ object OrganizationsDao {
       guid.map { v => "and organizations.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("organizations.guid", _) },
       key.map { v => "and lower(organizations.key) = lower(trim({key}))" },
+      forUserGuid.map { v => "and organizations.guid = (select organization_guid from user_organizations where deleted_at is null and user_guid = {for_user_guid}::uuid)" },
       isDeleted.map(Filters.isDeleted("organizations", _)),
       Some(s"order by organizations.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
-      key.map('key -> _.toString)
+      key.map('key -> _.toString),
+      forUserGuid.map('for_user_guid -> _.toString)
     ).flatten
 
     DB.withConnection { implicit c =>

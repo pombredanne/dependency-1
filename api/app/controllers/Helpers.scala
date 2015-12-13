@@ -1,12 +1,25 @@
 package controllers
 
-import db.{Authorization, OrganizationsDao, ProjectsDao, ResolversDao}
+import db.{Authorization, OrganizationsDao, ProjectsDao, ResolversDao, UsersDao}
 import com.bryzek.dependency.v0.models.{Organization, Project, Resolver}
 import io.flow.user.v0.models.User
 import play.api.mvc.{Result, Results}
 import java.util.UUID
 
 trait Helpers {
+
+  def withUser(guid: UUID)(
+    f: User => Result
+  ) = {
+    UsersDao.findByGuid(guid) match {
+      case None => {
+        Results.NotFound
+      }
+      case Some(user) => {
+        f(user)
+      }
+    }
+  }
 
   def withOrganization(guid: UUID)(
     f: Organization => Result

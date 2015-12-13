@@ -578,6 +578,17 @@
 
                 {
                     "method": "GET",
+                    "description": "Returns the organization representing the individual user.",
+                    "path": "/users/:guid",
+                    "responses": {
+                        "200": { "type": "organization" },
+                        "401": { "type": "unit" },
+                        "404": { "type": "unit", "description": "Returns if the user guid does not exist" }
+                    }
+                },
+
+                {
+                    "method": "GET",
                     "description": "Returns information about the organization with this guid.",
                     "path": "/:guid",
                     "responses": {
