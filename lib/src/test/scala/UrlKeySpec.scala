@@ -1,5 +1,6 @@
 package com.bryzek.dependency.lib
 
+import java.util.UUID
 import org.scalatest.{FunSpec, Matchers}
 
 class UrlKeySpec extends FunSpec with Matchers {
@@ -11,11 +12,19 @@ class UrlKeySpec extends FunSpec with Matchers {
       UrlKey.validate(key) should be(Nil)
     }
 
-    it("allows apidoc keys") {
-      Seq("apidoc-spec", "apidoc-generator", "apidoc-api").foreach { key =>
-        UrlKey.generate(key)() should be(key)
-        UrlKey.validate(key) should be(Nil)
-      }
+    it("executes check function") {
+      val sample = UUID.randomUUID.toString
+      val key = UrlKey.generate(sample) { k => (k != sample) }
+      key should be(sample + "-1")
+      UrlKey.validate(key) should be(Nil)
+    }
+
+    it("appends string to make min length") {
+      val key = UrlKey.generate("a")
+      println(s"key: $key")
+      key.length should be(UrlKey.MinKeyLength)
+      key(0).toString should be("a")
+      UrlKey.validate(key) should be(Nil)
     }
 
     it("good urls alone") {

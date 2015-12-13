@@ -18,7 +18,7 @@ object UrlKey {
     randomString(Characters)(n)
   }
 
-  private val MinKeyLength = 4
+  val MinKeyLength = 4
 
   // Only want lower case letters and dashes
   private val Regexp1 = """([^0-9a-z\-\_\.])""".r
@@ -46,7 +46,7 @@ object UrlKey {
     value: String,
     suffix: Option[Int] = None
   ) (
-    checkFunction: String => Boolean = { _ => true }
+    implicit checkFunction: String => Boolean = { _ => true }
   ): String = {
     val formatted = format(value)
     (formatted.length < MinKeyLength) match {
