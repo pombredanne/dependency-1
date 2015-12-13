@@ -3,7 +3,9 @@ package com.bryzek.dependency.api.lib
 import com.bryzek.dependency.v0.models.BinaryForm
 import org.specs2.mutable._
 
-class BuildSbtScalaParserSpec extends Specification {
+class BuildSbtScalaParserSpec extends Specification with db.Helpers {
+
+  lazy val orgSummary = createOrganizationSummary()
 
   "simple library with no dependencies" should {
 
@@ -15,7 +17,7 @@ lazy val root = project
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser("test", contents)
+      val result = BuildSbtScalaParser(orgSummary, "test", contents)
       result.binaries must beEqualTo(Nil)
       result.libraries must beEqualTo(Nil)
     }
@@ -46,12 +48,12 @@ lazy val root = project
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser("test", contents)
-      result.binaries must beEqualTo(Seq(BinaryForm("scala", "2.11.7")))
+      val result = BuildSbtScalaParser(orgSummary, "test", contents)
+      result.binaries must beEqualTo(Seq(BinaryForm(orgSummary.guid, "scala", "2.11.7")))
       result.libraries must beEqualTo(
         Seq(
-          Artifact("io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT", true),
-          Artifact("org.postgresql", "postgresql", "9.4-1202-jdbc42", false)
+          Artifact(orgSummary, "io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT", true),
+          Artifact(orgSummary, "org.postgresql", "postgresql", "9.4-1202-jdbc42", false)
         )
       )
     }
@@ -72,12 +74,12 @@ lazy val root = project
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser("test", contents)
+      val result = BuildSbtScalaParser(orgSummary, "test", contents)
       result.binaries must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
-          Artifact("io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT", true),
-          Artifact("org.postgresql", "postgresql", "9.4-1202-jdbc42", false)
+          Artifact(orgSummary, "io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT", true),
+          Artifact(orgSummary, "org.postgresql", "postgresql", "9.4-1202-jdbc42", false)
         )
       )
     }
@@ -107,13 +109,13 @@ lazy val www = project
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser("test", contents)
+      val result = BuildSbtScalaParser(orgSummary, "test", contents)
       result.binaries must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
-          Artifact("io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT", true),
-          Artifact("io.flow", "lib-play-postgresql", "0.0.2-SNAPSHOT", true),
-          Artifact("org.postgresql", "postgresql", "9.4-1202-jdbc42", false)
+          Artifact(orgSummary, "io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT", true),
+          Artifact(orgSummary, "io.flow", "lib-play-postgresql", "0.0.2-SNAPSHOT", true),
+          Artifact(orgSummary, "org.postgresql", "postgresql", "9.4-1202-jdbc42", false)
         )
       )
     }
@@ -134,13 +136,13 @@ lazy val avro = project
     )
   )
 """
-    val result = BuildSbtScalaParser("test", contents)
+    val result = BuildSbtScalaParser(orgSummary, "test", contents)
     result.binaries must beEqualTo(Nil)
     result.libraries must beEqualTo(
       Seq(
-        Artifact("com.typesafe.akka", "akka-cluster", "2.3.4", true),
-        Artifact("com.typesafe.akka", "akka-testkit", "2.3.4", true),
-        Artifact("org.apache.avro", "avro", "1.7.7", false)
+        Artifact(orgSummary, "com.typesafe.akka", "akka-cluster", "2.3.4", true),
+        Artifact(orgSummary, "com.typesafe.akka", "akka-testkit", "2.3.4", true),
+        Artifact(orgSummary, "org.apache.avro", "avro", "1.7.7", false)
       )
     )
   }
@@ -153,11 +155,11 @@ lazy val avro = project
   )
 """
 
-    val result = BuildSbtScalaParser("test", contents)
+    val result = BuildSbtScalaParser(orgSummary, "test", contents)
     result.binaries must beEqualTo(Nil)
     result.libraries must beEqualTo(
       Seq(
-        Artifact("org.scalatest", "scalatest", "2.2.0", true)
+        Artifact(orgSummary, "org.scalatest", "scalatest", "2.2.0", true)
       )
     )
   }
@@ -181,13 +183,13 @@ lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser("test", contents)
+      val result = BuildSbtScalaParser(orgSummary, "test", contents)
       result.binaries must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
-          Artifact("io.dropwizard.metrics", "metrics-core", "3.1.0", false),
-          Artifact("io.dropwizard.metrics", "metrics-jvm", "3.1.0", false),
-          Artifact("org.scalatest", "scalatest", "2.1.2", true)
+          Artifact(orgSummary, "io.dropwizard.metrics", "metrics-core", "3.1.0", false),
+          Artifact(orgSummary, "io.dropwizard.metrics", "metrics-jvm", "3.1.0", false),
+          Artifact(orgSummary, "org.scalatest", "scalatest", "2.1.2", true)
         )
       )
       result.resolverUris must beEqualTo(
@@ -203,11 +205,11 @@ lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser("test", contents)
+      val result = BuildSbtScalaParser(orgSummary, "test", contents)
       result.binaries must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
-          Artifact("com.typesafe.play", "play-json", "2.2.2", true)
+          Artifact(orgSummary, "com.typesafe.play", "play-json", "2.2.2", true)
         )
       )
       result.resolverUris must beEqualTo(Nil)

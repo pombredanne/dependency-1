@@ -12,8 +12,9 @@ class LibrariesSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  lazy val library1 = createLibrary()
-  lazy val library2 = createLibrary()
+  lazy val org = createOrganization()
+  lazy val library1 = createLibrary(org)()
+  lazy val library2 = createLibrary(org)()
 
   "GET /libraries by guid" in new WithServer(port=port) {
     await(
@@ -67,7 +68,7 @@ class LibrariesSpec extends PlaySpecification with MockClient {
   }
 
   "POST /libraries" in new WithServer(port=port) {
-    val form = createLibraryForm()
+    val form = createLibraryForm(org)()
     val library = await(client.libraries.post(form))
     library.groupId must beEqualTo(form.groupId)
     library.artifactId must beEqualTo(form.artifactId)
@@ -76,7 +77,7 @@ class LibrariesSpec extends PlaySpecification with MockClient {
   "POST /libraries validates duplicate" in new WithServer(port=port) {
     expectErrors(
       client.libraries.post(
-        createLibraryForm().copy(
+        createLibraryForm(org)().copy(
           groupId = library1.groupId,
           artifactId = library1.artifactId
         )
@@ -87,7 +88,7 @@ class LibrariesSpec extends PlaySpecification with MockClient {
   }
 
   "DELETE /libraries" in new WithServer(port=port) {
-    val library = createLibrary()
+    val library = createLibrary(org)()
     await(
       client.libraries.deleteByGuid(library.guid)
     ) must beEqualTo(())

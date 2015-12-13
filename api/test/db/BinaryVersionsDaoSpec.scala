@@ -11,8 +11,10 @@ class BinaryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  lazy val org = createOrganization()
+
   "upsert" in {
-    val binary = createBinary()
+    val binary = createBinary(org)()
     val version1 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.0")
     val version2 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.0")
     val version3 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.1")
@@ -22,7 +24,7 @@ class BinaryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findByGuid" in {
-    val version = createBinaryVersion()
+    val version = createBinaryVersion(org)()
     BinaryVersionsDao.findByGuid(version.guid).map(_.guid) must be(
       Some(version.guid)
     )
@@ -31,8 +33,8 @@ class BinaryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by guids" in {
-    val version1 = createBinaryVersion()
-    val version2 = createBinaryVersion()
+    val version1 = createBinaryVersion(org)()
+    val version2 = createBinaryVersion(org)()
 
     BinaryVersionsDao.findAll(guids = Some(Seq(version1.guid, version2.guid))).map(_.guid).sorted must be(
       Seq(version1.guid, version2.guid).sorted
@@ -44,7 +46,7 @@ class BinaryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "softDelete" in {
-    val binary = createBinary()
+    val binary = createBinary(org)()
     val version1 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.0")
     BinaryVersionsDao.softDelete(systemUser, version1.guid)
     val version2 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.0")

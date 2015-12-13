@@ -43,6 +43,7 @@ class LibraryActor extends Actor with Util {
                 MainActor.SystemUser,
                 lib,
                 LibraryForm(
+                  organizationGuid = lib.organization.guid,
                   groupId = lib.groupId,
                   artifactId = lib.artifactId,
                   resolverGuid = Some(resolution.resolver.guid)

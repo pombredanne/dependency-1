@@ -20,17 +20,20 @@ object LibrariesDao {
            ${AuditsDao.all("libraries")},
            resolvers.guid as libraries_resolver_guid,
            resolvers.visibility as libraries_resolver_visibility,
-           resolvers.uri as libraries_resolver_uri
+           resolvers.uri as libraries_resolver_uri,
+           organizations.guid as projects_organization_guid,
+           organizations.key as projects_organization_key
       from libraries
+      left join organizations on organizations.deleted_at is null and organizations.guid = libraries.organization_guid
       left join resolvers on resolvers.deleted_at is null and resolvers.guid = libraries.resolver_guid
      where true
   """
 
   private[this] val InsertQuery = """
     insert into libraries
-    (guid, group_id, artifact_id, resolver_guid, created_by_guid, updated_by_guid)
+    (guid, organization_guid, group_id, artifact_id, resolver_guid, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {group_id}, {artifact_id}, {resolver_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {organization_guid}::uuid, {group_id}, {artifact_id}, {resolver_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[this] val UpdateQuery = """
@@ -59,7 +62,7 @@ object LibrariesDao {
     }
 
     val existsErrors = if (groupIdErrors.isEmpty && artifactIdErrors.isEmpty) {
-      LibrariesDao.findByGroupIdAndArtifactId(form.groupId, form.artifactId) match {
+      LibrariesDao.findByOrganizationGuidAndGroupIdAndArtifactId(form.organizationGuid, form.groupId, form.artifactId) match {
         case None => Nil
         case Some(lib) => {
           if (Some(lib.guid) == existing.map(_.guid)) {
@@ -77,7 +80,7 @@ object LibrariesDao {
   }
 
   def upsert(createdBy: User, form: LibraryForm): Either[Seq[String], Library] = {
-    LibrariesDao.findByGroupIdAndArtifactId(form.groupId, form.artifactId) match {
+    LibrariesDao.findByOrganizationGuidAndGroupIdAndArtifactId(form.organizationGuid, form.groupId, form.artifactId) match {
       case None => {
         create(createdBy, form)
       }
@@ -100,6 +103,7 @@ object LibrariesDao {
         DB.withTransaction { implicit c =>
           SQL(InsertQuery).on(
             'guid -> guid,
+            'organization_guid -> form.organizationGuid,
             'group_id -> form.groupId.trim,
             'artifact_id -> form.artifactId.trim,
             'resolver_guid -> form.resolverGuid,
@@ -125,6 +129,13 @@ object LibrariesDao {
   def update(updatedBy: User, library: Library, form: LibraryForm): Either[Seq[String], Library] = {
     validate(form, existing = Some(library)) match {
       case Nil => {
+        // To support org change - need to record the change as its
+        // own record to be able to track changes.
+        assert(
+          library.organization.guid == form.organizationGuid,
+          "Changing organization not currently supported"
+        )
+
         DB.withTransaction { implicit c =>
           SQL(UpdateQuery).on(
             'guid -> library.guid,
@@ -156,11 +167,13 @@ object LibrariesDao {
     MainActor.ref ! MainActor.Messages.LibraryDeleted(library.guid)
   }
 
-  def findByGroupIdAndArtifactId(
+  def findByOrganizationGuidAndGroupIdAndArtifactId(
+    organizationGuid: UUID,
     groupId: String,
     artifactId: String
   ): Option[Library] = {
     findAll(
+      organizationGuid = Some(organizationGuid),
       groupId = Some(groupId),
       artifactId = Some(artifactId),
       limit = 1
@@ -174,6 +187,7 @@ object LibrariesDao {
   def findAll(
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
+    organizationGuid: Option[UUID] = None,
     projectGuid: Option[UUID] = None,
     groupId: Option[String] = None,
     artifactId: Option[String] = None,
@@ -187,6 +201,7 @@ object LibrariesDao {
       Some(BaseQuery.trim),
       guid.map { v => "and libraries.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("libraries.guid", _) },
+      organizationGuid.map { v => "and libraries.organization_guid = {organization_guid}::uuid" },
       projectGuid.map { v => """
         and libraries.guid in (
           select library_versions.library_guid
@@ -214,6 +229,7 @@ object LibrariesDao {
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
+      organizationGuid.map('organization_guid -> _.toString),
       projectGuid.map('project_guid -> _.toString),
       groupId.map('group_id -> _.toString),
       artifactId.map('artifact_id -> _.toString),

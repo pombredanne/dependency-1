@@ -10,11 +10,15 @@ trait Helpers {
   lazy val systemUser = UsersDao.systemUser
 
   def createTestEmail(): String = {
-    s"z-test-${UUID.randomUUID}@test.bryzek.com"
+    s"${createTestKey}@test.bryzek.com"
   }
 
   def createTestName(): String = {
     s"Z Test ${UUID.randomUUID}"
+  }
+
+  def createTestKey(): String = {
+    s"z-test-${UUID.randomUUID.toString.toLowerCase}"
   }
 
   @scala.annotation.tailrec
@@ -26,28 +30,60 @@ trait Helpers {
     }
   }
 
+  def createOrganization(
+    form: OrganizationForm = createOrganizationForm()
+  ): Organization = {
+    OrganizationsDao.create(systemUser, form).right.getOrElse {
+      sys.error("Failed to create organization")
+    }
+  }
+
+  def createOrganizationSummary(
+    org: Organization = createOrganization()
+  ): OrganizationSummary = {
+    OrganizationSummary(
+      guid = org.guid,
+      key = org.key
+    )
+  }
+
+  def createOrganizationForm() = {
+    OrganizationForm(
+      key = createTestKey()
+    )
+  }
+
   def createBinary(
-    form: BinaryForm = createBinaryForm()
+    org: Organization = createOrganization()
+  ) (
+    form: BinaryForm = createBinaryForm(org)
   ): Binary = {
     BinariesDao.create(systemUser, form).right.getOrElse {
       sys.error("Failed to create binary")
     }
   }
 
-  def createBinaryForm() = BinaryForm(
+  def createBinaryForm(
+    org: Organization = createOrganization()
+  ) = BinaryForm(
+    organizationGuid = org.guid,
     name = s"z-test-binary-${UUID.randomUUID}".toLowerCase,
     version = "0.0.1"
   )
 
   def createBinaryVersion(
-    binary: Binary = createBinary(),
+    org: Organization = createOrganization()
+  ) (
+    binary: Binary = createBinary(org)(),
     version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
   ): BinaryVersion = {
     BinaryVersionsDao.create(systemUser, binary.guid, version)
   }
 
   def createLibrary(
-    form: LibraryForm = createLibraryForm()
+    org: Organization = createOrganization()
+  ) (
+    form: LibraryForm = createLibraryForm(org)()
   ): Library = {
     LibrariesDao.create(systemUser, form).right.getOrElse {
       sys.error("Failed to create library")
@@ -55,15 +91,20 @@ trait Helpers {
   }
 
   def createLibraryForm(
+    org: Organization = createOrganization()
+  ) (
     versionForm: VersionForm = VersionForm("0.0.1")
   ) = LibraryForm(
+    organizationGuid = org.guid,
     groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
     artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
     version = Some(versionForm)
   )
 
   def createLibraryVersion(
-    library: Library = createLibrary(),
+    org: Organization = createOrganization()
+  ) (
+    library: Library = createLibrary(org)(),
     version: VersionForm = createVersionForm()
   ): LibraryVersion = {
     LibraryVersionsDao.create(systemUser, library.guid, version)
@@ -77,17 +118,21 @@ trait Helpers {
   }
 
   def createProject(
-    form: ProjectForm = createProjectForm()
+    org: Organization = createOrganization()
+  ) (
+    form: ProjectForm = createProjectForm(org)
   ): Project = {
     ProjectsDao.create(systemUser, form).right.getOrElse {
-      sys.error("Failed to create projet")
+      sys.error("Failed to create project")
     }
   }
 
-  def createProjectForm() = {
-    val name = createTestName()
+  def createProjectForm(
+    org: Organization = createOrganization()
+  ) = {
     ProjectForm(
-      name = name,
+      organizationGuid = org.guid,
+      name = createTestName(),
       visibility = Visibility.Private,
       scms = Scms.Github,
       uri = s"http://github.com/test/${UUID.randomUUID}"
@@ -95,36 +140,44 @@ trait Helpers {
   }
 
   def createProjectWithLibrary(
-    libraryForm: LibraryForm = createLibraryForm().copy(
+    org: Organization = createOrganization()
+  ) (
+    libraryForm: LibraryForm = createLibraryForm(org)().copy(
       groupId = s"z-test-${UUID.randomUUID}".toLowerCase,
       artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
       version = Some(createVersionForm())
     )
   ): (Project, LibraryVersion) = {
-    val project = createProject()
+    val project = createProject(org)()
     ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(libraryForm)))
 
-    val library = LibrariesDao.findByGroupIdAndArtifactId(libraryForm.groupId, libraryForm.artifactId).getOrElse {
+    val library = LibrariesDao.findByOrganizationGuidAndGroupIdAndArtifactId(
+      org.guid, libraryForm.groupId, libraryForm.artifactId
+    ).getOrElse {
       sys.error("Failed to find library")
     }
 
-    val libraryVersion = LibraryVersionsDao.findByLibraryAndVersionAndCrossBuildVersion(library, libraryForm.version.get.version, libraryForm.version.get.crossBuildVersion).getOrElse {
+    val libraryVersion = LibraryVersionsDao.findByLibraryAndVersionAndCrossBuildVersion(
+      library, libraryForm.version.get.version, libraryForm.version.get.crossBuildVersion
+    ).getOrElse {
       sys.error("Failed to find library version")
     }
 
     (project, libraryVersion)
   }
 
-  def createProjectWithBinary(): (Project, BinaryVersion) = {
-    val binaryForm = createBinaryForm().copy(
+  def createProjectWithBinary(
+    org: Organization = createOrganization()
+  ): (Project, BinaryVersion) = {
+    val binaryForm = createBinaryForm(org).copy(
       name = createTestName(),
       version = UUID.randomUUID.toString
     )
 
-    val project = createProject()
+    val project = createProject(org)()
     ProjectsDao.setDependencies(systemUser, project, binaries = Some(Seq(binaryForm)))
 
-    val binary = BinariesDao.findByName(binaryForm.name).getOrElse {
+    val binary = BinariesDao.findByOrganizationGuidAndName(org.guid, binaryForm.name).getOrElse {
       sys.error("Failed to find binary")
     }
 
@@ -194,7 +247,7 @@ trait Helpers {
   }
 
   def createSyncForm(
-    objectGuid: UUID = createProject().guid,
+    objectGuid: UUID = UUID.randomUUID,
     event: SyncEvent = SyncEvent.Started
   ) = {
     SyncForm(
@@ -224,7 +277,9 @@ trait Helpers {
   }
 
   def createWatchProject(
-    form: WatchProjectForm = createWatchProjectForm()
+    org: Organization
+  ) (
+    form: WatchProjectForm = createWatchProjectForm(org)()
   ): WatchProject = {
     WatchProjectsDao.create(systemUser, form).right.getOrElse {
       sys.error("Failed to create watch project")
@@ -232,8 +287,10 @@ trait Helpers {
   }
 
   def createWatchProjectForm(
+    org: Organization
+  ) (
     user: User = createUser(),
-    project: Project = createProject()
+    project: Project = createProject(org)()
   ) = {
     WatchProjectForm(
       userGuid = user.guid,
@@ -242,11 +299,15 @@ trait Helpers {
   }
 
   def createLibraryWithMultipleVersions(
+    org: Organization
+  ) (
     versions: Seq[String] = Seq("1.0.0", "1.0.1", "1.0.2")
   ): Seq[LibraryVersion] = {
-    val library = createLibrary(createLibraryForm().copy(version = None))
+    val library = createLibrary(org)(createLibraryForm(org)().copy(version = None))
     versions.map { version =>
       createLibraryVersion(
+        org
+      ) (
         library = library,
         version = VersionForm(version = version)
       )
@@ -260,6 +321,7 @@ trait Helpers {
       libraries = Some(
         Seq(
           LibraryForm(
+            organizationGuid = project.organization.guid,
             groupId = libraryVersion.library.groupId,
             artifactId = libraryVersion.library.artifactId,
             version = Some(VersionForm(version = libraryVersion.version))
@@ -270,13 +332,17 @@ trait Helpers {
   }
 
   def upsertItem(
-    form: ItemForm = createItemForm()
+    org: Organization
+  ) (
+    form: ItemForm = createItemForm(org)()
   ): Item = {
     ItemsDao.upsert(systemUser, form)
   }
 
   def createItemSummary(
-    binary: Binary = createBinary()
+    org: Organization
+  ) (
+    binary: Binary = createBinary(org)()
   ): ItemSummary = {
     BinarySummary(
       guid = binary.guid,
@@ -285,7 +351,9 @@ trait Helpers {
   }
 
   def createItemForm(
-    summary: ItemSummary = createItemSummary()
+    org: Organization
+  ) (
+    summary: ItemSummary = createItemSummary(org)()
   ): ItemForm = {
     val label = summary match {
       case BinarySummary(_, name) => name.toString

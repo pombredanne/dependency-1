@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{Project, BinaryForm, BinaryVersion, BinaryRecommendation}
+import com.bryzek.dependency.v0.models.{Project, BinaryForm, BinaryVersion, BinaryRecommendation, Organization}
 import play.api.test._
 import play.api.test.Helpers._
 import org.scalatest._
@@ -11,11 +11,13 @@ class BinaryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Hel
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def createBinaryWithMultipleVersions(
+    org: Organization
+  ) (
     versions: Seq[String] = Seq("1.0.0", "1.0.1", "1.0.2")
   ): Seq[BinaryVersion] = {
-    val binary = createBinary(createBinaryForm().copy(version = versions.head))
+    val binary = createBinary(org)(createBinaryForm(org).copy(version = versions.head))
     versions.drop(1).map { version =>
-      createBinaryVersion(
+      createBinaryVersion(org)(
         binary = binary,
         version = version
       )
@@ -30,6 +32,7 @@ class BinaryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Hel
       binaries = Some(
         Seq(
           BinaryForm(
+            organizationGuid = project.organization.guid,
             name = binaryVersion.binary.name.toString,
             version = binaryVersion.version
           )
@@ -38,21 +41,23 @@ class BinaryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Hel
     )
   }
 
+  lazy val org = createOrganization()
+
   "no-op if nothing to upgrade" in {
-    val project = createProject()
+    val project = createProject(org)()
     BinaryRecommendationsDao.forProject(project) must be(Nil)
   }
 
   "ignores earlier versions of binary" in {
-    val binaryVersions = createBinaryWithMultipleVersions()
-    val project = createProject()
+    val binaryVersions = createBinaryWithMultipleVersions(org)()
+    val project = createProject(org)()
     addBinaryVersion(project, binaryVersions.last)
     BinaryRecommendationsDao.forProject(project) must be(Nil)
   }
 
   "with binary to upgrade" in {
-    val binaryVersions = createBinaryWithMultipleVersions()
-    val project = createProject()
+    val binaryVersions = createBinaryWithMultipleVersions(org)()
+    val project = createProject(org)()
     addBinaryVersion(project, binaryVersions.find(_.version == "1.0.0").get)
     verify(
       BinaryRecommendationsDao.forProject(project),
@@ -68,9 +73,11 @@ class BinaryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Hel
 
   "Prefers latest production release even when more recent beta release is available" in {
     val binaryVersions = createBinaryWithMultipleVersions(
+      org
+    ) (
       versions = Seq("1.0.0", "1.0.2-RC1", "1.0.1")
     )
-    val project = createProject()
+    val project = createProject(org)()
     addBinaryVersion(project, binaryVersions.find(_.version == "1.0.0").get)
     verify(
       BinaryRecommendationsDao.forProject(project),

@@ -6,6 +6,7 @@ drop table if exists libraries;
 drop table if exists projects;
 drop table if exists authorizations;
 drop table if exists users;
+drop table if exists organizations;
 
 create table users (
   guid                    uuid primary key,
@@ -40,9 +41,28 @@ create unique index authorizations_user_guid_scms_token_not_deleted_un_idx
     on authorizations(user_guid, scms, token)
     where deleted_at is null;
 
+create table organizations (
+  guid                    uuid primary key,
+  key                     text not null check (enum(key))
+);
+
+select schema_evolution_manager.create_basic_audit_data('public', 'organizations');
+
+create unique index organizations_key_not_deleted_un_idx on organizations(key) where deleted_at is null;
+
+comment on table organizations is '
+  An organization is the top level entity to which projects,
+  libraries, binaries, etc. exist. The primary purpose is to enable
+  SAAS - segmenting data by organization.
+';
+
+comment on column organizations.key is '
+  Used to uniquely identify this organization. URL friendly.
+';
 
 create table projects (
   guid                    uuid primary key,
+  organization_guid       uuid not null references organizations,
   visibility              text not null check(enum(visibility)),
   scms                    text not null check(enum(scms)),
   name                    text not null check(non_empty_trimmed_string(name)),
@@ -64,7 +84,8 @@ comment on column projects.name is '
 ';
 
 select schema_evolution_manager.create_basic_audit_data('public', 'projects');
-create unique index projects_scms_lower_name_not_deleted_un_idx on projects(scms, lower(name)) where deleted_at is null;
+create index on projects(organization_guid);
+create unique index projects_organization_scms_lower_name_not_deleted_un_idx on projects(organization_guid, scms, lower(name)) where deleted_at is null;
 
 create table resolvers (
   guid                    uuid primary key,
@@ -91,6 +112,7 @@ create unique index resolvers_public_position_un_idx on resolvers(position) wher
 
 create table libraries (
   guid                    uuid primary key,
+  organization_guid       uuid not null references organizations,
   group_id                text not null check(non_empty_trimmed_string(group_id)),
   artifact_id             text not null check(non_empty_trimmed_string(artifact_id)),
   resolver_guid           uuid references resolvers
@@ -105,10 +127,13 @@ comment on column libraries.resolver_guid is '
 ';
 
 select schema_evolution_manager.create_basic_audit_data('public', 'libraries');
+create index on libraries(organization_guid);
 create index on libraries(group_id);
 create index on libraries(artifact_id);
 create index on libraries(resolver_guid);
-create unique index libraries_group_id_artifact_id_not_deleted_un_idx on libraries(group_id, artifact_id) where deleted_at is null;
+create unique index libraries_organization_group_id_artifact_id_not_deleted_un_idx
+    on libraries(organization_guid, group_id, artifact_id)
+ where deleted_at is null;
 
 create table library_versions (
   guid                    uuid primary key,
@@ -135,6 +160,7 @@ create unique index library_versions_library_guid_lower_version_lower_cross_buil
 
 create table binaries (
   guid                    uuid primary key,
+  organization_guid       uuid not null references organizations,
   name                    text not null check(non_empty_trimmed_string(name))
 );
 
@@ -143,8 +169,8 @@ comment on table binaries is '
 ';
 
 select schema_evolution_manager.create_basic_audit_data('public', 'binaries');
-create index on binaries(name);
-create unique index binaries_lower_name_not_deleted_un_idx on binaries(lower(name)) where deleted_at is null;
+create index on binaries(organization_guid);
+create unique index binaries_organization_lower_name_not_deleted_un_idx on binaries(organization_guid, lower(name)) where deleted_at is null;
 
 create table binary_versions (
   guid                    uuid primary key,

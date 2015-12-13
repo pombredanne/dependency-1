@@ -12,8 +12,10 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  lazy val org = createOrganization()
+
   "upsert" in {
-    val library = createLibrary()
+    val library = createLibrary(org)()
     val version1 = LibraryVersionsDao.upsert(systemUser, library.guid, VersionForm("1.0", None))
     val version2 = LibraryVersionsDao.upsert(systemUser, library.guid, VersionForm("1.0", None))
     val version3 = LibraryVersionsDao.upsert(systemUser, library.guid, VersionForm("1.1", None))
@@ -23,7 +25,7 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "upsert with crossBuildVersion" in {
-    val library = createLibrary()
+    val library = createLibrary(org)()
     val version0 = LibraryVersionsDao.upsert(systemUser, library.guid, VersionForm("1.0", None))
     val version1 = LibraryVersionsDao.upsert(systemUser, library.guid, VersionForm("1.0", Some("2.11")))
     val version2 = LibraryVersionsDao.upsert(systemUser, library.guid, VersionForm("1.0", Some("2.11")))
@@ -52,7 +54,7 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findByGuid" in {
-    val version = createLibraryVersion()
+    val version = createLibraryVersion(org)()
     LibraryVersionsDao.findByGuid(version.guid).map(_.guid) must be(
       Some(version.guid)
     )
@@ -61,8 +63,8 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by guids" in {
-    val version1 = createLibraryVersion()
-    val version2 = createLibraryVersion()
+    val version1 = createLibraryVersion(org)()
+    val version2 = createLibraryVersion(org)()
 
     LibraryVersionsDao.findAll(guids = Some(Seq(version1.guid, version2.guid))).map(_.guid).sorted must be(
       Seq(version1.guid, version2.guid).sorted
@@ -74,7 +76,7 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "softDelete" in {
-    val library = createLibrary()
+    val library = createLibrary(org)()
     val version1 = LibraryVersionsDao.upsert(systemUser, library.guid, VersionForm("1.0", None))
     LibraryVersionsDao.softDelete(systemUser, version1.guid)
     val version2 = LibraryVersionsDao.upsert(systemUser, library.guid, VersionForm("1.0", None))

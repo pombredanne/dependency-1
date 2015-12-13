@@ -5,7 +5,7 @@ import play.api.test._
 import play.api.test.Helpers._
 import org.scalatestplus.play._
 
-import com.bryzek.dependency.v0.models.Library
+import com.bryzek.dependency.v0.models.{Library, OrganizationSummary}
 import io.flow.common.v0.models.{Audit, Reference}
 import io.flow.play.clients.MockUserClient
 import org.joda.time.DateTime
@@ -13,12 +13,14 @@ import java.util.UUID
 
 class LibraryArtifactProviderSpec extends PlaySpec with OneAppPerSuite {
 
-  def createLibrary(
+  def makeLibrary(
+    org: OrganizationSummary,
     groupId: String = UUID.randomUUID.toString,
     artifactId: String = UUID.randomUUID.toString
   ): Library = {
     Library(
       guid = UUID.randomUUID,
+      organization = orgSummary,
       groupId = groupId,
       artifactId = artifactId,
       audit = MockUserClient.makeAudit()
@@ -26,9 +28,13 @@ class LibraryArtifactProviderSpec extends PlaySpec with OneAppPerSuite {
   }
 
   lazy val provider = DefaultLibraryArtifactProvider()
+  lazy val orgSummary = OrganizationSummary(
+    guid = UUID.randomUUID,
+    key = s"z-test-${UUID.randomUUID.toString.toLowerCase}"
+  )
 
   "parseUri" in {
-    val library = createLibrary(groupId = "com.github.tototoshi", artifactId = "scala-csv")
+    val library = makeLibrary(org = orgSummary, groupId = "com.github.tototoshi", artifactId = "scala-csv")
     val resolution = provider.artifacts(library, user = None, resolver = None).getOrElse {
       sys.error("Could not find scala-csv library")
     }
@@ -38,7 +44,7 @@ class LibraryArtifactProviderSpec extends PlaySpec with OneAppPerSuite {
   }
 
   "swagger" in {
-    val library = createLibrary(groupId = "io.swagger", artifactId = "swagger-parser")
+    val library = makeLibrary(org = orgSummary, groupId = "io.swagger", artifactId = "swagger-parser")
     val resolution = provider.artifacts(library, user = None, resolver = None).getOrElse {
       sys.error("Could not find swagger-parser library")
     }

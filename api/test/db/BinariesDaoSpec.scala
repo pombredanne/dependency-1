@@ -11,17 +11,20 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  "findByName" in {
-    val lang = createBinary()
-    BinariesDao.findByName(lang.name.toString).map(_.name) must be(
+  lazy val org = createOrganization()
+
+  "findByOrganizationGuidAndName" in {
+    val lang = createBinary(org)()
+    BinariesDao.findByOrganizationGuidAndName(org.guid, lang.name.toString).map(_.name) must be(
       Some(lang.name)
     )
 
-    BinariesDao.findByName(UUID.randomUUID.toString) must be(None)
+    BinariesDao.findByOrganizationGuidAndName(UUID.randomUUID, lang.name.toString) must be(None)
+    BinariesDao.findByOrganizationGuidAndName(org.guid, UUID.randomUUID.toString) must be(None)
   }
 
   "findByGuid" in {
-    val lang = createBinary()
+    val lang = createBinary(org)()
     BinariesDao.findByGuid(lang.guid).map(_.guid) must be(
       Some(lang.guid)
     )
@@ -30,8 +33,8 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by guids" in {
-    val binary1 = createBinary()
-    val binary2 = createBinary()
+    val binary1 = createBinary(org)()
+    val binary2 = createBinary(org)()
 
     BinariesDao.findAll(guids = Some(Seq(binary1.guid, binary2.guid))).map(_.guid) must be(
       Seq(binary1, binary2).sortWith { (x,y) => x.name.toString < y.name.toString }.map(_.guid)
@@ -43,7 +46,7 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by isSynced" in {
-    val binary = createBinary()
+    val binary = createBinary(org)()
     createSync(createSyncForm(objectGuid = binary.guid, event = SyncEvent.Completed))
 
     BinariesDao.findAll(guid = Some(binary.guid), isSynced = Some(true)).map(_.guid) must be(Seq(binary.guid))
@@ -52,15 +55,15 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "create" must {
     "validates empty name" in {
-      val form = createBinaryForm().copy(name = "   ")
+      val form = createBinaryForm(org).copy(name = "   ")
       BinariesDao.validate(form) must be(
         Seq("Name cannot be empty")
       )
     }
 
     "validates duplicate names" in {
-      val lang = createBinary()
-      val form = createBinaryForm().copy(name = lang.name.toString.toUpperCase)
+      val lang = createBinary(org)()
+      val form = createBinaryForm(org).copy(name = lang.name.toString.toUpperCase)
       BinariesDao.validate(form) must be(
         Seq("Binary with this name already exists")
       )

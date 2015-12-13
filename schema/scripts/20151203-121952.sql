@@ -2,6 +2,7 @@ drop table if exists items;
 
 create table items (
   guid                       uuid primary key,
+  organization_guid          uuid not null references organizations,
   object_guid                uuid not null,
   label                      text not null check(non_empty_trimmed_string(label)),
   description                text check(trim(description) = description),
@@ -26,4 +27,5 @@ comment on column items.contents is '
 ';
 
 select schema_evolution_manager.create_basic_audit_data('public', 'items');
-create unique index items_object_guid_not_deleted_un_idx on items(object_guid) where deleted_at is null;
+create unique index items_organization_guid_object_guid_not_deleted_un_idx on items(organization_guid, object_guid) where deleted_at is null;
+create index on items(organization_guid);

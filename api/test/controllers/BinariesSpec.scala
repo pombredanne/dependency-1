@@ -12,8 +12,9 @@ class BinariesSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  lazy val binary1 = createBinary()
-  lazy val binary2 = createBinary()
+  lazy val org = createOrganization()
+  lazy val binary1 = createBinary(org)()
+  lazy val binary2 = createBinary(org)()
 
   "GET /binaries by guid" in new WithServer(port=port) {
     await(
@@ -59,21 +60,21 @@ class BinariesSpec extends PlaySpecification with MockClient {
   }
 
   "POST /binaries" in new WithServer(port=port) {
-    val form = createBinaryForm()
+    val form = createBinaryForm(org)
     val binary = await(client.binaries.post(form))
     binary.name.toString must beEqualTo(form.name)
   }
 
   "POST /binaries validates duplicate name" in new WithServer(port=port) {
     expectErrors(
-      client.binaries.post(createBinaryForm().copy(name = binary1.name.toString))
+      client.binaries.post(createBinaryForm(org).copy(name = binary1.name.toString))
     ).errors.map(_.message) must beEqualTo(
       Seq("Binary with this name already exists")
     )
   }
 
   "DELETE /binaries" in new WithServer(port=port) {
-    val binary = createBinary()
+    val binary = createBinary(org)()
     await(
       client.binaries.deleteByGuid(binary.guid)
     ) must beEqualTo(())

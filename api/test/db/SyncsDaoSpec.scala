@@ -11,6 +11,8 @@ class SyncsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  lazy val org = createOrganization()
+
   "create" in {
     val form = createSyncForm()
     val sync = SyncsDao.create(systemUser, form)
@@ -19,7 +21,7 @@ class SyncsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "withStartedAndCompleted" in {
-    val project = createProject()
+    val project = createProject(org)()
     SyncsDao.withStartedAndCompleted(systemUser, project.guid) {
       // NO-OP
     }
@@ -29,13 +31,13 @@ class SyncsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "recordStarted" in {
-    val project = createProject()
+    val project = createProject(org)()
     SyncsDao.recordStarted(systemUser, project.guid)
     SyncsDao.findAll(objectGuid = Some(project.guid)).map(_.event).contains(SyncEvent.Started) must be(true)
   }
 
   "recordCompleted" in {
-    val project = createProject()
+    val project = createProject(org)()
     SyncsDao.recordCompleted(systemUser, project.guid)
     SyncsDao.findAll(objectGuid = Some(project.guid)).map(_.event).contains(SyncEvent.Completed) must be(true)
   }

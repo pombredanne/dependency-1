@@ -19,16 +19,19 @@ object ProjectsDao {
            projects.scms,
            projects.name,
            projects.uri,
-           ${AuditsDao.all("projects")}
+           ${AuditsDao.all("projects")},
+           organizations.guid as projects_organization_guid,
+           organizations.key as projects_organization_key
       from projects
+      left join organizations on organizations.deleted_at is null and organizations.guid = projects.organization_guid
      where true
   """
 
   private[this] val InsertQuery = """
     insert into projects
-    (guid, visibility, scms, name, uri, created_by_guid, updated_by_guid)
+    (guid, organization_guid, visibility, scms, name, uri, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {visibility}, {scms}, {name}, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {organization_guid}::uuid, {visibility}, {scms}, {name}, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[this] val UpdateQuery = """
@@ -211,6 +214,13 @@ object ProjectsDao {
   def update(createdBy: User, project: Project, form: ProjectForm): Either[Seq[String], Project] = {
     validate(form, Some(project)) match {
       case Nil => {
+        // To support org change - need to record the change as its
+        // own record to be able to track changes.
+        assert(
+          project.organization.guid == form.organizationGuid,
+          "Changing organization not currently supported"
+        )
+
         DB.withConnection { implicit c =>
           SQL(UpdateQuery).on(
             'guid -> project.guid,
@@ -272,15 +282,16 @@ object ProjectsDao {
   def findAll(
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
+    organizationGuid: Option[UUID] = None,
     name: Option[String] = None,
-    groupId: _root_.scala.Option[String] = None,
-    artifactId: _root_.scala.Option[String] = None,
-    version: _root_.scala.Option[String] = None,
-    libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-    libraryVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-    binary: _root_.scala.Option[String] = None,
-    binaryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-    binaryVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+    groupId: Option[String] = None,
+    artifactId: Option[String] = None,
+    version: Option[String] = None,
+    libraryGuid: Option[_root_.java.util.UUID] = None,
+    libraryVersionGuid: Option[_root_.java.util.UUID] = None,
+    binary: Option[String] = None,
+    binaryGuid: Option[_root_.java.util.UUID] = None,
+    binaryVersionGuid: Option[_root_.java.util.UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -289,6 +300,7 @@ object ProjectsDao {
       Some(BaseQuery.trim),
       guid.map { v => "and projects.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("projects.guid", _) },
+      organizationGuid.map { v => "and projects.organization_guid = {organization_guid}::uuid" },
       name.map { v => "and lower(projects.name) = lower(trim({name}))" },
       groupId.map { v => FilterLibraryVersions.format("libraries.group_id = trim({group_id})") },
       artifactId.map { v => FilterLibraryVersions.format("libraries.artifact_id = trim({artifact_id})") },
@@ -304,6 +316,7 @@ object ProjectsDao {
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
+      organizationGuid.map('organization_guid -> _.toString),
       name.map('name -> _.toString),
       groupId.map('group_id -> _.toString),
       artifactId.map('artifact_id -> _.toString),

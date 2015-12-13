@@ -1,9 +1,11 @@
 package com.bryzek.dependency.api.lib
 
 import play.api.Logger
-import com.bryzek.dependency.v0.models.LibraryForm
+import com.bryzek.dependency.v0.models.{LibraryForm, OrganizationSummary}
 
 trait SimpleScalaParser {
+
+  def org: OrganizationSummary
 
   /**
     * Label identifying what we are parsing. Used in log messages to
@@ -90,6 +92,7 @@ trait SimpleScalaParser {
         case groupId :: artifactId :: version :: more => {
           Some(
             Artifact(
+              org = org,
               groupId = interpolate(groupId),
               artifactId = interpolate(artifactId),
               version = interpolate(version),

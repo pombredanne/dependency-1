@@ -11,26 +11,37 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  "findByGroupIdAndArtifactId" in {
-    val library = createLibrary()
-    LibrariesDao.findByGroupIdAndArtifactId(
+  lazy val org = createOrganization()
+
+  "findByOrganizationGuidAndGroupIdAndArtifactId" in {
+    val library = createLibrary(org)()
+    LibrariesDao.findByOrganizationGuidAndGroupIdAndArtifactId(
+      org.guid,
       library.groupId,
       library.artifactId
     ).map(_.guid) must be(Some(library.guid))
 
-    LibrariesDao.findByGroupIdAndArtifactId(
+    LibrariesDao.findByOrganizationGuidAndGroupIdAndArtifactId(
+      UUID.randomUUID,
+      library.groupId,
+      library.artifactId
+    ) must be (None)
+
+    LibrariesDao.findByOrganizationGuidAndGroupIdAndArtifactId(
+      org.guid,
       library.groupId + "-2",
       library.artifactId
     ) must be (None)
 
-    LibrariesDao.findByGroupIdAndArtifactId(
+    LibrariesDao.findByOrganizationGuidAndGroupIdAndArtifactId(
+      org.guid,
       library.groupId,
       library.artifactId + "-2"
     ) must be (None)
   }
 
   "findByGuid" in {
-    val library = createLibrary()
+    val library = createLibrary(org)()
     LibrariesDao.findByGuid(library.guid).map(_.guid) must be(
       Some(library.guid)
     )
@@ -39,8 +50,8 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by guids" in {
-    val library1 = createLibrary()
-    val library2 = createLibrary()
+    val library1 = createLibrary(org)()
+    val library2 = createLibrary(org)()
 
     LibrariesDao.findAll(guids = Some(Seq(library1.guid, library2.guid))).map(_.guid) must be(
       Seq(library1, library2).sortWith { (x,y) => x.groupId.toString < y.groupId.toString }.map(_.guid)
@@ -52,7 +63,7 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by isSynced" in {
-    val library = createLibrary()
+    val library = createLibrary(org)()
     createSync(createSyncForm(objectGuid = library.guid, event = SyncEvent.Completed))
 
     LibrariesDao.findAll(guid = Some(library.guid), isSynced = Some(true)).map(_.guid) must be(Seq(library.guid))
@@ -60,8 +71,8 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by resolver" in {
-    val form = createLibraryForm()
-    val library = createLibrary(form)
+    val form = createLibraryForm(org)()
+    val library = createLibrary(org)(form)
     val resolver = createResolver()
 
     LibrariesDao.findAll(resolverGuid = Some(resolver.guid)) must be(Nil)
@@ -70,8 +81,8 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "update resolver" in {
-    val form = createLibraryForm()
-    val library = createLibrary(form)
+    val form = createLibraryForm(org)()
+    val library = createLibrary(org)(form)
     val resolver = createResolver()
     val updated = LibrariesDao.update(systemUser, library, form.copy(resolverGuid = Some(resolver.guid))).right.get
     updated.guid must be(library.guid)
@@ -80,22 +91,22 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "create" must {
     "validates empty group id" in {
-      val form = createLibraryForm().copy(groupId = "   ")
+      val form = createLibraryForm(org)().copy(groupId = "   ")
       LibrariesDao.validate(form) must be(
         Seq("Group ID cannot be empty")
       )
     }
 
     "validates empty artifact id" in {
-      val form = createLibraryForm().copy(artifactId = "   ")
+      val form = createLibraryForm(org)().copy(artifactId = "   ")
       LibrariesDao.validate(form) must be(
         Seq("Artifact ID cannot be empty")
       )
     }
 
     "validates duplicates" in {
-      val library = createLibrary()
-      val form = createLibraryForm().copy(
+      val library = createLibrary(org)()
+      val form = createLibraryForm(org)().copy(
         groupId = library.groupId,
         artifactId = library.artifactId
       )

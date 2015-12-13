@@ -10,7 +10,8 @@ class ProjectLibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with He
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  lazy val (project, version) = createProjectWithLibrary()
+  lazy val org = createOrganization()
+  lazy val (project, version) = createProjectWithLibrary(org)()
 
   "findAll" must {
 

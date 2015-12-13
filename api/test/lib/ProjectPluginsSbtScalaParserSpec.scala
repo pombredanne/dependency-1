@@ -3,7 +3,9 @@ package com.bryzek.dependency.api.lib
 import com.bryzek.dependency.v0.models.BinaryForm
 import org.specs2.mutable._
 
-class ProjectPluginsSbtScalaParserSpec extends Specification {
+class ProjectPluginsSbtScalaParserSpec extends Specification with db.Helpers {
+
+  lazy val orgSummary = createOrganizationSummary()
 
   "empty" should {
 
@@ -13,7 +15,7 @@ logLevel := Level.Warn
 """
 
     "parse dependencies" in {
-      val result = ProjectPluginsSbtScalaParser("test", contents)
+      val result = ProjectPluginsSbtScalaParser(orgSummary, "test", contents)
       result.resolverUris must beEqualTo(Nil)
       result.plugins must beEqualTo(Nil)
     }
@@ -27,7 +29,7 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 """
 
     "parse dependencies" in {
-      val result = ProjectPluginsSbtScalaParser("test", contents)
+      val result = ProjectPluginsSbtScalaParser(orgSummary, "test", contents)
       result.resolverUris must beEqualTo(Seq("http://repo.typesafe.com/typesafe/releases/"))
       result.plugins must beEqualTo(Nil)
     }
@@ -45,14 +47,14 @@ addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.0.1")
 """
 
     "parse dependencies" in {
-      val result = ProjectPluginsSbtScalaParser("test", contents)
+      val result = ProjectPluginsSbtScalaParser(orgSummary, "test", contents)
       result.resolverUris must beEqualTo(
         Seq("http://repo.typesafe.com/typesafe/releases/")
       )
       result.plugins must beEqualTo(
         Seq(
-          Artifact("com.typesafe.play", "sbt-plugin", "2.4.3", false),
-          Artifact("org.scoverage", "sbt-scoverage", "1.0.1", true)
+          Artifact(orgSummary, "com.typesafe.play", "sbt-plugin", "2.4.3", false),
+          Artifact(orgSummary, "org.scoverage", "sbt-scoverage", "1.0.1", true)
         )
       )
     }

@@ -10,21 +10,23 @@ class WatchProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  lazy val org = createOrganization()
+
   "upsert" in {
-    val form = createWatchProjectForm()
+    val form = createWatchProjectForm(org)()
     val watchProject1 = WatchProjectsDao.create(systemUser, form).right.get
 
     val watchProject2 = WatchProjectsDao.upsert(systemUser, form)
     watchProject1.guid must be(watchProject2.guid)
 
     val newWatchProject = UUID.randomUUID.toString
-    val watchProject3 = createWatchProject()
+    val watchProject3 = createWatchProject(org)()
 
     watchProject2.guid must not be(watchProject3.guid)
   }
 
   "findByGuid" in {
-    val watchProject = createWatchProject()
+    val watchProject = createWatchProject(org)()
     WatchProjectsDao.findByGuid(watchProject.guid).map(_.guid) must be(
       Some(watchProject.guid)
     )
@@ -33,7 +35,7 @@ class WatchProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findByWatchProjectGuidAndProjectGuid" in {
-    val watchProject = createWatchProject()
+    val watchProject = createWatchProject(org)()
     WatchProjectsDao.findByUserGuidAndProjectGuid(watchProject.user.guid, watchProject.project.guid).map(_.guid) must be(
       Some(watchProject.guid)
     )
@@ -43,8 +45,8 @@ class WatchProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by guids" in {
-    val watchProject1 = createWatchProject()
-    val watchProject2 = createWatchProject()
+    val watchProject1 = createWatchProject(org)()
+    val watchProject2 = createWatchProject(org)()
 
     WatchProjectsDao.findAll(guids = Some(Seq(watchProject1.guid, watchProject2.guid))).map(_.guid) must be(
       Seq(watchProject1.guid, watchProject2.guid)

@@ -15,16 +15,19 @@ object BinariesDao {
   private[this] val BaseQuery = s"""
     select binaries.guid,
            binaries.name,
-           ${AuditsDao.all("binaries")}
+           ${AuditsDao.all("binaries")},
+           organizations.guid as projects_organization_guid,
+           organizations.key as projects_organization_key
       from binaries
+      left join organizations on organizations.deleted_at is null and organizations.guid = binaries.organization_guid
      where true
   """
 
   private[this] val InsertQuery = """
     insert into binaries
-    (guid, name, created_by_guid, updated_by_guid)
+    (guid, organization_guid, name, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {name}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {organization_guid}::uuid, {name}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[db] def validate(
@@ -34,7 +37,7 @@ object BinariesDao {
       Seq("Name cannot be empty")
 
     } else {
-      BinariesDao.findByName(form.name) match {
+      BinariesDao.findByOrganizationGuidAndName(form.organizationGuid, form.name) match {
         case None => Seq.empty
         case Some(_) => Seq("Binary with this name already exists")
       }
@@ -42,7 +45,7 @@ object BinariesDao {
   }
 
   def upsert(createdBy: User, form: BinaryForm): Either[Seq[String], Binary] = {
-    BinariesDao.findByName(form.name) match {
+    BinariesDao.findByOrganizationGuidAndName(form.organizationGuid, form.name) match {
       case None => {
         create(createdBy, form)
       }
@@ -63,6 +66,7 @@ object BinariesDao {
         DB.withTransaction { implicit c =>
           SQL(InsertQuery).on(
             'guid -> guid,
+            'organization_guid -> form.organizationGuid,
             'name -> form.name.trim,
             'created_by_guid -> createdBy.guid
           ).execute()
@@ -87,8 +91,8 @@ object BinariesDao {
     MainActor.ref ! MainActor.Messages.BinaryDeleted(binary.guid)
   }
 
-  def findByName(name: String): Option[Binary] = {
-    findAll(name = Some(name), limit = 1).headOption
+  def findByOrganizationGuidAndName(organizationGuid: UUID, name: String): Option[Binary] = {
+    findAll(organizationGuid = Some(organizationGuid), name = Some(name), limit = 1).headOption
   }
 
   def findByGuid(guid: UUID): Option[Binary] = {
@@ -99,6 +103,7 @@ object BinariesDao {
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     projectGuid: Option[UUID] = None,
+    organizationGuid: Option[UUID] = None,
     name: Option[String] = None,
     isSynced: Option[Boolean] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -120,6 +125,7 @@ object BinariesDao {
            where binary_versions.deleted_at is null
         )
       """.trim },
+      organizationGuid.map { v => "and binaries.organization_guid = {organization_guid}::uuid" },
       name.map { v => "and lower(binaries.name) = lower(trim({name}))" },
       isSynced.map { value =>
         val clause = "select 1 from syncs where object_guid = binaries.guid and event = {sync_event_completed}"
@@ -135,6 +141,7 @@ object BinariesDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       projectGuid.map('project_guid -> _.toString),
+      organizationGuid.map('project_guid -> _.toString),
       name.map('name -> _.toString),
       isSynced.map(_ => ('sync_event_completed -> SyncEvent.Completed.toString))
     ).flatten

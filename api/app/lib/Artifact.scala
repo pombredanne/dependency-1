@@ -1,8 +1,9 @@
 package com.bryzek.dependency.api.lib
 
-import com.bryzek.dependency.v0.models.{LibraryForm, Resolver, VersionForm}
+import com.bryzek.dependency.v0.models.{LibraryForm, OrganizationSummary, Resolver, VersionForm}
 
 case class Artifact(
+  org: OrganizationSummary,
   groupId: String,
   artifactId: String,
   version: String,
@@ -13,6 +14,7 @@ case class Artifact(
     crossBuildVersion: Option[Version]
   ): LibraryForm = {
     LibraryForm(
+      organizationGuid = org.guid,
       groupId = groupId,
       artifactId = artifactId,
       version = Some(

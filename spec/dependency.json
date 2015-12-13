@@ -107,6 +107,7 @@
 	"binary": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
+		{ "name": "organization", "type": "organization_summary" },
 		{ "name": "name", "type": "binary_type" },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
@@ -114,6 +115,7 @@
 
 	"binary_form": {
 	    "fields": [
+		{ "name": "organization_guid", "type": "uuid" },
 		{ "name": "name", "type": "string" },
 		{ "name": "version", "type": "string", "description": "If provided, we automatically record this version of theacc binary." }
 	    ]
@@ -146,6 +148,7 @@
 	"library": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
+		{ "name": "organization", "type": "organization_summary" },
 		{ "name": "group_id", "type": "string" },
 		{ "name": "artifact_id", "type": "string" },
 		{ "name": "resolver", "type": "resolver_summary", "required": false, "description": "Once we locate this library, we record the resolver and use it to find future versions" },
@@ -155,6 +158,7 @@
 
 	"library_form": {
 	    "fields": [
+		{ "name": "organization_guid", "type": "uuid" },
 		{ "name": "group_id", "type": "string" },
 		{ "name": "artifact_id", "type": "string" },
 		{ "name": "resolver_guid", "type": "uuid", "required": false },
@@ -187,9 +191,31 @@
 	    ]
 	},
 	
+	"organization": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "key", "type": "string" },
+                { "name": "audit", "type": "io.flow.common.v0.models.audit" }
+	    ]
+	},
+
+	"organization_form": {
+	    "fields": [
+		{ "name": "key", "type": "string" }
+	    ]
+	},
+
+	"organization_summary": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "key", "type": "string" }
+	    ]
+	},
+
 	"project": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
+		{ "name": "organization", "type": "organization_summary" },
 		{ "name": "visibility", "type": "visibility" },
 		{ "name": "scms", "type": "scms" },
 		{ "name": "name", "type": "string" },
@@ -222,6 +248,7 @@
 	
 	"project_form": {
 	    "fields": [
+		{ "name": "organization_guid", "type": "uuid" },
 		{ "name": "name", "type": "string" },
 		{ "name": "visibility", "type": "visibility" },
 		{ "name": "scms", "type": "scms" },
@@ -356,6 +383,7 @@
             "description": "A denormalization of item content for search",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Unique identifer for this item." },
+                { "name": "organization", "type": "organization_summary" },
                 { "name": "summary", "type": "item_summary" },
                 { "name": "label", "type": "string" },
                 { "name": "description", "type": "string", "required": false }

@@ -11,8 +11,9 @@ class ProjectsSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  lazy val project1 = createProject()
-  lazy val project2 = createProject()
+  lazy val org = createOrganization()
+  lazy val project1 = createProject(org)()
+  lazy val project2 = createProject(org)()
 
   "GET /projects by guid" in new WithServer(port=port) {
     await(
@@ -58,7 +59,7 @@ class ProjectsSpec extends PlaySpecification with MockClient {
   }
 
   "POST /projects" in new WithServer(port=port) {
-    val form = createProjectForm()
+    val form = createProjectForm(org)
     val project = await(client.projects.post(form))
     project.name must beEqualTo(form.name)
     project.scms must beEqualTo(form.scms)
@@ -67,22 +68,22 @@ class ProjectsSpec extends PlaySpecification with MockClient {
 
   "POST /projects validates duplicate name" in new WithServer(port=port) {
     expectErrors(
-      client.projects.post(createProjectForm().copy(name = project1.name))
+      client.projects.post(createProjectForm(org).copy(name = project1.name))
     ).errors.map(_.message) must beEqualTo(
       Seq("Project with this name already exists")
     )
   }
 
   "PUT /projects/:guid" in new WithServer(port=port) {
-    val form = createProjectForm()
-    val project = createProject(form)
+    val form = createProjectForm(org)
+    val project = createProject(org)(form)
     val newUri = "http://github.com/mbryzek/test"
     await(client.projects.putByGuid(project.guid, form.copy(uri = newUri)))
     await(client.projects.getByGuid(project.guid)).uri must beEqualTo(newUri)
   }
 
   "PATCH /projects/:guid w/ no data leaves project unchanged" in new WithServer(port=port) {
-    val project = createProject()
+    val project = createProject(org)()
     await(client.projects.patchByGuid(project.guid, ProjectPatchForm()))
     val updated = await(client.projects.getByGuid(project.guid))
     updated.name must beEqualTo(project.name)
@@ -91,14 +92,14 @@ class ProjectsSpec extends PlaySpecification with MockClient {
   }
 
   "PATCH /projects/:guid w/ name" in new WithServer(port=port) {
-    val project = createProject()
+    val project = createProject(org)()
     val newName = project.name + "2"
     await(client.projects.patchByGuid(project.guid, ProjectPatchForm(name = Some(newName))))
     await(client.projects.getByGuid(project.guid)).name must beEqualTo(newName)
   }
 
   "DELETE /projects" in new WithServer(port=port) {
-    val project = createProject()
+    val project = createProject(org)()
     await(
       client.projects.deleteByGuid(project.guid)
     ) must beEqualTo(())

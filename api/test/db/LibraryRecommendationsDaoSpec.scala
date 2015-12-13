@@ -10,21 +10,23 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  lazy val org = createOrganization()
+
   "no-op if nothing to upgrade" in {
-    val project = createProject()
+    val project = createProject(org)()
     LibraryRecommendationsDao.forProject(project) must be(Nil)
   }
 
   "ignores earlier versions of library" in {
-    val libraryVersions = createLibraryWithMultipleVersions()
-    val project = createProject()
+    val libraryVersions = createLibraryWithMultipleVersions(org)()
+    val project = createProject(org)()
     addLibraryVersion(project, libraryVersions.last)
     LibraryRecommendationsDao.forProject(project) must be(Nil)
   }
 
   "with library to upgrade" in {
-    val libraryVersions = createLibraryWithMultipleVersions()
-    val project = createProject()
+    val libraryVersions = createLibraryWithMultipleVersions(org)()
+    val project = createProject(org)()
     addLibraryVersion(project, libraryVersions.head)
     LibraryRecommendationsDao.forProject(project) must be(
       Seq(
@@ -38,10 +40,10 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
   }
 
   "Prefers latest production release even when more recent beta release is available" in {
-    val libraryVersions = createLibraryWithMultipleVersions(
+    val libraryVersions = createLibraryWithMultipleVersions(org)(
       versions = Seq("1.0.0", "1.0.2-RC1", "1.0.1")
     )
-    val project = createProject()
+    val project = createProject(org)()
     addLibraryVersion(project, libraryVersions.head)
     LibraryRecommendationsDao.forProject(project) must be(
       Seq(

@@ -11,14 +11,16 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  lazy val org = createOrganization()
+
   "upsert" in {
-    val form = createItemForm()
+    val form = createItemForm(org)()
     val item1 = ItemsDao.create(systemUser, form)
 
     val item2 = ItemsDao.upsert(systemUser, form)
     item1.guid must be(item2.guid)
 
-    val item3 = upsertItem()
+    val item3 = upsertItem(org)()
 
     item1.guid must be(item2.guid)
     item2.guid must not be(item3.guid)
@@ -26,7 +28,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findByGuid" in {
-    val item = upsertItem()
+    val item = upsertItem(org)()
     ItemsDao.findByGuid(item.guid).map(_.guid) must be(
       Some(item.guid)
     )
@@ -35,7 +37,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findByObjectGuid" in {
-    val binary = createBinary()
+    val binary = createBinary(org)()
     val item = ItemsDao.upsertBinary(systemUser, binary)
     ItemsDao.findByObjectGuid(binary.guid).map(_.guid) must be(
       Some(item.guid)
@@ -45,8 +47,8 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by guids" in {
-    val item1 = upsertItem()
-    val item2 = upsertItem()
+    val item1 = upsertItem(org)()
+    val item2 = upsertItem(org)()
 
     ItemsDao.findAll(guids = Some(Seq(item1.guid, item2.guid))).map(_.guid).sorted must be(
       Seq(item1.guid, item2.guid).sorted
@@ -58,7 +60,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "supports binaries" in {
-    val binary = createBinary()
+    val binary = createBinary(org)()
     val itemBinary = ItemsDao.upsertBinary(systemUser, binary)
 
     val actual = ItemsDao.findByObjectGuid(binary.guid).getOrElse {
@@ -77,7 +79,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "supports libraries" in {
-    val library = createLibrary()
+    val library = createLibrary(org)()
 
     val itemLibrary = ItemsDao.upsertLibrary(systemUser, library)
     val actual = ItemsDao.findByObjectGuid(library.guid).getOrElse {
@@ -97,7 +99,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "supports projects" in {
-    val project = createProject()
+    val project = createProject(org)()
 
     val itemProject = ItemsDao.upsertProject(systemUser, project)
     val actual = ItemsDao.findByObjectGuid(project.guid).getOrElse {

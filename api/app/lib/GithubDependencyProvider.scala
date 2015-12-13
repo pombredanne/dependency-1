@@ -1,7 +1,7 @@
 package com.bryzek.dependency.api.lib
 
 import io.flow.user.v0.models.User
-import com.bryzek.dependency.v0.models.{BinaryForm, LibraryForm, Project}
+import com.bryzek.dependency.v0.models.{BinaryForm, LibraryForm, OrganizationSummary, Project}
 import io.flow.github.v0.Client
 import io.flow.github.v0.errors.UnitResponse
 import io.flow.github.v0.models.{Contents, Encoding}
@@ -56,14 +56,15 @@ object GithubUtil {
 
 object GithubDependencyProviderClient {
 
-  def instance(user: User) = {
-    new GithubDependencyProvider(new DefaultGithub(), user)
+  def instance(org: OrganizationSummary, user: User) = {
+    new GithubDependencyProvider(new DefaultGithub(), org, user)
   }
 
 }
 
 private[lib] case class GithubDependencyProvider(
   github: Github,
+  org: OrganizationSummary,
   user: User
 ) extends DependencyProvider {
 
@@ -95,6 +96,7 @@ private[lib] case class GithubDependencyProvider(
     github.file(user, projectUri, BuildSbtFilename).map { result =>
       result.flatMap { text =>
         val result = BuildSbtScalaParser(
+          org = org,
           description = s"Project[${projectUri}] file[$BuildSbtFilename]",
           contents = text
         )
@@ -117,6 +119,7 @@ private[lib] case class GithubDependencyProvider(
     github.file(user, projectUri, BuildPropertiesFilename).map { result =>
       result.flatMap { text =>
         val properties = PropertiesParser(
+          org = org,
           description = s"Project[${projectUri}] file[$BuildPropertiesFilename]",
           contents = text
         )
@@ -125,6 +128,7 @@ private[lib] case class GithubDependencyProvider(
             Some(
               Seq(
                 BinaryForm(
+                  organizationGuid = org.guid,
                   name = "sbt",
                   version = value
                 )
@@ -144,6 +148,7 @@ private[lib] case class GithubDependencyProvider(
     github.file(user, projectUri, BuildSbtFilename).map { result =>
       result.flatMap { text =>
         val result = ProjectPluginsSbtScalaParser(
+          org = org,
           description = s"Project[${projectUri}] file[$BuildSbtFilename]",
           contents = text
         )

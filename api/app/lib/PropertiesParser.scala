@@ -1,6 +1,9 @@
 package com.bryzek.dependency.api.lib
 
+import com.bryzek.dependency.v0.models.OrganizationSummary
+
 case class PropertiesParser(
+  override val org: OrganizationSummary,
   override val description: String,
   contents: String
 ) extends SimpleScalaParser {

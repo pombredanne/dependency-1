@@ -69,7 +69,7 @@ class ProjectActor extends Actor with Util {
         SyncsDao.recordStarted(MainActor.SystemUser, project.guid)
 
         UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
-          GithubDependencyProviderClient.instance(user).dependencies(project).map { dependencies =>
+          GithubDependencyProviderClient.instance(project.organization, user).dependencies(project).map { dependencies =>
             println(s" - project[${project.guid}] name[${project.name}] dependencies: $dependencies")
             ProjectsDao.setDependencies(
               createdBy = MainActor.SystemUser,
