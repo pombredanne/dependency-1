@@ -5,7 +5,8 @@ import io.flow.play.postgresql.Pager
 import io.flow.user.v0.models.User
 import db.{LastEmail, LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UsersDao}
 import com.bryzek.dependency.v0.models.Publication
-import com.bryzek.dependency.api.lib.{Email, Person, Urls}
+import com.bryzek.dependency.lib.Urls
+import com.bryzek.dependency.api.lib.{Email, Person}
 import org.joda.time.{DateTime, DateTimeZone}
 import play.api.Logger
 import akka.actor.Actor

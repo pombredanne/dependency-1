@@ -1,5 +1,5 @@
 @(name: io.flow.user.v0.models.Name,
-  urls: com.bryzek.dependency.api.lib.Urls,
+  urls: com.bryzek.dependency.lib.Urls,
   newRecommendations: Seq[com.bryzek.dependency.v0.models.Recommendation],
   oldRecommendations: Seq[com.bryzek.dependency.v0.models.Recommendation],
   lastEmail: Option[db.LastEmail]
@@ -14,7 +14,7 @@
 
     Thanks for subscribing to your personalized daily summary of
     dependency recommendations. At any time, you can unsubscribe
-    by visiting <a href="@urls.www(routes.SubscriptionsController.index())">@urls.www(routes.SubscriptionsController.index())</a>
+    by visiting <a href="@urls.www(urls.subscriptions)">@urls.www(urls.subscriptions)</a>
 
   </p>
 

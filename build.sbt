@@ -19,26 +19,16 @@ lazy val generated = project
     )
   )
 
-// Allow api subproject to access the www router
-lazy val router: Project = (project in file("router"))
-  .dependsOn(generated)
-  .aggregate(generated)
-  .enablePlugins(PlayScala)
-  .settings(
-    routesImport += "com.bryzek.dependency.v0.Bindables._",
-    aggregateReverseRoutes := Seq(api, www)
-  )
-
 lazy val lib = project
   .in(file("lib"))
-  .dependsOn(generated, router)
-  .aggregate(generated, router)
+  .dependsOn(generated)
+  .aggregate(generated)
   .settings(commonSettings: _*)
 
 lazy val api = project
   .in(file("api"))
-  .dependsOn(generated, lib, router)
-  .aggregate(generated, lib, router)
+  .dependsOn(generated, lib)
+  .aggregate(generated, lib)
   .enablePlugins(PlayScala)
   .settings(commonSettings: _*)
   .settings(

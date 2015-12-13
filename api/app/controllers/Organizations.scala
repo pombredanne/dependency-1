@@ -1,7 +1,6 @@
 package controllers
 
 import db.OrganizationsDao
-import io.flow.common.v0.models.Error
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
@@ -11,7 +10,6 @@ import io.flow.common.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import java.util.UUID
-import scala.concurrent.Future
 
 class Organizations @javax.inject.Inject() (
   val userTokensClient: UserTokensClient
@@ -59,4 +57,26 @@ class Organizations @javax.inject.Inject() (
     }
   }
 
+  def putByGuid(guid: UUID) = Identified(parse.json) { request =>
+    withOrganization(guid) { organization =>
+      request.body.validate[OrganizationForm] match {
+        case e: JsError => {
+          Conflict(Json.toJson(Validation.invalidJson(e)))
+        }
+        case s: JsSuccess[OrganizationForm] => {
+          OrganizationsDao.update(request.user, organization, s.get) match {
+            case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+            case Right(updated) => Ok(Json.toJson(updated))
+          }
+        }
+      }
+    }
+  }
+
+  def deleteByGuid(guid: UUID) = Identified { request =>
+    withOrganization(guid) { organization =>
+      OrganizationsDao.softDelete(request.user, organization)
+      NoContent
+    }
+  }
 }
