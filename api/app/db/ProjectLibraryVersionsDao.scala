@@ -24,11 +24,16 @@ object ProjectLibraryVersionsDao {
            projects.visibility as project_visibility,
            projects.name as project_name,
            projects.uri as project_uri,
-           ${AuditsDao.all("projects", Some("project"))}
+           ${AuditsDao.all("projects", Some("project"))},
+           organizations.guid as project_organization_guid,
+           organizations.key as project_organization_key,
+           organizations.guid as library_version_library_organization_guid,
+           organizations.key as library_version_library_organization_key
       from library_versions
       join libraries on libraries.deleted_at is null and libraries.guid = library_versions.library_guid
       join project_library_versions on project_library_versions.deleted_at is null and project_library_versions.library_version_guid = library_versions.guid
       join projects on projects.deleted_at is null and project_library_versions.project_guid = projects.guid
+      join organizations on organizations.deleted_at is null and organizations.guid = projects.organization_guid
      where true
   """
 

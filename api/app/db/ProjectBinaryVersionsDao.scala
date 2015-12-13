@@ -22,11 +22,16 @@ object ProjectBinaryVersionsDao {
            projects.visibility as project_visibility,
            projects.name as project_name,
            projects.uri as project_uri,
-           ${AuditsDao.all("projects", Some("project"))}
+           ${AuditsDao.all("projects", Some("project"))},
+           organizations.guid as project_organization_guid,
+           organizations.key as project_organization_key,
+           organizations.guid as binary_version_binary_organization_guid,
+           organizations.key as binary_version_binary_organization_key
       from binary_versions
       join binaries on binaries.deleted_at is null and binaries.guid = binary_versions.binary_guid
       join project_binary_versions on project_binary_versions.deleted_at is null and project_binary_versions.binary_version_guid = binary_versions.guid
       join projects on projects.deleted_at is null and project_binary_versions.project_guid = projects.guid
+      join organizations on organizations.deleted_at is null and organizations.guid = projects.organization_guid and organizations.guid = binaries.organization_guid
      where true
   """
 

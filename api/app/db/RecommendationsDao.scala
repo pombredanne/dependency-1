@@ -29,11 +29,16 @@ object RecommendationsDao {
            recommendations.to_version as "recommendations.to",
            ${AuditsDao.all("recommendations")},
            projects.guid as recommendations_project_guid,
-           projects.name as recommendations_project_name
+           projects.name as recommendations_project_name,
+           organizations.guid as recommendations_project_organization_guid,
+           organizations.key as recommendations_project_organization_key
       from recommendations
       join projects on
              projects.deleted_at is null and
              projects.guid = recommendations.project_guid
+      join organizations on
+             organizations.deleted_at is null and
+             organizations.guid = projects.organization_guid
      where true
   """
 
