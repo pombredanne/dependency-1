@@ -125,7 +125,8 @@ object OrganizationsDao {
         SQL(InsertUserOrganizationQuery).on(
           'guid -> UUID.randomUUID,
           'user_guid -> user.guid,
-          'organization_guid -> orgGuid
+          'organization_guid -> orgGuid,
+          'created_by_guid -> user.guid
         ).execute()
 
         orgGuid

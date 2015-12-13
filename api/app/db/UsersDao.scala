@@ -86,11 +86,14 @@ object UsersDao {
           // TODO: Git hub user
         }
 
-        Right(
-          findByGuid(userGuid).getOrElse {
-            sys.error("Failed to create user")
-          }
-        )
+        val user = findByGuid(userGuid).getOrElse {
+          sys.error("Failed to create user")
+        }
+
+        // TODO: Move to actor
+        OrganizationsDao.upsertForUser(user)
+
+        Right(user)
       }
       case errors => Left(errors)
     }

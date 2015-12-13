@@ -110,5 +110,10 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       }
     }
 
+    "must create organization" in {
+      val user = UsersDao.create(None, createUserForm()).right.get
+      OrganizationsDao.findAll(forUserGuid = Some(user.guid)).size must be(1)
+    }
+
   }
 }
