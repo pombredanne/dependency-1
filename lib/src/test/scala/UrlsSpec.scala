@@ -5,28 +5,28 @@ import org.scalatest.{FunSpec, Matchers}
 
 class UrlsSpec extends FunSpec with Matchers with Factories {
 
-  it("recommendationUrl") {
+  it("recommendation") {
     val binary = makeRecommendation(`type` = RecommendationType.Binary)
-    Urls.recommendationUrl(binary) should be(s"/binaries/${binary.`object`.guid}")
+    Urls.recommendation(binary) should be(s"/binaries/${binary.`object`.guid}")
 
     val library = makeRecommendation(`type` = RecommendationType.Library)
-    Urls.recommendationUrl(library) should be(s"/libraries/${library.`object`.guid}")
+    Urls.recommendation(library) should be(s"/libraries/${library.`object`.guid}")
 
     val other = makeRecommendation(`type` = RecommendationType.UNDEFINED("other"))
-    Urls.recommendationUrl(other) should be("#")
+    Urls.recommendation(other) should be("#")
   }
 
-  it("itemSummaryUrl") {
+  it("itemSummary") {
     val binary = makeBinarySummary()
-    Urls.itemSummaryUrl(binary) should be(s"/binaries/${binary.guid}")
+    Urls.itemSummary(binary) should be(s"/binaries/${binary.guid}")
 
     val library = makeLibrarySummary()
-    Urls.itemSummaryUrl(library) should be(s"/libraries/${library.guid}")
+    Urls.itemSummary(library) should be(s"/libraries/${library.guid}")
 
     val project = makeProjectSummary()
-    Urls.itemSummaryUrl(project) should be(s"/projects/${project.guid}")
+    Urls.itemSummary(project) should be(s"/projects/${project.guid}")
 
-    Urls.itemSummaryUrl(ItemSummaryUndefinedType("other")) should be("#")
+    Urls.itemSummary(ItemSummaryUndefinedType("other")) should be("#")
   }
 
 }
