@@ -16,8 +16,8 @@ object BinariesDao {
     select binaries.guid,
            binaries.name,
            ${AuditsDao.all("binaries")},
-           organizations.guid as projects_organization_guid,
-           organizations.key as projects_organization_key
+           organizations.guid as binaries_organization_guid,
+           organizations.key as binaries_organization_key
       from binaries
       left join organizations on organizations.deleted_at is null and organizations.guid = binaries.organization_guid
      where true
@@ -141,7 +141,7 @@ object BinariesDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       projectGuid.map('project_guid -> _.toString),
-      organizationGuid.map('project_guid -> _.toString),
+      organizationGuid.map('organization_guid -> _.toString),
       name.map('name -> _.toString),
       isSynced.map(_ => ('sync_event_completed -> SyncEvent.Completed.toString))
     ).flatten

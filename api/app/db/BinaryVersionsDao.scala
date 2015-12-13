@@ -19,9 +19,12 @@ object BinaryVersionsDao {
            ${AuditsDao.all("binary_versions")},
            binaries.guid as binary_versions_binary_guid,
            binaries.name as binary_versions_binary_name,
-           ${AuditsDao.all("binaries", Some("binary_versions_binary"))}
+           ${AuditsDao.all("binaries", Some("binary_versions_binary"))},
+           organizations.guid as binary_versions_binary_organization_guid,
+           organizations.key as binary_versions_binary_organization_key
       from binary_versions
       join binaries on binaries.deleted_at is null and binaries.guid = binary_versions.binary_guid
+      left join organizations on organizations.deleted_at is null and organizations.guid = binaries.organization_guid
      where true
   """
 

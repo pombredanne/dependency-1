@@ -30,6 +30,7 @@ package com.bryzek.dependency.v0.models {
 
   case class BinarySummary(
     guid: _root_.java.util.UUID,
+    organization: com.bryzek.dependency.v0.models.OrganizationSummary,    
     name: com.bryzek.dependency.v0.models.BinaryType
   ) extends ItemSummary
 
@@ -97,6 +98,7 @@ package com.bryzek.dependency.v0.models {
 
   case class LibrarySummary(
     guid: _root_.java.util.UUID,
+    organization: com.bryzek.dependency.v0.models.OrganizationSummary,
     groupId: String,
     artifactId: String
   ) extends ItemSummary
@@ -174,6 +176,7 @@ package com.bryzek.dependency.v0.models {
 
   case class ProjectSummary(
     guid: _root_.java.util.UUID,
+    organization: com.bryzek.dependency.v0.models.OrganizationSummary,
     name: String
   ) extends ItemSummary
 

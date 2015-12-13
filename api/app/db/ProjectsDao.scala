@@ -191,6 +191,7 @@ object ProjectsDao {
         DB.withConnection { implicit c =>
           SQL(InsertQuery).on(
             'guid -> guid,
+            'organization_guid -> form.organizationGuid,
             'visibility -> form.visibility.toString,
             'scms -> form.scms.toString,
             'name -> form.name.trim,

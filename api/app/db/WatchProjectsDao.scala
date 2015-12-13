@@ -20,9 +20,12 @@ object WatchProjectsDao {
            projects.scms as watch_projects_project_scms,
            projects.name as watch_projects_project_name,
            projects.uri as watch_projects_project_uri,
-           ${AuditsDao.all("projects", Some("watch_projects_project"))}
+           ${AuditsDao.all("projects", Some("watch_projects_project"))},
+           organizations.guid as watch_projects_project_organization_guid,
+           organizations.key as watch_projects_project_organization_key
       from watch_projects
       join projects on projects.deleted_at is null and projects.guid = watch_projects.project_guid
+      left join organizations on organizations.deleted_at is null and organizations.guid = projects.organization_guid
      where true
   """
 

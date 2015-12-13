@@ -21,8 +21,8 @@ object LibrariesDao {
            resolvers.guid as libraries_resolver_guid,
            resolvers.visibility as libraries_resolver_visibility,
            resolvers.uri as libraries_resolver_uri,
-           organizations.guid as projects_organization_guid,
-           organizations.key as projects_organization_key
+           organizations.guid as libraries_organization_guid,
+           organizations.key as libraries_organization_key
       from libraries
       left join organizations on organizations.deleted_at is null and organizations.guid = libraries.organization_guid
       left join resolvers on resolvers.deleted_at is null and resolvers.guid = libraries.resolver_guid

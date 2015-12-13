@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{Binary, BinarySummary, Item, ItemSummary, ItemSummaryUndefinedType, Library, LibrarySummary, Project, ProjectSummary}
+import com.bryzek.dependency.v0.models.{Binary, BinarySummary, Item, ItemSummary, ItemSummaryUndefinedType, Library, LibrarySummary, OrganizationSummary, Project, ProjectSummary}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.user.v0.models.User
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
@@ -22,6 +22,7 @@ object ItemsDao {
 
   private[this] val BaseQuery = s"""
     select items.guid,
+           items.organization_guid,
            items.object_guid,
            items.label,
            items.description,
@@ -35,16 +36,25 @@ object ItemsDao {
 
   private[this] val InsertQuery = """
     insert into items
-    (guid, object_guid, label, description, contents, summary, created_by_guid, updated_by_guid)
+    (guid, organization_guid, object_guid, label, description, contents, summary, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {object_guid}::uuid, {label}, {description}, {contents}, {summary}::json, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {organization_guid}::uuid, {object_guid}::uuid, {label}, {description}, {contents}, {summary}::json, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[this] def objectGuid(summary: ItemSummary): UUID = {
     summary match {
-      case BinarySummary(guid, _) => guid
-      case LibrarySummary(guid, _, _) => guid
-      case ProjectSummary(guid, _) => guid
+      case BinarySummary(guid, org, name) => guid
+      case LibrarySummary(guid, org, groupId, artifactId) => guid
+      case ProjectSummary(guid, org, name) => guid
+      case ItemSummaryUndefinedType(name) => sys.error(s"Cannot get a guid from ItemSummaryUndefinedType($name)")
+    }
+  }
+
+  private[this] def organization(summary: ItemSummary): OrganizationSummary = {
+    summary match {
+      case BinarySummary(guid, org, name) => org
+      case LibrarySummary(guid, org, groupId, artifactId) => org
+      case ProjectSummary(guid, org, name) => org
       case ItemSummaryUndefinedType(name) => sys.error(s"Cannot get a guid from ItemSummaryUndefinedType($name)")
     }
   }
@@ -122,6 +132,7 @@ object ItemsDao {
     DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
+        'organization_guid -> organization(form.summary).guid,
         'object_guid -> objectGuid(form.summary),
         'label -> form.label,
         'description -> form.description,
