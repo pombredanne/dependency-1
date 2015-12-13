@@ -15,7 +15,7 @@
       <table class="table">
         @items.items.map { item =>
           <tr>
-            <td><a href="@com.bryzek.dependency.lib.Urls.itemSummary(item.summary)">@item.label</a></td>
+            <td><a href="@data.urls.itemSummary(item.summary)">@item.label</a></td>
           </tr>
         }
       </table>

@@ -1,6 +1,7 @@
 package com.bryzek.dependency.www.lib
 
 import io.flow.user.v0.models.User
+import com.bryzek.dependency.lib.Urls
 
 sealed trait Section
 
@@ -20,4 +21,8 @@ case class UiData(
   headTitle: Option[String] = None,
   user: Option[User] = None,
   query: Option[String] = None
-)
+) {
+
+  lazy val urls = Urls()
+
+}
