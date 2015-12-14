@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{BinarySummary, LibrarySummary, OrganizationSummary, ProjectSummary}
+import com.bryzek.dependency.v0.models.{BinarySummary, LibrarySummary, OrganizationSummary, ProjectSummary, Visibility}
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -101,7 +101,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "supports projects" in {
-    val project = createProject(org)()
+    val project = createProject(org)
 
     val itemProject = ItemsDao.upsertProject(systemUser, project)
     val actual = ItemsDao.findByObjectGuid(Authorization.All, project.guid).getOrElse {
@@ -118,6 +118,33 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     ItemsDao.findAll(Authorization.All, q = Some(project.guid.toString)).headOption.map(_.guid) must be(Some(actual.guid))
     ItemsDao.findAll(Authorization.All, q = Some(UUID.randomUUID.toString)) must be(Nil)
+  }
+
+  "authorization for public projects" in {
+    val user = createUser()
+    val org = createOrganization(user = user)
+    val project = createProject(org)(createProjectForm(org).copy(visibility = Visibility.Public))
+    val item = ItemsDao.upsertProject(systemUser, project)
+
+    ItemsDao.findAll(Authorization.PublicOnly, objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
+    ItemsDao.findAll(Authorization.All, objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
+    ItemsDao.findAll(Authorization.Organization(org.guid), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
+    ItemsDao.findAll(Authorization.Organization(createOrganization().guid), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
+    ItemsDao.findAll(Authorization.User(user.guid), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
+  }
+
+  "authorization for private projects" in {
+    val user = createUser()
+    val org = createOrganization(user = user)
+    val project = createProject(org)(createProjectForm(org).copy(visibility = Visibility.Private))
+    val item = ItemsDao.upsertProject(systemUser, project)
+
+    ItemsDao.findAll(Authorization.PublicOnly, objectGuid = Some(project.guid)) must be(Nil)
+    ItemsDao.findAll(Authorization.All, objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
+    ItemsDao.findAll(Authorization.Organization(org.guid), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
+    ItemsDao.findAll(Authorization.Organization(createOrganization().guid), objectGuid = Some(project.guid)) must be(Nil)
+    ItemsDao.findAll(Authorization.User(user.guid), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
+    ItemsDao.findAll(Authorization.User(createUser().guid), objectGuid = Some(project.guid)) must be(Nil)
   }
 
 }

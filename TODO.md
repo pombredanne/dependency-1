@@ -21,3 +21,6 @@ Subscribe new users automatically to daily summary email
 
 UI:
   - Add page to see organizations, create organization, add members
+
+When saving dependencies, should we create a separate table for those
+and track back to the file we found that dependency in?

@@ -54,9 +54,10 @@ trait Helpers {
   }
 
   def createOrganization(
-    form: OrganizationForm = createOrganizationForm()
+    form: OrganizationForm = createOrganizationForm(),
+    user: User = systemUser
   ): Organization = {
-    OrganizationsDao.create(systemUser, form).right.getOrElse {
+    OrganizationsDao.create(user, form).right.getOrElse {
       sys.error("Failed to create organization")
     }
   }

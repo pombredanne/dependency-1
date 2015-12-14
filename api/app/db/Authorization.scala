@@ -65,7 +65,7 @@ object Authorization {
       organizationGuidColumn: String,
       visibilityColumnName: Option[String] = None
     ): Clause = {
-      val userClause = s"$organizationGuidColumn in (select organization_guid from user_organizations where user_guid = '$guid')"
+      val userClause = s"$organizationGuidColumn in (select organization_guid from memberships where deleted_at is null and user_guid = '$guid')"
       visibilityColumnName match {
         case None => Clause(Seq(userClause))
         case Some(col) => Clause(Seq(userClause, publicVisibilityClause(col)))
