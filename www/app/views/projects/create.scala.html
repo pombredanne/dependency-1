@@ -1,6 +1,7 @@
 @(
   data: com.bryzek.dependency.www.lib.UiData,
   form: Form[controllers.ProjectsController.UiForm],
+  orgs: Seq[com.bryzek.dependency.v0.models.Organization],
   errorMessages: Seq[String] = Nil
 )(implicit flash: Flash, messages: Messages)
 
@@ -14,7 +15,7 @@
 
     @helper.form(action = routes.ProjectsController.postCreate()) {
 
-      @projectForm(form, routes.ProjectsController.index())
+      @projectForm(form, orgs, routes.ProjectsController.index())
 
     }
 

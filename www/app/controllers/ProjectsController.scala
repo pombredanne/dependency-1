@@ -79,7 +79,9 @@ class ProjectsController @javax.inject.Inject() (
 
   def github(repositoriesPage: Int = 0) = Identified.async { implicit request =>
     for {
+      org <- userOrg(request)
       repositories <- dependencyClient(request).repositories.getGithub(
+        organizationGuid = Some(org.guid),
         existingProject = Some(false),
         limit = Pagination.DefaultLimit+1,
         offset = repositoriesPage * Pagination.DefaultLimit
@@ -97,26 +99,28 @@ class ProjectsController @javax.inject.Inject() (
     name: String,
     repositoriesPage: Int = 0
   ) = Identified.async { implicit request =>
-    dependencyClient(request).repositories.getGithub(
-      name = Some(name)
-    ).flatMap { selected =>
+    userOrg(request).flatMap { org =>
       dependencyClient(request).repositories.getGithub(
-        existingProject = Some(false),
-        limit = Pagination.DefaultLimit+1,
-        offset = repositoriesPage * Pagination.DefaultLimit
-      ).flatMap { repositories =>
-        selected.headOption match {
-          case None => Future {
-            Ok(
-              views.html.projects.github(
-                uiData(request),
-                PaginatedCollection(repositoriesPage, repositories),
-                Seq("Repository with selected name was not found")
+        organizationGuid = Some(org.guid),
+        name = Some(name)
+      ).flatMap { selected =>
+        dependencyClient(request).repositories.getGithub(
+          organizationGuid = Some(org.guid),
+          existingProject = Some(false),
+          limit = Pagination.DefaultLimit+1,
+          offset = repositoriesPage * Pagination.DefaultLimit
+        ).flatMap { repositories =>
+          selected.headOption match {
+            case None => Future {
+              Ok(
+                views.html.projects.github(
+                  uiData(request),
+                  PaginatedCollection(repositoriesPage, repositories),
+                  Seq("Repository with selected name was not found")
+                )
               )
-            )
-          }
-          case Some(repo) => {
-            userOrg(request).flatMap { org =>
+            }
+            case Some(repo) => {
               dependencyClient(request).projects.post(
                 ProjectForm(
                   organizationGuid = org.guid,
@@ -145,12 +149,19 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def create() = Identified { implicit request =>
-    Ok(
-      views.html.projects.create(
-        uiData(request), ProjectsController.uiForm
+  def create() = Identified.async { implicit request =>
+    dependencyClient(request).organizations.get(
+      userGuid = Some(request.user.guid),
+      limit = 100
+    ).map { orgs =>
+      Ok(
+        views.html.projects.create(
+          uiData(request),
+          orgs,
+          ProjectsController.uiForm
+        )
       )
-    )
+    }
   }
 
   def postCreate() = Identified.async { implicit request =>

@@ -20,6 +20,7 @@ class Organizations @javax.inject.Inject() (
   def get(
     guid: Option[UUID],
     guids: Option[Seq[UUID]],
+    userGuid: Option[UUID],
     key: Option[String],
     limit: Long = 25,
     offset: Long = 0
@@ -29,6 +30,7 @@ class Organizations @javax.inject.Inject() (
         OrganizationsDao.findAll(
           guid = guid,
           guids = optionalGuids(guids),
+          userGuid = userGuid,
           key = key,
           limit = limit,
           offset = offset

@@ -170,6 +170,7 @@ object OrganizationsDao {
   def findAll(
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
+    userGuid: Option[UUID] = None,
     key: Option[String] = None,
     forUserGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -180,6 +181,7 @@ object OrganizationsDao {
       Some(BaseQuery.trim),
       guid.map { v => "and organizations.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("organizations.guid", _) },
+      userGuid.map { v => "and organizations.guid = (select organization_guid from user_organizations where deleted_at is null and user_guid = {for_user_guid}::uuid)" },
       key.map { v => "and lower(organizations.key) = lower(trim({key}))" },
       forUserGuid.map { v => "and organizations.guid = (select organization_guid from user_organizations where deleted_at is null and user_guid = {for_user_guid}::uuid)" },
       isDeleted.map(Filters.isDeleted("organizations", _)),
@@ -189,6 +191,7 @@ object OrganizationsDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       key.map('key -> _.toString),
+      userGuid.map('user_guid -> _.toString),
       forUserGuid.map('for_user_guid -> _.toString)
     ).flatten
 

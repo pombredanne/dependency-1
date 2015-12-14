@@ -1,8 +1,20 @@
 @(form: Form[controllers.ProjectsController.UiForm],
+  orgs: Seq[com.bryzek.dependency.v0.models.Organization],
   cancelUrl: play.api.mvc.Call
 )(implicit flash: Flash, messages: Messages)
 
 <fieldset>
+
+    if (@orgs.size == 1) {
+      <input type='hidden' name='organization_guid' value='@orgs.head.guid' />
+    } else {
+      @helper.select(
+          form("organization_guid"),
+          Seq( ("" -> "-- select --") ) ++ orgs.map( v => (v.guid.toString -> v.key) ),
+          '_label -> "Organization",
+          '_error -> form.error("organization_guid")
+      )
+    }
 
     @helper.inputText(
         form("name"),

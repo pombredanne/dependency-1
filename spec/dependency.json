@@ -566,6 +566,7 @@
                     "parameters": [
                         { "name": "guid", "type": "uuid", "description": "Find organization with this guid. Exact match", "required": false },
 			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
+                        { "name": "user_guid", "type": "uuid", "description": "Find organizations that this user has access to", "required": false },
                         { "name": "key", "type": "string", "description": "Find organization with this key. Case in-sensitive. Exact match", "required": false },
 			{ "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }

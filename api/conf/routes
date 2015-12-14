@@ -21,7 +21,7 @@ DELETE     /libraries/:guid                                      controllers.Lib
 GET        /recommendations/libraries/projects/:project_guid     controllers.LibraryRecommendations.getRecommendationsAndLibrariesAndProjectsByProjectGuid(project_guid: _root_.java.util.UUID)
 GET        /library_versions                                     controllers.LibraryVersions.get(guid: _root_.scala.Option[_root_.java.util.UUID], guids: _root_.scala.Option[List[_root_.java.util.UUID]], library_guid: _root_.scala.Option[_root_.java.util.UUID], project_guid: _root_.scala.Option[_root_.java.util.UUID], limit: Long ?= 25, offset: Long ?= 0)
 GET        /library_versions/:guid                               controllers.LibraryVersions.getByGuid(guid: _root_.java.util.UUID)
-GET        /organizations                                        controllers.Organizations.get(guid: _root_.scala.Option[_root_.java.util.UUID], guids: _root_.scala.Option[List[_root_.java.util.UUID]], key: _root_.scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)
+GET        /organizations                                        controllers.Organizations.get(guid: _root_.scala.Option[_root_.java.util.UUID], guids: _root_.scala.Option[List[_root_.java.util.UUID]], user_guid: _root_.scala.Option[_root_.java.util.UUID], key: _root_.scala.Option[String], limit: Long ?= 25, offset: Long ?= 0)
 GET        /organizations/users/:user_guid                       controllers.Organizations.getUsersByUserGuid(user_guid: _root_.java.util.UUID)
 GET        /organizations/:guid                                  controllers.Organizations.getByGuid(guid: _root_.java.util.UUID)
 POST       /organizations                                        controllers.Organizations.post()
