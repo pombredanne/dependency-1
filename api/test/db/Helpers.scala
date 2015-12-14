@@ -22,6 +22,28 @@ trait Helpers {
     s"z-test-${UUID.randomUUID.toString.toLowerCase}"
   }
 
+  /**
+    * Function called on each iteration until it returns true, up
+    * until maxAttempts (at which point an error is raised)
+    */
+  def waitFor(
+    function: () => Boolean,
+    maxAttempts: Int = 15,
+    msBetweenAttempts: Int = 100
+  ): Boolean = {
+    var ctr = 0
+    var found = false
+    while (!found) {
+      found = function()
+      ctr += 1
+      if (ctr > maxAttempts) {
+        sys.error("Did not create user organization")
+      }
+      Thread.sleep(msBetweenAttempts)
+    }
+    true
+  }
+
   @scala.annotation.tailrec
   final def positiveRandomLong(): Long = {
     val value = (new Random()).nextLong

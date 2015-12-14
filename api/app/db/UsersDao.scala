@@ -1,5 +1,6 @@
 package db
 
+import com.bryzek.dependency.actors.MainActor
 import io.flow.play.postgresql.{AuditsDao, Filters, OrderBy}
 import io.flow.user.v0.models.{Name, User, UserForm}
 import java.util.UUID
@@ -71,11 +72,11 @@ object UsersDao {
   def create(createdBy: Option[User], form: UserForm): Either[Seq[String], User] = {
     validate(form) match {
       case Nil => {
-        val userGuid = UUID.randomUUID
+        val guid = UUID.randomUUID
 
         DB.withTransaction { implicit c =>
           SQL(InsertQuery).on(
-            'guid -> userGuid,
+            'guid -> guid,
             'email -> form.email.getOrElse("").trim,
             'avatar_url -> Util.trimmedString(form.avatarUrl),
             'first_name -> Util.trimmedString(form.name.flatMap(_.first)),
@@ -86,14 +87,13 @@ object UsersDao {
           // TODO: Git hub user
         }
 
-        val user = findByGuid(userGuid).getOrElse {
-          sys.error("Failed to create user")
-        }
+        MainActor.ref ! MainActor.Messages.UserCreated(guid)
 
-        // TODO: Move to actor
-        OrganizationsDao.upsertForUser(user)
-
-        Right(user)
+        Right(
+          findByGuid(guid).getOrElse {
+            sys.error("Failed to create user")
+          }
+        )
       }
       case errors => Left(errors)
     }
