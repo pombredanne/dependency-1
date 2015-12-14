@@ -114,7 +114,7 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       val user = UsersDao.create(None, createUserForm()).right.get
 
       waitFor { () =>
-        OrganizationsDao.findAll(forUserGuid = Some(user.guid)).size == 1
+        OrganizationsDao.findAll(Authorization.All, forUserGuid = Some(user.guid)).size == 1
       } must be(true)
     }
 

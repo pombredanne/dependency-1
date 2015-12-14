@@ -154,12 +154,7 @@ object ResolversDao {
   ): Seq[Resolver] = {
     val sql = Seq(
       Some(BaseQuery.trim),
-      auth match {
-        case Authorization.All => None
-        case Authorization.PublicOnly => Some("and resolvers.visibility = {public}")
-        case Authorization.Organization(guid) => Some("and (resolvers.visibility = {public} or resolvers.organization_guid = {authorization_organization_guid}::uuid)")
-        case Authorization.User(guid) => Some("and (resolvers.visibility = {public} or resolvers.organization_guid in (select organization_guid from user_organizations where deleted_at is null and user_guid = {authorization_user_guid}::uuid))")
-      },
+      Some(auth.organizations("resolvers.organization_guid", Some("resolvers.visibility")).and),
       guid.map { v =>  "and resolvers.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("resolvers.guid", _) },
       organizationGuid.map { v => "and resolvers.organization_guid = {organization_guid}::uuid" },

@@ -2,7 +2,6 @@ package controllers
 
 import db.OrganizationsDao
 import io.flow.play.clients.UserTokensClient
-import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
 import com.bryzek.dependency.v0.models.{Organization, OrganizationForm}
 import com.bryzek.dependency.v0.models.json._
@@ -13,7 +12,7 @@ import java.util.UUID
 
 class Organizations @javax.inject.Inject() (
   val userTokensClient: UserTokensClient
-) extends Controller with IdentifiedRestController with Helpers {
+) extends Controller with BaseIdentifiedController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -28,6 +27,7 @@ class Organizations @javax.inject.Inject() (
     Ok(
       Json.toJson(
         OrganizationsDao.findAll(
+          authorization(request),
           guid = guid,
           guids = optionalGuids(guids),
           userGuid = userGuid,
@@ -40,7 +40,7 @@ class Organizations @javax.inject.Inject() (
   }
 
   def getByGuid(guid: UUID) = Identified { request =>
-    withOrganization(guid) { organization =>
+    withOrganization(request.user, guid) { organization =>
       Ok(Json.toJson(organization))
     }
   }
@@ -66,7 +66,7 @@ class Organizations @javax.inject.Inject() (
   }
 
   def putByGuid(guid: UUID) = Identified(parse.json) { request =>
-    withOrganization(guid) { organization =>
+    withOrganization(request.user, guid) { organization =>
       request.body.validate[OrganizationForm] match {
         case e: JsError => {
           Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -82,7 +82,7 @@ class Organizations @javax.inject.Inject() (
   }
 
   def deleteByGuid(guid: UUID) = Identified { request =>
-    withOrganization(guid) { organization =>
+    withOrganization(request.user, guid) { organization =>
       OrganizationsDao.softDelete(request.user, organization)
       NoContent
     }

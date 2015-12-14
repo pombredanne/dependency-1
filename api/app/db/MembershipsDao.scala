@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{Membership, MembershipForm, Role}
+import com.bryzek.dependency.v0.models.{Membership, MembershipForm, Organization, Role}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
@@ -97,6 +97,13 @@ object MembershipsDao {
 
   def softDelete(deletedBy: User, membership: Membership) {
     SoftDelete.delete("memberships", deletedBy.guid, membership.guid)
+  }
+
+  def exists(org: Organization, user: User): Boolean = {
+    findByOrganizationGuidAndUserGuid(org.guid, user.guid) match {
+      case None => false
+      case Some(_) => true
+    }
   }
 
   def findByOrganizationGuidAndUserGuid(

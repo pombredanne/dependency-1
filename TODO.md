@@ -3,11 +3,9 @@ resolver, membership:
 
 scope by org:
   - projects
-     -- modify validation to include org
      -- add authorizatino to findAll
 
   - resolvers
-     -- change user to organization
      -- add authorizatino to findAll
 
   - libraries

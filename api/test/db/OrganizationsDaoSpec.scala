@@ -63,43 +63,43 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "softDelete" in {
     val org = createOrganization()
     OrganizationsDao.softDelete(systemUser, org)
-    OrganizationsDao.findByGuid(org.guid) must be(None)
-    OrganizationsDao.findAll(guid = Some(org.guid), isDeleted = Some(false)) must be(Nil)
-    OrganizationsDao.findAll(guid = Some(org.guid), isDeleted = Some(true)).map(_.guid) must be(Seq(org.guid))
+    OrganizationsDao.findByGuid(Authorization.All, org.guid) must be(None)
+    OrganizationsDao.findAll(Authorization.All, guid = Some(org.guid), isDeleted = Some(false)) must be(Nil)
+    OrganizationsDao.findAll(Authorization.All, guid = Some(org.guid), isDeleted = Some(true)).map(_.guid) must be(Seq(org.guid))
   }
 
   "findByGuid" in {
     val organization = createOrganization()
-    OrganizationsDao.findByGuid(organization.guid).map(_.guid) must be(
+    OrganizationsDao.findByGuid(Authorization.All, organization.guid).map(_.guid) must be(
       Some(organization.guid)
     )
 
-    OrganizationsDao.findByGuid(UUID.randomUUID) must be(None)
+    OrganizationsDao.findByGuid(Authorization.All, UUID.randomUUID) must be(None)
   }
 
   "findAll by guids" in {
     val organization1 = createOrganization()
     val organization2 = createOrganization()
 
-    OrganizationsDao.findAll(guids = Some(Seq(organization1.guid, organization2.guid))).map(_.guid).sorted must be(
+    OrganizationsDao.findAll(Authorization.All, guids = Some(Seq(organization1.guid, organization2.guid))).map(_.guid).sorted must be(
       Seq(organization1.guid, organization2.guid).sorted
     )
 
-    OrganizationsDao.findAll(guids = Some(Nil)) must be(Nil)
-    OrganizationsDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    OrganizationsDao.findAll(guids = Some(Seq(organization1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(organization1.guid))
+    OrganizationsDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
+    OrganizationsDao.findAll(Authorization.All, guids = Some(Seq(UUID.randomUUID))) must be(Nil)
+    OrganizationsDao.findAll(Authorization.All, guids = Some(Seq(organization1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(organization1.guid))
   }
 
   "findAll by userGuid includes user's org" in {
     val user = createUser()
 
     waitFor { () =>
-      !OrganizationsDao.findAll(forUserGuid = Some(user.guid)).isEmpty
+      !OrganizationsDao.findAll(Authorization.All, forUserGuid = Some(user.guid)).isEmpty
     }
 
-    val org = OrganizationsDao.findAll(forUserGuid = Some(user.guid)).head
-    OrganizationsDao.findAll(guid = Some(org.guid), userGuid = Some(user.guid)).map(_.guid) must be(Seq(org.guid))
-    OrganizationsDao.findAll(guid = Some(org.guid), userGuid = Some(UUID.randomUUID)) must be(Nil)
+    val org = OrganizationsDao.findAll(Authorization.All, forUserGuid = Some(user.guid)).head
+    OrganizationsDao.findAll(Authorization.All, guid = Some(org.guid), userGuid = Some(user.guid)).map(_.guid) must be(Seq(org.guid))
+    OrganizationsDao.findAll(Authorization.All, guid = Some(org.guid), userGuid = Some(UUID.randomUUID)) must be(Nil)
   }
 
 }

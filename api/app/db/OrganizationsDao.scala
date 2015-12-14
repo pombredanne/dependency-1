@@ -51,7 +51,7 @@ object OrganizationsDao {
       Seq("Key cannot be empty")
 
     } else {
-      OrganizationsDao.findByKey(form.key) match {
+      OrganizationsDao.findByKey(Authorization.All, form.key) match {
         case None => Seq.empty
         case Some(p) => {
           Some(p.guid) == existing.map(_.guid) match {
@@ -70,7 +70,7 @@ object OrganizationsDao {
           create(c, createdBy, form)
         }
         Right(
-          findByGuid(guid).getOrElse {
+          findByGuid(Authorization.All, guid).getOrElse {
             sys.error("Failed to create organization")
           }
         )
@@ -113,7 +113,7 @@ object OrganizationsDao {
         }
 
         Right(
-          findByGuid(organization.guid).getOrElse {
+          findByGuid(Authorization.All, organization.guid).getOrElse {
             sys.error("Failed to create organization")
           }
         )
@@ -127,7 +127,7 @@ object OrganizationsDao {
   }
 
   def upsertForUser(user: User): Organization = {
-    findAll(forUserGuid = Some(user.guid), limit = 1).headOption.getOrElse {
+    findAll(Authorization.All, forUserGuid = Some(user.guid), limit = 1).headOption.getOrElse {
       val key = UrlKey.generate(defaultUserName(user))
       val orgGuid = DB.withTransaction { implicit c =>
         val orgGuid = create(c, user, OrganizationForm(
@@ -143,7 +143,7 @@ object OrganizationsDao {
 
         orgGuid
       }
-      findByGuid(orgGuid).getOrElse {
+      findByGuid(Authorization.All, orgGuid).getOrElse {
         sys.error(s"Failed to create an organization for the user[$user]")
       }
     }
@@ -171,15 +171,16 @@ object OrganizationsDao {
     )
   }
 
-  def findByKey(key: String): Option[Organization] = {
-    findAll(key = Some(key), limit = 1).headOption
+  def findByKey(auth: Authorization, key: String): Option[Organization] = {
+    findAll(auth, key = Some(key), limit = 1).headOption
   }
 
-  def findByGuid(guid: UUID): Option[Organization] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+  def findByGuid(auth: Authorization, guid: UUID): Option[Organization] = {
+    findAll(auth, guid = Some(guid), limit = 1).headOption
   }
 
   def findAll(
+    auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     userGuid: Option[UUID] = None,

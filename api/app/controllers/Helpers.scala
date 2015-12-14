@@ -21,10 +21,10 @@ trait Helpers {
     }
   }
 
-  def withOrganization(guid: UUID)(
+  def withOrganization(user: User, guid: UUID)(
     f: Organization => Result
   ) = {
-    OrganizationsDao.findByGuid(guid) match {
+    OrganizationsDao.findByGuid(Authorization.User(user.guid), guid) match {
       case None => {
         Results.NotFound
       }

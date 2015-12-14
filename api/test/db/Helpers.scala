@@ -136,7 +136,7 @@ trait Helpers {
   ) (
     implicit form: ProjectForm = createProjectForm(org)
   ): Project = {
-    val user = OrganizationsDao.findByGuid(form.organizationGuid).flatMap { org =>
+    val user = OrganizationsDao.findByGuid(Authorization.All, form.organizationGuid).flatMap { org =>
       UsersDao.findByGuid(org.audit.createdBy.guid)
     }.getOrElse {
       sys.error("Could not find user that created org")
