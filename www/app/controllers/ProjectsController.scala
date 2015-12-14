@@ -290,13 +290,6 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  /**
-    * Temporary until we expose orgs in the UI
-    */
-  def userOrg[T](request: ProjectsController.this.IdentifiedRequest[T]): Future[Organization] = {
-    dependencyClient(request).organizations.getUsersByUserGuid(request.user.guid)
-  }
-
 }
 
 object ProjectsController {

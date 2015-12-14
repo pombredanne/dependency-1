@@ -1,9 +1,8 @@
 package controllers
 
 import com.bryzek.dependency.v0.errors.UnitResponse
-import com.bryzek.dependency.v0.models.{Resolver, ResolverForm, UsernamePassword, Visibility}
+import com.bryzek.dependency.v0.models.{Organization, Resolver, ResolverForm, UsernamePassword, Visibility}
 import com.bryzek.dependency.www.lib.DependencyClientProvider
-import io.flow.user.v0.models.User
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
 import java.util.UUID
@@ -78,13 +77,15 @@ class ResolversController @javax.inject.Inject() (
       },
 
       uiForm => {
-        dependencyClient(request).resolvers.post(
-          resolverForm = uiForm.resolverForm(request.user)
-        ).map { resolver =>
-          Redirect(routes.ResolversController.show(resolver.guid)).flashing("success" -> "Resolver created")
-        }.recover {
-          case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
-            Ok(views.html.resolvers.create(uiData(request), boundForm, response.errors.map(_.message)))
+        userOrg(request).flatMap { org =>
+          dependencyClient(request).resolvers.post(
+            resolverForm = uiForm.resolverForm(org)
+          ).map { resolver =>
+            Redirect(routes.ResolversController.show(resolver.guid)).flashing("success" -> "Resolver created")
+          }.recover {
+            case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
+              Ok(views.html.resolvers.create(uiData(request), boundForm, response.errors.map(_.message)))
+            }
           }
         }
       }
@@ -126,9 +127,9 @@ object ResolversController {
     password: Option[String]
   ) {
 
-    def resolverForm(user: User) = ResolverForm(
+    def resolverForm(org: Organization) = ResolverForm(
       visibility = Visibility.Private,
-      userGuid = user.guid,
+      organizationGuid = org.guid,
       uri = uri,
       credentials = credentials
     )

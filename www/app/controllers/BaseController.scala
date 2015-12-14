@@ -1,9 +1,11 @@
 package controllers
 
 import com.bryzek.dependency.v0.Client
+import com.bryzek.dependency.v0.models.Organization
 import com.bryzek.dependency.www.lib.{DependencyClientProvider, Section, UiData}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedController
+import scala.concurrent.{ExecutionContext, Future}
 import play.api._
 import play.api.i18n._
 import play.api.mvc._
@@ -44,6 +46,17 @@ abstract class BaseController(
 
   def dependencyClient[T](request: IdentifiedRequest[T]): Client = {
     dependencyClientProvider.newClient(user = Some(request.user))
+  }
+
+  /**
+    * Temporary until we expose orgs in the UI
+    */
+  def userOrg[T](
+    request: IdentifiedRequest[T]
+  ) (
+    implicit ec: ExecutionContext
+  ): Future[Organization] = {
+    dependencyClient(request).organizations.getUsersByUserGuid(request.user.guid)
   }
 
 }
