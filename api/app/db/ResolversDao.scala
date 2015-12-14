@@ -174,11 +174,6 @@ object ResolversDao {
       organizationGuid.map('organization_guid -> _.toString),
       visibility.map('visibility -> _.toString),
       uri.map('uri -> _.toString),
-      auth match {
-        case Authorization.PublicOnly | Authorization.All => None
-        case Authorization.Organization(guid) => Some('authorization_organization_guid -> guid.toString)
-        case Authorization.User(guid) => Some('authorization_user_guid -> guid.toString)
-      },
       Some('public -> Visibility.Public.toString)
     ).flatten
 

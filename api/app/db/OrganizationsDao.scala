@@ -192,6 +192,7 @@ object OrganizationsDao {
   ): Seq[Organization] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      Some(auth.organizations("organizations.guid").and),
       guid.map { v => "and organizations.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("organizations.guid", _) },
       userGuid.map { v => "and organizations.guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)" },
