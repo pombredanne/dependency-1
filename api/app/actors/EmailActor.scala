@@ -98,7 +98,7 @@ case class DailySummaryEmailMessage(user: User) extends EmailMessageGenerator {
     value
   }
 
-  private lazy val lastEmail = LastEmailsDao.findByUserGuidAndPublication(user.guid, Publication.DailySummary)
+  private val lastEmail = LastEmailsDao.findByUserGuidAndPublication(user.guid, Publication.DailySummary)
 
   /**
    * We send anytime within the preferred hour - Since we select
@@ -110,6 +110,7 @@ case class DailySummaryEmailMessage(user: User) extends EmailMessageGenerator {
    */
   override def shouldSend(): Boolean = {
     PreferredHourToSendEst == (new DateTime()).toDateTime(DateTimeZone.forID("America/New_York")).getHourOfDay
+    true
   }
 
   override def subject() = "Daily Summary"
@@ -119,6 +120,7 @@ case class DailySummaryEmailMessage(user: User) extends EmailMessageGenerator {
       userGuid = Some(user.guid),
       limit = 250
     )
+
     val (newRecommendations, oldRecommendations) = lastEmail match {
       case None => (recommendations, Nil)
       case Some(email) => {
