@@ -134,12 +134,14 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "validates bad URL" in {
     ResolversDao.validate(
+      systemUser,
       createResolverForm().copy(uri = "foo")
     ) must be(Seq("URI must start with http"))
   }
 
   "validates duplicate public resolver" in {
     ResolversDao.validate(
+      systemUser,
       createResolverForm().copy(
         visibility = Visibility.Public,
         uri = publicResolver.uri
@@ -153,12 +155,22 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       createResolverForm(org = org)
     )
     ResolversDao.validate(
+      systemUser,
       createResolverForm().copy(
         visibility = Visibility.Private,
         organizationGuid = org.guid,
         uri = resolver.uri
       )
     ) must be(Seq(s"Organization already has a resolver with uri[${resolver.uri}]"))
+  }
+
+  "validates access to org" in {
+    ResolversDao.validate(
+      createUser(),
+      createResolverForm().copy(
+        visibility = Visibility.Private
+      )
+    ) must be(Seq(s"You do not have access to this organization"))
   }
 
 }

@@ -51,7 +51,7 @@ object ResolversDao {
     }
   }
 
-  def validate(form: ResolverForm): Seq[String] = {
+  def validate(user: User, form: ResolverForm): Seq[String] = {
     val urlErrors = Validation.validateUri(form.uri) match {
       case Left(errors) => errors
       case Right(url) => Nil
@@ -83,7 +83,15 @@ object ResolversDao {
       }
     }
 
-    urlErrors ++ uniqueErrors
+    val organizationErrors = OrganizationsDao.findByGuid(Authorization.All, form.organizationGuid) match {
+      case None => Seq("Organization not found")
+      case Some(org) => MembershipsDao.exists(org, user) match  {
+        case false => Seq("You do not have access to this organization")
+        case true => Nil
+      }
+    }
+
+    urlErrors ++ uniqueErrors ++ organizationErrors
   }
 
   def upsert(createdBy: User, form: ResolverForm): Either[Seq[String], Resolver] = {
@@ -94,7 +102,7 @@ object ResolversDao {
   }
 
   def create(createdBy: User, form: ResolverForm): Either[Seq[String], Resolver] = {
-    validate(form) match {
+    validate(createdBy, form) match {
       case Nil => {
         val guid = UUID.randomUUID
 

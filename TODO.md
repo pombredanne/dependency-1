@@ -1,10 +1,6 @@
-resolver, membership:
-  validate can access org
+membership: validate can access org
 
 scope by org:
-  - items
-     -- add authorization to findAll
-
   - projects
      -- add authorization to findAll
 
