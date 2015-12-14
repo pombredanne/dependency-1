@@ -131,6 +131,7 @@ class ProjectActor extends Actor with Util {
       isSynced = Some(false)
     ).map( lib => s"Library ${lib.groupId}.${lib.artifactId}" ) ++ 
     BinariesDao.findAll(
+      Authorization.All,
       projectGuid = Some(project.guid),
       isSynced = Some(false)
     ).map( bin => s"Binary ${bin.name}" )

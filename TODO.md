@@ -1,14 +1,5 @@
 scope by org:
-  - projects
-     -- add authorization to findAll
-
-  - resolvers
-     -- add authorization to findAll
-
   - libraries
-     -- add authorization to findAll
-
-  - binaries
      -- add authorization to findAll
 
 Subscribe new users automatically to daily summary email
@@ -17,4 +8,9 @@ UI:
   - Add page to see organizations, create organization, add members
 
 When saving dependencies, should we create a separate table for those
-and track back to the file we found that dependency in?
+and track back to the file we found that dependency in? Right now,
+since we create a library/binary directly, a typo in the build file of
+a random project immediately will show as a version to upgrade
+to. That is wrong. Also, if we persist information from the project
+itself, we can actually record which file the dependency came from
+which can be helpful.

@@ -3,7 +3,7 @@ package com.bryzek.dependency.actors
 import com.bryzek.dependency.api.lib.DefaultBinaryVersionProvider
 import com.bryzek.dependency.v0.models.Binary
 import io.flow.play.postgresql.Pager
-import db.{BinariesDao, BinaryVersionsDao, SyncsDao, UsersDao}
+import db.{Authorization, BinariesDao, BinaryVersionsDao, SyncsDao, UsersDao}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -24,7 +24,7 @@ class BinaryActor extends Actor with Util {
   def receive = {
 
     case m @ BinaryActor.Messages.Data(guid: UUID) => withVerboseErrorHandler(m) {
-      dataBinary = BinariesDao.findByGuid(guid)
+      dataBinary = BinariesDao.findByGuid(Authorization.All, guid)
     }
 
     case m @ BinaryActor.Messages.Sync => withVerboseErrorHandler(m) {

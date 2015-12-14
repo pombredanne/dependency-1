@@ -37,7 +37,7 @@ object BinariesDao {
       Seq("Name cannot be empty")
 
     } else {
-      BinariesDao.findByOrganizationGuidAndName(form.organizationGuid, form.name) match {
+      BinariesDao.findByName(Authorization.All, form.name) match {
         case None => Seq.empty
         case Some(_) => Seq("Binary with this name already exists")
       }
@@ -45,7 +45,7 @@ object BinariesDao {
   }
 
   def upsert(createdBy: User, form: BinaryForm): Either[Seq[String], Binary] = {
-    BinariesDao.findByOrganizationGuidAndName(form.organizationGuid, form.name) match {
+    BinariesDao.findByName(Authorization.All, form.name) match {
       case None => {
         create(createdBy, form)
       }
@@ -77,7 +77,7 @@ object BinariesDao {
         MainActor.ref ! MainActor.Messages.BinaryCreated(guid)
 
         Right(
-          findByGuid(guid).getOrElse {
+          findByGuid(Authorization.All, guid).getOrElse {
             sys.error("Failed to create binary")
           }
         )
@@ -91,15 +91,20 @@ object BinariesDao {
     MainActor.ref ! MainActor.Messages.BinaryDeleted(binary.guid)
   }
 
-  def findByOrganizationGuidAndName(organizationGuid: UUID, name: String): Option[Binary] = {
-    findAll(organizationGuid = Some(organizationGuid), name = Some(name), limit = 1).headOption
+  def findByName(auth: Authorization, name: String): Option[Binary] = {
+    findAll(auth, name = Some(name), limit = 1).headOption
   }
 
-  def findByGuid(guid: UUID): Option[Binary] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+  def findByGuid(auth: Authorization, guid: UUID): Option[Binary] = {
+    findAll(auth, guid = Some(guid), limit = 1).headOption
   }
 
+  /**
+    * @param auth: Included here for symmetry with other APIs but at the
+    *  moment all binary data are public.
+    */
   def findAll(
+    auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     projectGuid: Option[UUID] = None,

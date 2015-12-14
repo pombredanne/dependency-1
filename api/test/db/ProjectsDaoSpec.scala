@@ -90,7 +90,7 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       val project = createProject(org)()
       val binary = createBinaryForm()
       ProjectsDao.setDependencies(systemUser, project, binaries = Some(Seq(binary)))
-      BinariesDao.findAll(projectGuid = Some(project.guid)).map(_.name.toString) must be(Seq(binary.name.toString))
+      BinariesDao.findAll(Authorization.All, projectGuid = Some(project.guid)).map(_.name.toString) must be(Seq(binary.name.toString))
 
       // Make sure we can reset w/out error
       ProjectsDao.setDependencies(systemUser, project, binaries = Some(Seq(binary)))

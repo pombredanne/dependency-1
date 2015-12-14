@@ -199,7 +199,7 @@ trait Helpers {
     val project = createProject(org)()
     ProjectsDao.setDependencies(systemUser, project, binaries = Some(Seq(binaryForm)))
 
-    val binary = BinariesDao.findByOrganizationGuidAndName(org.guid, binaryForm.name).getOrElse {
+    val binary = BinariesDao.findByName(Authorization.All, binaryForm.name).getOrElse {
       sys.error("Failed to find binary")
     }
 

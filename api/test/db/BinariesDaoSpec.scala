@@ -13,44 +13,43 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   lazy val org = createOrganization()
 
-  "findByOrganizationGuidAndName" in {
+  "findByName" in {
     val lang = createBinary(org)()
-    BinariesDao.findByOrganizationGuidAndName(org.guid, lang.name.toString).map(_.name) must be(
+    BinariesDao.findByName(Authorization.All, lang.name.toString).map(_.name) must be(
       Some(lang.name)
     )
 
-    BinariesDao.findByOrganizationGuidAndName(UUID.randomUUID, lang.name.toString) must be(None)
-    BinariesDao.findByOrganizationGuidAndName(org.guid, UUID.randomUUID.toString) must be(None)
+    BinariesDao.findByName(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
   "findByGuid" in {
     val lang = createBinary(org)()
-    BinariesDao.findByGuid(lang.guid).map(_.guid) must be(
+    BinariesDao.findByGuid(Authorization.All, lang.guid).map(_.guid) must be(
       Some(lang.guid)
     )
 
-    BinariesDao.findByGuid(UUID.randomUUID) must be(None)
+    BinariesDao.findByGuid(Authorization.All, UUID.randomUUID) must be(None)
   }
 
   "findAll by guids" in {
     val binary1 = createBinary(org)()
     val binary2 = createBinary(org)()
 
-    BinariesDao.findAll(guids = Some(Seq(binary1.guid, binary2.guid))).map(_.guid) must be(
+    BinariesDao.findAll(Authorization.All, guids = Some(Seq(binary1.guid, binary2.guid))).map(_.guid) must be(
       Seq(binary1, binary2).sortWith { (x,y) => x.name.toString < y.name.toString }.map(_.guid)
     )
 
-    BinariesDao.findAll(guids = Some(Nil)) must be(Nil)
-    BinariesDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    BinariesDao.findAll(guids = Some(Seq(binary1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(binary1.guid))
+    BinariesDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
+    BinariesDao.findAll(Authorization.All, guids = Some(Seq(UUID.randomUUID))) must be(Nil)
+    BinariesDao.findAll(Authorization.All, guids = Some(Seq(binary1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(binary1.guid))
   }
 
   "findAll by isSynced" in {
     val binary = createBinary(org)()
     createSync(createSyncForm(objectGuid = binary.guid, event = SyncEvent.Completed))
 
-    BinariesDao.findAll(guid = Some(binary.guid), isSynced = Some(true)).map(_.guid) must be(Seq(binary.guid))
-    BinariesDao.findAll(guid = Some(binary.guid), isSynced = Some(false)) must be(Nil)
+    BinariesDao.findAll(Authorization.All, guid = Some(binary.guid), isSynced = Some(true)).map(_.guid) must be(Seq(binary.guid))
+    BinariesDao.findAll(Authorization.All, guid = Some(binary.guid), isSynced = Some(false)) must be(Nil)
   }
 
   "create" must {

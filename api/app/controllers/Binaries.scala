@@ -1,9 +1,10 @@
 package controllers
 
-import db.BinariesDao
+import db.{Authorization, BinariesDao}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
+import io.flow.user.v0.models.User
 import com.bryzek.dependency.v0.models.{Binary, BinaryForm}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
@@ -27,6 +28,7 @@ class Binaries @javax.inject.Inject() (
     Ok(
       Json.toJson(
         BinariesDao.findAll(
+          Authorization.User(request.user.guid),
           guid = guid,
           guids = optionalGuids(guids),
           projectGuid = projectGuid,
@@ -39,7 +41,7 @@ class Binaries @javax.inject.Inject() (
   }
 
   def getByGuid(guid: UUID) = Identified { request =>
-    withBinary(guid) { binary =>
+    withBinary(request.user, guid) { binary =>
       Ok(Json.toJson(binary))
     }
   }
@@ -60,16 +62,16 @@ class Binaries @javax.inject.Inject() (
   }
 
   def deleteByGuid(guid: UUID) = Identified { request =>
-    withBinary(guid) { binary =>
+    withBinary(request.user, guid) { binary =>
       BinariesDao.softDelete(request.user, binary)
       NoContent
     }
   }
 
-  def withBinary(guid: UUID)(
+  def withBinary(user: User, guid: UUID)(
     f: Binary => Result
   ): Result = {
-    BinariesDao.findByGuid(guid) match {
+    BinariesDao.findByGuid(Authorization.User(user.guid), guid) match {
       case None => {
         NotFound
       }

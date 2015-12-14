@@ -37,7 +37,7 @@ class PeriodicActor extends Actor with Util {
 
     case m @ PeriodicActor.Messages.SyncBinaries => withVerboseErrorHandler(m) {
       Pager.eachPage { offset =>
-        BinariesDao.findAll(offset = offset)
+        BinariesDao.findAll(Authorization.All, offset = offset)
       } { bin =>
         sender ! MainActor.Messages.BinarySync(bin.guid)
       }
