@@ -3,11 +3,7 @@ package controllers
 import com.bryzek.dependency.v0.models.{Publication, SubscriptionForm}
 import com.bryzek.dependency.www.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
-import io.flow.play.util.{Pagination, PaginatedCollection}
 import java.util.UUID
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration.Duration
-import java.util.concurrent.TimeUnit
 
 import play.api._
 import play.api.i18n.MessagesApi
