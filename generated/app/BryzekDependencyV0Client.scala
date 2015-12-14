@@ -68,6 +68,7 @@ package com.bryzek.dependency.v0.models {
   case class Item(
     guid: _root_.java.util.UUID,
     organization: com.bryzek.dependency.v0.models.OrganizationSummary,
+    visibility: com.bryzek.dependency.v0.models.Visibility,
     summary: com.bryzek.dependency.v0.models.ItemSummary,
     label: String,
     description: _root_.scala.Option[String] = None
@@ -774,6 +775,7 @@ package com.bryzek.dependency.v0.models {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
+        (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "summary").read[com.bryzek.dependency.v0.models.ItemSummary] and
         (__ \ "label").read[String] and
         (__ \ "description").readNullable[String]
@@ -784,6 +786,7 @@ package com.bryzek.dependency.v0.models {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
+        (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "summary").write[com.bryzek.dependency.v0.models.ItemSummary] and
         (__ \ "label").write[String] and
         (__ \ "description").writeNullable[String]

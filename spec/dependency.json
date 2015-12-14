@@ -395,6 +395,7 @@
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Unique identifier for this item." },
                 { "name": "organization", "type": "organization_summary" },
+		{ "name": "visibility", "type": "visibility" },
                 { "name": "summary", "type": "item_summary" },
                 { "name": "label", "type": "string" },
                 { "name": "description", "type": "string", "required": false }

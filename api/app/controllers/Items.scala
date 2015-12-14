@@ -2,7 +2,6 @@ package controllers
 
 import db.ItemsDao
 import io.flow.play.clients.UserTokensClient
-import io.flow.play.controllers.IdentifiedRestController
 import com.bryzek.dependency.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
@@ -10,7 +9,7 @@ import play.api.libs.json._
 @javax.inject.Singleton
 class Items @javax.inject.Inject() (
   val userTokensClient: UserTokensClient
-) extends Controller with IdentifiedRestController with Helpers {
+) extends Controller with BaseIdentifiedController {
 
   def getSearch(
     q: Option[String],
@@ -21,6 +20,7 @@ class Items @javax.inject.Inject() (
     Ok(
       Json.toJson(
         ItemsDao.findAll(
+          authorization(request),
           q = q,
           limit = limit,
           offset = offset

@@ -3,6 +3,7 @@ drop table if exists items;
 create table items (
   guid                       uuid primary key,
   organization_guid          uuid not null references organizations,
+  visibility                 text not null check(enum(visibility)),
   object_guid                uuid not null,
   label                      text not null check(non_empty_trimmed_string(label)),
   description                text check(trim(description) = description),

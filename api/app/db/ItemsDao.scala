@@ -1,6 +1,7 @@
 package db
 
-import com.bryzek.dependency.v0.models.{Binary, BinarySummary, Item, ItemSummary, ItemSummaryUndefinedType, Library, LibrarySummary, OrganizationSummary, Project, ProjectSummary}
+import com.bryzek.dependency.v0.models.{Binary, BinarySummary, Item, ItemSummary, ItemSummaryUndefinedType, Library, LibrarySummary}
+import com.bryzek.dependency.v0.models.{OrganizationSummary, Project, ProjectSummary, ResolverSummary, Visibility}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.user.v0.models.User
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
@@ -23,6 +24,7 @@ object ItemsDao {
   private[this] val BaseQuery = s"""
     select items.guid,
            items.organization_guid,
+           items.visibility,
            items.object_guid,
            items.label,
            items.description,
@@ -39,9 +41,9 @@ object ItemsDao {
 
   private[this] val InsertQuery = """
     insert into items
-    (guid, organization_guid, object_guid, label, description, contents, summary, created_by_guid, updated_by_guid)
+    (guid, organization_guid, visibility, object_guid, label, description, contents, summary, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {object_guid}::uuid, {label}, {description}, {contents}, {summary}::json, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {organization_guid}::uuid, {visibility}, {object_guid}::uuid, {label}, {description}, {contents}, {summary}::json, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[this] def objectGuid(summary: ItemSummary): UUID = {
@@ -60,6 +62,27 @@ object ItemsDao {
       case ProjectSummary(guid, org, name) => org
       case ItemSummaryUndefinedType(name) => sys.error(s"Cannot get a guid from ItemSummaryUndefinedType($name)")
     }
+  }
+
+  private[this] def visibility(summary: ItemSummary): Visibility = {
+    summary match {
+      case BinarySummary(guid, org, name) => {
+        Visibility.Public
+      }
+      case LibrarySummary(guid, org, groupId, artifactId) => {
+        LibrariesDao.findByGuid(guid).flatMap { _.resolver.map { visibility(_) } }.getOrElse(Visibility.Private)
+      }
+      case ProjectSummary(guid, org, name) => {
+        ProjectsDao.findByGuid(guid).map(_.visibility).getOrElse(Visibility.Private)
+      }
+      case ItemSummaryUndefinedType(name) => {
+        Visibility.Private
+      }
+    }
+  }
+
+  private[this] def visibility(resolver: ResolverSummary): Visibility = {
+    ResolversDao.findByGuid(Authorization.All, resolver.guid).map(_.visibility).getOrElse(Visibility.Private)
   }
 
   def upsertBinary(user: User, binary: Binary): Item = {
@@ -117,13 +140,13 @@ object ItemsDao {
   }
 
   def upsert(user: User, form: ItemForm): Item = {
-    findByObjectGuid(objectGuid(form.summary)) match {
+    findByObjectGuid(Authorization.All, objectGuid(form.summary)) match {
       case Some(item) => item
       case None => {
         Try(create(user, form)) match {
           case Success(item) => item
           case Failure(ex) => {
-            findByObjectGuid(objectGuid(form.summary)).getOrElse {
+            findByObjectGuid(Authorization.All, objectGuid(form.summary)).getOrElse {
               sys.error(s"Failed to upsert item: $ex")
             }
           }
@@ -139,6 +162,7 @@ object ItemsDao {
       SQL(InsertQuery).on(
         'guid -> guid,
         'organization_guid -> organization(form.summary).guid,
+        'visibility -> visibility(form.summary).toString,
         'object_guid -> objectGuid(form.summary),
         'label -> form.label,
         'description -> form.description,
@@ -148,7 +172,7 @@ object ItemsDao {
       ).execute()
     }
 
-    findByGuid(guid).getOrElse {
+    findByGuid(Authorization.All, guid).getOrElse {
       sys.error("Failed to create item")
     }
   }
@@ -157,21 +181,22 @@ object ItemsDao {
     SoftDelete.delete("items", deletedBy.guid, item.guid)
   }
 
-  def softDeleteByObjectGuid(deletedBy: User, objectGuid: UUID) {
-    findByObjectGuid(objectGuid).map { item =>
+  def softDeleteByObjectGuid(auth: Authorization, deletedBy: User, objectGuid: UUID) {
+    findByObjectGuid(auth, objectGuid).map { item =>
       softDelete(deletedBy, item)
     }
   }
 
-  def findByGuid(guid: UUID): Option[Item] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+  def findByGuid(auth: Authorization, guid: UUID): Option[Item] = {
+    findAll(auth, guid = Some(guid), limit = 1).headOption
   }
 
-  def findByObjectGuid(objectGuid: UUID): Option[Item] = {
-    findAll(objectGuid = Some(objectGuid), limit = 1).headOption
+  def findByObjectGuid(auth: Authorization, objectGuid: UUID): Option[Item] = {
+    findAll(auth, objectGuid = Some(objectGuid), limit = 1).headOption
   }
 
   def findAll(
+    auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     q: Option[String] = None,
@@ -182,6 +207,7 @@ object ItemsDao {
   ): Seq[Item] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      Some(auth.organizations("items.organization_guid", Some("items.visibility")).and),
       guid.map { v =>  "and items.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("items.guid", _) },
       q.map { v => "and items.contents like '%' || lower(trim({q})) || '%' " },

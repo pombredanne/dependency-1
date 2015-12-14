@@ -29,41 +29,41 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "findByGuid" in {
     val item = upsertItem(org)()
-    ItemsDao.findByGuid(item.guid).map(_.guid) must be(
+    ItemsDao.findByGuid(Authorization.All, item.guid).map(_.guid) must be(
       Some(item.guid)
     )
 
-    ItemsDao.findByGuid(UUID.randomUUID) must be(None)
+    ItemsDao.findByGuid(Authorization.All, UUID.randomUUID) must be(None)
   }
 
   "findByObjectGuid" in {
     val binary = createBinary(org)()
     val item = ItemsDao.upsertBinary(systemUser, binary)
-    ItemsDao.findByObjectGuid(binary.guid).map(_.guid) must be(
+    ItemsDao.findByObjectGuid(Authorization.All, binary.guid).map(_.guid) must be(
       Some(item.guid)
     )
 
-    ItemsDao.findByObjectGuid(UUID.randomUUID) must be(None)
+    ItemsDao.findByObjectGuid(Authorization.All, UUID.randomUUID) must be(None)
   }
 
   "findAll by guids" in {
     val item1 = upsertItem(org)()
     val item2 = upsertItem(org)()
 
-    ItemsDao.findAll(guids = Some(Seq(item1.guid, item2.guid))).map(_.guid).sorted must be(
+    ItemsDao.findAll(Authorization.All, guids = Some(Seq(item1.guid, item2.guid))).map(_.guid).sorted must be(
       Seq(item1.guid, item2.guid).sorted
     )
 
-    ItemsDao.findAll(guids = Some(Nil)) must be(Nil)
-    ItemsDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    ItemsDao.findAll(guids = Some(Seq(item1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(item1.guid))
+    ItemsDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
+    ItemsDao.findAll(Authorization.All, guids = Some(Seq(UUID.randomUUID))) must be(Nil)
+    ItemsDao.findAll(Authorization.All, guids = Some(Seq(item1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(item1.guid))
   }
 
   "supports binaries" in {
     val binary = createBinary(org)()
     val itemBinary = ItemsDao.upsertBinary(systemUser, binary)
 
-    val actual = ItemsDao.findByObjectGuid(binary.guid).getOrElse {
+    val actual = ItemsDao.findByObjectGuid(Authorization.All, binary.guid).getOrElse {
       sys.error("Failed to create binary")
     }
     actual.label must be(binary.name.toString)
@@ -75,15 +75,15 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       )
     )
 
-    ItemsDao.findAll(q = Some(binary.guid.toString)).headOption.map(_.guid) must be(Some(actual.guid))
-    ItemsDao.findAll(q = Some(UUID.randomUUID.toString)) must be(Nil)
+    ItemsDao.findAll(Authorization.All, q = Some(binary.guid.toString)).headOption.map(_.guid) must be(Some(actual.guid))
+    ItemsDao.findAll(Authorization.All, q = Some(UUID.randomUUID.toString)) must be(Nil)
   }
 
   "supports libraries" in {
     val library = createLibrary(org)()
 
     val itemLibrary = ItemsDao.upsertLibrary(systemUser, library)
-    val actual = ItemsDao.findByObjectGuid(library.guid).getOrElse {
+    val actual = ItemsDao.findByObjectGuid(Authorization.All, library.guid).getOrElse {
       sys.error("Failed to create library")
     }
     actual.label must be(Seq(library.groupId, library.artifactId).mkString("."))
@@ -96,15 +96,15 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       )
     )
 
-    ItemsDao.findAll(q = Some(library.guid.toString)).headOption.map(_.guid) must be(Some(actual.guid))
-    ItemsDao.findAll(q = Some(UUID.randomUUID.toString)) must be(Nil)
+    ItemsDao.findAll(Authorization.All, q = Some(library.guid.toString)).headOption.map(_.guid) must be(Some(actual.guid))
+    ItemsDao.findAll(Authorization.All, q = Some(UUID.randomUUID.toString)) must be(Nil)
   }
 
   "supports projects" in {
     val project = createProject(org)()
 
     val itemProject = ItemsDao.upsertProject(systemUser, project)
-    val actual = ItemsDao.findByObjectGuid(project.guid).getOrElse {
+    val actual = ItemsDao.findByObjectGuid(Authorization.All, project.guid).getOrElse {
       sys.error("Failed to create project")
     }
     actual.label must be(project.name)
@@ -116,8 +116,8 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       )
     )
 
-    ItemsDao.findAll(q = Some(project.guid.toString)).headOption.map(_.guid) must be(Some(actual.guid))
-    ItemsDao.findAll(q = Some(UUID.randomUUID.toString)) must be(Nil)
+    ItemsDao.findAll(Authorization.All, q = Some(project.guid.toString)).headOption.map(_.guid) must be(Some(actual.guid))
+    ItemsDao.findAll(Authorization.All, q = Some(UUID.randomUUID.toString)) must be(Nil)
   }
 
 }
