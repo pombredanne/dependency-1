@@ -30,7 +30,7 @@ class EmailActor extends Actor with Util {
         minHoursSinceLastEmail = 23
       ) { user =>
         DailySummaryEmailMessage(user)
-      }
+      }.process()
     }
 
   }
