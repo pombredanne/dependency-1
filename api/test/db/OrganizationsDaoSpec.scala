@@ -102,4 +102,16 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     OrganizationsDao.findAll(Authorization.All, guid = Some(org.guid), userGuid = Some(UUID.randomUUID)) must be(Nil)
   }
 
+  "authorization for organizations" in {
+    val user = createUser()
+    val org = createOrganization(user = user)
+
+    OrganizationsDao.findAll(Authorization.PublicOnly, guid = Some(org.guid)) must be(Nil)
+    OrganizationsDao.findAll(Authorization.All, guid = Some(org.guid)).map(_.guid) must be(Seq(org.guid))
+    OrganizationsDao.findAll(Authorization.Organization(org.guid), guid = Some(org.guid)).map(_.guid) must be(Seq(org.guid))
+    OrganizationsDao.findAll(Authorization.Organization(createOrganization().guid), guid = Some(org.guid)) must be(Nil)
+    OrganizationsDao.findAll(Authorization.User(user.guid), guid = Some(org.guid)).map(_.guid) must be(Seq(org.guid))
+    OrganizationsDao.findAll(Authorization.User(createUser().guid), guid = Some(org.guid)) must be(Nil)
+  }
+
 }
