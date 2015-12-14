@@ -2,8 +2,6 @@ scope by org:
   - libraries
      -- add authorization to findAll
 
-Subscribe new users automatically to daily summary email
-
 UI:
   - Add page to see organizations, create organization, add members
 

@@ -1,7 +1,8 @@
 package com.bryzek.dependency.actors
 
+import com.bryzek.dependency.v0.models.{Publication, SubscriptionForm}
 import io.flow.user.v0.models.User
-import db.{OrganizationsDao, UsersDao}
+import db.{OrganizationsDao, SubscriptionsDao, UsersDao}
 import play.libs.Akka
 import akka.actor.Actor
 import java.util.UUID
@@ -31,6 +32,17 @@ class UserActor extends Actor with Util {
     case m @ UserActor.Messages.Created => withVerboseErrorHandler(m.toString) {
       dataUser.foreach { user =>
         OrganizationsDao.upsertForUser(user)
+
+        // Subscribe the user automatically to key personalized emails.
+        Seq(Publication.DailySummary).foreach { publication =>
+          SubscriptionsDao.upsert(
+            MainActor.SystemUser,
+            SubscriptionForm(
+              userGuid = user.guid,
+              publication = publication
+            )
+          )
+        }
       }
     }
 
