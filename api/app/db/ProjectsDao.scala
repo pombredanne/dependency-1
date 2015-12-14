@@ -59,6 +59,7 @@ object ProjectsDao {
   """
 
   private[db] def validate(
+    user: User,
     form: ProjectForm,
     existing: Option[Project] = None
   ): Seq[String] = {
@@ -96,7 +97,21 @@ object ProjectsDao {
       }
     }
 
-    nameErrors ++ visibilityErrors ++ uriErrors
+    val organizationErrors = OrganizationsDao.findByGuid(form.organizationGuid) match {
+      case None => Seq("Organization not found")
+      case Some(org) => {
+        OrganizationsDao.findAll(
+          guid = Some(org.guid),
+          userGuid = Some(user.guid),
+          limit = 1
+        ).headOption match {
+          case None => Seq("You do not have access to this organization")
+          case Some(_) => Nil
+        }
+      }
+    }
+
+    nameErrors ++ visibilityErrors ++ uriErrors ++ organizationErrors
   }
 
   def setDependencies(
@@ -184,7 +199,7 @@ object ProjectsDao {
   }
 
   def create(createdBy: User, form: ProjectForm): Either[Seq[String], Project] = {
-    validate(form) match {
+    validate(createdBy, form) match {
       case Nil => {
         val guid = UUID.randomUUID
 
@@ -213,7 +228,7 @@ object ProjectsDao {
   }
 
   def update(createdBy: User, project: Project, form: ProjectForm): Either[Seq[String], Project] = {
-    validate(form, Some(project)) match {
+    validate(createdBy, form, Some(project)) match {
       case Nil => {
         // To support org change - need to record the change as its
         // own record to be able to track changes.
