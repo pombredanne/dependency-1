@@ -43,7 +43,7 @@ class Organizations @javax.inject.Inject() (
     }
   }
 
-  def getUsersByGuid(userGuid: UUID) = Identified { request =>
+  def getUsersByUserGuid(userGuid: UUID) = Identified { request =>
     withUser(userGuid) { user =>
       Ok(Json.toJson(OrganizationsDao.upsertForUser(user)))
     }

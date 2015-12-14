@@ -1717,10 +1717,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def getUsersByGuid(
-        guid: _root_.java.util.UUID
+      override def getUsersByUserGuid(
+        userGuid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Organization] = {
-        _executeRequest("GET", s"/organizations/users/${guid}").map {
+        _executeRequest("GET", s"/organizations/users/${userGuid}").map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Organization", r, _.validate[com.bryzek.dependency.v0.models.Organization])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -2468,8 +2468,8 @@ package com.bryzek.dependency.v0 {
     /**
      * Returns the organization representing the individual user.
      */
-    def getUsersByGuid(
-      guid: _root_.java.util.UUID
+    def getUsersByUserGuid(
+      userGuid: _root_.java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Organization]
 
     /**

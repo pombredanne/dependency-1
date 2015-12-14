@@ -579,7 +579,10 @@
                 {
                     "method": "GET",
                     "description": "Returns the organization representing the individual user.",
-                    "path": "/users/:guid",
+                    "path": "/users/:user_guid",
+                    "parameters": [
+                        { "name": "user_guid", "type": "uuid", "description": "Find organization representing this user" }
+		    ],
                     "responses": {
                         "200": { "type": "organization" },
                         "401": { "type": "unit" },

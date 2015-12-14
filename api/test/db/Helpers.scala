@@ -28,8 +28,8 @@ trait Helpers {
     */
   def waitFor(
     function: () => Boolean,
-    maxAttempts: Int = 15,
-    msBetweenAttempts: Int = 150
+    maxAttempts: Int = 25,
+    msBetweenAttempts: Int = 250
   ): Boolean = {
     var ctr = 0
     var found = false
