@@ -57,7 +57,7 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "validates role" in {
     val form = createMembershipForm(role = Role.UNDEFINED("other"))
-    MembershipsDao.validate(form) must be(Seq("Invalid role. Must be one of: member, admin"))
+    MembershipsDao.validate(systemUser, form) must be(Seq("Invalid role. Must be one of: member, admin"))
   }
 
   "validates duplicate" in {
@@ -66,8 +66,14 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val form = createMembershipForm(org = org, user = user, role = Role.Member)
     val membership = createMembership(form)
 
-    MembershipsDao.validate(form) must be(Seq("Membership already exists"))
-    MembershipsDao.validate(form.copy(role = Role.Admin)) must be(Nil)
+    MembershipsDao.validate(systemUser, form) must be(Seq("Membership already exists"))
+    MembershipsDao.validate(systemUser, form.copy(role = Role.Admin)) must be(Nil)
+  }
+
+  "validates access to org" in {
+    MembershipsDao.validate(createUser(), createMembershipForm()) must be(
+      Seq("You do not have access to this organization")
+    )
   }
 
   "findAll" must {

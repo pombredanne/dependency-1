@@ -37,9 +37,10 @@ object MembershipsDao {
   """
 
   private[db] def validate(
+    user: User,
     form: MembershipForm
   ): Seq[String] = {
-    form.role match {
+    val roleErrors = form.role match {
       case Role.UNDEFINED(_) => Seq("Invalid role. Must be one of: " + Role.all.map(_.toString).mkString(", "))
       case _ => {
         MembershipsDao.findByOrganizationGuidAndUserGuid(form.organizationGuid, form.userGuid) match {
@@ -54,10 +55,20 @@ object MembershipsDao {
         }
       }
     }
+
+    val organizationErrors = OrganizationsDao.findByGuid(Authorization.All, form.organizationGuid) match {
+      case None => Seq("Organization not found")
+      case Some(org) => MembershipsDao.exists(org, user) match  {
+        case false => Seq("You do not have access to this organization")
+        case true => Nil
+      }
+    }
+
+    roleErrors ++ organizationErrors
   }
 
   def create(createdBy: User, form: MembershipForm): Either[Seq[String], Membership] = {
-    validate(form) match {
+    validate(createdBy, form) match {
       case Nil => {
         val guid = MembershipsDao.findByOrganizationGuidAndUserGuid(form.organizationGuid, form.userGuid) match {
           case None => {
