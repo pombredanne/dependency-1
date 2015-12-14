@@ -2,20 +2,22 @@ resolver, membership:
   validate can access org
 
 scope by org:
+  - items
+     -- add authorization to findAll
+
   - projects
-     -- add authorizatino to findAll
+     -- add authorization to findAll
 
   - resolvers
-     -- add authorizatino to findAll
+     -- add authorization to findAll
 
   - libraries
-     -- add authorizatino to findAll
+     -- add authorization to findAll
 
   - binaries
-     -- add authorizatino to findAll
+     -- add authorization to findAll
 
-- Add Authorization object to restrict views of key objects to public
-   / private records user can see
-   - This is already implemented for the Resolvers class... consider if
-     we want to build a SAAS groups model here or not.
- 
+Subscribe new users automatically to daily summary email
+
+UI:
+  - Add page to see organizations, create organization, add members
