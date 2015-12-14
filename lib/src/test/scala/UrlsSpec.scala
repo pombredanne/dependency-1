@@ -5,7 +5,11 @@ import org.scalatest.{FunSpec, Matchers}
 
 class UrlsSpec extends FunSpec with Matchers with Factories {
 
-  private[this] lazy val urls = Urls()
+  private[this] lazy val urls = Urls(wwwHost = "http://localhost")
+
+  it("www") {
+    urls.www("/foo") should be("http://localhost/foo")
+  }
 
   it("recommendation") {
     val binary = makeRecommendation(`type` = RecommendationType.Binary)

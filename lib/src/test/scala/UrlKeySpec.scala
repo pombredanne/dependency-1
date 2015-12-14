@@ -21,7 +21,6 @@ class UrlKeySpec extends FunSpec with Matchers {
 
     it("appends string to make min length") {
       val key = UrlKey.generate("a")
-      println(s"key: $key")
       key.length should be(UrlKey.MinKeyLength)
       key(0).toString should be("a")
       UrlKey.validate(key) should be(Nil)
