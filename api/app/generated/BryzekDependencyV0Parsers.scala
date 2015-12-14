@@ -1275,7 +1275,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
     case class Mappings(
       guid: String = "guid",
       visibility: String = "visibility",
-      user: io.flow.common.v0.anorm.parsers.Reference.Mappings,
+      organization: com.bryzek.dependency.v0.anorm.parsers.OrganizationSummary.Mappings,
       uri: String = "uri",
       credentials: String = "credentials",
       audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
@@ -1290,7 +1290,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       def prefix(prefix: String, sep: String) = Mappings(
         guid = s"${prefix}${sep}guid",
         visibility = s"${prefix}${sep}visibility",
-        user = io.flow.common.v0.anorm.parsers.Reference.Mappings.prefix(Seq(prefix, "user").filter(!_.isEmpty).mkString("_"), "_"),
+        organization = com.bryzek.dependency.v0.anorm.parsers.OrganizationSummary.Mappings.prefix(Seq(prefix, "organization").filter(!_.isEmpty).mkString("_"), "_"),
         uri = s"${prefix}${sep}uri",
         credentials = s"${prefix}${sep}credentials",
         audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
@@ -1303,15 +1303,15 @@ package com.bryzek.dependency.v0.anorm.parsers {
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Resolver] = {
       SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
       com.bryzek.dependency.v0.anorm.parsers.Visibility.parser(com.bryzek.dependency.v0.anorm.parsers.Visibility.Mappings(mappings.visibility)) ~
-      io.flow.common.v0.anorm.parsers.Reference.parser(mappings.user) ~
+      com.bryzek.dependency.v0.anorm.parsers.OrganizationSummary.parser(mappings.organization) ~
       SqlParser.str(mappings.uri) ~
       SqlParser.get[com.bryzek.dependency.v0.models.Credentials](mappings.credentials).? ~
       io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
-        case guid ~ visibility ~ user ~ uri ~ credentials ~ audit => {
+        case guid ~ visibility ~ organization ~ uri ~ credentials ~ audit => {
           com.bryzek.dependency.v0.models.Resolver(
             guid = guid,
             visibility = visibility,
-            user = user,
+            organization = organization,
             uri = uri,
             credentials = credentials,
             audit = audit

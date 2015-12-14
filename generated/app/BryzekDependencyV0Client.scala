@@ -205,7 +205,7 @@ package com.bryzek.dependency.v0.models {
   case class Resolver(
     guid: _root_.java.util.UUID,
     visibility: com.bryzek.dependency.v0.models.Visibility,
-    user: io.flow.common.v0.models.Reference,
+    organization: com.bryzek.dependency.v0.models.OrganizationSummary,
     uri: String,
     credentials: _root_.scala.Option[com.bryzek.dependency.v0.models.Credentials] = None,
     audit: io.flow.common.v0.models.Audit
@@ -1032,7 +1032,7 @@ package com.bryzek.dependency.v0.models {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
-        (__ \ "user").read[io.flow.common.v0.models.Reference] and
+        (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "uri").read[String] and
         (__ \ "credentials").readNullable[com.bryzek.dependency.v0.models.Credentials] and
         (__ \ "audit").read[io.flow.common.v0.models.Audit]
@@ -1043,7 +1043,7 @@ package com.bryzek.dependency.v0.models {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
-        (__ \ "user").write[io.flow.common.v0.models.Reference] and
+        (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "uri").write[String] and
         (__ \ "credentials").writeNullable[com.bryzek.dependency.v0.models.Credentials] and
         (__ \ "audit").write[io.flow.common.v0.models.Audit]
@@ -1954,12 +1954,14 @@ package com.bryzek.dependency.v0 {
     object Repositories extends Repositories {
       override def getGithub(
         name: _root_.scala.Option[String] = None,
+        organizationGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
         existingProject: _root_.scala.Option[Boolean] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Repository]] = {
         val queryParameters = Seq(
           name.map("name" -> _),
+          organizationGuid.map("organization_guid" -> _.toString),
           existingProject.map("existing_project" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
@@ -2601,6 +2603,7 @@ package com.bryzek.dependency.v0 {
      */
     def getGithub(
       name: _root_.scala.Option[String] = None,
+      organizationGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
       existingProject: _root_.scala.Option[Boolean] = None,
       limit: Long = 25,
       offset: Long = 0

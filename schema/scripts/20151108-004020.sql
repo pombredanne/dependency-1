@@ -90,22 +90,25 @@ create unique index projects_organization_scms_lower_name_not_deleted_un_idx on 
 create table resolvers (
   guid                    uuid primary key,
   visibility              text not null check(enum(visibility)),
-  user_guid               uuid not null references users,
+  organization_guid       uuid references organizations,
   uri                     text not null check(non_empty_trimmed_string(uri)),
   position                integer not null check(position >= 0),
-  credentials             json
+  credentials             json,
+  -- can only have credentials if belongs to organization
+  constraint resolvers_organization_credentials_ck
+       check ( (organization_guid is null and credentials is null) or organization_guid is not null )
 );
 
 select schema_evolution_manager.create_basic_audit_data('public', 'resolvers');
 
 comment on table resolvers is '
   Stores resolvers we use to find library versions. Resolvers can be
-  public or private - and if private follows the user that created the
-  resolver.
+  public or private - and if private follows the organization that
+  created the resolver.
 ';
 
-create index on resolvers(user_guid);
-create unique index resolvers_user_guid_uri_not_deleted_un_idx on resolvers(user_guid, uri) where deleted_at is null;
+create index on resolvers(organization_guid);
+create unique index resolvers_organization_guid_uri_not_deleted_un_idx on resolvers(organization_guid, uri) where deleted_at is null;
 
 create unique index resolvers_public_uri_un_idx on resolvers(uri) where deleted_at is null and visibility = 'public';
 create unique index resolvers_public_position_un_idx on resolvers(position) where deleted_at is null and visibility = 'public';
@@ -131,8 +134,8 @@ create index on libraries(organization_guid);
 create index on libraries(group_id);
 create index on libraries(artifact_id);
 create index on libraries(resolver_guid);
-create unique index libraries_organization_group_id_artifact_id_not_deleted_un_idx
-    on libraries(organization_guid, group_id, artifact_id)
+create unique index libraries_group_id_artifact_id_not_deleted_un_idx
+    on libraries(group_id, artifact_id)
  where deleted_at is null;
 
 create table library_versions (
@@ -170,7 +173,7 @@ comment on table binaries is '
 
 select schema_evolution_manager.create_basic_audit_data('public', 'binaries');
 create index on binaries(organization_guid);
-create unique index binaries_organization_lower_name_not_deleted_un_idx on binaries(organization_guid, lower(name)) where deleted_at is null;
+create unique index binaries_lower_name_not_deleted_un_idx on binaries(lower(name)) where deleted_at is null;
 
 create table binary_versions (
   guid                    uuid primary key,

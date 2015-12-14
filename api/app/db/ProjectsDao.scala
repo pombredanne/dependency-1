@@ -85,7 +85,7 @@ object ProjectsDao {
       Seq("Name cannot be empty")
 
     } else {
-      ProjectsDao.findByName(form.name) match {
+      ProjectsDao.findByOrganizationGuidAndName(form.organizationGuid, form.name) match {
         case None => Seq.empty
         case Some(p) => {
           Some(p.guid) == existing.map(_.guid) match {
@@ -250,8 +250,8 @@ object ProjectsDao {
     MainActor.ref ! MainActor.Messages.ProjectDeleted(project.guid)
   }
 
-  def findByName(name: String): Option[Project] = {
-    findAll(name = Some(name), limit = 1).headOption
+  def findByOrganizationGuidAndName(organizationGuid: UUID, name: String): Option[Project] = {
+    findAll(organizationGuid = Some(organizationGuid), name = Some(name), limit = 1).headOption
   }
 
   def findByGuid(guid: UUID): Option[Project] = {

@@ -2,7 +2,6 @@ package controllers
 
 import db.ProjectsDao
 import com.bryzek.dependency.api.lib.Github
-import com.bryzek.dependency.v0.models.GithubAuthenticationForm
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import io.flow.play.clients.UserTokensClient
@@ -12,6 +11,7 @@ import io.flow.user.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import scala.concurrent.Future
+import java.util.UUID
 
 class Repositories @javax.inject.Inject() (
   val userTokensClient: UserTokensClient,
@@ -22,23 +22,36 @@ class Repositories @javax.inject.Inject() (
 
   def getGithub(
     name: Option[String] = None,
+    organizationGuid: Option[UUID] = None,
     existingProject: Option[Boolean] = None,
     limit: Long = 25,
     offset: Long = 0
   ) = Identified.async { request =>
-    github.repositories(request.user).map { repos =>
-      Ok(
-        Json.toJson(
-          repos.
-            filter { r => name.isEmpty || name == Some(r.name) }.
-            filter { r => existingProject.isEmpty ||
-              existingProject == Some(true) && !ProjectsDao.findByName(r.name).isEmpty ||
-              existingProject == Some(false) && ProjectsDao.findByName(r.name).isEmpty
-            }.
-            drop(offset.toInt).
-            take(limit.toInt)
+    if (!existingProject.isEmpty && organizationGuid.isEmpty) {
+      Future {
+        Conflict(Json.toJson(Validation.error("When filtering by existing projects, you must also provide the organization_guid")))
+      }
+    } else {
+      github.repositories(request.user).map { repos =>
+        Ok(
+          Json.toJson(
+            repos.
+              filter { r => name.isEmpty || name == Some(r.name) }.
+              filter { r =>
+                organizationGuid match {
+                  case None => true
+                  case Some(guid) => {
+                    existingProject.isEmpty ||
+                    existingProject == Some(true) && !ProjectsDao.findByOrganizationGuidAndName(guid, r.name).isEmpty ||
+                    existingProject == Some(false) && ProjectsDao.findByOrganizationGuidAndName(guid, r.name).isEmpty
+                  }
+                }
+              }.
+              drop(offset.toInt).
+              take(limit.toInt)
+          )
         )
-      )
+      }
     }
   }
 
