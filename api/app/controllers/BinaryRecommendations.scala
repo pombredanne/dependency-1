@@ -17,7 +17,7 @@ class BinaryRecommendations @javax.inject.Inject() (
   def getRecommendationsAndBinariesAndProjectsByProjectGuid(
     projectGuid: UUID
   ) = Identified { request =>
-    withProject(projectGuid) { project =>
+    withProject(request.user, projectGuid) { project =>
       Ok(
         Json.toJson(
           BinaryRecommendationsDao.forProject(project)

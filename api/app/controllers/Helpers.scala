@@ -34,10 +34,10 @@ trait Helpers {
     }
   }
 
-  def withProject(guid: UUID)(
+  def withProject(user: User, guid: UUID)(
     f: Project => Result
   ): Result = {
-    ProjectsDao.findByGuid(guid) match {
+    ProjectsDao.findByGuid(Authorization.User(user.guid), guid) match {
       case None => {
         Results.NotFound
       }

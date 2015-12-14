@@ -17,7 +17,7 @@ class LibraryRecommendations @javax.inject.Inject() (
   def getRecommendationsAndLibrariesAndProjectsByProjectGuid(
     projectGuid: UUID
   ) = Identified { request =>
-    withProject(projectGuid) { project =>
+    withProject(request.user, projectGuid) { project =>
       Ok(
         Json.toJson(
           LibraryRecommendationsDao.forProject(project)

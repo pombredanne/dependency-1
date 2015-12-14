@@ -37,7 +37,7 @@ class SearchActor extends Actor with Util {
     }
 
     case m @ SearchActor.Messages.SyncProject(guid) => withVerboseErrorHandler(m) {
-      ProjectsDao.findByGuid(guid) match {
+      ProjectsDao.findByGuid(Authorization.All, guid) match {
         case None => ItemsDao.softDeleteByObjectGuid(Authorization.All, MainActor.SystemUser, guid)
         case Some(project) => ItemsDao.upsertProject(MainActor.SystemUser, project)
       }

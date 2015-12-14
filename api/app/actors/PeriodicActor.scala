@@ -1,7 +1,7 @@
 package com.bryzek.dependency.actors
 
 import io.flow.play.postgresql.Pager
-import db.{BinariesDao, LibrariesDao, ProjectsDao, SyncsDao}
+import db.{Authorization, BinariesDao, LibrariesDao, ProjectsDao, SyncsDao}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -29,7 +29,7 @@ class PeriodicActor extends Actor with Util {
 
     case m @ PeriodicActor.Messages.SyncProjects => withVerboseErrorHandler(m) {
       Pager.eachPage { offset =>
-        ProjectsDao.findAll(offset = offset)
+        ProjectsDao.findAll(Authorization.All, offset = offset)
       } { project =>
         sender ! MainActor.Messages.ProjectSync(project.guid)
       }

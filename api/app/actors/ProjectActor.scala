@@ -3,7 +3,7 @@ package com.bryzek.dependency.actors
 import com.bryzek.dependency.api.lib.{Dependencies, GithubDependencyProviderClient}
 import com.bryzek.dependency.v0.models.{Project, WatchProjectForm}
 import io.flow.play.postgresql.Pager
-import db.{BinariesDao, LibrariesDao, ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
+import db.{Authorization, BinariesDao, LibrariesDao, ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
 import play.api.Logger
 import play.libs.Akka
 import akka.actor.Actor
@@ -37,18 +37,20 @@ class ProjectActor extends Actor with Util {
   def receive = {
 
     case m @ ProjectActor.Messages.Data(guid) => withVerboseErrorHandler(m.toString) {
-      dataProject = ProjectsDao.findByGuid(guid)
+      dataProject = ProjectsDao.findByGuid(Authorization.All, guid)
     }
 
     case m @ ProjectActor.Messages.Watch => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
-        WatchProjectsDao.upsert(
-          MainActor.SystemUser,
-          WatchProjectForm(
-            userGuid = project.audit.createdBy.guid,
-            projectGuid = project.guid
+        UsersDao.findByGuid(project.audit.createdBy.guid).map { createdBy =>
+          WatchProjectsDao.upsert(
+            createdBy,
+            WatchProjectForm(
+              userGuid = project.audit.createdBy.guid,
+              projectGuid = project.guid
+            )
           )
-        )
+        }
       }
     }
 

@@ -86,7 +86,7 @@ object ProjectsDao {
       Seq("Name cannot be empty")
 
     } else {
-      ProjectsDao.findByOrganizationGuidAndName(form.organizationGuid, form.name) match {
+      ProjectsDao.findByOrganizationGuidAndName(Authorization.All, form.organizationGuid, form.name) match {
         case None => Seq.empty
         case Some(p) => {
           Some(p.guid) == existing.map(_.guid) match {
@@ -212,7 +212,7 @@ object ProjectsDao {
         MainActor.ref ! MainActor.Messages.ProjectCreated(guid)
 
         Right(
-          findByGuid(guid).getOrElse {
+          findByGuid(Authorization.All, guid).getOrElse {
             sys.error("Failed to create project")
           }
         )
@@ -245,7 +245,7 @@ object ProjectsDao {
         MainActor.ref ! MainActor.Messages.ProjectUpdated(project.guid)
 
         Right(
-          findByGuid(project.guid).getOrElse {
+          findByGuid(Authorization.All, project.guid).getOrElse {
             sys.error("Failed to create project")
           }
         )
@@ -259,12 +259,12 @@ object ProjectsDao {
     MainActor.ref ! MainActor.Messages.ProjectDeleted(project.guid)
   }
 
-  def findByOrganizationGuidAndName(organizationGuid: UUID, name: String): Option[Project] = {
-    findAll(organizationGuid = Some(organizationGuid), name = Some(name), limit = 1).headOption
+  def findByOrganizationGuidAndName(auth: Authorization, organizationGuid: UUID, name: String): Option[Project] = {
+    findAll(auth, organizationGuid = Some(organizationGuid), name = Some(name), limit = 1).headOption
   }
 
-  def findByGuid(guid: UUID): Option[Project] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+  def findByGuid(auth: Authorization, guid: UUID): Option[Project] = {
+    findAll(auth, guid = Some(guid), limit = 1).headOption
   }
 
   private val FilterLibraryVersions = """
@@ -290,6 +290,7 @@ object ProjectsDao {
   """.trim
 
   def findAll(
+    auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     organizationGuid: Option[UUID] = None,
@@ -308,6 +309,7 @@ object ProjectsDao {
   ): Seq[Project] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      Some(auth.organizations("projects.organization_guid", Some("projects.visibility")).and),
       guid.map { v => "and projects.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("projects.guid", _) },
       organizationGuid.map { v => "and projects.organization_guid = {organization_guid}::uuid" },

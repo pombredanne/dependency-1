@@ -1,6 +1,6 @@
 package controllers
 
-import db.ProjectsDao
+import db.{Authorization, ProjectsDao}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
@@ -34,6 +34,7 @@ class Projects @javax.inject.Inject() (
     Ok(
       Json.toJson(
         ProjectsDao.findAll(
+          Authorization.User(request.user.guid),
           guid = guid,
           guids = optionalGuids(guids),
           name = name,
@@ -53,7 +54,7 @@ class Projects @javax.inject.Inject() (
   }
 
   def getByGuid(guid: UUID) = Identified { request =>
-    withProject(guid) { project =>
+    withProject(request.user, guid) { project =>
       Ok(Json.toJson(project))
     }
   }
@@ -73,7 +74,7 @@ class Projects @javax.inject.Inject() (
   }
 
   def patchByGuid(guid: UUID) = Identified(parse.json) { request =>
-    withProject(guid) { project =>
+    withProject(request.user, guid) { project =>
       request.body.validate[ProjectPatchForm] match {
         case e: JsError => {
           Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -97,7 +98,7 @@ class Projects @javax.inject.Inject() (
   }
 
   def putByGuid(guid: UUID) = Identified(parse.json) { request =>
-    withProject(guid) { project =>
+    withProject(request.user, guid) { project =>
       request.body.validate[ProjectForm] match {
         case e: JsError => {
           Conflict(Json.toJson(Validation.invalidJson(e)))
@@ -113,7 +114,7 @@ class Projects @javax.inject.Inject() (
   }
 
   def deleteByGuid(guid: UUID) = Identified { request =>
-    withProject(guid) { project =>
+    withProject(request.user, guid) { project =>
       ProjectsDao.softDelete(request.user, project)
       NoContent
     }

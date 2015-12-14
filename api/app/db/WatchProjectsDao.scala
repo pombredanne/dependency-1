@@ -37,6 +37,7 @@ object WatchProjectsDao {
   """
 
   private[db] def validate(
+    user: User,
     form: WatchProjectForm
   ): Seq[String] = {
     val userErrors = UsersDao.findByGuid(form.userGuid) match {
@@ -44,8 +45,13 @@ object WatchProjectsDao {
       case Some(_) => Nil
     }
 
-    val projectErrors = ProjectsDao.findByGuid(form.projectGuid) match {
-      case None => Seq("Project not found")
+    val projectErrors = ProjectsDao.findByGuid(Authorization.User(user.guid), form.projectGuid) match {
+      case None => {
+        ProjectsDao.findByGuid(Authorization.All, form.projectGuid) match {
+          case None => Seq("Project not found")
+          case Some(_) => Seq("Not authorized to access this project")
+        }
+      }
       case Some(_) => Nil
     }
 
@@ -62,7 +68,7 @@ object WatchProjectsDao {
   }
 
   def create(createdBy: User, form: WatchProjectForm): Either[Seq[String], WatchProject] = {
-    validate(form) match {
+    validate(createdBy, form) match {
       case Nil => {
         val guid = UUID.randomUUID
 

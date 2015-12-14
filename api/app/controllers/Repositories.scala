@@ -1,6 +1,6 @@
 package controllers
 
-import db.ProjectsDao
+import db.{Authorization, ProjectsDao}
 import com.bryzek.dependency.api.lib.Github
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
@@ -32,6 +32,7 @@ class Repositories @javax.inject.Inject() (
         Conflict(Json.toJson(Validation.error("When filtering by existing projects, you must also provide the organization_guid")))
       }
     } else {
+      val auth = Authorization.User(request.user.guid)
       github.repositories(request.user).map { repos =>
         Ok(
           Json.toJson(
@@ -42,8 +43,8 @@ class Repositories @javax.inject.Inject() (
                   case None => true
                   case Some(guid) => {
                     existingProject.isEmpty ||
-                    existingProject == Some(true) && !ProjectsDao.findByOrganizationGuidAndName(guid, r.name).isEmpty ||
-                    existingProject == Some(false) && ProjectsDao.findByOrganizationGuidAndName(guid, r.name).isEmpty
+                    existingProject == Some(true) && !ProjectsDao.findByOrganizationGuidAndName(auth, guid, r.name).isEmpty ||
+                    existingProject == Some(false) && ProjectsDao.findByOrganizationGuidAndName(auth, guid, r.name).isEmpty
                   }
                 }
               }.

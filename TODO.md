@@ -1,5 +1,3 @@
-membership: validate can access org
-
 scope by org:
   - projects
      -- add authorization to findAll
