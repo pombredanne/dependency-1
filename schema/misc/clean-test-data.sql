@@ -1,3 +1,8 @@
+update organizations
+   set deleted_at=now(), deleted_by_guid = created_by_guid
+ where deleted_at is null
+   and key like 'z-test%';
+
 update projects
    set deleted_at=now(), deleted_by_guid = created_by_guid
  where deleted_at is null
