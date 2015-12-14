@@ -150,15 +150,12 @@ class ProjectsController @javax.inject.Inject() (
   }
 
   def create() = Identified.async { implicit request =>
-    dependencyClient(request).organizations.get(
-      userGuid = Some(request.user.guid),
-      limit = 100
-    ).map { orgs =>
+    organizations(request).map { orgs =>
       Ok(
         views.html.projects.create(
           uiData(request),
-          orgs,
-          ProjectsController.uiForm
+          ProjectsController.uiForm,
+          orgs
         )
       )
     }
@@ -166,17 +163,18 @@ class ProjectsController @javax.inject.Inject() (
 
   def postCreate() = Identified.async { implicit request =>
     val boundForm = ProjectsController.uiForm.bindFromRequest
-    boundForm.fold (
 
-      formWithErrors => Future {
-        Ok(views.html.projects.create(uiData(request), formWithErrors))
-      },
+    organizations(request).flatMap { orgs =>
+      boundForm.fold (
 
-      uiForm => {
-        userOrg(request).flatMap { org =>
+        formWithErrors => Future {
+          Ok(views.html.projects.create(uiData(request), formWithErrors, orgs))
+        },
+
+        uiForm => {
           dependencyClient(request).projects.post(
             projectForm = ProjectForm(
-              organizationGuid = org.guid,
+              organizationGuid = UUID.fromString(uiForm.organizationGuid),
               name = uiForm.name,
               scms = Scms(uiForm.scms),
               visibility = Visibility(uiForm.visibility),
@@ -186,27 +184,31 @@ class ProjectsController @javax.inject.Inject() (
             Redirect(routes.ProjectsController.sync(project.guid)).flashing("success" -> "Project created")
           }.recover {
             case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
-              Ok(views.html.projects.create(uiData(request), boundForm, response.errors.map(_.message)))
+              Ok(views.html.projects.create(uiData(request), boundForm, orgs, response.errors.map(_.message)))
             }
           }
         }
-      }
-    )
+      )
+    }
   }
 
   def edit(guid: UUID) = Identified.async { implicit request =>
     withProject(request, guid) { project =>
-      Future {
+      organizations(request).map { orgs =>
         Ok(
           views.html.projects.edit(
-            uiData(request), project, ProjectsController.uiForm.fill(
+            uiData(request),
+            project,
+            ProjectsController.uiForm.fill(
               ProjectsController.UiForm(
+                organizationGuid = project.organization.guid.toString,
                 name = project.name,
                 scms = project.scms.toString,
                 visibility = project.visibility.toString,
                 uri = project.uri
               )
-            )
+            ),
+            orgs
           )
         )
       }
@@ -214,33 +216,35 @@ class ProjectsController @javax.inject.Inject() (
   }
 
   def postEdit(guid: UUID) = Identified.async { implicit request =>
-    withProject(request, guid) { project =>
-      val boundForm = ProjectsController.uiForm.bindFromRequest
-      boundForm.fold (
+    organizations(request).flatMap { orgs =>
+      withProject(request, guid) { project =>
+        val boundForm = ProjectsController.uiForm.bindFromRequest
+          boundForm.fold (
 
-        formWithErrors => Future {
-          Ok(views.html.projects.edit(uiData(request), project, formWithErrors))
-        },
+            formWithErrors => Future {
+              Ok(views.html.projects.edit(uiData(request), project, formWithErrors, orgs))
+            },
 
-        uiForm => {
-          dependencyClient(request).projects.putByGuid(
-            project.guid,
-            ProjectForm(
-              organizationGuid = project.organization.guid,
-              name = uiForm.name,
-              scms = Scms(uiForm.scms),
-              visibility = Visibility(uiForm.visibility),
-              uri = uiForm.uri
-            )
-          ).map { project =>
-            Redirect(routes.ProjectsController.show(project.guid)).flashing("success" -> "Project updated")
-          }.recover {
-            case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
-              Ok(views.html.projects.edit(uiData(request), project, boundForm, response.errors.map(_.message)))
+            uiForm => {
+              dependencyClient(request).projects.putByGuid(
+                project.guid,
+                ProjectForm(
+                  organizationGuid = project.organization.guid,
+                  name = uiForm.name,
+                  scms = Scms(uiForm.scms),
+                  visibility = Visibility(uiForm.visibility),
+                  uri = uiForm.uri
+                )
+              ).map { project =>
+                Redirect(routes.ProjectsController.show(project.guid)).flashing("success" -> "Project updated")
+              }.recover {
+                case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
+                  Ok(views.html.projects.edit(uiData(request), project, boundForm, orgs, response.errors.map(_.message)))
+                }
+              }
             }
-          }
-        }
-      )
+          )
+      }
     }
   }
 
@@ -301,11 +305,19 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
+  private[this] def organizations[T](request: IdentifiedRequest[T]): Future[Seq[Organization]] = {
+    dependencyClient(request).organizations.get(
+      userGuid = Some(request.user.guid),
+      limit = 100
+    )
+  }
+
 }
 
 object ProjectsController {
 
   case class UiForm(
+    organizationGuid: String,
     name: String,
     scms: String,
     visibility: String,
@@ -314,6 +326,7 @@ object ProjectsController {
 
   private val uiForm = Form(
     mapping(
+      "organization_guid" -> nonEmptyText,
       "name" -> nonEmptyText,
       "scms" -> nonEmptyText,
       "visibility" -> nonEmptyText,

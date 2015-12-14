@@ -5,7 +5,7 @@
 
 <fieldset>
 
-    if (@orgs.size == 1) {
+    @if(orgs.size == 1) {
       <input type='hidden' name='organization_guid' value='@orgs.head.guid' />
     } else {
       @helper.select(
