@@ -8,7 +8,7 @@ import scala.util.Random
 
 trait Helpers {
 
-  lazy val systemUser = UsersDao.systemUser
+  lazy val systemUser = createUser()
 
   def createTestEmail(): String = {
     s"${createTestKey}@test.bryzek.com"
@@ -136,8 +136,15 @@ trait Helpers {
   ) (
     implicit form: ProjectForm = createProjectForm(org)
   ): Project = {
-    ProjectsDao.create(systemUser, form).right.getOrElse {
-      sys.error("Failed to create project")
+    val user = OrganizationsDao.findByGuid(form.organizationGuid).flatMap { org =>
+      UsersDao.findByGuid(org.audit.createdBy.guid)
+    }.getOrElse {
+      sys.error("Could not find user that created org")
+    }
+
+    ProjectsDao.create(user, form) match {
+      case Left(errors) => sys.error("Failed to create project: " + errors.mkString(", "))
+      case Right(project) => project
     }
   }
 
@@ -299,6 +306,26 @@ trait Helpers {
       visibility = visibility,
       organizationGuid = org.guid,
       uri = uri
+    )
+  }
+
+  def createMembership(
+    form: MembershipForm = createMembershipForm()
+  ): Membership = {
+    MembershipsDao.create(systemUser, form).right.getOrElse {
+      sys.error("Failed to create membership")
+    }
+  }
+
+  def createMembershipForm(
+    org: Organization = createOrganization(),
+    user: User = createUser(),
+    role: Role = Role.Member
+  ) = {
+    MembershipForm(
+      organizationGuid = org.guid,
+      userGuid = user.guid,
+      role = role
     )
   }
 

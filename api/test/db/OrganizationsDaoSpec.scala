@@ -1,5 +1,6 @@
 package db
 
+import com.bryzek.dependency.v0.models.Role
 import io.flow.user.v0.models.Name
 import org.scalatest._
 import play.api.test._
@@ -47,6 +48,18 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     organization.key must be(form.key)
   }
 
+  "creation users added as admin of org" in {
+    val user = createUser()
+    val form = createOrganizationForm()
+    val org = OrganizationsDao.create(user, form).right.getOrElse {
+      sys.error("Failed to create org")
+    }
+    val membership = MembershipsDao.findByOrganizationGuidAndUserGuid(org.guid, user.guid).getOrElse {
+      sys.error("Failed to create membership record")
+    }
+    membership.role must be(Role.Admin)
+  }
+
   "softDelete" in {
     val org = createOrganization()
     OrganizationsDao.softDelete(systemUser, org)
@@ -85,8 +98,8 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     }
 
     val org = OrganizationsDao.findAll(forUserGuid = Some(user.guid)).head
-    OrganizationsDao.findAll(guid = Some(org.guid), forUserGuid = Some(user.guid)).map(_.guid) must be(Seq(org.guid))
-    OrganizationsDao.findAll(guid = Some(org.guid), forUserGuid = Some(UUID.randomUUID)) must be(Nil)
+    OrganizationsDao.findAll(guid = Some(org.guid), userGuid = Some(user.guid)).map(_.guid) must be(Seq(org.guid))
+    OrganizationsDao.findAll(guid = Some(org.guid), userGuid = Some(UUID.randomUUID)) must be(Nil)
   }
 
 }

@@ -111,6 +111,23 @@ package com.bryzek.dependency.v0.models {
     audit: io.flow.common.v0.models.Audit
   )
 
+  /**
+   * A user can belong to one or more organizations via memberships.
+   */
+  case class Membership(
+    guid: _root_.java.util.UUID,
+    user: com.bryzek.dependency.v0.models.UserSummary,
+    organization: com.bryzek.dependency.v0.models.OrganizationSummary,
+    role: com.bryzek.dependency.v0.models.Role,
+    audit: io.flow.common.v0.models.Audit
+  )
+
+  case class MembershipForm(
+    userGuid: _root_.java.util.UUID,
+    organizationGuid: _root_.java.util.UUID,
+    role: com.bryzek.dependency.v0.models.Role = com.bryzek.dependency.v0.models.Role("member")
+  )
+
   case class Organization(
     guid: _root_.java.util.UUID,
     key: String,
@@ -260,6 +277,12 @@ package com.bryzek.dependency.v0.models {
     userGuid: _root_.java.util.UUID,
     tag: String,
     token: String
+  )
+
+  case class UserSummary(
+    guid: _root_.java.util.UUID,
+    email: _root_.scala.Option[String] = None,
+    name: io.flow.user.v0.models.Name
   )
 
   case class UsernamePassword(
@@ -415,6 +438,40 @@ package com.bryzek.dependency.v0.models {
 
   }
 
+  sealed trait Role
+
+  object Role {
+
+    case object Member extends Role { override def toString = "member" }
+    case object Admin extends Role { override def toString = "admin" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends Role
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(Member, Admin)
+
+    private[this]
+    val byName = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): Role = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[Role] = byName.get(value.toLowerCase)
+
+  }
+
   sealed trait Scms
 
   object Scms {
@@ -561,6 +618,11 @@ package com.bryzek.dependency.v0.models {
     implicit val jsonReadsDependencyRecommendationType = __.read[String].map(RecommendationType.apply)
     implicit val jsonWritesDependencyRecommendationType = new Writes[RecommendationType] {
       def writes(x: RecommendationType) = JsString(x.toString)
+    }
+
+    implicit val jsonReadsDependencyRole = __.read[String].map(Role.apply)
+    implicit val jsonWritesDependencyRole = new Writes[Role] {
+      def writes(x: Role) = JsString(x.toString)
     }
 
     implicit val jsonReadsDependencyScms = __.read[String].map(Scms.apply)
@@ -822,6 +884,42 @@ package com.bryzek.dependency.v0.models {
         (__ \ "cross_build_version").writeNullable[String] and
         (__ \ "audit").write[io.flow.common.v0.models.Audit]
       )(unlift(LibraryVersion.unapply _))
+    }
+
+    implicit def jsonReadsDependencyMembership: play.api.libs.json.Reads[Membership] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "user").read[com.bryzek.dependency.v0.models.UserSummary] and
+        (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
+        (__ \ "role").read[com.bryzek.dependency.v0.models.Role] and
+        (__ \ "audit").read[io.flow.common.v0.models.Audit]
+      )(Membership.apply _)
+    }
+
+    implicit def jsonWritesDependencyMembership: play.api.libs.json.Writes[Membership] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "user").write[com.bryzek.dependency.v0.models.UserSummary] and
+        (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
+        (__ \ "role").write[com.bryzek.dependency.v0.models.Role] and
+        (__ \ "audit").write[io.flow.common.v0.models.Audit]
+      )(unlift(Membership.unapply _))
+    }
+
+    implicit def jsonReadsDependencyMembershipForm: play.api.libs.json.Reads[MembershipForm] = {
+      (
+        (__ \ "user_guid").read[_root_.java.util.UUID] and
+        (__ \ "organization_guid").read[_root_.java.util.UUID] and
+        (__ \ "role").read[com.bryzek.dependency.v0.models.Role]
+      )(MembershipForm.apply _)
+    }
+
+    implicit def jsonWritesDependencyMembershipForm: play.api.libs.json.Writes[MembershipForm] = {
+      (
+        (__ \ "user_guid").write[_root_.java.util.UUID] and
+        (__ \ "organization_guid").write[_root_.java.util.UUID] and
+        (__ \ "role").write[com.bryzek.dependency.v0.models.Role]
+      )(unlift(MembershipForm.unapply _))
     }
 
     implicit def jsonReadsDependencyOrganization: play.api.libs.json.Reads[Organization] = {
@@ -1168,6 +1266,22 @@ package com.bryzek.dependency.v0.models {
       )(unlift(TokenForm.unapply _))
     }
 
+    implicit def jsonReadsDependencyUserSummary: play.api.libs.json.Reads[UserSummary] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "email").readNullable[String] and
+        (__ \ "name").read[io.flow.user.v0.models.Name]
+      )(UserSummary.apply _)
+    }
+
+    implicit def jsonWritesDependencyUserSummary: play.api.libs.json.Writes[UserSummary] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "email").writeNullable[String] and
+        (__ \ "name").write[io.flow.user.v0.models.Name]
+      )(unlift(UserSummary.unapply _))
+    }
+
     implicit def jsonReadsDependencyUsernamePassword: play.api.libs.json.Reads[UsernamePassword] = {
       (
         (__ \ "username").read[String] and
@@ -1324,6 +1438,17 @@ package com.bryzek.dependency.v0 {
 
     implicit val queryStringBindableEnumRecommendationType = new QueryStringBindable.Parsing[com.bryzek.dependency.v0.models.RecommendationType](
       RecommendationType.fromString(_).get, _.toString, enumRecommendationTypeNotFound
+    )
+
+    // Enum: Role
+    private[this] val enumRoleNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${com.bryzek.dependency.v0.models.Role.all.mkString(", ")}"
+
+    implicit val pathBindableEnumRole = new PathBindable.Parsing[com.bryzek.dependency.v0.models.Role] (
+      Role.fromString(_).get, _.toString, enumRoleNotFound
+    )
+
+    implicit val queryStringBindableEnumRole = new QueryStringBindable.Parsing[com.bryzek.dependency.v0.models.Role](
+      Role.fromString(_).get, _.toString, enumRoleNotFound
     )
 
     // Enum: Scms

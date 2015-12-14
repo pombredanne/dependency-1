@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.lib.UrlKey
-import com.bryzek.dependency.v0.models.{Organization, OrganizationForm}
+import com.bryzek.dependency.v0.models.{MembershipForm, Organization, OrganizationForm, Role}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
@@ -66,7 +66,7 @@ object OrganizationsDao {
   def create(createdBy: User, form: OrganizationForm): Either[Seq[String], Organization] = {
     validate(form) match {
       case Nil => {
-        val guid = DB.withConnection { implicit c =>
+        val guid = DB.withTransaction { implicit c =>
           create(c, createdBy, form)
         }
         Right(
@@ -81,11 +81,23 @@ object OrganizationsDao {
 
   private[this] def create(implicit c: java.sql.Connection, createdBy: User, form: OrganizationForm): UUID = {
     val guid = UUID.randomUUID
+
     SQL(InsertQuery).on(
       'guid -> guid,
       'key -> form.key.trim,
       'created_by_guid -> createdBy.guid
     ).execute()
+
+    MembershipsDao.create(
+      c,
+      createdBy,
+      MembershipForm(
+        userGuid = createdBy.guid,
+        organizationGuid = guid,
+        role = Role.Admin
+      )
+    )
+    
     guid
   }
 
@@ -117,7 +129,7 @@ object OrganizationsDao {
   def upsertForUser(user: User): Organization = {
     findAll(forUserGuid = Some(user.guid), limit = 1).headOption.getOrElse {
       val key = UrlKey.generate(defaultUserName(user))
-      val orgGuid = DB.withConnection { implicit c =>
+      val orgGuid = DB.withTransaction { implicit c =>
         val orgGuid = create(c, user, OrganizationForm(
           key = key
         ))
@@ -181,7 +193,7 @@ object OrganizationsDao {
       Some(BaseQuery.trim),
       guid.map { v => "and organizations.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("organizations.guid", _) },
-      userGuid.map { v => "and organizations.guid = (select organization_guid from user_organizations where deleted_at is null and user_guid = {for_user_guid}::uuid)" },
+      userGuid.map { v => "and organizations.guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)" },
       key.map { v => "and lower(organizations.key) = lower(trim({key}))" },
       forUserGuid.map { v => "and organizations.guid = (select organization_guid from user_organizations where deleted_at is null and user_guid = {for_user_guid}::uuid)" },
       isDeleted.map(Filters.isDeleted("organizations", _)),

@@ -23,6 +23,13 @@
     },
 
     "enums": {
+	"role": {
+	    "values": [
+		{ "name": "member" },
+		{ "name": "admin" }
+	    ]
+	},
+
 	"scms": {
 	    "values": [
 		{ "name": "github" }
@@ -386,7 +393,7 @@
         "item": {
             "description": "A denormalization of item content for search",
             "fields": [
-                { "name": "guid", "type": "uuid", "description": "Unique identifer for this item." },
+                { "name": "guid", "type": "uuid", "description": "Unique identifier for this item." },
                 { "name": "organization", "type": "organization_summary" },
                 { "name": "summary", "type": "item_summary" },
                 { "name": "label", "type": "string" },
@@ -397,9 +404,36 @@
         "sync": {
             "description": "Records when we start and complete each sync of a module (e.g. project)",
             "fields": [
-                { "name": "guid", "type": "uuid", "description": "Unique identifer for this item." },
+                { "name": "guid", "type": "uuid", "description": "Unique identifier for this item." },
                 { "name": "event", "type": "sync_event" },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+            ]
+        },
+
+	"user_summary": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "email", "type": "string", "required": false },
+		{ "name": "name", "type": "io.flow.user.v0.models.name" }
+	    ]
+	},
+
+	"membership": {
+            "description": "A user can belong to one or more organizations via memberships.",
+            "fields": [
+                { "name": "guid", "type": "uuid", "description": "Unique identifier for this membership" },
+                { "name": "user", "type": "user_summary" },
+                { "name": "organization", "type": "organization_summary" },
+		{ "name": "role", "type": "role" },
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+            ]
+        },
+
+	"membership_form": {
+            "fields": [
+                { "name": "user_guid", "type": "uuid" },
+                { "name": "organization_guid", "type": "uuid" },
+                { "name": "role", "type": "role", "default": "member" }
             ]
         }
 
