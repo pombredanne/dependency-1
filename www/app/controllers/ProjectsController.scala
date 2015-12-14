@@ -1,14 +1,14 @@
 package controllers
 
 import com.bryzek.dependency.v0.errors.UnitResponse
-import com.bryzek.dependency.v0.models.{Project, ProjectForm, Scms, SyncEvent, Visibility}
+import com.bryzek.dependency.v0.models.{Organization, Project, ProjectForm, Scms, SyncEvent, Visibility}
 import com.bryzek.dependency.www.lib.DependencyClientProvider
+import io.flow.user.v0.models.User
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
 import java.util.UUID
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
+import scala.concurrent.Future
 
 import play.api._
 import play.api.i18n.MessagesApi
@@ -116,24 +116,27 @@ class ProjectsController @javax.inject.Inject() (
             )
           }
           case Some(repo) => {
-            dependencyClient(request).projects.post(
-              ProjectForm(
-                name = repo.name,
-                scms = Scms.Github,
-                visibility = repo.visibility,
-                uri = repo.uri
-            )
-            ).map { project =>
-              Redirect(routes.ProjectsController.sync(project.guid)).flashing("success" -> "Project added")
-            }.recover {
-              case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
-                Ok(
-                  views.html.projects.github(
-                    uiData(request),
-                    PaginatedCollection(repositoriesPage, repositories),
-                    response.errors.map(_.message)
-                  )
+            userOrg(request).flatMap { org =>
+              dependencyClient(request).projects.post(
+                ProjectForm(
+                  organizationGuid = org.guid,
+                  name = repo.name,
+                  scms = Scms.Github,
+                  visibility = repo.visibility,
+                  uri = repo.uri
                 )
+              ).map { project =>
+                Redirect(routes.ProjectsController.sync(project.guid)).flashing("success" -> "Project added")
+              }.recover {
+                case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
+                  Ok(
+                    views.html.projects.github(
+                      uiData(request),
+                      PaginatedCollection(repositoriesPage, repositories),
+                      response.errors.map(_.message)
+                    )
+                  )
+                }
               }
             }
           }
@@ -159,18 +162,21 @@ class ProjectsController @javax.inject.Inject() (
       },
 
       uiForm => {
-        dependencyClient(request).projects.post(
-          projectForm = ProjectForm(
-            name = uiForm.name,
-            scms = Scms(uiForm.scms),
-            visibility = Visibility(uiForm.visibility),
-            uri = uiForm.uri
-          )
-        ).map { project =>
-          Redirect(routes.ProjectsController.sync(project.guid)).flashing("success" -> "Project created")
-        }.recover {
-          case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
-            Ok(views.html.projects.create(uiData(request), boundForm, response.errors.map(_.message)))
+        userOrg(request).flatMap { org =>
+          dependencyClient(request).projects.post(
+            projectForm = ProjectForm(
+              organizationGuid = org.guid,
+              name = uiForm.name,
+              scms = Scms(uiForm.scms),
+              visibility = Visibility(uiForm.visibility),
+              uri = uiForm.uri
+            )
+          ).map { project =>
+            Redirect(routes.ProjectsController.sync(project.guid)).flashing("success" -> "Project created")
+          }.recover {
+            case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
+              Ok(views.html.projects.create(uiData(request), boundForm, response.errors.map(_.message)))
+            }
           }
         }
       }
@@ -209,6 +215,7 @@ class ProjectsController @javax.inject.Inject() (
           dependencyClient(request).projects.putByGuid(
             project.guid,
             ProjectForm(
+              organizationGuid = project.organization.guid,
               name = uiForm.name,
               scms = Scms(uiForm.scms),
               visibility = Visibility(uiForm.visibility),
@@ -223,21 +230,6 @@ class ProjectsController @javax.inject.Inject() (
           }
         }
       )
-    }
-  }
-
-  def withProject[T](
-    request: IdentifiedRequest[T],
-    guid: UUID
-  )(
-    f: Project => Future[Result]
-  ) = {
-    dependencyClient(request).projects.getByGuid(guid).flatMap { project =>
-      f(project)
-    }.recover {
-      case UnitResponse(404) => {
-        Redirect(routes.ProjectsController.index()).flashing("warning" -> s"Project not found")
-      }
     }
   }
 
@@ -281,6 +273,28 @@ class ProjectsController @javax.inject.Inject() (
         }
       }
     }
+  }
+
+  def withProject[T](
+    request: IdentifiedRequest[T],
+    guid: UUID
+  )(
+    f: Project => Future[Result]
+  ) = {
+    dependencyClient(request).projects.getByGuid(guid).flatMap { project =>
+      f(project)
+    }.recover {
+      case UnitResponse(404) => {
+        Redirect(routes.ProjectsController.index()).flashing("warning" -> s"Project not found")
+      }
+    }
+  }
+
+  /**
+    * Temporary until we expose orgs in the UI
+    */
+  def userOrg[T](request: ProjectsController.this.IdentifiedRequest[T]): Future[Organization] = {
+    dependencyClient(request).organizations.getUsersByUserGuid(request.user.guid)
   }
 
 }
