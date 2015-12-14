@@ -79,7 +79,7 @@
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
 		{ "name": "visibility", "type": "visibility" },
-                { "name": "organization", "type": "organization_summary" },
+                { "name": "organization", "type": "organization_summary", "required": false, "description": "The organization that created the resolver. If empty, indicates a globally public resolver" },
 		{ "name": "uri", "type": "string", "example": "https://flow.artifactoryonline.com/flow/libs-release" },
 		{ "name": "credentials", "type": "credentials", "required": false },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
@@ -97,7 +97,7 @@
 	"resolver_form": {
 	    "fields": [
 		{ "name": "visibility", "type": "visibility" },
-		{ "name": "user_guid", "type": "uuid" },
+		{ "name": "organization_guid", "type": "uuid" },
 		{ "name": "uri", "type": "string" },
 		{ "name": "credentials", "type": "credentials", "required": false }
 	    ]

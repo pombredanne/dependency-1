@@ -134,7 +134,7 @@ trait Helpers {
   def createProject(
     org: Organization = createOrganization()
   ) (
-    form: ProjectForm = createProjectForm(org)
+    implicit form: ProjectForm = createProjectForm(org)
   ): Project = {
     ProjectsDao.create(systemUser, form).right.getOrElse {
       sys.error("Failed to create project")
@@ -291,13 +291,13 @@ trait Helpers {
   }
 
   def createResolverForm(
-    user: User = createUser(),
+    org: Organization = createOrganization(),
     visibility: Visibility = Visibility.Private,
     uri: String = s"http://${UUID.randomUUID}.z-test.flow.io"
   ) = {
     ResolverForm(
       visibility = visibility,
-      userGuid = user.guid,
+      organizationGuid = org.guid,
       uri = uri
     )
   }

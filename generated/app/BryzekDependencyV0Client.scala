@@ -205,7 +205,7 @@ package com.bryzek.dependency.v0.models {
   case class Resolver(
     guid: _root_.java.util.UUID,
     visibility: com.bryzek.dependency.v0.models.Visibility,
-    organization: com.bryzek.dependency.v0.models.OrganizationSummary,
+    organization: _root_.scala.Option[com.bryzek.dependency.v0.models.OrganizationSummary] = None,
     uri: String,
     credentials: _root_.scala.Option[com.bryzek.dependency.v0.models.Credentials] = None,
     audit: io.flow.common.v0.models.Audit
@@ -213,7 +213,7 @@ package com.bryzek.dependency.v0.models {
 
   case class ResolverForm(
     visibility: com.bryzek.dependency.v0.models.Visibility,
-    userGuid: _root_.java.util.UUID,
+    organizationGuid: _root_.java.util.UUID,
     uri: String,
     credentials: _root_.scala.Option[com.bryzek.dependency.v0.models.Credentials] = None
   )
@@ -1032,7 +1032,7 @@ package com.bryzek.dependency.v0.models {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
         (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
-        (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
+        (__ \ "organization").readNullable[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "uri").read[String] and
         (__ \ "credentials").readNullable[com.bryzek.dependency.v0.models.Credentials] and
         (__ \ "audit").read[io.flow.common.v0.models.Audit]
@@ -1043,7 +1043,7 @@ package com.bryzek.dependency.v0.models {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
         (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
-        (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
+        (__ \ "organization").writeNullable[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "uri").write[String] and
         (__ \ "credentials").writeNullable[com.bryzek.dependency.v0.models.Credentials] and
         (__ \ "audit").write[io.flow.common.v0.models.Audit]
@@ -1053,7 +1053,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyResolverForm: play.api.libs.json.Reads[ResolverForm] = {
       (
         (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
-        (__ \ "user_guid").read[_root_.java.util.UUID] and
+        (__ \ "organization_guid").read[_root_.java.util.UUID] and
         (__ \ "uri").read[String] and
         (__ \ "credentials").readNullable[com.bryzek.dependency.v0.models.Credentials]
       )(ResolverForm.apply _)
@@ -1062,7 +1062,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyResolverForm: play.api.libs.json.Writes[ResolverForm] = {
       (
         (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
-        (__ \ "user_guid").write[_root_.java.util.UUID] and
+        (__ \ "organization_guid").write[_root_.java.util.UUID] and
         (__ \ "uri").write[String] and
         (__ \ "credentials").writeNullable[com.bryzek.dependency.v0.models.Credentials]
       )(unlift(ResolverForm.unapply _))

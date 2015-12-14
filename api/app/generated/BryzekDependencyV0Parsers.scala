@@ -1303,7 +1303,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Resolver] = {
       SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
       com.bryzek.dependency.v0.anorm.parsers.Visibility.parser(com.bryzek.dependency.v0.anorm.parsers.Visibility.Mappings(mappings.visibility)) ~
-      com.bryzek.dependency.v0.anorm.parsers.OrganizationSummary.parser(mappings.organization) ~
+      com.bryzek.dependency.v0.anorm.parsers.OrganizationSummary.parser(mappings.organization).? ~
       SqlParser.str(mappings.uri) ~
       SqlParser.get[com.bryzek.dependency.v0.models.Credentials](mappings.credentials).? ~
       io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
@@ -1326,7 +1326,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       visibility: String = "visibility",
-      userGuid: String = "user_guid",
+      organizationGuid: String = "organization_guid",
       uri: String = "uri",
       credentials: String = "credentials"
     )
@@ -1339,7 +1339,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         visibility = s"${prefix}${sep}visibility",
-        userGuid = s"${prefix}${sep}user_guid",
+        organizationGuid = s"${prefix}${sep}organization_guid",
         uri = s"${prefix}${sep}uri",
         credentials = s"${prefix}${sep}credentials"
       )
@@ -1350,13 +1350,13 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ResolverForm] = {
       com.bryzek.dependency.v0.anorm.parsers.Visibility.parser(com.bryzek.dependency.v0.anorm.parsers.Visibility.Mappings(mappings.visibility)) ~
-      SqlParser.get[_root_.java.util.UUID](mappings.userGuid) ~
+      SqlParser.get[_root_.java.util.UUID](mappings.organizationGuid) ~
       SqlParser.str(mappings.uri) ~
       SqlParser.get[com.bryzek.dependency.v0.models.Credentials](mappings.credentials).? map {
-        case visibility ~ userGuid ~ uri ~ credentials => {
+        case visibility ~ organizationGuid ~ uri ~ credentials => {
           com.bryzek.dependency.v0.models.ResolverForm(
             visibility = visibility,
-            userGuid = userGuid,
+            organizationGuid = organizationGuid,
             uri = uri,
             credentials = credentials
           )

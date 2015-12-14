@@ -67,9 +67,14 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     }
 
     "validates duplicate names" in {
-      val project = createProject(org)()
+      val project = createProject(org)
       val form = createProjectForm(org).copy(name = project.name.toString.toUpperCase)
       ProjectsDao.create(systemUser, form) must be(Left(Seq("Project with this name already exists")))
+      ProjectsDao.validate(form, existing = Some(project)) must be(Nil)
+
+      val org2 = createOrganization()
+      val form2 = createProjectForm(org2).copy(name = project.name)
+      ProjectsDao.validate(form2) must be(Nil)
     }
 
     "validates empty uri" in {

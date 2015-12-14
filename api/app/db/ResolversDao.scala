@@ -19,11 +19,13 @@ object ResolversDao {
     select resolvers.guid,
            resolvers.visibility,
            resolvers.credentials,
-           resolvers.user_guid as resolvers_user_guid,
            resolvers.uri,
            resolvers.position,
-           ${AuditsDao.all("resolvers")}
+           ${AuditsDao.all("resolvers")},
+           organizations.guid as resolvers_organization_guid,
+           organizations.key as resolvers_organization_key
       from resolvers
+      left join organizations on organizations.deleted_at is null and organizations.guid = resolvers.organization_guid
      where true
   """
 
@@ -33,9 +35,9 @@ object ResolversDao {
 
   private[this] val InsertQuery = """
     insert into resolvers
-    (guid, visibility, credentials, position, user_guid, uri, updated_by_guid, created_by_guid)
+    (guid, visibility, credentials, position, organization_guid, uri, updated_by_guid, created_by_guid)
     values
-    ({guid}::uuid, {visibility}, {credentials}::json, {position}, {user_guid}::uuid, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {visibility}, {credentials}::json, {position}, {organization_guid}::uuid, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def credentials(resolver: Resolver): Option[Credentials] = {
@@ -71,12 +73,12 @@ object ResolversDao {
         findAll(
           Authorization.All,
           visibility = Some(Visibility.Private),
-          userGuid = Some(form.userGuid),
+          organizationGuid = Some(form.organizationGuid),
           uri = Some(form.uri),
           limit = 1
         ).headOption match {
           case None => Nil
-          case Some(_) => Seq(s"User already has a resolver with uri[${form.uri}]")
+          case Some(_) => Seq(s"Organization already has a resolver with uri[${form.uri}]")
         }
       }
     }
@@ -85,7 +87,7 @@ object ResolversDao {
   }
 
   def upsert(createdBy: User, form: ResolverForm): Either[Seq[String], Resolver] = {
-    findByUserGuidAndUri(Authorization.All, form.userGuid, form.uri) match {
+    findByOrganizationGuidAndUri(Authorization.All, form.organizationGuid, form.uri) match {
       case Some(resolver) => Right(resolver)
       case None => create(createdBy, form)
     }
@@ -99,10 +101,10 @@ object ResolversDao {
         DB.withConnection { implicit c =>
           SQL(InsertQuery).on(
             'guid -> guid,
-            'user_guid -> form.userGuid,
+            'organization_guid -> form.organizationGuid,
             'visibility -> form.visibility.toString,
             'credentials -> form.credentials.map { cred => Json.stringify(Json.toJson(cred)) },
-            'position -> nextPosition(form.userGuid, form.visibility),
+            'position -> nextPosition(form.organizationGuid, form.visibility),
             'uri -> form.uri.trim,
             'created_by_guid -> createdBy.guid
           ).execute()
@@ -122,14 +124,14 @@ object ResolversDao {
     SoftDelete.delete("resolvers", deletedBy.guid, resolver.guid)
   }
 
-  def findByUserGuidAndUri(
+  def findByOrganizationGuidAndUri(
     auth: Authorization,
-    userGuid: UUID,
+    organizationGuid: UUID,
     uri: String
   ): Option[Resolver] = {
     findAll(
       auth,
-      userGuid = Some(userGuid),
+      organizationGuid = Some(organizationGuid),
       uri = Some(uri),
       limit = 1
     ).headOption
@@ -143,7 +145,7 @@ object ResolversDao {
     auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    userGuid: Option[UUID] = None,
+    organizationGuid: Option[UUID] = None,
     visibility: Option[Visibility] = None,
     uri: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -155,11 +157,12 @@ object ResolversDao {
       auth match {
         case Authorization.All => None
         case Authorization.PublicOnly => Some("and resolvers.visibility = {public}")
-        case Authorization.User(guid) => Some("and (resolvers.visibility = {public} or resolvers.user_guid = {authorization_user_guid}::uuid)")
+        case Authorization.Organization(guid) => Some("and (resolvers.visibility = {public} or resolvers.organization_guid = {authorization_organization_guid}::uuid)")
+        case Authorization.User(guid) => Some("and (resolvers.visibility = {public} or resolvers.organization_guid in (select organization_guid from user_organizations where deleted_at is null and user_guid = {authorization_user_guid}::uuid))")
       },
       guid.map { v =>  "and resolvers.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("resolvers.guid", _) },
-      userGuid.map { v => "and resolvers.user_guid = {user_guid}::uuid" },
+      organizationGuid.map { v => "and resolvers.organization_guid = {organization_guid}::uuid" },
       visibility.map { v => "and resolvers.visibility = {visibility}" },
       uri.map { v => "and resolvers.uri = trim({uri})" },
       isDeleted.map(Filters.isDeleted("resolvers", _)),
@@ -168,16 +171,17 @@ object ResolversDao {
                         when visibility = '${Visibility.Private}' then 1
                         else 2 end, resolvers.position, lower(resolvers.uri), resolvers.created_at
           limit ${limit} offset ${offset}
-        """)
+        """.trim)
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
-      userGuid.map('user_guid -> _.toString),
+      organizationGuid.map('organization_guid -> _.toString),
       visibility.map('visibility -> _.toString),
       uri.map('uri -> _.toString),
       auth match {
         case Authorization.PublicOnly | Authorization.All => None
+        case Authorization.Organization(guid) => Some('authorization_organization_guid -> guid.toString)
         case Authorization.User(guid) => Some('authorization_user_guid -> guid.toString)
       },
       Some('public -> Visibility.Public.toString)
@@ -186,15 +190,23 @@ object ResolversDao {
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*).as(
         com.bryzek.dependency.v0.anorm.parsers.Resolver.table("resolvers").*
-      ).map { resolver =>
-        resolver.credentials match {
-          case None => resolver
-          case Some(cred) => {
-            resolver.copy(
-              credentials = Util.maskCredentials(cred)
-            )
-          }
-        }
+      ).map { maskCredentials(_) }
+    }
+  }
+
+  /**
+    * If this resolver has credentials, masks any passwords, returning
+    * the resulting resolver.
+    */
+  def maskCredentials(resolver: Resolver): Resolver = {
+    resolver.credentials match {
+      case None => {
+        resolver
+      }
+      case Some(cred) => {
+        resolver.copy(
+          credentials = Util.maskCredentials(cred)
+        )
       }
     }
   }
@@ -210,7 +222,7 @@ object ResolversDao {
     select coalesce(max(position) + 1, 0) as position
       from resolvers
      where visibility = 'private'
-       and user_guid = {user_guid}::uuid
+       and organization_guid = {organization_guid}::uuid
        and deleted_at is null
   """
 
@@ -218,7 +230,7 @@ object ResolversDao {
     * Returns the next free position
     */
   def nextPosition(
-    userGuid: UUID,
+    organizationGuid: UUID,
     visibility: Visibility
   ): Int = {
     DB.withConnection { implicit c =>    
@@ -227,7 +239,7 @@ object ResolversDao {
           SQL(NextPublicPositionQuery).as(SqlParser.int("position").single)
         }
         case  Visibility.Private | Visibility.UNDEFINED(_) => {
-          SQL(NextPrivatePositionQuery).on("user_guid" -> userGuid.toString).as(SqlParser.int("position").single)
+          SQL(NextPrivatePositionQuery).on("organization_guid" -> organizationGuid.toString).as(SqlParser.int("position").single)
         }
       }
     }

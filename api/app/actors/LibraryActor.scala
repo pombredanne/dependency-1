@@ -28,12 +28,10 @@ class LibraryActor extends Actor with Util {
 
     case m @ LibraryActor.Messages.Sync => withVerboseErrorHandler(m) {
       dataLibrary.foreach { lib =>
-        val user = UsersDao.findByGuid(lib.audit.createdBy.guid)
-
         SyncsDao.withStartedAndCompleted(MainActor.SystemUser, lib.guid) {
           DefaultLibraryArtifactProvider().artifacts(
             lib,
-            user = user,
+            organization = lib.organization,
             resolver = lib.resolver
           ).map { resolution =>
             println(s"Library[${lib.groupId}.${lib.artifactId}] resolver[${lib.resolver}] -- found[${resolution.resolver}]")

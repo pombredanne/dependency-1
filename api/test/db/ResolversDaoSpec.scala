@@ -11,6 +11,8 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  private[this] lazy val org = createOrganization()
+
   private[this] lazy val publicResolver = ResolversDao.findAll(
     Authorization.All,
     visibility = Some(Visibility.Public),
@@ -40,14 +42,14 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     ResolversDao.findByGuid(Authorization.All, UUID.randomUUID) must be(None)
   }
 
-  "findByUserGuidAndUri" in {
-    val resolver = createResolver()
-    ResolversDao.findByUserGuidAndUri(Authorization.All, resolver.user.guid, resolver.uri).map(_.guid) must be(
+  "findByOrganizationGuidAndUri" in {
+    val resolver = createResolver(createResolverForm(org))
+    ResolversDao.findByOrganizationGuidAndUri(Authorization.All, org.guid, resolver.uri).map(_.guid) must be(
       Some(resolver.guid)
     )
 
-    ResolversDao.findByUserGuidAndUri(Authorization.All, UUID.randomUUID, resolver.uri).map(_.guid) must be(None)
-    ResolversDao.findByUserGuidAndUri(Authorization.All, resolver.user.guid, UUID.randomUUID.toString).map(_.guid) must be(None)
+    ResolversDao.findByOrganizationGuidAndUri(Authorization.All, UUID.randomUUID, resolver.uri).map(_.guid) must be(None)
+    ResolversDao.findByOrganizationGuidAndUri(Authorization.All, org.guid, UUID.randomUUID.toString).map(_.guid) must be(None)
   }
 
   "findAll by guids" in {
@@ -73,9 +75,9 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "private resolvers require authorization" in {
-    val user = createUser()
+    val organization = createOrganization()
     val resolver = createResolver(createResolverForm(
-      user = user,
+      org = organization,
       visibility = Visibility.Private
     ))
 
@@ -85,7 +87,7 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     ).map(_.guid) must be(Seq(resolver.guid))
 
     ResolversDao.findAll(
-      Authorization.User(user.guid),
+      Authorization.Organization(organization.guid),
       guid = Some(resolver.guid)
     ).map(_.guid) must be(Seq(resolver.guid))
 
@@ -126,6 +128,7 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       username = credentials.username,
       password = Some("masked")
     )))
+
     ResolversDao.credentials(resolver) must be(Some(credentials))
   }
 
@@ -145,17 +148,17 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "validates duplicate private resolver" in {
-    val user = createUser()
+    val org = createOrganization()
     val resolver = createResolver(
-      createResolverForm(user = user)
+      createResolverForm(org = org)
     )
     ResolversDao.validate(
       createResolverForm().copy(
         visibility = Visibility.Private,
-        userGuid = user.guid,
+        organizationGuid = org.guid,
         uri = resolver.uri
       )
-    ) must be(Seq(s"User already has a resolver with uri[${resolver.uri}]"))
+    ) must be(Seq(s"Organization already has a resolver with uri[${resolver.uri}]"))
   }
 
 }

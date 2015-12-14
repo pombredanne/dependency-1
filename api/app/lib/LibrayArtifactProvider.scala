@@ -1,10 +1,9 @@
 package com.bryzek.dependency.api.lib
 
 import db.{Authorization, ResolversDao}
-import com.bryzek.dependency.v0.models.{Library, ResolverSummary}
+import com.bryzek.dependency.v0.models.{Library, OrganizationSummary, ResolverSummary}
 import io.flow.play.util.Config
 import io.flow.play.postgresql.Pager
-import io.flow.user.v0.models.User
 
 import scala.util.{Failure, Success, Try}
 import java.net.URI
@@ -21,12 +20,12 @@ trait LibraryArtifactProvider {
   /**
     * Returns the artifacts for this library.
     * 
-    * @param user Used to look up private resolvers for this user.
+    * @param organization Used to look up private resolvers for this organization.
     * @param resolver If specified, we search this resolver first
     */
   def artifacts(
     library: Library,
-    user: Option[User],
+    organization: OrganizationSummary,
     resolver: Option[ResolverSummary]
   ): Option[ArtifactResolution]
 
@@ -36,7 +35,7 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
 
   override def artifacts(
     library: Library,
-    user: Option[User],
+    organization: OrganizationSummary,
     resolver: Option[ResolverSummary]
   ): Option[ArtifactResolution] = {
     resolver.flatMap { r => ResolversDao.findByGuid(Authorization.All, r.guid) }.map { r =>
@@ -50,7 +49,7 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
       case Nil => {
         internalArtifacts(
           library = library,
-          user = user,
+          organization = organization,
           limit = 100,
           offset = 0
         )
@@ -63,13 +62,12 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
 
   private[this] def internalArtifacts(
     library: Library,
-    user: Option[User],
+    organization: OrganizationSummary,
     limit: Long,
     offset: Long
   ): Option[ArtifactResolution] = {
     ResolversDao.findAll(
-      Authorization(userGuid = user.map(_.guid)),
-      userGuid = user.map(_.guid),
+      Authorization.Organization(organization.guid),
       limit = limit,
       offset = offset
     ) match {
@@ -102,7 +100,7 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
 
         internalArtifacts(
           library = library,
-          user = user,
+          organization = organization,
           limit = limit,
           offset = offset + limit
         )
