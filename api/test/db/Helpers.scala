@@ -22,6 +22,13 @@ trait Helpers {
     s"z-test-${UUID.randomUUID.toString.toLowerCase}"
   }
 
+  def create[T](result: Either[Seq[String], T]): T = {
+    result match {
+      case Left(errors) => sys.error(errors.mkString(", "))
+      case Right(obj) => obj
+    }
+  }
+
   /**
     * Function called on each iteration until it returns true, up
     * until maxAttempts (at which point an error is raised)
@@ -108,7 +115,7 @@ trait Helpers {
   def createLibraryForm(
     org: Organization = createOrganization()
   ) (
-    versionForm: VersionForm = VersionForm("0.0.1")
+    implicit versionForm: VersionForm = VersionForm("0.0.1")
   ) = LibraryForm(
     organizationGuid = org.guid,
     groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
@@ -143,10 +150,7 @@ trait Helpers {
       sys.error("Could not find user that created org")
     }
 
-    ProjectsDao.create(user, form) match {
-      case Left(errors) => sys.error("Failed to create project: " + errors.mkString(", "))
-      case Right(project) => project
-    }
+    create(ProjectsDao.create(user, form))
   }
 
   def createProjectForm(
@@ -225,9 +229,7 @@ trait Helpers {
   def createUser(
     form: UserForm = createUserForm()
   ): User = {
-    UsersDao.create(None, form).right.getOrElse {
-      sys.error("Failed to create user")
-    }
+    create(UsersDao.create(None, form))
   }
 
   def createUserForm(
@@ -291,11 +293,12 @@ trait Helpers {
   }
 
   def createResolver(
-    form: ResolverForm = createResolverForm()
+    org: Organization,
+    user: User = systemUser
+  ) (
+    implicit form: ResolverForm = createResolverForm(org)
   ): Resolver = {
-    ResolversDao.create(systemUser, form).right.getOrElse {
-      sys.error("Failed to create resolver")
-    }
+    create(ResolversDao.create(user, form))
   }
 
   def createResolverForm(
@@ -313,9 +316,7 @@ trait Helpers {
   def createMembership(
     form: MembershipForm = createMembershipForm()
   ): Membership = {
-    MembershipsDao.create(systemUser, form).right.getOrElse {
-      sys.error("Failed to create membership")
-    }
+    create(MembershipsDao.create(systemUser, form))
   }
 
   def createMembershipForm(
@@ -335,9 +336,7 @@ trait Helpers {
   ) (
     form: WatchProjectForm = createWatchProjectForm(org)()
   ): WatchProject = {
-    WatchProjectsDao.create(systemUser, form).right.getOrElse {
-      sys.error("Failed to create watch project")
-    }
+    create(WatchProjectsDao.create(systemUser, form))
   }
 
   def createWatchProjectForm(
@@ -427,9 +426,7 @@ trait Helpers {
   def createSubscription(
     form: SubscriptionForm = createSubscriptionForm()
   ): Subscription = {
-    SubscriptionsDao.create(systemUser, form).right.getOrElse {
-      sys.error("Failed to create subscription")
-    }
+    create(SubscriptionsDao.create(systemUser, form))
   }
 
   def createSubscriptionForm(

@@ -198,9 +198,9 @@ object LibrariesDao {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Library] = {
-    // TODO: Imlement auth
     val sql = Seq(
       Some(BaseQuery.trim),
+      Some(auth.organizations("organizations.guid", Some("resolvers.visibility")).and),
       guid.map { v => "and libraries.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("libraries.guid", _) },
       organizationGuid.map { v => "and libraries.organization_guid = {organization_guid}::uuid" },

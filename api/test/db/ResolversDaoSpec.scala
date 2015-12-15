@@ -22,19 +22,19 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "upsert" in {
-    val form = createResolverForm()
+    val form = createResolverForm(org)
     val resolver1 = ResolversDao.create(systemUser, form).right.get
 
     val resolver2 = ResolversDao.upsert(systemUser, form).right.get
     resolver1.guid must be(resolver2.guid)
 
-    val resolver3 = createResolver()
+    val resolver3 = createResolver(org)
 
     resolver2.guid must not be(resolver3.guid)
   }
 
   "findByGuid" in {
-    val resolver = createResolver()
+    val resolver = createResolver(org)
     ResolversDao.findByGuid(Authorization.All, resolver.guid).map(_.guid) must be(
       Some(resolver.guid)
     )
@@ -43,7 +43,7 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findByOrganizationGuidAndUri" in {
-    val resolver = createResolver(createResolverForm(org))
+    val resolver = createResolver(org)(createResolverForm(org))
     ResolversDao.findByOrganizationGuidAndUri(Authorization.All, org.guid, resolver.uri).map(_.guid) must be(
       Some(resolver.guid)
     )
@@ -53,8 +53,8 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by guids" in {
-    val resolver1 = createResolver()
-    val resolver2 = createResolver()
+    val resolver1 = createResolver(org)
+    val resolver2 = createResolver(org)
 
     ResolversDao.findAll(Authorization.All, guids = Some(Seq(resolver1.guid, resolver2.guid))).map(_.guid).sorted must be(
       Seq(resolver1.guid, resolver2.guid).sorted
@@ -66,7 +66,7 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "private resolvers sort after public" in {
-    val resolver = createResolver(createResolverForm(visibility = Visibility.Private))
+    val resolver = createResolver(org)(createResolverForm(visibility = Visibility.Private))
 
     ResolversDao.findAll(
       Authorization.All,
@@ -76,7 +76,7 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "private resolvers require authorization" in {
     val organization = createOrganization()
-    val resolver = createResolver(createResolverForm(
+    val resolver = createResolver(org)(createResolverForm(
       org = organization,
       visibility = Visibility.Private
     ))
@@ -101,8 +101,8 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val credentials = UsernamePassword(
       username = "foo"
     )
-    val resolver = createResolver(
-      createResolverForm().copy(
+    val resolver = createResolver(org)(
+      createResolverForm(org).copy(
         credentials = Some(
           credentials
         )
@@ -117,8 +117,8 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       username = "foo",
       password = Some("bar")
     )
-    val resolver = createResolver(
-      createResolverForm().copy(
+    val resolver = createResolver(org)(
+      createResolverForm(org).copy(
         credentials = Some(
           credentials
         )
@@ -135,14 +135,14 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "validates bad URL" in {
     ResolversDao.validate(
       systemUser,
-      createResolverForm().copy(uri = "foo")
+      createResolverForm(org).copy(uri = "foo")
     ) must be(Seq("URI must start with http"))
   }
 
   "validates duplicate public resolver" in {
     ResolversDao.validate(
       systemUser,
-      createResolverForm().copy(
+      createResolverForm(org).copy(
         visibility = Visibility.Public,
         uri = publicResolver.uri
       )
@@ -151,12 +151,12 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "validates duplicate private resolver" in {
     val org = createOrganization()
-    val resolver = createResolver(
+    val resolver = createResolver(org)(
       createResolverForm(org = org)
     )
     ResolversDao.validate(
       systemUser,
-      createResolverForm().copy(
+      createResolverForm(org).copy(
         visibility = Visibility.Private,
         organizationGuid = org.guid,
         uri = resolver.uri
@@ -167,7 +167,7 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "validates access to org" in {
     ResolversDao.validate(
       createUser(),
-      createResolverForm().copy(
+      createResolverForm(org).copy(
         visibility = Visibility.Private
       )
     ) must be(Seq(s"You do not have access to this organization"))

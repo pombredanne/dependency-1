@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.SyncEvent
+import com.bryzek.dependency.v0.models.{SyncEvent, Visibility}
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -65,9 +65,9 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by resolver" in {
-    val form = createLibraryForm(org)()
+    val form = createLibraryForm(org)
     val library = createLibrary(org)(form)
-    val resolver = createResolver()
+    val resolver = createResolver(org)
 
     LibrariesDao.findAll(Authorization.All, resolverGuid = Some(resolver.guid)) must be(Nil)
     LibrariesDao.update(systemUser, library, form.copy(resolverGuid = Some(resolver.guid))).right.get
@@ -75,9 +75,9 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "update resolver" in {
-    val form = createLibraryForm(org)()
+    val form = createLibraryForm(org)
     val library = createLibrary(org)(form)
-    val resolver = createResolver()
+    val resolver = createResolver(org)
     val updated = LibrariesDao.update(systemUser, library, form.copy(resolverGuid = Some(resolver.guid))).right.get
     updated.guid must be(library.guid)
     updated.resolver.map(_.guid) must be(Some(resolver.guid))
@@ -85,14 +85,14 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "create" must {
     "validates empty group id" in {
-      val form = createLibraryForm(org)().copy(groupId = "   ")
+      val form = createLibraryForm(org).copy(groupId = "   ")
       LibrariesDao.validate(form) must be(
         Seq("Group ID cannot be empty")
       )
     }
 
     "validates empty artifact id" in {
-      val form = createLibraryForm(org)().copy(artifactId = "   ")
+      val form = createLibraryForm(org).copy(artifactId = "   ")
       LibrariesDao.validate(form) must be(
         Seq("Artifact ID cannot be empty")
       )
@@ -100,7 +100,7 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     "validates duplicates" in {
       val library = createLibrary(org)
-      val form = createLibraryForm(org)().copy(
+      val form = createLibraryForm(org).copy(
         groupId = library.groupId,
         artifactId = library.artifactId
       )
@@ -108,6 +108,42 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
         Seq("Library with this group id and artifact id already exists")
       )
     }
+  }
+
+  "authorization" must {
+
+    "allow anybody to access a public library" in {
+      val user = createUser()
+      val org = createOrganization(user = user)
+      val resolver = createResolver(org, user) (
+        createResolverForm(org).copy(visibility = Visibility.Public)
+      )
+      val lib = createLibrary(org)(createLibraryForm(org).copy(resolverGuid = Some(resolver.guid)))
+
+      LibrariesDao.findAll(Authorization.PublicOnly, guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
+      LibrariesDao.findAll(Authorization.All, guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
+      LibrariesDao.findAll(Authorization.Organization(org.guid), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
+      LibrariesDao.findAll(Authorization.Organization(createOrganization().guid), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
+      LibrariesDao.findAll(Authorization.User(user.guid), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
+    }
+
+    "allow only users of an org to access a library w/ a private resolver" in {
+      val user = createUser()
+      val org = createOrganization(user = user)
+      val resolver = createResolver(org, user) (
+        createResolverForm(org).copy(visibility = Visibility.Private)
+      )
+      val lib = createLibrary(org)(createLibraryForm(org).copy(resolverGuid = Some(resolver.guid)))
+      lib.resolver.map(_.visibility) must be(Some(Visibility.Private))
+
+      LibrariesDao.findAll(Authorization.PublicOnly, guid = Some(lib.guid))must be(Nil)
+      LibrariesDao.findAll(Authorization.All, guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
+      LibrariesDao.findAll(Authorization.Organization(org.guid), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
+      LibrariesDao.findAll(Authorization.Organization(createOrganization().guid), guid = Some(lib.guid))must be(Nil)
+      LibrariesDao.findAll(Authorization.User(user.guid), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
+      LibrariesDao.findAll(Authorization.User(createUser().guid), guid = Some(lib.guid)) must be(Nil)
+    }
+
   }
 
 }
