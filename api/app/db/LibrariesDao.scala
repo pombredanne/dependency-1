@@ -62,7 +62,7 @@ object LibrariesDao {
     }
 
     val existsErrors = if (groupIdErrors.isEmpty && artifactIdErrors.isEmpty) {
-      LibrariesDao.findByOrganizationGuidAndGroupIdAndArtifactId(form.organizationGuid, form.groupId, form.artifactId) match {
+      LibrariesDao.findByGroupIdAndArtifactId(Authorization.All, form.groupId, form.artifactId) match {
         case None => Nil
         case Some(lib) => {
           if (Some(lib.guid) == existing.map(_.guid)) {
@@ -80,7 +80,7 @@ object LibrariesDao {
   }
 
   def upsert(createdBy: User, form: LibraryForm): Either[Seq[String], Library] = {
-    LibrariesDao.findByOrganizationGuidAndGroupIdAndArtifactId(form.organizationGuid, form.groupId, form.artifactId) match {
+    LibrariesDao.findByGroupIdAndArtifactId(Authorization.All, form.groupId, form.artifactId) match {
       case None => {
         create(createdBy, form)
       }
@@ -117,7 +117,7 @@ object LibrariesDao {
         MainActor.ref ! MainActor.Messages.LibraryCreated(guid)
 
         Right(
-          findByGuid(guid).getOrElse {
+          findByGuid(Authorization.All, guid).getOrElse {
             sys.error("Failed to create library")
           }
         )
@@ -153,7 +153,7 @@ object LibrariesDao {
         MainActor.ref ! MainActor.Messages.LibraryUpdated(library.guid)
 
         Right(
-          findByGuid(library.guid).getOrElse {
+          findByGuid(Authorization.All, library.guid).getOrElse {
             sys.error("Failed to update library")
           }
         )
@@ -167,24 +167,25 @@ object LibrariesDao {
     MainActor.ref ! MainActor.Messages.LibraryDeleted(library.guid)
   }
 
-  def findByOrganizationGuidAndGroupIdAndArtifactId(
-    organizationGuid: UUID,
+  def findByGroupIdAndArtifactId(
+    auth: Authorization,
     groupId: String,
     artifactId: String
   ): Option[Library] = {
     findAll(
-      organizationGuid = Some(organizationGuid),
+      auth,
       groupId = Some(groupId),
       artifactId = Some(artifactId),
       limit = 1
     ).headOption
   }
 
-  def findByGuid(guid: UUID): Option[Library] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+  def findByGuid(auth: Authorization, guid: UUID): Option[Library] = {
+    findAll(auth, guid = Some(guid), limit = 1).headOption
   }
 
   def findAll(
+    auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     organizationGuid: Option[UUID] = None,
@@ -197,6 +198,7 @@ object LibrariesDao {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Library] = {
+    // TODO: Imlement auth
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => "and libraries.guid = {guid}::uuid" },

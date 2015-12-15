@@ -111,7 +111,7 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       val library = createLibraryForm(org)()
 
       ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(library)))
-      val fetched = LibrariesDao.findAll(projectGuid = Some(project.guid)) match {
+      val fetched = LibrariesDao.findAll(Authorization.All, projectGuid = Some(project.guid)) match {
         case one :: Nil => one
         case _ => sys.error("Expected one library")
       }

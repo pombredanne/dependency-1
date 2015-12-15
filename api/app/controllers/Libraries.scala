@@ -1,9 +1,10 @@
 package controllers
 
-import db.LibrariesDao
+import db.{Authorization, LibrariesDao}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
+import io.flow.user.v0.models.User
 import com.bryzek.dependency.v0.models.{Library, LibraryForm}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
@@ -29,6 +30,7 @@ class Libraries @javax.inject.Inject() (
     Ok(
       Json.toJson(
         LibrariesDao.findAll(
+          Authorization.User(request.user.guid),
           guid = guid,
           guids = optionalGuids(guids),
           projectGuid = projectGuid,
@@ -43,7 +45,7 @@ class Libraries @javax.inject.Inject() (
   }
 
   def getByGuid(guid: UUID) = Identified { request =>
-    withLibrary(guid) { library =>
+    withLibrary(request.user, guid) { library =>
       Ok(Json.toJson(library))
     }
   }
@@ -63,16 +65,16 @@ class Libraries @javax.inject.Inject() (
   }
 
   def deleteByGuid(guid: UUID) = Identified { request =>
-    withLibrary(guid) { library =>
+    withLibrary(request.user, guid) { library =>
       LibrariesDao.softDelete(request.user, library)
       NoContent
     }
   }
 
-  def withLibrary(guid: UUID)(
+  def withLibrary(user: User, guid: UUID)(
     f: Library => Result
   ): Result = {
-    LibrariesDao.findByGuid(guid) match {
+    LibrariesDao.findByGuid(Authorization.User(user.guid), guid) match {
       case None => {
         NotFound
       }

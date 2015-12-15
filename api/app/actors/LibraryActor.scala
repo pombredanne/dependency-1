@@ -2,7 +2,7 @@ package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.v0.models.{Library, LibraryForm, Resolver, VersionForm}
 import com.bryzek.dependency.api.lib.DefaultLibraryArtifactProvider
-import db.{LibrariesDao, LibraryVersionsDao, ResolversDao, SyncsDao, UsersDao}
+import db.{Authorization, LibrariesDao, LibraryVersionsDao, ResolversDao, SyncsDao, UsersDao}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -23,7 +23,7 @@ class LibraryActor extends Actor with Util {
   def receive = {
 
     case m @ LibraryActor.Messages.Data(guid: UUID) => withVerboseErrorHandler(m) {
-      dataLibrary = LibrariesDao.findByGuid(guid)
+      dataLibrary = LibrariesDao.findByGuid(Authorization.All, guid)
     }
 
     case m @ LibraryActor.Messages.Sync => withVerboseErrorHandler(m) {

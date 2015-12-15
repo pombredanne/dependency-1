@@ -45,7 +45,7 @@ class PeriodicActor extends Actor with Util {
 
     case m @ PeriodicActor.Messages.SyncLibraries => withVerboseErrorHandler(m) {
       Pager.eachPage { offset =>
-        LibrariesDao.findAll(offset = offset)
+        LibrariesDao.findAll(Authorization.All, offset = offset)
       } { library =>
         sender ! MainActor.Messages.LibrarySync(library.guid)
       }

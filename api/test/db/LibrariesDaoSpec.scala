@@ -13,61 +13,55 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   lazy val org = createOrganization()
 
-  "findByOrganizationGuidAndGroupIdAndArtifactId" in {
-    val library = createLibrary(org)()
-    LibrariesDao.findByOrganizationGuidAndGroupIdAndArtifactId(
-      org.guid,
+  "findByGroupIdAndArtifactId" in {
+    val library = createLibrary(org)
+    LibrariesDao.findByGroupIdAndArtifactId(
+      Authorization.All,
       library.groupId,
       library.artifactId
     ).map(_.guid) must be(Some(library.guid))
 
-    LibrariesDao.findByOrganizationGuidAndGroupIdAndArtifactId(
-      UUID.randomUUID,
-      library.groupId,
-      library.artifactId
-    ) must be (None)
-
-    LibrariesDao.findByOrganizationGuidAndGroupIdAndArtifactId(
-      org.guid,
+    LibrariesDao.findByGroupIdAndArtifactId(
+      Authorization.All,
       library.groupId + "-2",
       library.artifactId
     ) must be (None)
 
-    LibrariesDao.findByOrganizationGuidAndGroupIdAndArtifactId(
-      org.guid,
+    LibrariesDao.findByGroupIdAndArtifactId(
+      Authorization.All,
       library.groupId,
       library.artifactId + "-2"
     ) must be (None)
   }
 
   "findByGuid" in {
-    val library = createLibrary(org)()
-    LibrariesDao.findByGuid(library.guid).map(_.guid) must be(
+    val library = createLibrary(org)
+    LibrariesDao.findByGuid(Authorization.All, library.guid).map(_.guid) must be(
       Some(library.guid)
     )
 
-    LibrariesDao.findByGuid(UUID.randomUUID) must be(None)
+    LibrariesDao.findByGuid(Authorization.All, UUID.randomUUID) must be(None)
   }
 
   "findAll by guids" in {
-    val library1 = createLibrary(org)()
-    val library2 = createLibrary(org)()
+    val library1 = createLibrary(org)
+    val library2 = createLibrary(org)
 
-    LibrariesDao.findAll(guids = Some(Seq(library1.guid, library2.guid))).map(_.guid) must be(
+    LibrariesDao.findAll(Authorization.All, guids = Some(Seq(library1.guid, library2.guid))).map(_.guid) must be(
       Seq(library1, library2).sortWith { (x,y) => x.groupId.toString < y.groupId.toString }.map(_.guid)
     )
 
-    LibrariesDao.findAll(guids = Some(Nil)) must be(Nil)
-    LibrariesDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    LibrariesDao.findAll(guids = Some(Seq(library1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(library1.guid))
+    LibrariesDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
+    LibrariesDao.findAll(Authorization.All, guids = Some(Seq(UUID.randomUUID))) must be(Nil)
+    LibrariesDao.findAll(Authorization.All, guids = Some(Seq(library1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(library1.guid))
   }
 
   "findAll by isSynced" in {
-    val library = createLibrary(org)()
+    val library = createLibrary(org)
     createSync(createSyncForm(objectGuid = library.guid, event = SyncEvent.Completed))
 
-    LibrariesDao.findAll(guid = Some(library.guid), isSynced = Some(true)).map(_.guid) must be(Seq(library.guid))
-    LibrariesDao.findAll(guid = Some(library.guid), isSynced = Some(false)) must be(Nil)
+    LibrariesDao.findAll(Authorization.All, guid = Some(library.guid), isSynced = Some(true)).map(_.guid) must be(Seq(library.guid))
+    LibrariesDao.findAll(Authorization.All, guid = Some(library.guid), isSynced = Some(false)) must be(Nil)
   }
 
   "findAll by resolver" in {
@@ -75,9 +69,9 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val library = createLibrary(org)(form)
     val resolver = createResolver()
 
-    LibrariesDao.findAll(resolverGuid = Some(resolver.guid)) must be(Nil)
+    LibrariesDao.findAll(Authorization.All, resolverGuid = Some(resolver.guid)) must be(Nil)
     LibrariesDao.update(systemUser, library, form.copy(resolverGuid = Some(resolver.guid))).right.get
-    LibrariesDao.findAll(resolverGuid = Some(resolver.guid)).map(_.guid) must be(Seq(library.guid))
+    LibrariesDao.findAll(Authorization.All, resolverGuid = Some(resolver.guid)).map(_.guid) must be(Seq(library.guid))
   }
 
   "update resolver" in {
@@ -105,7 +99,7 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     }
 
     "validates duplicates" in {
-      val library = createLibrary(org)()
+      val library = createLibrary(org)
       val form = createLibraryForm(org)().copy(
         groupId = library.groupId,
         artifactId = library.artifactId

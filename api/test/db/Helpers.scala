@@ -98,7 +98,7 @@ trait Helpers {
   def createLibrary(
     org: Organization = createOrganization()
   ) (
-    form: LibraryForm = createLibraryForm(org)()
+    implicit form: LibraryForm = createLibraryForm(org)()
   ): Library = {
     LibrariesDao.create(systemUser, form).right.getOrElse {
       sys.error("Failed to create library")
@@ -173,8 +173,8 @@ trait Helpers {
     val project = createProject(org)()
     ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(libraryForm)))
 
-    val library = LibrariesDao.findByOrganizationGuidAndGroupIdAndArtifactId(
-      org.guid, libraryForm.groupId, libraryForm.artifactId
+    val library = LibrariesDao.findByGroupIdAndArtifactId(
+      Authorization.All, libraryForm.groupId, libraryForm.artifactId
     ).getOrElse {
       sys.error("Failed to find library")
     }

@@ -30,7 +30,7 @@ class SearchActor extends Actor with Util {
     }
 
     case m @ SearchActor.Messages.SyncLibrary(guid) => withVerboseErrorHandler(m) {
-      LibrariesDao.findByGuid(guid) match {
+      LibrariesDao.findByGuid(Authorization.All, guid) match {
         case None => ItemsDao.softDeleteByObjectGuid(Authorization.All, MainActor.SystemUser, guid)
         case Some(library) => ItemsDao.upsertLibrary(MainActor.SystemUser, library)
       }

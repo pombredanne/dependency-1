@@ -127,6 +127,7 @@ class ProjectActor extends Actor with Util {
   // NB: We don't return ALL dependencies
   private[this] def dependenciesPendingCompletion(project: Project): Seq[String] = {
     LibrariesDao.findAll(
+      Authorization.All, 
       projectGuid = Some(project.guid),
       isSynced = Some(false)
     ).map( lib => s"Library ${lib.groupId}.${lib.artifactId}" ) ++ 
