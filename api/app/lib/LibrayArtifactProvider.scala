@@ -1,7 +1,7 @@
 package com.bryzek.dependency.api.lib
 
 import db.{Authorization, ResolversDao}
-import com.bryzek.dependency.v0.models.{Library, OrganizationSummary, ResolverSummary}
+import com.bryzek.dependency.v0.models.{Library, OrganizationSummary, ResolverSummary, Visibility}
 import io.flow.play.util.Config
 import io.flow.play.postgresql.Pager
 
@@ -88,6 +88,10 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
                 ArtifactResolution(
                   ResolverSummary(
                     guid = resolver.guid,
+                    organization = resolver.visibility match {
+                      case Visibility.Public => None
+                      case Visibility.Private | Visibility.UNDEFINED(_) => Some(organization)
+                    },
                     visibility = resolver.visibility,
                     uri = resolver.uri
                   ),

@@ -65,8 +65,21 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     ResolversDao.findAll(Authorization.All, guids = Some(Seq(resolver1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(resolver1.guid))
   }
 
+  "organization" must {
+
+    "be none for public resolvers" in {
+      publicResolver.organization must be(None)
+    }
+
+    "be set for private resolvers" in {
+      val resolver = createResolver(org)(createResolverForm(org = org, visibility = Visibility.Private))
+      resolver.organization.map(_.guid) must be(Some(org.guid))
+    }
+
+  }
+
   "private resolvers sort after public" in {
-    val resolver = createResolver(org)(createResolverForm(visibility = Visibility.Private))
+    val resolver = createResolver(org)(createResolverForm(org = org, visibility = Visibility.Private))
 
     ResolversDao.findAll(
       Authorization.All,

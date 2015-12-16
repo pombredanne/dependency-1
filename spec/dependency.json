@@ -96,6 +96,7 @@
 	"resolver_summary": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
+                { "name": "organization", "type": "organization_summary", "required": false },
 		{ "name": "visibility", "type": "visibility" },
 		{ "name": "uri", "type": "string" }
 	    ]
@@ -680,6 +681,8 @@
                     "parameters": [
                         { "name": "guid", "type": "uuid", "description": "Find resolver with this guid. Exact match", "required": false },
 			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
+                        { "name": "visibility", "type": "visibility", "description": "Filter based on visibility", "required": false },
+                        { "name": "org", "type": "visibility", "description": "Filter to resolvers belongs to the organization with this key", "required": false },
 			{ "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],

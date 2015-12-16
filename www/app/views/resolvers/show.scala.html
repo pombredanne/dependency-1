@@ -14,7 +14,12 @@
 
   <ul>
     <li>URI: <a href="@resolver.uri">@resolver.uri</a></li>
-    <li>Visbility: @resolver.visibility.toString</li>
+    <li>Organization: @{resolver.organization match {
+         case None => "N/A"
+         case Some(org) => Html(s"<a href=#>${org.key}</a>")
+      }}
+    </li>
+    <li>Visibility: @resolver.visibility.toString</li>
     <li>Credentials:
       @if(resolver.credentials.isEmpty) {
         N/A

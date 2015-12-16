@@ -18,14 +18,17 @@ object LibrariesDao {
            libraries.group_id,
            libraries.artifact_id,
            ${AuditsDao.all("libraries")},
+           organizations.guid as libraries_organization_guid,
+           organizations.key as libraries_organization_key,
            resolvers.guid as libraries_resolver_guid,
            resolvers.visibility as libraries_resolver_visibility,
            resolvers.uri as libraries_resolver_uri,
-           organizations.guid as libraries_organization_guid,
-           organizations.key as libraries_organization_key
+           resolver_orgs.guid as libraries_resolver_organization_guid,
+           resolver_orgs.key as libraries_resolver_organization_key
       from libraries
       left join organizations on organizations.deleted_at is null and organizations.guid = libraries.organization_guid
       left join resolvers on resolvers.deleted_at is null and resolvers.guid = libraries.resolver_guid
+      left join organizations resolver_orgs on resolver_orgs.deleted_at is null and resolver_orgs.guid = resolvers.organization_guid
      where true
   """
 
