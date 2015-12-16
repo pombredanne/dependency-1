@@ -156,6 +156,22 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       ProjectsDao.findAll(Authorization.All, name = Some(UUID.randomUUID.toString)).map(_.guid) must be(Nil)
     }
 
+    "organizationGuid" in {
+      ProjectsDao.findAll(Authorization.All, guid = Some(project1.guid), organizationGuid = Some(org.guid)).map(_.guid) must be(
+        Seq(project1.guid)
+      )
+
+      ProjectsDao.findAll(Authorization.All, guid = Some(project1.guid), organizationGuid = Some(createOrganization().guid)) must be(Nil)
+    }
+
+    "org" in {
+      ProjectsDao.findAll(Authorization.All, guid = Some(project1.guid), org = Some(org.key)).map(_.guid) must be(
+        Seq(project1.guid)
+      )
+
+      ProjectsDao.findAll(Authorization.All, guid = Some(project1.guid), org = Some(createOrganization().key)) must be(Nil)
+    }
+
     "with library" must {
 
       "groupId" in {

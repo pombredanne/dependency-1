@@ -19,6 +19,7 @@ class Projects @javax.inject.Inject() (
   def get(
     guid: Option[UUID],
     guids: Option[Seq[UUID]],
+    org: Option[String],
     name: Option[String],
     groupId: _root_.scala.Option[String],
     artifactId: _root_.scala.Option[String],

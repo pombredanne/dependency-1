@@ -1963,6 +1963,7 @@ package com.bryzek.dependency.v0 {
       override def get(
         guid: _root_.scala.Option[_root_.java.util.UUID] = None,
         guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+        org: _root_.scala.Option[String] = None,
         name: _root_.scala.Option[String] = None,
         groupId: _root_.scala.Option[String] = None,
         artifactId: _root_.scala.Option[String] = None,
@@ -1977,6 +1978,7 @@ package com.bryzek.dependency.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Project]] = {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
+          org.map("org" -> _),
           name.map("name" -> _),
           groupId.map("group_id" -> _),
           artifactId.map("artifact_id" -> _),
@@ -2112,11 +2114,15 @@ package com.bryzek.dependency.v0 {
       override def get(
         guid: _root_.scala.Option[_root_.java.util.UUID] = None,
         guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+        org: _root_.scala.Option[String] = None,
+        visibility: _root_.scala.Option[com.bryzek.dependency.v0.models.Visibility] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Resolver]] = {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
+          org.map("org" -> _),
+          visibility.map("visibility" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
@@ -2670,6 +2676,7 @@ package com.bryzek.dependency.v0 {
     def get(
       guid: _root_.scala.Option[_root_.java.util.UUID] = None,
       guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+      org: _root_.scala.Option[String] = None,
       name: _root_.scala.Option[String] = None,
       groupId: _root_.scala.Option[String] = None,
       artifactId: _root_.scala.Option[String] = None,
@@ -2751,6 +2758,8 @@ package com.bryzek.dependency.v0 {
     def get(
       guid: _root_.scala.Option[_root_.java.util.UUID] = None,
       guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+      org: _root_.scala.Option[String] = None,
+      visibility: _root_.scala.Option[com.bryzek.dependency.v0.models.Visibility] = None,
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Resolver]]

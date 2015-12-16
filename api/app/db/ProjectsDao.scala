@@ -293,6 +293,7 @@ object ProjectsDao {
     auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
+    org: Option[String] = None,
     organizationGuid: Option[UUID] = None,
     name: Option[String] = None,
     groupId: Option[String] = None,
@@ -312,6 +313,7 @@ object ProjectsDao {
       Some(auth.organizations("projects.organization_guid", Some("projects.visibility")).and),
       guid.map { v => "and projects.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("projects.guid", _) },
+      org.map { LocalFilters.organizationByKey("organizations.key", "org_key", _) },
       organizationGuid.map { v => "and projects.organization_guid = {organization_guid}::uuid" },
       name.map { v => "and lower(projects.name) = lower(trim({name}))" },
       groupId.map { v => FilterLibraryVersions.format("libraries.group_id = trim({group_id})") },
@@ -328,6 +330,7 @@ object ProjectsDao {
 
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
+      org.map('org_key -> _),
       organizationGuid.map('organization_guid -> _.toString),
       name.map('name -> _.toString),
       groupId.map('group_id -> _.toString),

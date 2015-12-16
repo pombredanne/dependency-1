@@ -153,8 +153,9 @@ object ResolversDao {
     auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    organizationGuid: Option[UUID] = None,
     visibility: Option[Visibility] = None,
+    org: Option[String] = None,
+    organizationGuid: Option[UUID] = None,
     uri: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
@@ -165,8 +166,9 @@ object ResolversDao {
       Some(auth.organizations("resolvers.organization_guid", Some("resolvers.visibility")).and),
       guid.map { v =>  "and resolvers.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("resolvers.guid", _) },
-      organizationGuid.map { v => "and resolvers.organization_guid = {organization_guid}::uuid" },
       visibility.map { v => "and resolvers.visibility = {visibility}" },
+      org.map { LocalFilters.organizationByKey("organizations.key", "org_key", _) },
+      organizationGuid.map { v => "and resolvers.organization_guid = {organization_guid}::uuid" },
       uri.map { v => "and resolvers.uri = trim({uri})" },
       isDeleted.map(Filters.isDeleted("resolvers", _)),
         Some(s"""
@@ -181,6 +183,7 @@ object ResolversDao {
       guid.map('guid -> _.toString),
       organizationGuid.map('organization_guid -> _.toString),
       visibility.map('visibility -> _.toString),
+      org.map('org_key -> _),
       uri.map('uri -> _.toString),
       Some('public -> Visibility.Public.toString)
     ).flatten

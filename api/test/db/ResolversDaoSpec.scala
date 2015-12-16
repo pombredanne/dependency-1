@@ -52,17 +52,41 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     ResolversDao.findByOrganizationGuidAndUri(Authorization.All, org.guid, UUID.randomUUID.toString).map(_.guid) must be(None)
   }
 
-  "findAll by guids" in {
-    val resolver1 = createResolver(org)
-    val resolver2 = createResolver(org)
+  "findAll" must {
 
-    ResolversDao.findAll(Authorization.All, guids = Some(Seq(resolver1.guid, resolver2.guid))).map(_.guid).sorted must be(
-      Seq(resolver1.guid, resolver2.guid).sorted
-    )
+    "find by guids" in {
+      val resolver1 = createResolver(org)
+      val resolver2 = createResolver(org)
 
-    ResolversDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
-    ResolversDao.findAll(Authorization.All, guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    ResolversDao.findAll(Authorization.All, guids = Some(Seq(resolver1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(resolver1.guid))
+      ResolversDao.findAll(Authorization.All, guids = Some(Seq(resolver1.guid, resolver2.guid))).map(_.guid).sorted must be(
+        Seq(resolver1.guid, resolver2.guid).sorted
+      )
+
+      ResolversDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
+      ResolversDao.findAll(Authorization.All, guids = Some(Seq(UUID.randomUUID))) must be(Nil)
+      ResolversDao.findAll(Authorization.All, guids = Some(Seq(resolver1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(resolver1.guid))
+    }
+
+    "find by organizationGuid" in {
+      val resolver = createResolver(org)
+
+      ResolversDao.findAll(Authorization.All, guid = Some(resolver.guid), organizationGuid = Some(org.guid)).map(_.guid).sorted must be(
+        Seq(resolver.guid)
+      )
+
+      ResolversDao.findAll(Authorization.All, guid = Some(resolver.guid), organizationGuid = Some(createOrganization().guid)) must be(Nil)
+    }
+
+    "find by org" in {
+      val resolver = createResolver(org)
+
+      ResolversDao.findAll(Authorization.All, guid = Some(resolver.guid), org = Some(org.key)).map(_.guid).sorted must be(
+        Seq(resolver.guid)
+      )
+
+      ResolversDao.findAll(Authorization.All, guid = Some(resolver.guid), org = Some(createOrganization().key)) must be(Nil)
+    }
+
   }
 
   "organization" must {

@@ -1,5 +1,3 @@
-add organization_summary to resolver
-
 UI:
   - Add page to see organizations, create organization, add members
 

@@ -4,7 +4,7 @@ import db.{Authorization, ResolversDao}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
-import com.bryzek.dependency.v0.models.{Resolver, ResolverForm}
+import com.bryzek.dependency.v0.models.{Resolver, ResolverForm, Visibility}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
@@ -19,6 +19,8 @@ class Resolvers @javax.inject.Inject() (
   def get(
     guid: Option[UUID],
     guids: Option[Seq[UUID]],
+    org: Option[String],
+    visibility: Option[Visibility],
     limit: Long = 25,
     offset: Long = 0
   ) = Identified { request =>
@@ -28,6 +30,8 @@ class Resolvers @javax.inject.Inject() (
           Authorization.User(request.user.guid),
           guid = guid,
           guids = optionalGuids(guids),
+          visibility = visibility,
+          org = org,
           limit = limit,
           offset = offset
         )
