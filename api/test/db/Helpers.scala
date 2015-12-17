@@ -462,15 +462,16 @@ trait Helpers {
   }
 
   def createProjectLibraryForm(
-    project: Project = createProject()
+    project: Project = createProject(),
+    version: String = "0.0.1",
+    crossBuildVersion: Option[String] = None
   ) = {
     ProjectLibraryForm(
       projectGuid = project.guid,
       groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
       artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
-      version = "0.0.1",
-      crossBuildVersion = None,
-      path = "build.sbt"
+      path = "build.sbt",
+      version = VersionForm(version, crossBuildVersion)
     )
   }
 

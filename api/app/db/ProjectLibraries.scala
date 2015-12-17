@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
-import com.bryzek.dependency.v0.models.ProjectLibrary
+import com.bryzek.dependency.v0.models.{ProjectLibrary, VersionForm}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
@@ -15,8 +15,7 @@ case class ProjectLibraryForm(
   projectGuid: UUID,
   groupId: String,
   artifactId: String,
-  version: String,
-  crossBuildVersion: Option[String],
+  version: VersionForm,
   path: String
 )
 
@@ -63,7 +62,7 @@ object ProjectLibrariesDao {
       Nil
     }
 
-    val versionErrors = if (form.version.trim.isEmpty) {
+    val versionErrors = if (form.version.version.trim.isEmpty) {
       Seq("Version cannot be empty")
     } else {
       Nil
@@ -80,8 +79,8 @@ object ProjectLibrariesDao {
     }
 
     val existsErrors = if (groupIdErrors.isEmpty && artifactIdErrors.isEmpty && versionErrors.isEmpty) {
-      ProjectLibrariesDao.findByGroupIdAndArtifactIdAndVersionAndCrossBuildVersion(
-        Authorization.All, form.groupId, form.artifactId, form.version, form.crossBuildVersion
+      ProjectLibrariesDao.findByGroupIdAndArtifactIdAndVersion(
+        Authorization.All, form.groupId, form.artifactId, form.version
       ) match {
         case None => Nil
         case Some(lib) => {
@@ -96,8 +95,8 @@ object ProjectLibrariesDao {
   }
 
   def upsert(createdBy: User, form: ProjectLibraryForm): Either[Seq[String], ProjectLibrary] = {
-    ProjectLibrariesDao.findByGroupIdAndArtifactIdAndVersionAndCrossBuildVersion(
-      Authorization.All, form.groupId, form.artifactId, form.version, form.crossBuildVersion
+    ProjectLibrariesDao.findByGroupIdAndArtifactIdAndVersion(
+      Authorization.All, form.groupId, form.artifactId, form.version
     ) match {
       case None => {
         create(createdBy, form)
@@ -119,8 +118,8 @@ object ProjectLibrariesDao {
             'project_guid -> form.projectGuid,
             'group_id -> form.groupId.trim,
             'artifact_id -> form.artifactId.trim,
-            'version -> form.version.trim,
-            'cross_build_version -> Util.trimmedString(form.crossBuildVersion),
+            'version -> form.version.version.trim,
+            'cross_build_version -> Util.trimmedString(form.version.crossBuildVersion),
             'path -> form.path.trim,
             'created_by_guid -> createdBy.guid
           ).execute()
@@ -142,19 +141,18 @@ object ProjectLibrariesDao {
     MainActor.ref ! MainActor.Messages.ProjectLibraryDeleted(library.project.guid, library.guid)
   }
 
-  def findByGroupIdAndArtifactIdAndVersionAndCrossBuildVersion(
+  def findByGroupIdAndArtifactIdAndVersion(
     auth: Authorization,
     groupId: String,
     artifactId: String,
-    version: String,
-    crossBuildVersion: Option[String]
+    version: VersionForm
   ): Option[ProjectLibrary] = {
     findAll(
       auth,
       groupId = Some(groupId),
       artifactId = Some(artifactId),
-      version = Some(version),
-      crossBuildVersion = Some(crossBuildVersion),
+      version = Some(version.version),
+      crossBuildVersion = Some(version.crossBuildVersion),
       limit = 1
     ).headOption
   }

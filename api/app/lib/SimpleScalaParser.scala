@@ -1,17 +1,18 @@
 package com.bryzek.dependency.api.lib
 
 import play.api.Logger
-import com.bryzek.dependency.v0.models.{LibraryForm, OrganizationSummary}
+import com.bryzek.dependency.v0.models.{LibraryForm, ProjectSummary}
 
 trait SimpleScalaParser {
 
-  def org: OrganizationSummary
+  def project: ProjectSummary
 
   /**
-    * Label identifying what we are parsing. Used in log messages to
-    * point back to the actual file.
+    * Full path to the file from this project's repository that we
+    * parsed. Useful for the user to identify from where the actual
+    * dependency came.
     */
-  def description: String
+  def path: String
 
   def contents: String
 
@@ -78,21 +79,22 @@ trait SimpleScalaParser {
     substring.split(",").map(_.trim).filter(!_.isEmpty).flatMap { el =>
       el.replaceAll("%%", "%").split("%").map(_.trim).toList match {
         case Nil => {
-          Logger.warn(s"$description: Could not parse library from[$value]")
+          warn(s"Could not parse library from[$value]")
           None
         }
         case groupId :: Nil => {
-          Logger.warn(s"$description: Could not parse library from[$value] - only found groupId[$groupId] but missing artifactId and version")
+          warn(s"Could not parse library from[$value] - only found groupId[$groupId] but missing artifactId and version")
           None
         }
         case groupId :: artifactId :: Nil => {
-          Logger.warn(s"$description: Could not parse library from[$value] - only found groupId[$groupId] and artifactId[$artifactId] but missing version")
+          warn(s"Could not parse library from[$value] - only found groupId[$groupId] and artifactId[$artifactId] but missing version")
           None
         }
         case groupId :: artifactId :: version :: more => {
           Some(
             Artifact(
-              org = org,
+              project = project,
+              path = path,
               groupId = interpolate(groupId),
               artifactId = interpolate(artifactId),
               version = interpolate(version),
@@ -102,6 +104,10 @@ trait SimpleScalaParser {
         }
       }
     }
+  }
+
+  private[this] def warn(message: String) {
+    Logger.warn(s"project[${project.guid}] name[${project.name}] path[$path]: $message")
   }
 
 }

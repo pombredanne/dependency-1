@@ -1,20 +1,20 @@
 package com.bryzek.dependency.api.lib
 
-import com.bryzek.dependency.v0.models.{BinaryForm, OrganizationSummary}
+import com.bryzek.dependency.v0.models.{BinaryForm, ProjectSummary}
 
 /**
   * Takes the contents of a build.sbt file and parses it, providing
   * access to its dependencies (libraries, binaries and versions).
   */
 case class BuildSbtScalaParser(
-  override val org: OrganizationSummary,
-  override val description: String,
+  override val project: ProjectSummary,
+  override val path: String,
   contents: String
 ) extends SimpleScalaParser {
 
   private val BinaryScala = "scala"
 
-  private lazy val pluginParser = ProjectPluginsSbtScalaParser(org, description, contents)
+  private lazy val pluginParser = ProjectPluginsSbtScalaParser(project, path, contents)
 
   val resolverUris = pluginParser.resolverUris
 
@@ -28,7 +28,7 @@ case class BuildSbtScalaParser(
         case head :: version :: Nil => {
           Some(
             BinaryForm(
-              organizationGuid = org.guid,
+              organizationGuid = project.organization.guid,
               name = BinaryScala,
               version = interpolate(version)
             )

@@ -79,21 +79,29 @@ class ProjectActor extends Actor with Util {
 
     case m @ ProjectActor.Messages.Sync => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
+        val summary = ProjectsDao.toSummary(project)
+
         SyncsDao.recordStarted(MainActor.SystemUser, project.guid)
 
         UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
-          GithubDependencyProviderClient.instance(project.organization, user).dependencies(project).map { dependencies =>
+          GithubDependencyProviderClient.instance(summary, user).dependencies(project).map { dependencies =>
             println(s" - project[${project.guid}] name[${project.name}] dependencies: $dependencies")
-            ProjectsDao.setDependencies(
+
+             ProjectsDao.setDependencies(
               createdBy = MainActor.SystemUser,
               project = project,
-              binaries = dependencies.binaries,
-              libraries = dependencies.librariesAndPlugins.map(_.map { artifact =>
-                artifact.toLibraryForm(
+              binaries = dependencies.binaries
+            )
+
+            dependencies.librariesAndPlugins.map(_.map { artifact =>
+              println(s"Project[${project.name}] processing artifact[${artifact}]")
+              ProjectLibrariesDao.upsert(
+                MainActor.SystemUser,
+                artifact.toProjectLibraryForm(
                   crossBuildVersion = dependencies.crossBuildVersion()
                 )
-              })
-            )
+              )
+            })
 
             pendingSync = Some(true)
             processPendingSync(project)

@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.actors.MainActor
-import com.bryzek.dependency.v0.models.{Scms, Binary, BinaryForm, Library, LibraryForm, Project, ProjectForm, Visibility}
+import com.bryzek.dependency.v0.models.{Scms, Binary, BinaryForm, Library, LibraryForm, Project, ProjectForm, ProjectSummary, OrganizationSummary, Visibility}
 import com.bryzek.dependency.api.lib.GithubUtil
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
@@ -57,6 +57,14 @@ object ProjectsDao {
     values
     ({guid}::uuid, {project_guid}::uuid, {binary_version_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
+
+  def toSummary(project: Project): ProjectSummary = {
+    ProjectSummary(
+      guid = project.guid,
+      organization = OrganizationSummary(project.organization.guid, project.organization.key),
+      name = project.name
+    )
+  }
 
   private[db] def validate(
     user: User,

@@ -1,5 +1,6 @@
 package db
 
+import com.bryzek.dependency.v0.models.VersionForm
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -19,9 +20,8 @@ class ProjectLibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
   }
 
   "create" in {
-    val projectLibrary = createProjectLibrary(project) (
-      createProjectLibraryForm(project).copy(crossBuildVersion = Some("2.11"))
-    )
+    val form = createProjectLibraryForm(project, crossBuildVersion = Some("2.11"))
+    val projectLibrary = createProjectLibrary(project)(form)
 
     val one = ProjectLibrariesDao.findByGuid(Authorization.All, projectLibrary.guid).getOrElse {
       sys.error("Failed to create project library")
@@ -42,13 +42,19 @@ class ProjectLibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
     one.crossBuildVersion must be(None)
     create(ProjectLibrariesDao.upsert(systemUser, form)).guid must be(one.guid)
 
-    val two = create(ProjectLibrariesDao.upsert(systemUser, form.copy(crossBuildVersion = Some("2.10"))))
+    val form210 = form.copy(
+      version = form.version.copy(crossBuildVersion = Some("2.10"))
+    )
+    val two = create(ProjectLibrariesDao.upsert(systemUser, form210))
     two.crossBuildVersion must be(Some("2.10"))
-    create(ProjectLibrariesDao.upsert(systemUser, form.copy(crossBuildVersion = Some("2.10")))).guid must be(two.guid)
+    create(ProjectLibrariesDao.upsert(systemUser, form210)).guid must be(two.guid)
 
-    val three = create(ProjectLibrariesDao.upsert(systemUser, form.copy(crossBuildVersion = Some("2.11"))))
+    val form211 = form.copy(
+      version = form.version.copy(crossBuildVersion = Some("2.11"))
+    )
+    val three = create(ProjectLibrariesDao.upsert(systemUser, form211))
     three.crossBuildVersion must be(Some("2.11"))
-    create(ProjectLibrariesDao.upsert(systemUser, form.copy(crossBuildVersion = Some("2.11")))).guid must be(three.guid)
+    create(ProjectLibrariesDao.upsert(systemUser, form211)).guid must be(three.guid)
 
     val other = create(ProjectLibrariesDao.upsert(systemUser, form.copy(groupId = form.groupId + ".other")))
     other.groupId must be(form.groupId + ".other")
@@ -112,9 +118,7 @@ class ProjectLibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
     }
 
     "filter by crossBuildVersion" in {
-      val projectLibrary = createProjectLibrary(project) (
-        createProjectLibraryForm(project).copy(crossBuildVersion = Some("2.11"))
-      )
+      val projectLibrary = createProjectLibrary(project)(createProjectLibraryForm(project, crossBuildVersion = Some("2.11")))
 
       ProjectLibrariesDao.findAll(Authorization.All, guid = Some(projectLibrary.guid), crossBuildVersion = Some(Some("2.11"))).map(_.guid) must be(
         Seq(projectLibrary.guid)

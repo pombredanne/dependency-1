@@ -5,7 +5,7 @@ import org.specs2.mutable._
 
 class ProjectPluginsSbtScalaParserSpec extends Specification with Factories {
 
-  lazy val orgSummary = makeOrganizationSummary()
+  lazy val projectSummary = makeProjectSummary()
 
   "empty" should {
 
@@ -15,7 +15,7 @@ logLevel := Level.Warn
 """
 
     "parse dependencies" in {
-      val result = ProjectPluginsSbtScalaParser(orgSummary, "test", contents)
+      val result = ProjectPluginsSbtScalaParser(projectSummary, "test", contents)
       result.resolverUris must beEqualTo(Nil)
       result.plugins must beEqualTo(Nil)
     }
@@ -29,7 +29,7 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 """
 
     "parse dependencies" in {
-      val result = ProjectPluginsSbtScalaParser(orgSummary, "test", contents)
+      val result = ProjectPluginsSbtScalaParser(projectSummary, "test", contents)
       result.resolverUris must beEqualTo(Seq("http://repo.typesafe.com/typesafe/releases/"))
       result.plugins must beEqualTo(Nil)
     }
@@ -47,14 +47,14 @@ addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.0.1")
 """
 
     "parse dependencies" in {
-      val result = ProjectPluginsSbtScalaParser(orgSummary, "test", contents)
+      val result = ProjectPluginsSbtScalaParser(projectSummary, "test", contents)
       result.resolverUris must beEqualTo(
         Seq("http://repo.typesafe.com/typesafe/releases/")
       )
       result.plugins must beEqualTo(
         Seq(
-          Artifact(orgSummary, "com.typesafe.play", "sbt-plugin", "2.4.3", false),
-          Artifact(orgSummary, "org.scoverage", "sbt-scoverage", "1.0.1", true)
+          Artifact(projectSummary, "test.sbt", "com.typesafe.play", "sbt-plugin", "2.4.3", false),
+          Artifact(projectSummary, "test.sbt", "org.scoverage", "sbt-scoverage", "1.0.1", true)
         )
       )
     }
