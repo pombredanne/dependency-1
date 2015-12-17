@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
-import com.bryzek.dependency.v0.models.{ProjectLibrary, VersionForm}
+import com.bryzek.dependency.v0.models.{ProjectLibrary, SyncEvent, VersionForm}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
@@ -170,6 +170,7 @@ object ProjectLibrariesDao {
     artifactId: Option[String] = None,
     version: Option[String] = None,
     crossBuildVersion: Option[Option[String]] = None,
+    isSynced: Option[Boolean] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -189,6 +190,13 @@ object ProjectLibrariesDao {
           case Some(_) => "and project_libraries.cross_build_version = {cross_build_version}"
         }
       },
+      isSynced.map { value =>
+        val clause = "select 1 from syncs where object_guid = project_libraries.guid and event = {sync_event_completed}"
+        value match {
+          case true => s"and exists ($clause)"
+          case false => s"and not exists ($clause)"
+        }
+      },
       isDeleted.map(Filters.isDeleted("project_libraries", _)),
       Some(s"order by lower(project_libraries.group_id), lower(project_libraries.artifact_id), project_libraries.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -201,7 +209,8 @@ object ProjectLibrariesDao {
       version.map('version -> _.toString),
       crossBuildVersion.flatMap { cbv =>
         cbv.map('cross_build_version -> _.toString)
-      }
+      },
+      isSynced.map(_ => ('sync_event_completed -> SyncEvent.Completed.toString))
     ).flatten
 
     DB.withConnection { implicit c =>

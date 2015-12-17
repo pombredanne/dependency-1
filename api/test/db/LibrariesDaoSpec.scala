@@ -56,14 +56,6 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     LibrariesDao.findAll(Authorization.All, guids = Some(Seq(library1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(library1.guid))
   }
 
-  "findAll by isSynced" in {
-    val library = createLibrary(org)
-    createSync(createSyncForm(objectGuid = library.guid, event = SyncEvent.Completed))
-
-    LibrariesDao.findAll(Authorization.All, guid = Some(library.guid), isSynced = Some(true)).map(_.guid) must be(Seq(library.guid))
-    LibrariesDao.findAll(Authorization.All, guid = Some(library.guid), isSynced = Some(false)) must be(Nil)
-  }
-
   "findAll by resolver" in {
     val form = createLibraryForm(org)
     val library = createLibrary(org)(form)

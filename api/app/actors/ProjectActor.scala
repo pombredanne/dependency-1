@@ -79,39 +79,46 @@ class ProjectActor extends Actor with Util {
 
     case m @ ProjectActor.Messages.Sync => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
-        val summary = ProjectsDao.toSummary(project)
-
         SyncsDao.recordStarted(MainActor.SystemUser, project.guid)
 
-        UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
-          GithubDependencyProviderClient.instance(summary, user).dependencies(project).map { dependencies =>
-            println(s" - project[${project.guid}] name[${project.name}] dependencies: $dependencies")
+        val user = UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
+          val summary = ProjectsDao.toSummary(project)
 
-             ProjectsDao.setDependencies(
-              createdBy = MainActor.SystemUser,
-              project = project,
-              binaries = dependencies.binaries
-            )
+          UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
+            GithubDependencyProviderClient.instance(summary, user).dependencies(project).map { dependencies =>
+              println(s" - project[${project.guid}] name[${project.name}] dependencies: $dependencies")
 
-            dependencies.librariesAndPlugins.map(_.map { artifact =>
-              println(s"Project[${project.name}] processing artifact[${artifact}]")
-              ProjectLibrariesDao.upsert(
-                MainActor.SystemUser,
-                artifact.toProjectLibraryForm(
-                  crossBuildVersion = dependencies.crossBuildVersion()
-                )
+              ProjectsDao.setDependencies(
+                createdBy = MainActor.SystemUser,
+                project = project,
+                binaries = dependencies.binaries
               )
-            })
 
-            pendingSync = Some(true)
-            processPendingSync(project)
-          }.recover {
-            case e => {
-              Logger.error(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")
+              dependencies.librariesAndPlugins.map(_.map { artifact =>
+                println(s"Project[${project.name}] processing artifact[${artifact}]")
+                ProjectLibrariesDao.upsert(
+                  user,
+                  artifact.toProjectLibraryForm(
+                    crossBuildVersion = dependencies.crossBuildVersion()
+                  )
+                ) match {
+                  case Left(errors) => {
+                    Logger.error(s"Project[${project.name}] guid[${project.guid}] Error storing artifact[$artifact]: " + errors.mkString(", "))
+                  }
+                  case Right(_) => {}
+                }
+              })
+
+              pendingSync = Some(true)
+              processPendingSync(project)
+            }.recover {
+              case e => {
+                Logger.error(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")
+              }
             }
           }
-        }
 
+        }
       }
     }
 
@@ -145,8 +152,8 @@ class ProjectActor extends Actor with Util {
 
   // NB: We don't return ALL dependencies
   private[this] def dependenciesPendingCompletion(project: Project): Seq[String] = {
-    LibrariesDao.findAll(
-      Authorization.All, 
+    ProjectLibrariesDao.findAll(
+      Authorization.All,
       projectGuid = Some(project.guid),
       isSynced = Some(false)
     ).map( lib => s"Library ${lib.groupId}.${lib.artifactId}" ) ++ 

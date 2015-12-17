@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.VersionForm
+import com.bryzek.dependency.v0.models.{SyncEvent, VersionForm}
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -163,6 +163,15 @@ class ProjectLibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
       ProjectLibrariesDao.findAll(Authorization.All, guid = Some(projectLibrary.guid), crossBuildVersion = Some(None)) must be(Nil)
     }
 
+    "filter by isSynced" in {
+      createSync(createSyncForm(objectGuid = projectLibrary.guid, event = SyncEvent.Completed))
+
+      ProjectLibrariesDao.findAll(Authorization.All, guid = Some(projectLibrary.guid), isSynced = Some(true)).map(_.guid) must be(
+        Seq(projectLibrary.guid)
+      )
+      ProjectLibrariesDao.findAll(Authorization.All, guid = Some(projectLibrary.guid), isSynced = Some(false)) must be(Nil)
+    }
   }
+
 
 }

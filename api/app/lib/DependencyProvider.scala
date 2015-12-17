@@ -59,9 +59,7 @@ private[lib] object DependencyHelper {
 trait DependencyProvider {
 
   /**
-    * Returns the dependencies for this project. If you return None,
-    * you are indicating that the project was not found or does not
-    * exist.
+    * Returns the dependencies for this project.
     */
   def dependencies(project: Project)(implicit ec: ExecutionContext): Future[Dependencies]
 
