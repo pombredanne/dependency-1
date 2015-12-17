@@ -17,6 +17,41 @@ class ProjectLibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
 
   "validate" must {
 
+    "catch empty group id" in {
+      ProjectLibrariesDao.validate(
+        systemUser,
+        createProjectLibraryForm(project).copy(groupId = "   ")
+      ) must be(Seq("Group ID cannot be empty"))
+    }
+
+    "catch empty artifact id" in {
+      ProjectLibrariesDao.validate(
+        systemUser,
+        createProjectLibraryForm(project).copy(artifactId = "   ")
+      ) must be(Seq("Artifact ID cannot be empty"))
+    }
+
+    "catch empty version" in {
+      ProjectLibrariesDao.validate(
+        systemUser,
+        createProjectLibraryForm(project).copy(version = VersionForm(version = "   "))
+      ) must be(Seq("Version cannot be empty"))
+    }
+
+    "catch invalid project" in {
+      ProjectLibrariesDao.validate(
+        systemUser,
+        createProjectLibraryForm(project).copy(projectGuid = UUID.randomUUID())
+      ) must be(Seq("Project not found"))
+    }
+
+    "catch project we cannot access" in {
+      ProjectLibrariesDao.validate(
+        createUser(),
+        createProjectLibraryForm(project)
+      ) must be(Seq("You are not authorized to edit this project"))
+    }
+
   }
 
   "create" in {
