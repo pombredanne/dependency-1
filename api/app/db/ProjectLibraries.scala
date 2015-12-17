@@ -195,10 +195,6 @@ object ProjectLibrariesDao {
       }
     ).flatten
 
-    println(sql)
-    println("bind")
-    bind.foreach { np => println("  - " + np) }
-
     DB.withConnection { implicit c =>
       SQL(sql).on(bind: _*).as(
         com.bryzek.dependency.v0.anorm.parsers.ProjectLibrary.table("project_libraries").*
