@@ -3,7 +3,7 @@ package com.bryzek.dependency.actors
 import com.bryzek.dependency.api.lib.{Dependencies, GithubDependencyProviderClient}
 import com.bryzek.dependency.v0.models.{Project, WatchProjectForm}
 import io.flow.play.postgresql.Pager
-import db.{Authorization, BinariesDao, LibrariesDao, ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
+import db.{Authorization, BinariesDao, LibrariesDao, ProjectLibrariesDao, ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
 import play.api.Logger
 import play.libs.Akka
 import akka.actor.Actor
@@ -20,6 +20,8 @@ object ProjectActor {
     case object Sync extends Message
     case object SyncCompleted extends Message
     case object Watch extends Message
+
+    case class ProjectLibraryCreated(guid: UUID) extends Message
 
     case class LibrarySynced(guid: UUID) extends Message
     case class BinarySynced(guid: UUID) extends Message
@@ -50,6 +52,15 @@ class ProjectActor extends Actor with Util {
               projectGuid = project.guid
             )
           )
+        }
+      }
+    }
+
+    case m @ ProjectActor.Messages.ProjectLibraryCreated(guid) => withVerboseErrorHandler(m.toString) {
+      dataProject.foreach { project =>
+        ProjectLibrariesDao.findByGuid(Authorization.All, guid).map { projectLibrary =>
+          println(s"project guid[${project.guid}] projectLibraryCreated[${projectLibrary.guid}]")
+          // TODO
         }
       }
     }

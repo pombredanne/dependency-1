@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{Membership, Role}
+import com.bryzek.dependency.v0.models.{Membership, OrganizationSummary, Role}
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -14,6 +14,14 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   lazy val org = createOrganization()
   lazy val user = createUser()
   lazy val membership = createMembership(createMembershipForm(org = org, user = user))
+
+  "isMember" in {
+    membership // Create the membership record
+
+    MembershipsDao.isMember(org.guid, user) must be(true)
+    MembershipsDao.isMember(org.guid, createUser()) must be(false)
+    MembershipsDao.isMember(createOrganization().guid, user) must be(false)
+  }
 
   "findByOrganizationGuidAndUserGuid" in {
     membership // Create the membership record
@@ -72,7 +80,7 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "validates access to org" in {
     MembershipsDao.validate(createUser(), createMembershipForm()) must be(
-      Seq("You do not have access to this organization")
+      Seq("Organization does not exist or you are not authorized to access this organization")
     )
   }
 

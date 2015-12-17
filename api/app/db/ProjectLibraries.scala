@@ -48,6 +48,7 @@ object ProjectLibrariesDao {
   """
 
   private[db] def validate(
+    user: User,
     form: ProjectLibraryForm
   ): Seq[String] = {
     val groupIdErrors = if (form.groupId.trim.isEmpty) {
@@ -68,6 +69,16 @@ object ProjectLibrariesDao {
       Nil
     }
 
+    val projectErrors = ProjectsDao.findByGuid(Authorization.All, form.projectGuid) match {
+      case None => Seq("Project not found")
+      case Some(project) => {
+        MembershipsDao.isMember(project.organization.guid, user) match {
+          case false => Seq("You are not authorized to edit this project")
+          case true => Nil
+        }
+      }
+    }
+
     val existsErrors = if (groupIdErrors.isEmpty && artifactIdErrors.isEmpty && versionErrors.isEmpty) {
       ProjectLibrariesDao.findByGroupIdAndArtifactIdAndVersionAndCrossBuildVersion(
         Authorization.All, form.groupId, form.artifactId, form.version, form.crossBuildVersion
@@ -81,7 +92,7 @@ object ProjectLibrariesDao {
       Nil
     }
 
-    groupIdErrors ++ artifactIdErrors ++ versionErrors ++ existsErrors
+    projectErrors ++ groupIdErrors ++ artifactIdErrors ++ versionErrors ++ existsErrors
   }
 
   def upsert(createdBy: User, form: ProjectLibraryForm): Either[Seq[String], ProjectLibrary] = {
@@ -98,7 +109,7 @@ object ProjectLibrariesDao {
   }
 
   def create(createdBy: User, form: ProjectLibraryForm): Either[Seq[String], ProjectLibrary] = {
-    validate(form) match {
+    validate(createdBy, form) match {
       case Nil => {
         val guid = UUID.randomUUID
 
@@ -113,7 +124,7 @@ object ProjectLibrariesDao {
             'path -> form.path.trim,
             'created_by_guid -> createdBy.guid
           ).execute()
-          //MainActor.ref ! MainActor.Messages.ProjectLibraryCreated(guid)
+          MainActor.ref ! MainActor.Messages.ProjectLibraryCreated(form.projectGuid, guid)
         }
 
         Right(
@@ -128,7 +139,7 @@ object ProjectLibrariesDao {
 
   def softDelete(deletedBy: User, library: ProjectLibrary) {
     SoftDelete.delete("project_libraries", deletedBy.guid, library.guid)
-    //MainActor.ref ! MainActor.Messages.ProjectLibraryDeleted(library.guid)
+    MainActor.ref ! MainActor.Messages.ProjectLibraryDeleted(library.project.guid, library.guid)
   }
 
   def findByGroupIdAndArtifactIdAndVersionAndCrossBuildVersion(

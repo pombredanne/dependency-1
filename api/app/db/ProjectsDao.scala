@@ -97,12 +97,9 @@ object ProjectsDao {
       }
     }
 
-    val organizationErrors = OrganizationsDao.findByGuid(Authorization.All, form.organizationGuid) match {
-      case None => Seq("Organization not found")
-      case Some(org) => MembershipsDao.exists(org, user) match  {
-        case false => Seq("You do not have access to this organization")
-        case true => Nil
-      }
+    val organizationErrors = MembershipsDao.isMember(form.organizationGuid, user) match  {
+      case false => Seq("You do not have access to this organization")
+      case true => Nil
     }
 
     nameErrors ++ visibilityErrors ++ uriErrors ++ organizationErrors

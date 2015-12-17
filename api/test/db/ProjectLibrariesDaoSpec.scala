@@ -14,6 +14,10 @@ class ProjectLibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
   lazy val project = createProject(org)
   lazy val projectLibrary = createProjectLibrary(project)
 
+  "validate" must {
+
+  }
+
   "create" in {
     val projectLibrary = createProjectLibrary(project) (
       createProjectLibraryForm(project).copy(crossBuildVersion = Some("2.11"))

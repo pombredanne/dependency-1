@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{Membership, MembershipForm, Organization, Role}
+import com.bryzek.dependency.v0.models.{Membership, MembershipForm, Organization, OrganizationSummary, Role}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
@@ -36,6 +36,13 @@ object MembershipsDao {
     ({guid}::uuid, {role}, {user_guid}::uuid, {organization_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
+  def isMember(orgGuid: UUID, user: User): Boolean = {
+    MembershipsDao.findByOrganizationGuidAndUserGuid(orgGuid, user.guid) match {
+      case None => false
+      case Some(_) => true
+    }
+  }
+
   private[db] def validate(
     user: User,
     form: MembershipForm
@@ -56,12 +63,9 @@ object MembershipsDao {
       }
     }
 
-    val organizationErrors = OrganizationsDao.findByGuid(Authorization.All, form.organizationGuid) match {
-      case None => Seq("Organization not found")
-      case Some(org) => MembershipsDao.exists(org, user) match  {
-        case false => Seq("You do not have access to this organization")
-        case true => Nil
-      }
+    val organizationErrors = MembershipsDao.isMember(form.organizationGuid, user) match  {
+      case false => Seq("Organization does not exist or you are not authorized to access this organization")
+      case true => Nil
     }
 
     roleErrors ++ organizationErrors
@@ -108,13 +112,6 @@ object MembershipsDao {
 
   def softDelete(deletedBy: User, membership: Membership) {
     SoftDelete.delete("memberships", deletedBy.guid, membership.guid)
-  }
-
-  def exists(org: Organization, user: User): Boolean = {
-    findByOrganizationGuidAndUserGuid(org.guid, user.guid) match {
-      case None => false
-      case Some(_) => true
-    }
   }
 
   def findByOrganizationGuidAndUserGuid(
