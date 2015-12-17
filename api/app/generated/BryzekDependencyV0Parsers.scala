@@ -1172,6 +1172,66 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
+  object ProjectLibrary {
+
+    case class Mappings(
+      guid: String = "guid",
+      project: com.bryzek.dependency.v0.anorm.parsers.ProjectSummary.Mappings,
+      groupId: String = "group_id",
+      artifactId: String = "artifact_id",
+      version: String = "version",
+      crossBuildVersion: String = "cross_build_version",
+      path: String = "path",
+      audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        guid = s"${prefix}${sep}guid",
+        project = com.bryzek.dependency.v0.anorm.parsers.ProjectSummary.Mappings.prefix(Seq(prefix, "project").filter(!_.isEmpty).mkString("_"), "_"),
+        groupId = s"${prefix}${sep}group_id",
+        artifactId = s"${prefix}${sep}artifact_id",
+        version = s"${prefix}${sep}version",
+        crossBuildVersion = s"${prefix}${sep}cross_build_version",
+        path = s"${prefix}${sep}path",
+        audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ProjectLibrary] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      com.bryzek.dependency.v0.anorm.parsers.ProjectSummary.parser(mappings.project) ~
+      SqlParser.str(mappings.groupId) ~
+      SqlParser.str(mappings.artifactId) ~
+      SqlParser.str(mappings.version) ~
+      SqlParser.str(mappings.crossBuildVersion).? ~
+      SqlParser.str(mappings.path) ~
+      io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
+        case guid ~ project ~ groupId ~ artifactId ~ version ~ crossBuildVersion ~ path ~ audit => {
+          com.bryzek.dependency.v0.models.ProjectLibrary(
+            guid = guid,
+            project = project,
+            groupId = groupId,
+            artifactId = artifactId,
+            version = version,
+            crossBuildVersion = crossBuildVersion,
+            path = path,
+            audit = audit
+          )
+        }
+      }
+    }
+
+  }
+
   object ProjectLibraryVersion {
 
     case class Mappings(

@@ -177,6 +177,17 @@ package com.bryzek.dependency.v0.models {
     uri: String
   )
 
+  case class ProjectLibrary(
+    guid: _root_.java.util.UUID,
+    project: com.bryzek.dependency.v0.models.ProjectSummary,
+    groupId: String,
+    artifactId: String,
+    version: String,
+    crossBuildVersion: _root_.scala.Option[String] = None,
+    path: String,
+    audit: io.flow.common.v0.models.Audit
+  )
+
   /**
    * A projection of projects and the specific library versions the project is
    * dependent on
@@ -1038,6 +1049,32 @@ package com.bryzek.dependency.v0.models {
         (__ \ "scms").write[com.bryzek.dependency.v0.models.Scms] and
         (__ \ "uri").write[String]
       )(unlift(ProjectForm.unapply _))
+    }
+
+    implicit def jsonReadsDependencyProjectLibrary: play.api.libs.json.Reads[ProjectLibrary] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "project").read[com.bryzek.dependency.v0.models.ProjectSummary] and
+        (__ \ "group_id").read[String] and
+        (__ \ "artifact_id").read[String] and
+        (__ \ "version").read[String] and
+        (__ \ "cross_build_version").readNullable[String] and
+        (__ \ "path").read[String] and
+        (__ \ "audit").read[io.flow.common.v0.models.Audit]
+      )(ProjectLibrary.apply _)
+    }
+
+    implicit def jsonWritesDependencyProjectLibrary: play.api.libs.json.Writes[ProjectLibrary] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "project").write[com.bryzek.dependency.v0.models.ProjectSummary] and
+        (__ \ "group_id").write[String] and
+        (__ \ "artifact_id").write[String] and
+        (__ \ "version").write[String] and
+        (__ \ "cross_build_version").writeNullable[String] and
+        (__ \ "path").write[String] and
+        (__ \ "audit").write[io.flow.common.v0.models.Audit]
+      )(unlift(ProjectLibrary.unapply _))
     }
 
     implicit def jsonReadsDependencyProjectLibraryVersion: play.api.libs.json.Reads[ProjectLibraryVersion] = {

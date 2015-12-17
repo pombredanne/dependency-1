@@ -250,6 +250,19 @@
 	    ]
 	},
 
+	"project_library": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "project", "type": "project_summary" },
+		{ "name": "group_id", "type": "string" },
+		{ "name": "artifact_id", "type": "string" },
+		{ "name": "version", "type": "string" },
+		{ "name": "cross_build_version", "type": "string", "required": false },
+		{ "name": "path", "type": "string" },
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+	    ]
+	},
+
 	"project_library_version": {
 	    "description": "A projection of projects and the specific library versions the project is dependent on",
 	    "fields": [

@@ -453,4 +453,25 @@ trait Helpers {
     publication = publication
   )
 
+  def createProjectLibrary(
+    project: Project = createProject()
+  ) (
+    implicit form: ProjectLibraryForm = createProjectLibraryForm(project)
+  ): ProjectLibrary = {
+    create(ProjectLibrariesDao.create(systemUser, form))
+  }
+
+  def createProjectLibraryForm(
+    project: Project = createProject()
+  ) = {
+    ProjectLibraryForm(
+      projectGuid = project.guid,
+      groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
+      artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
+      version = "0.0.1",
+      crossBuildVersion = None,
+      path = "build.sbt"
+    )
+  }
+
 }
