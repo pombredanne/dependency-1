@@ -365,7 +365,20 @@ trait Helpers {
   }
 
   def addLibraryVersion(project: Project, libraryVersion: LibraryVersion) {
-    sys.error("TODO")
+    val projectLibrary = create(
+      ProjectLibrariesDao.upsert(
+        systemUser,
+        ProjectLibraryForm(
+          projectGuid = project.guid,
+          groupId = libraryVersion.library.groupId,
+          artifactId = libraryVersion.library.artifactId,
+          path = "test.sbt",
+          version = VersionForm(libraryVersion.version, libraryVersion.crossBuildVersion)
+        )
+      )
+    )
+
+    ProjectLibrariesDao.setLibrary(systemUser, projectLibrary, libraryVersion.library)
   }
 
   def upsertItem(
