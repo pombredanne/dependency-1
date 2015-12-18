@@ -85,7 +85,13 @@
         </thead>
         @libraries.items.map { lib =>
           <tr>
-            <td><a href="#">@lib.groupId.@lib.artifactId</a></td>
+            <td>
+	      @if(lib.library.isEmpty) {
+  	        @lib.groupId.@lib.artifactId
+  	      } else {
+	        <a href="@routes.LibrariesController.show(lib.library.get.guid)">@lib.groupId.@lib.artifactId</a>
+	      }
+            </td>
             <td>@lib.version</td>
             <td>@lib.crossBuildVersion.getOrElse("-")</td>
             <td>@lib.path</td>
