@@ -25,6 +25,11 @@ trait LibraryArtifactProvider {
     resolver: Option[ResolverSummary]
   ): Option[ArtifactResolution]
 
+  /**
+    * Attempts to resolve a library at the specified resolver. A
+    * return value of None indicates we did NOT find this
+    * groupId/artifactId on this resolver.
+    */
   def resolve(
     resolver: Resolver,
     groupId: String,
