@@ -253,7 +253,7 @@
 	"project_library": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
-		{ "name": "project", "type": "project_summary" },
+		{ "name": "project", "type": "project_detail" },
 		{ "name": "group_id", "type": "string" },
 		{ "name": "artifact_id", "type": "string" },
 		{ "name": "version", "type": "string" },
@@ -304,14 +304,6 @@
 	    ]
 	},
 
-	"library_recommendation": {
-	    "fields": [
-		{ "name": "from", "type": "library_version" },
-		{ "name": "to", "type": "library_version" },
-		{ "name": "latest", "type": "library_version" }
-	    ]
-	},
-	
 	"binary_recommendation": {
 	    "fields": [
 		{ "name": "from", "type": "binary_version" },
@@ -819,7 +811,6 @@
                         { "name": "guid", "type": "uuid", "description": "Find library version with this guid. Exact match", "required": false },
 			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
                         { "name": "library_guid", "type": "uuid", "description": "Find binaries associated with this binary", "required": false },
-                        { "name": "project_guid", "type": "uuid", "description": "Find binaries associated with this project", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
@@ -949,25 +940,6 @@
 	    ]
 	},
 
-	"library_recommendation": {
-	    "path": "/recommendations/libraries",
-
-	    "operations": [
-		{
-                    "method": "GET",
-		    "path": "/projects/:project_guid",
-                    "description": "Get recommendations for which libraries to upgrade",
-                    "parameters": [
-			{ "name": "project_guid", "type": "uuid" }
-                    ],
-                    "responses": {
-			"200": { "type": "[library_recommendation]" },
-			"401": { "type": "unit" }
-                    }
-		}
-	    ]
-	},
-	
 	"binary_recommendation": {
 	    "path": "/recommendations/binaries",
 

@@ -187,7 +187,7 @@ object LibraryVersionsDao {
       guid.map { v => s"and library_versions.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids(s"library_versions.guid", _) },
       libraryGuid.map { v => s"and library_versions.library_guid = {library_guid}::uuid" },
-      projectGuid.map { v => s"and library_versions.guid in (select library_version_guid from project_library_versions where deleted_at is null and project_guid = {project_guid}::uuid)" },
+      projectGuid.map { v => s"and library_versions.library_guid in (select library_guid from project_libraries where deleted_at is null and library_guid is not null and project_guid = {project_guid}::uuid)" },
       version.map { v => s"and lower(library_versions.version) = lower(trim({version}))" },
       crossBuildVersion.map { v =>
         v match {

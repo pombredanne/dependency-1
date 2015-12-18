@@ -116,12 +116,10 @@ object ProjectsDao {
   def setDependencies(
     createdBy: User,
     project: Project,
-    binaries: Option[Seq[BinaryForm]] = None,
-    libraries: Option[Seq[LibraryForm]] = None
+    binaries: Option[Seq[BinaryForm]] = None
   ) {
     DB.withTransaction { implicit c =>
       binaries.map { setBinaryVersions(c, createdBy, project, _) }
-      libraries.map { setLibraryVersions(c, createdBy, project, _) }
     }
   }
 
@@ -157,43 +155,6 @@ object ProjectsDao {
 
     toRemove.distinct.foreach { guid =>
       SoftDelete.delete(c, "project_binary_versions", createdBy.guid, ("binary_version_guid", Some("::uuid"), guid.toString))
-    }
-  }
-
-  private[this] def setLibraryVersions(
-    implicit c: java.sql.Connection,
-    createdBy: User,
-    project: Project,
-    libraries: Seq[LibraryForm]
-  ) {
-    val newGuids = libraries.flatMap { form =>
-      val library = LibrariesDao.upsert(createdBy, form) match {
-        case Left(errors) => sys.error(errors.mkString(", n"))
-        case Right(library) => library
-      }
-      form.version.map { version =>
-        LibraryVersionsDao.findByLibraryAndVersionAndCrossBuildVersion(library, version.version, version.crossBuildVersion).getOrElse {
-          sys.error("Could not create library version")
-        }.guid
-      }
-    }
-
-    val existingGuids = LibraryVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.guid)
-
-    val toAdd = newGuids.filter { guid => !existingGuids.contains(guid) }
-    val toRemove = existingGuids.filter { guid => !newGuids.contains(guid) }
-
-    toAdd.distinct.foreach { guid =>
-      SQL(InsertLibraryVersionQuery).on(
-        'guid -> UUID.randomUUID,
-        'project_guid -> project.guid,
-        'library_version_guid -> guid,
-        'created_by_guid -> createdBy.guid
-      ).execute()
-    }
-
-    toRemove.distinct.foreach { guid =>
-      SoftDelete.delete(c, "project_library_versions", createdBy.guid, ("library_version_guid", Some("::uuid"), guid.toString))
     }
   }
 

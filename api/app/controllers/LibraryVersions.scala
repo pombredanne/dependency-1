@@ -20,7 +20,6 @@ class LibraryVersions @javax.inject.Inject() (
     guid: Option[UUID],
     guids: Option[Seq[UUID]],
     libraryGuid: Option[UUID],
-    projectGuid: Option[UUID],
     limit: Long = 25,
     offset: Long = 0
   ) = Identified { request =>
@@ -30,7 +29,6 @@ class LibraryVersions @javax.inject.Inject() (
           guid = guid,
           guids = optionalGuids(guids),
           libraryGuid = libraryGuid,
-          projectGuid = projectGuid,
           limit = limit,
           offset = offset
         )

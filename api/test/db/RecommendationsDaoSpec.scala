@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.{Project, LibraryForm, LibraryVersion, LibraryRecommendation}
+import com.bryzek.dependency.v0.models.{Project, LibraryForm, LibraryVersion}
 import com.bryzek.dependency.v0.models.{Organization, Recommendation, VersionForm}
 import play.api.test._
 import play.api.test.Helpers._
@@ -14,8 +14,8 @@ class RecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   def createRecommendation(
     org: Organization
   ): Recommendation = {
-    val libraryVersions = createLibraryWithMultipleVersions(org)()
-    val project = createProject(org)()
+    val libraryVersions = createLibraryWithMultipleVersions(org)
+    val project = createProject(org)
     addLibraryVersion(project, libraryVersions.head)
     RecommendationsDao.sync(systemUser, project)
     RecommendationsDao.findAll(projectGuid = Some(project.guid)).headOption.getOrElse {

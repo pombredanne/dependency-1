@@ -106,34 +106,6 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       BinaryVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.version.toString) must be(Seq("2.11.7"))
     }
 
-    "set libraries" in {
-      val project = createProject(org)()
-      val library = createLibraryForm(org)()
-
-      ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(library)))
-      val fetched = LibrariesDao.findAll(Authorization.All, projectGuid = Some(project.guid)) match {
-        case one :: Nil => one
-        case _ => sys.error("Expected one library")
-      }
-      fetched.groupId must be(library.groupId)
-      fetched.artifactId must be(library.artifactId)
-
-      ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(library)))
-    }
-
-    "set libraries can upgrade version" in {
-      val project = createProject(org)()
-      val versionForm = VersionForm(
-        version = "1.4.0"
-      )
-      val library = createLibraryForm(org)().copy(version = Some(versionForm))
-      ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(library)))
-      LibraryVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.version.toString) must be(Seq("1.4.0"))
-
-      ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(library.copy(version = Some(versionForm.copy("1.4.2"))))))
-      LibraryVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.version.toString) must be(Seq("1.4.2"))
-    }
-
   }
 
   "findAll" must {

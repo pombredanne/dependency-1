@@ -177,20 +177,14 @@ trait Helpers {
       version = Some(createVersionForm())
     )
   ): (Project, LibraryVersion) = {
-    val project = createProject(org)()
-    ProjectsDao.setDependencies(systemUser, project, libraries = Some(Seq(libraryForm)))
-
-    val library = LibrariesDao.findByGroupIdAndArtifactId(
-      Authorization.All, libraryForm.groupId, libraryForm.artifactId
-    ).getOrElse {
-      sys.error("Failed to find library")
-    }
-
-    val libraryVersion = LibraryVersionsDao.findByLibraryAndVersionAndCrossBuildVersion(
-      library, libraryForm.version.get.version, libraryForm.version.get.crossBuildVersion
-    ).getOrElse {
-      sys.error("Failed to find library version")
-    }
+    val project = createProject(org)
+    val library = createLibrary(org)
+    val version = VersionForm(version = "0.0.1")
+    val projectLibrary = createProjectLibrary(project)(
+      createProjectLibraryForm(project, groupId= library.groupId, artifactId = library.artifactId, version = version.version)
+    )
+    ProjectLibrariesDao.setLibrary(systemUser, projectLibrary, library)
+    val libraryVersion = LibraryVersionsDao.create(systemUser, library.guid, version)
 
     (project, libraryVersion)
   }
@@ -357,7 +351,7 @@ trait Helpers {
   def createLibraryWithMultipleVersions(
     org: Organization
   ) (
-    versions: Seq[String] = Seq("1.0.0", "1.0.1", "1.0.2")
+    implicit versions: Seq[String] = Seq("1.0.0", "1.0.1", "1.0.2")
   ): Seq[LibraryVersion] = {
     val library = createLibrary(org)(createLibraryForm(org)().copy(version = None))
     versions.map { version =>
@@ -371,25 +365,7 @@ trait Helpers {
   }
 
   def addLibraryVersion(project: Project, libraryVersion: LibraryVersion) {
-    val org = OrganizationsDao.findByGuid(Authorization.All, project.organization.guid).getOrElse {
-      sys.error("could not get org")
-    }
-
-    ProjectsDao.setDependencies(
-      systemUser,
-      project,
-      libraries = Some(
-        Seq(
-          LibraryForm(
-            organizationGuid = project.organization.guid,
-            groupId = libraryVersion.library.groupId,
-            artifactId = libraryVersion.library.artifactId,
-            version = Some(VersionForm(version = libraryVersion.version)),
-            resolverGuid = createResolver(org).guid
-          )
-        )
-      )
-    )
+    sys.error("TODO")
   }
 
   def upsertItem(
@@ -471,14 +447,17 @@ trait Helpers {
 
   def createProjectLibraryForm(
     project: Project = createProject(),
+    groupId: String = s"z-test.${UUID.randomUUID}".toLowerCase,
+    artifactId: String = s"z-test-${UUID.randomUUID}".toLowerCase,
+    path: String = "build.sbt",
     version: String = "0.0.1",
     crossBuildVersion: Option[String] = None
   ) = {
     ProjectLibraryForm(
       projectGuid = project.guid,
-      groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
-      artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
-      path = "build.sbt",
+      groupId = groupId,
+      artifactId = artifactId,
+      path = path,
       version = VersionForm(version, crossBuildVersion)
     )
   }

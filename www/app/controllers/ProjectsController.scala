@@ -42,17 +42,20 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def show(guid: UUID, binariesPage: Int = 0, librariesPage: Int = 0) = Identified.async { implicit request =>
+  def show(guid: UUID, recommendationsPage: Int = 0, binariesPage: Int = 0, librariesPage: Int = 0) = Identified.async { implicit request =>
     withProject(request, guid) { project =>
       for {
-        libraryRecommendations <- dependencyClient(request).libraryRecommendations.getRecommendationsAndLibrariesAndProjectsByProjectGuid(project.guid)
-        binaryRecommendations <- dependencyClient(request).binaryRecommendations.getRecommendationsAndBinariesAndProjectsByProjectGuid(project.guid)
+        recommendations <- dependencyClient(request).recommendations.get(
+          projectGuid = Some(project.guid),
+          limit = Pagination.DefaultLimit+1,
+          offset = recommendationsPage * Pagination.DefaultLimit
+        )
         binaries <- dependencyClient(request).binaryVersions.get(
           projectGuid = Some(guid),
           limit = Pagination.DefaultLimit+1,
           offset = binariesPage * Pagination.DefaultLimit
         )
-        libraries <- dependencyClient(request).libraryVersions.get(
+        projectLibraries <- dependencyClient(request).projectLibraries.get(
           projectGuid = Some(guid),
           limit = Pagination.DefaultLimit+1,
           offset = librariesPage * Pagination.DefaultLimit
@@ -66,10 +69,9 @@ class ProjectsController @javax.inject.Inject() (
           views.html.projects.show(
             uiData(request),
             project,
-            libraryRecommendations,
-            binaryRecommendations,
+            PaginatedCollection(recommendationsPage, recommendations),
             PaginatedCollection(binariesPage, binaries),
-            PaginatedCollection(librariesPage, libraries),
+            PaginatedCollection(librariesPage, projectLibraries),
             isWatching = !watches.isEmpty
           )
         )
@@ -261,11 +263,17 @@ class ProjectsController @javax.inject.Inject() (
   /**
     * Waits for the latest sync to complete for this project.
     */
-  def sync(guid: UUID, n: Int) = Identified.async { implicit request =>
+  def sync(guid: UUID, n: Int, librariesPage: Int = 0) = Identified.async { implicit request =>
     withProject(request, guid) { project =>
       for {
         syncs <- dependencyClient(request).syncs.get(
           objectGuid = Some(guid)
+        )
+        projectLibraries <- dependencyClient(request).projectLibraries.get(
+          projectGuid = Some(guid),
+          isSynced = Some(false),
+          limit = Pagination.DefaultLimit+1,
+          offset = librariesPage * Pagination.DefaultLimit
         )
       } yield {
         val nextN = (n * 1.1).toInt match {
@@ -273,7 +281,7 @@ class ProjectsController @javax.inject.Inject() (
           case other => other
         }
 
-        syncs.find { _.event == SyncEvent.Completed } match {
+        syncs.find { _.event == SyncEvent.Completed && false } match {
           case Some(rec) => {
             Redirect(routes.ProjectsController.show(guid))
           }
@@ -283,7 +291,8 @@ class ProjectsController @javax.inject.Inject() (
                 uiData(request),
                 guid,
                 nextN,
-                syncs.find { _.event == SyncEvent.Started }
+                syncs.find { _.event == SyncEvent.Started },
+                PaginatedCollection(librariesPage, projectLibraries)
               )
             )
           }

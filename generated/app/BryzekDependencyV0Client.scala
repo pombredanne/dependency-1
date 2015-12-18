@@ -91,12 +91,6 @@ package com.bryzek.dependency.v0.models {
     version: _root_.scala.Option[com.bryzek.dependency.v0.models.VersionForm] = None
   )
 
-  case class LibraryRecommendation(
-    from: com.bryzek.dependency.v0.models.LibraryVersion,
-    to: com.bryzek.dependency.v0.models.LibraryVersion,
-    latest: com.bryzek.dependency.v0.models.LibraryVersion
-  )
-
   case class LibrarySummary(
     guid: _root_.java.util.UUID,
     organization: com.bryzek.dependency.v0.models.OrganizationSummary,
@@ -179,7 +173,7 @@ package com.bryzek.dependency.v0.models {
 
   case class ProjectLibrary(
     guid: _root_.java.util.UUID,
-    project: com.bryzek.dependency.v0.models.ProjectSummary,
+    project: com.bryzek.dependency.v0.models.ProjectDetail,
     groupId: String,
     artifactId: String,
     version: String,
@@ -838,22 +832,6 @@ package com.bryzek.dependency.v0.models {
       )(unlift(LibraryForm.unapply _))
     }
 
-    implicit def jsonReadsDependencyLibraryRecommendation: play.api.libs.json.Reads[LibraryRecommendation] = {
-      (
-        (__ \ "from").read[com.bryzek.dependency.v0.models.LibraryVersion] and
-        (__ \ "to").read[com.bryzek.dependency.v0.models.LibraryVersion] and
-        (__ \ "latest").read[com.bryzek.dependency.v0.models.LibraryVersion]
-      )(LibraryRecommendation.apply _)
-    }
-
-    implicit def jsonWritesDependencyLibraryRecommendation: play.api.libs.json.Writes[LibraryRecommendation] = {
-      (
-        (__ \ "from").write[com.bryzek.dependency.v0.models.LibraryVersion] and
-        (__ \ "to").write[com.bryzek.dependency.v0.models.LibraryVersion] and
-        (__ \ "latest").write[com.bryzek.dependency.v0.models.LibraryVersion]
-      )(unlift(LibraryRecommendation.unapply _))
-    }
-
     implicit def jsonReadsDependencyLibrarySummary: play.api.libs.json.Reads[LibrarySummary] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
@@ -1045,7 +1023,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyProjectLibrary: play.api.libs.json.Reads[ProjectLibrary] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "project").read[com.bryzek.dependency.v0.models.ProjectSummary] and
+        (__ \ "project").read[com.bryzek.dependency.v0.models.ProjectDetail] and
         (__ \ "group_id").read[String] and
         (__ \ "artifact_id").read[String] and
         (__ \ "version").read[String] and
@@ -1058,7 +1036,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyProjectLibrary: play.api.libs.json.Writes[ProjectLibrary] = {
       (
         (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "project").write[com.bryzek.dependency.v0.models.ProjectSummary] and
+        (__ \ "project").write[com.bryzek.dependency.v0.models.ProjectDetail] and
         (__ \ "group_id").write[String] and
         (__ \ "artifact_id").write[String] and
         (__ \ "version").write[String] and
@@ -1546,8 +1524,6 @@ package com.bryzek.dependency.v0 {
 
     def libraries: Libraries = Libraries
 
-    def libraryRecommendations: LibraryRecommendations = LibraryRecommendations
-
     def libraryVersions: LibraryVersions = LibraryVersions
 
     def organizations: Organizations = Organizations
@@ -1790,31 +1766,17 @@ package com.bryzek.dependency.v0 {
       }
     }
 
-    object LibraryRecommendations extends LibraryRecommendations {
-      override def getRecommendationsAndLibrariesAndProjectsByProjectGuid(
-        projectGuid: _root_.java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.LibraryRecommendation]] = {
-        _executeRequest("GET", s"/recommendations/libraries/projects/${projectGuid}").map {
-          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.LibraryRecommendation]", r, _.validate[Seq[com.bryzek.dependency.v0.models.LibraryRecommendation]])
-          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
-        }
-      }
-    }
-
     object LibraryVersions extends LibraryVersions {
       override def get(
         guid: _root_.scala.Option[_root_.java.util.UUID] = None,
         guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
         libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.LibraryVersion]] = {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
           libraryGuid.map("library_guid" -> _.toString),
-          projectGuid.map("project_guid" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
@@ -2582,15 +2544,6 @@ package com.bryzek.dependency.v0 {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
-  trait LibraryRecommendations {
-    /**
-     * Get recommendations for which libraries to upgrade
-     */
-    def getRecommendationsAndLibrariesAndProjectsByProjectGuid(
-      projectGuid: _root_.java.util.UUID
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.LibraryRecommendation]]
-  }
-
   trait LibraryVersions {
     /**
      * Search library versions. Results are paginated
@@ -2599,7 +2552,6 @@ package com.bryzek.dependency.v0 {
       guid: _root_.scala.Option[_root_.java.util.UUID] = None,
       guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
       libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.LibraryVersion]]

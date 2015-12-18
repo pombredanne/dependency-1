@@ -659,46 +659,6 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
-  object LibraryRecommendation {
-
-    case class Mappings(
-      from: com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings,
-      to: com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings,
-      latest: com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings
-    )
-
-    object Mappings {
-
-      val base = prefix("", "")
-
-      def table(table: String) = prefix(table, ".")
-
-      def prefix(prefix: String, sep: String) = Mappings(
-        from = com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings.prefix(Seq(prefix, "from").filter(!_.isEmpty).mkString("_"), "_"),
-        to = com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings.prefix(Seq(prefix, "to").filter(!_.isEmpty).mkString("_"), "_"),
-        latest = com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings.prefix(Seq(prefix, "latest").filter(!_.isEmpty).mkString("_"), "_")
-      )
-
-    }
-
-    def table(table: String) = parser(Mappings.prefix(table, "."))
-
-    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.LibraryRecommendation] = {
-      com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.parser(mappings.from) ~
-      com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.parser(mappings.to) ~
-      com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.parser(mappings.latest) map {
-        case from ~ to ~ latest => {
-          com.bryzek.dependency.v0.models.LibraryRecommendation(
-            from = from,
-            to = to,
-            latest = latest
-          )
-        }
-      }
-    }
-
-  }
-
   object LibrarySummary {
 
     case class Mappings(
@@ -1171,7 +1131,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       guid: String = "guid",
-      project: com.bryzek.dependency.v0.anorm.parsers.ProjectSummary.Mappings,
+      project: com.bryzek.dependency.v0.anorm.parsers.ProjectDetail.Mappings,
       groupId: String = "group_id",
       artifactId: String = "artifact_id",
       version: String = "version",
@@ -1188,7 +1148,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         guid = s"${prefix}${sep}guid",
-        project = com.bryzek.dependency.v0.anorm.parsers.ProjectSummary.Mappings.prefix(Seq(prefix, "project").filter(!_.isEmpty).mkString("_"), "_"),
+        project = com.bryzek.dependency.v0.anorm.parsers.ProjectDetail.Mappings.prefix(Seq(prefix, "project").filter(!_.isEmpty).mkString("_"), "_"),
         groupId = s"${prefix}${sep}group_id",
         artifactId = s"${prefix}${sep}artifact_id",
         version = s"${prefix}${sep}version",
@@ -1203,7 +1163,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ProjectLibrary] = {
       SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
-      com.bryzek.dependency.v0.anorm.parsers.ProjectSummary.parser(mappings.project) ~
+      com.bryzek.dependency.v0.anorm.parsers.ProjectDetail.parser(mappings.project) ~
       SqlParser.str(mappings.groupId) ~
       SqlParser.str(mappings.artifactId) ~
       SqlParser.str(mappings.version) ~

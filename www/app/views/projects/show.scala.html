@@ -1,10 +1,9 @@
 @(
   data: com.bryzek.dependency.www.lib.UiData,
   project: com.bryzek.dependency.v0.models.Project,
-  libraryRecommendations: Seq[com.bryzek.dependency.v0.models.LibraryRecommendation],
-  binaryRecommendations: Seq[com.bryzek.dependency.v0.models.BinaryRecommendation],
+  recommendations: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Recommendation],
   binaryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.BinaryVersion],
-  libraryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LibraryVersion],
+  libraries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectLibrary],
   isWatching: Boolean
 )(implicit flash: Flash, messages: Messages)
 
@@ -31,22 +30,32 @@
     <li>@audit(project.audit)</li>
   </ul>
 
-  @if(!binaryVersions.isEmpty || !libraryVersions.isEmpty) {
-    <h3>Recommendations</h3>
-    @if(libraryRecommendations.isEmpty && binaryRecommendations.isEmpty) {
-      <em>Awesome - your project is fully up to date!</em>
-    } else {
-      @if(!libraryRecommendations.isEmpty) {
-        @views.html.libraries.recommendationsTable(libraryRecommendations)
-      }
-      @if(!binaryRecommendations.isEmpty) {
-        @views.html.binaries.recommendationsTable(binaryRecommendations)
-      }
-    }
+  <h3>Recommendations</h3>
+  @if(recommendations.isEmpty) {
+    <em>Awesome - your project is fully up to date!</em>
+  } else {
+    <div class="table-responsive">
+      <table class="table">
+	<thead>
+	  <tr>
+	    <th>Name</th>
+	    <th>Current</th>
+	    <th>Recommended</th>
+	  </tr>
+	</thead>
+        @recommendations.items.map { rec =>
+          <tr>
+            <td><a href="@data.urls.recommendation(rec)">@com.bryzek.dependency.lib.Text.truncate(rec.name, 50)</a></td>
+            <td>@rec.from</td>
+            <td>@rec.to</td>
+          </tr>
+        }
+      </table>
+    </div>
   }
 
   <h3>Dependencies</h3>
-  @if(binaryVersions.isEmpty && libraryVersions.isEmpty) {
+  @if(binaryVersions.isEmpty && libraries.isEmpty) {
     <em>No dependencies found</em>
   } else {
     @if(!binaryVersions.isEmpty) {
@@ -54,24 +63,44 @@
       @if(binaryVersions.hasPrevious || binaryVersions.hasNext) {
         <ul class="pager">
           @if(binaryVersions.hasPrevious) {
-            <li><a href="@routes.ProjectsController.show(project.guid, binariesPage = binaryVersions.page - 1, librariesPage = libraryVersions.page)">Previous</a></li>
+            <li><a href="@routes.ProjectsController.show(project.guid, recommendationsPage = recommendations.page, binariesPage = binaryVersions.page - 1, librariesPage = libraries.page)">Previous</a></li>
           }
           @if(binaryVersions.hasNext) {
-            <li><a href="@routes.ProjectsController.show(project.guid, binariesPage = binaryVersions.page + 1, librariesPage = libraryVersions.page)">Next</a></li>
+            <li><a href="@routes.ProjectsController.show(project.guid, recommendationsPage = recommendations.page, binariesPage = binaryVersions.page + 1, librariesPage = libraries.page)">Next</a></li>
           }
         </ul>
       }
     }
 
-    @if(!libraryVersions.isEmpty) {
-      @views.html.libraries.versions.table(libraryVersions)
-      @if(libraryVersions.hasPrevious || libraryVersions.hasNext) {
+    @if(!libraries.isEmpty) {
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+          <tr>
+  	    <th>Library</th>
+  	    <th>Version</th>
+            <th>Cross built for</th>
+            <th>File</th>
+          </tr>
+        </thead>
+        @libraries.items.map { lib =>
+          <tr>
+            <td><a href="#">@lib.groupId.@lib.artifactId</a></td>
+            <td>@lib.version</td>
+            <td>@lib.crossBuildVersion.getOrElse("-")</td>
+            <td>@lib.path</td>
+          </tr>
+        }
+        </table>
+      </div>
+
+      @if(libraries.hasPrevious || libraries.hasNext) {
         <ul class="pager">
-          @if(libraryVersions.hasPrevious) {
-            <li><a href="@routes.ProjectsController.show(project.guid, binariesPage = libraryVersions.page, librariesPage = libraryVersions.page - 1)">Previous</a></li>
+          @if(libraries.hasPrevious) {
+            <li><a href="@routes.ProjectsController.show(project.guid, recommendationsPage = recommendations.page, binariesPage = libraries.page, librariesPage = libraries.page - 1)">Previous</a></li>
           }
-          @if(libraryVersions.hasNext) {
-            <li><a href="@routes.ProjectsController.show(project.guid, binariesPage = libraryVersions.page, librariesPage = libraryVersions.page + 1)">Next</a></li>
+          @if(libraries.hasNext) {
+            <li><a href="@routes.ProjectsController.show(project.guid, recommendationsPage = recommendations.page, binariesPage = libraries.page, librariesPage = libraries.page + 1)">Next</a></li>
           }
         </ul>
       }

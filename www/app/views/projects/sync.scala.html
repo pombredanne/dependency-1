@@ -2,10 +2,11 @@
   data: com.bryzek.dependency.www.lib.UiData,
   guid: java.util.UUID,
   n: Int,
-  syncStarted: Option[com.bryzek.dependency.v0.models.Sync]
+  syncStarted: Option[com.bryzek.dependency.v0.models.Sync],
+  libraries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectLibrary]
 )(implicit flash: Flash, messages: Messages)
 
-@main(data) {
+@main(data.copy(title = Some("Please wait while we sync your project"))) {
   <meta http-equiv="refresh" content="@n; url=@routes.ProjectsController.sync(guid, (n * 1.1).toInt)" />
 
   @if(syncStarted.isEmpty) {
@@ -18,4 +19,22 @@
     </em>
   }
 
+  @if(!libraries.isEmpty) {
+    <p><b>Libraries pending sync</b><p>
+    <div class="table-responsive">
+      <table class="table">
+        @libraries.items.map { lib =>
+          <tr>
+            <td>@lib.groupId.@lib.artifactId</td>
+          </tr>
+        }
+        @if(libraries.hasNext) {
+          <tr>
+            <td>and more...</td>
+          </tr>
+        }
+      </table>
+    </div>
+  }
+    
 }

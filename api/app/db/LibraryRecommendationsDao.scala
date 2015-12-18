@@ -1,12 +1,18 @@
 package db
 
 import com.bryzek.dependency.api.lib.Recommendations
-import com.bryzek.dependency.v0.models.{LibraryRecommendation, LibraryVersion, Project, VersionForm}
+import com.bryzek.dependency.v0.models.{LibraryVersion, Project, VersionForm}
 import io.flow.play.postgresql.Pager
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
+
+case class LibraryRecommendation(
+  from: LibraryVersion,
+  to: LibraryVersion,
+  latest: LibraryVersion
+)
 
 object LibraryRecommendationsDao {
 
