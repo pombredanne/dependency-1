@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
-import com.bryzek.dependency.v0.models.{ProjectLibrary, SyncEvent, VersionForm}
+import com.bryzek.dependency.v0.models.{Library, ProjectLibrary, SyncEvent, VersionForm}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
@@ -44,6 +44,13 @@ object ProjectLibrariesDao {
     (guid, project_guid, group_id, artifact_id, version, cross_build_version, path, created_by_guid, updated_by_guid)
     values
     ({guid}::uuid, {project_guid}::uuid, {group_id}, {artifact_id}, {version}, {cross_build_version}, {path}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+  """
+
+  private[this] val SetLibraryQuery = """
+    update project_libraries
+       set library_guid = {library_guid}::uuid,
+           updated_by_guid = {updated_by_guid}::uuid
+     where guid = {guid}::uuid
   """
 
   private[db] def validate(
@@ -133,6 +140,16 @@ object ProjectLibrariesDao {
         )
       }
       case errors => Left(errors)
+    }
+  }
+
+  def setLibrary(user: User, projectLibrary: ProjectLibrary, library: Library) {
+    DB.withConnection { implicit c =>
+      SQL(SetLibraryQuery).on(
+        'guid -> projectLibrary.guid,
+        'library_guid -> library.guid,
+        'updated_by_guid -> user.guid
+      ).execute()
     }
   }
 

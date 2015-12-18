@@ -65,6 +65,7 @@ class ProjectActor extends Actor with Util {
             LibrariesDao.findByGroupIdAndArtifactId(Authorization.All, projectLibrary.groupId, projectLibrary.artifactId) match {
               case Some(lib) => {
                 println("  -- found existing lib: " + lib)
+                ProjectLibrariesDao.setLibrary(MainActor.SystemUser, projectLibrary, lib)
               }
               case None => {
                 DefaultLibraryArtifactProvider().resolve(
@@ -90,6 +91,7 @@ class ProjectActor extends Actor with Util {
                         Logger.error(s"Project[${project.guid}] name[${project.name}] - error upserting library: " + errors.mkString(", "))
                       }
                       case Right(library) => {
+                        ProjectLibrariesDao.setLibrary(MainActor.SystemUser, projectLibrary, library)
                         resolution.versions.foreach { version =>
                           LibraryVersionsDao.upsert(
                             createdBy = MainActor.SystemUser,

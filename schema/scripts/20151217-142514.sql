@@ -30,7 +30,8 @@ create table project_libraries (
   artifact_id             text not null check(non_empty_trimmed_string(artifact_id)),
   version                 text not null check(non_empty_trimmed_string(version)),
   cross_build_version     text check(trim(cross_build_version) = cross_build_version),
-  path                    text not null check(non_empty_trimmed_string(path))  
+  path                    text not null check(non_empty_trimmed_string(path)),
+  library_guid            uuid references libraries
 );
 
 select schema_evolution_manager.create_basic_audit_data('public', 'project_libraries');
@@ -42,6 +43,12 @@ comment on table project_libraries is '
 comment on column project_libraries.path is '
   The path relative to the root of the SCMS folder to the
   file in which we found this dependency.
+';
+
+comment on column project_libraries.library_guid is '
+  If we successfully resolve this project library, we associate
+  the record with the global library object - serving as the basis
+  by which we can make upgrade recommendations.
 ';
 
 create index on project_libraries(project_guid);
