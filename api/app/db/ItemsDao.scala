@@ -70,7 +70,7 @@ object ItemsDao {
         Visibility.Public
       }
       case LibrarySummary(guid, org, groupId, artifactId) => {
-        LibrariesDao.findByGuid(Authorization.All, guid).flatMap { _.resolver.map { visibility(_) } }.getOrElse(Visibility.Private)
+        LibrariesDao.findByGuid(Authorization.All, guid).map(_.resolver.visibility).getOrElse(Visibility.Private)
       }
       case ProjectSummary(guid, org, name) => {
         ProjectsDao.findByGuid(Authorization.All, guid).map(_.visibility).getOrElse(Visibility.Private)

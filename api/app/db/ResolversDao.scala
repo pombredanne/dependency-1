@@ -26,7 +26,7 @@ object ResolversDao {
            organizations.guid as resolvers_organization_guid,
            organizations.key as resolvers_organization_key
       from resolvers
-      left join organizations on organizations.deleted_at is null and organizations.guid = resolvers.organization_guid
+      join organizations on organizations.deleted_at is null and organizations.guid = resolvers.organization_guid
      where true
   """
 

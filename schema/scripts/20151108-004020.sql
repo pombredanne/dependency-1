@@ -118,7 +118,7 @@ create table libraries (
   organization_guid       uuid not null references organizations,
   group_id                text not null check(non_empty_trimmed_string(group_id)),
   artifact_id             text not null check(non_empty_trimmed_string(artifact_id)),
-  resolver_guid           uuid references resolvers
+  resolver_guid           uuid not null references resolvers
 );
 
 comment on table libraries is '

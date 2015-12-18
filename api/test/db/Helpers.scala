@@ -103,11 +103,12 @@ trait Helpers {
   }
 
   def createLibrary(
-    org: Organization = createOrganization()
+    org: Organization = createOrganization(),
+    user: User = systemUser
   ) (
     implicit form: LibraryForm = createLibraryForm(org)()
   ): Library = {
-    LibrariesDao.create(systemUser, form).right.getOrElse {
+    LibrariesDao.create(user, form).right.getOrElse {
       sys.error("Failed to create library")
     }
   }
@@ -115,12 +116,14 @@ trait Helpers {
   def createLibraryForm(
     org: Organization = createOrganization()
   ) (
-    implicit versionForm: VersionForm = VersionForm("0.0.1")
+    implicit versionForm: VersionForm = VersionForm("0.0.1"),
+             resolver: Resolver = createResolver(org)
   ) = LibraryForm(
     organizationGuid = org.guid,
     groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
     artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
-    version = Some(versionForm)
+    version = Some(versionForm),
+    resolverGuid = resolver.guid
   )
 
   def createLibraryVersion(
@@ -368,6 +371,10 @@ trait Helpers {
   }
 
   def addLibraryVersion(project: Project, libraryVersion: LibraryVersion) {
+    val org = OrganizationsDao.findByGuid(Authorization.All, project.organization.guid).getOrElse {
+      sys.error("could not get org")
+    }
+
     ProjectsDao.setDependencies(
       systemUser,
       project,
@@ -377,7 +384,8 @@ trait Helpers {
             organizationGuid = project.organization.guid,
             groupId = libraryVersion.library.groupId,
             artifactId = libraryVersion.library.artifactId,
-            version = Some(VersionForm(version = libraryVersion.version))
+            version = Some(VersionForm(version = libraryVersion.version)),
+            resolverGuid = createResolver(org).guid
           )
         )
       )

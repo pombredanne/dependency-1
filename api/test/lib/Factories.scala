@@ -1,6 +1,6 @@
 package com.bryzek.dependency.api.lib
 
-import com.bryzek.dependency.v0.models.{ProjectSummary, OrganizationSummary}
+import com.bryzek.dependency.v0.models.{ProjectSummary, OrganizationSummary, ResolverSummary, Visibility}
 import java.util.UUID
 
 trait Factories {
@@ -29,6 +29,17 @@ trait Factories {
     guid = guid,
     organization = org,
     name = name
+  )
+
+  def makeResolverSummary(
+    guid: UUID = UUID.randomUUID,
+    org: OrganizationSummary = makeOrganizationSummary(),
+    name: String = makeName
+  ) = ResolverSummary(
+    guid = guid,
+    organization = Some(org),
+    visibility = Visibility.Private,
+    uri = "http://" + makeKey() + ".test.flow.io"
   )
 
 }

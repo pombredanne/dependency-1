@@ -57,22 +57,11 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by resolver" in {
-    val form = createLibraryForm(org)
-    val library = createLibrary(org)(form)
     val resolver = createResolver(org)
+    val form = createLibraryForm(org).copy(resolverGuid = resolver.guid)
+    val library = createLibrary(org)(form)
 
-    LibrariesDao.findAll(Authorization.All, resolverGuid = Some(resolver.guid)) must be(Nil)
-    LibrariesDao.update(systemUser, library, form.copy(resolverGuid = Some(resolver.guid))).right.get
     LibrariesDao.findAll(Authorization.All, resolverGuid = Some(resolver.guid)).map(_.guid) must be(Seq(library.guid))
-  }
-
-  "update resolver" in {
-    val form = createLibraryForm(org)
-    val library = createLibrary(org)(form)
-    val resolver = createResolver(org)
-    val updated = LibrariesDao.update(systemUser, library, form.copy(resolverGuid = Some(resolver.guid))).right.get
-    updated.guid must be(library.guid)
-    updated.resolver.map(_.guid) must be(Some(resolver.guid))
   }
 
   "create" must {
@@ -110,7 +99,9 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       val resolver = createResolver(org, user) (
         createResolverForm(org).copy(visibility = Visibility.Public)
       )
-      val lib = createLibrary(org)(createLibraryForm(org).copy(resolverGuid = Some(resolver.guid)))
+      println("CREATED RESOLVER")
+      val lib = createLibrary(org, user = user)(createLibraryForm(org)(resolver = resolver))
+      println("CREATED LIBRARY")
 
       LibrariesDao.findAll(Authorization.PublicOnly, guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
       LibrariesDao.findAll(Authorization.All, guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
@@ -125,8 +116,8 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       val resolver = createResolver(org, user) (
         createResolverForm(org).copy(visibility = Visibility.Private)
       )
-      val lib = createLibrary(org)(createLibraryForm(org).copy(resolverGuid = Some(resolver.guid)))
-      lib.resolver.map(_.visibility) must be(Some(Visibility.Private))
+      val lib = createLibrary(org, user = user)(createLibraryForm(org)(resolver = resolver))
+      lib.resolver.visibility must be(Visibility.Private)
 
       LibrariesDao.findAll(Authorization.PublicOnly, guid = Some(lib.guid))must be(Nil)
       LibrariesDao.findAll(Authorization.All, guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))

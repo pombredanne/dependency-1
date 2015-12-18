@@ -29,26 +29,13 @@ class LibraryActor extends Actor with Util {
     case m @ LibraryActor.Messages.Sync => withVerboseErrorHandler(m) {
       dataLibrary.foreach { lib =>
         SyncsDao.withStartedAndCompleted(MainActor.SystemUser, lib.guid) {
-          lib.resolver.flatMap(r => ResolversDao.findByGuid(Authorization.All, r.guid)).map { resolver =>
+          ResolversDao.findByGuid(Authorization.All, lib.resolver.guid).map { resolver =>
             DefaultLibraryArtifactProvider().resolve(
               resolver = resolver,
               groupId = lib.groupId,
               artifactId = lib.artifactId
             ).map { resolution =>
               println(s"Library[${lib.groupId}.${lib.artifactId}] resolver[${lib.resolver}] -- found[${resolution.resolver}]")
-
-              if (lib.resolver.map(_.guid) != Some(resolution.resolver.guid)) {
-                LibrariesDao.update(
-                  MainActor.SystemUser,
-                  lib,
-                  LibraryForm(
-                    organizationGuid = lib.organization.guid,
-                    groupId = lib.groupId,
-                    artifactId = lib.artifactId,
-                    resolverGuid = Some(resolution.resolver.guid)
-                  )
-                )
-              }
 
               resolution.versions.foreach { version =>
                 LibraryVersionsDao.upsert(

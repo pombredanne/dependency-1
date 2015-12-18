@@ -160,7 +160,7 @@
 		{ "name": "organization", "type": "organization_summary" },
 		{ "name": "group_id", "type": "string" },
 		{ "name": "artifact_id", "type": "string" },
-		{ "name": "resolver", "type": "resolver_summary", "required": false, "description": "Once we locate this library, we record the resolver and use it to find future versions" },
+		{ "name": "resolver", "type": "resolver_summary", "description": "The resolver where we found this library" },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},
@@ -170,7 +170,7 @@
 		{ "name": "organization_guid", "type": "uuid" },
 		{ "name": "group_id", "type": "string" },
 		{ "name": "artifact_id", "type": "string" },
-		{ "name": "resolver_guid", "type": "uuid", "required": false },
+		{ "name": "resolver_guid", "type": "uuid" },
 		{ "name": "version", "type": "version_form", "required": false, "description": "If provided, we automatically record this version of this library." }
 	    ]
 	},

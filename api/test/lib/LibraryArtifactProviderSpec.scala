@@ -11,7 +11,7 @@ import io.flow.play.clients.MockUserClient
 import org.joda.time.DateTime
 import java.util.UUID
 
-class LibraryArtifactProviderSpec extends PlaySpec with OneAppPerSuite {
+class LibraryArtifactProviderSpec extends PlaySpec with OneAppPerSuite with Factories {
 
   def makeLibrary(
     org: OrganizationSummary,
@@ -23,6 +23,7 @@ class LibraryArtifactProviderSpec extends PlaySpec with OneAppPerSuite {
       organization = orgSummary,
       groupId = groupId,
       artifactId = artifactId,
+      resolver = makeResolverSummary(),
       audit = MockUserClient.makeAudit()
     )
   }
@@ -35,7 +36,7 @@ class LibraryArtifactProviderSpec extends PlaySpec with OneAppPerSuite {
 
   "parseUri" in {
     val library = makeLibrary(org = orgSummary, groupId = "com.github.tototoshi", artifactId = "scala-csv")
-    val resolution = provider.artifacts(organization = orgSummary, groupId = library.groupId, artifactId = library.artifactId, resolver = None).getOrElse {
+    val resolution = provider.resolve(organization = orgSummary, groupId = library.groupId, artifactId = library.artifactId).getOrElse {
       sys.error("Could not find scala-csv library")
     }
     resolution.versions.find { v =>
@@ -45,7 +46,7 @@ class LibraryArtifactProviderSpec extends PlaySpec with OneAppPerSuite {
 
   "swagger" in {
     val library = makeLibrary(org = orgSummary, groupId = "io.swagger", artifactId = "swagger-parser")
-    val resolution = provider.artifacts(organization = orgSummary, groupId = library.groupId, artifactId = library.artifactId, resolver = None).getOrElse {
+    val resolution = provider.resolve(organization = orgSummary, groupId = library.groupId, artifactId = library.artifactId).getOrElse {
       sys.error("Could not find swagger-parser library")
     }
     val tags = resolution.versions.map(_.tag.value)

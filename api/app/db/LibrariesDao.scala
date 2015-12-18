@@ -26,9 +26,9 @@ object LibrariesDao {
            resolver_orgs.guid as libraries_resolver_organization_guid,
            resolver_orgs.key as libraries_resolver_organization_key
       from libraries
-      left join organizations on organizations.deleted_at is null and organizations.guid = libraries.organization_guid
-      left join resolvers on resolvers.deleted_at is null and resolvers.guid = libraries.resolver_guid
-      left join organizations resolver_orgs on resolver_orgs.deleted_at is null and resolver_orgs.guid = resolvers.organization_guid
+      join organizations on organizations.deleted_at is null and organizations.guid = libraries.organization_guid
+      join resolvers on resolvers.deleted_at is null and resolvers.guid = libraries.resolver_guid
+      join organizations resolver_orgs on resolver_orgs.deleted_at is null and resolver_orgs.guid = resolvers.organization_guid
      where true
   """
 
@@ -37,15 +37,6 @@ object LibrariesDao {
     (guid, organization_guid, group_id, artifact_id, resolver_guid, created_by_guid, updated_by_guid)
     values
     ({guid}::uuid, {organization_guid}::uuid, {group_id}, {artifact_id}, {resolver_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
-  """
-
-  private[this] val UpdateQuery = """
-    update libraries
-       set group_id = {group_id},
-           artifact_id = {artifact_id},
-           resolver_guid = {resolver_guid}::uuid,
-           updated_by_guid = {updated_by_guid}::uuid
-     where guid = {guid}::uuid
   """
 
   private[db] def validate(
@@ -122,42 +113,6 @@ object LibrariesDao {
         Right(
           findByGuid(Authorization.All, guid).getOrElse {
             sys.error("Failed to create library")
-          }
-        )
-      }
-      case errors => Left(errors)
-    }
-  }
-
-  def update(updatedBy: User, library: Library, form: LibraryForm): Either[Seq[String], Library] = {
-    validate(form, existing = Some(library)) match {
-      case Nil => {
-        // To support org change - need to record the change as its
-        // own record to be able to track changes.
-        assert(
-          library.organization.guid == form.organizationGuid,
-          "Changing organization not currently supported"
-        )
-
-        DB.withTransaction { implicit c =>
-          SQL(UpdateQuery).on(
-            'guid -> library.guid,
-            'group_id -> form.groupId.trim,
-            'artifact_id -> form.artifactId.trim,
-            'resolver_guid -> form.resolverGuid,
-            'updated_by_guid -> updatedBy.guid
-          ).execute()
-
-          form.version.foreach { version =>
-            LibraryVersionsDao.upsertWithConnection(updatedBy, library.guid, version)
-          }
-        }
-
-        MainActor.ref ! MainActor.Messages.LibraryUpdated(library.guid)
-
-        Right(
-          findByGuid(Authorization.All, library.guid).getOrElse {
-            sys.error("Failed to update library")
           }
         )
       }

@@ -1,9 +1,10 @@
 package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.api.lib.{DefaultLibraryArtifactProvider, Dependencies, GithubDependencyProviderClient}
-import com.bryzek.dependency.v0.models.{Project, WatchProjectForm}
+import com.bryzek.dependency.v0.models.{LibraryForm, Project, VersionForm, WatchProjectForm}
 import io.flow.play.postgresql.Pager
-import db.{Authorization, BinariesDao, LibrariesDao, ProjectLibrariesDao, ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
+import db.{Authorization, BinariesDao, LibrariesDao, LibraryVersionsDao, ProjectLibrariesDao}
+import db.{ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
 import play.api.Logger
 import play.libs.Akka
 import akka.actor.Actor
@@ -76,6 +77,28 @@ class ProjectActor extends Actor with Util {
                   }
                   case Some(resolution) => {
                     println(s"  -- resolved library: $resolution")
+                    LibrariesDao.upsert(
+                      MainActor.SystemUser,
+                      form = LibraryForm(
+                        organizationGuid = project.organization.guid,
+                        groupId = projectLibrary.groupId,
+                        artifactId = projectLibrary.artifactId,
+                        resolverGuid = resolution.resolver.guid
+                      )
+                    ) match {
+                      case Left(errors) => {
+                        Logger.error(s"Project[${project.guid}] name[${project.name}] - error upserting library: " + errors.mkString(", "))
+                      }
+                      case Right(library) => {
+                        resolution.versions.foreach { version =>
+                          LibraryVersionsDao.upsert(
+                            createdBy = MainActor.SystemUser,
+                            libraryGuid = library.guid,
+                            form = VersionForm(version.tag.value, version.crossBuildVersion.map(_.value))
+                          )
+                        }
+                      }
+                    }
                   }
                 }
               }
