@@ -131,6 +131,17 @@ class ProjectLibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
       ProjectLibrariesDao.findAll(Authorization.All, projectGuid = Some(UUID.randomUUID)) must be(Nil)
     }
 
+    "filter by libraryGuid" in {
+      val library = createLibrary(org)
+      val projectLibrary = createProjectLibrary(project)
+      ProjectLibrariesDao.setLibrary(systemUser, projectLibrary, library)
+
+      ProjectLibrariesDao.findAll(Authorization.All, guid = Some(projectLibrary.guid), libraryGuid = Some(library.guid)).map(_.guid) must be(
+        Seq(projectLibrary.guid)
+      )
+      ProjectLibrariesDao.findAll(Authorization.All, libraryGuid = Some(UUID.randomUUID)) must be(Nil)
+    }
+
     "filter by groupId" in {
       ProjectLibrariesDao.findAll(Authorization.All, guid = Some(projectLibrary.guid), groupId = Some(projectLibrary.groupId)).map(_.guid) must be(
         Seq(projectLibrary.guid)

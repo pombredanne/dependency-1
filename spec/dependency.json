@@ -263,14 +263,6 @@
 	    ]
 	},
 
-	"project_library_version": {
-	    "description": "A projection of projects and the specific library versions the project is dependent on",
-	    "fields": [
-		{ "name": "project", "type": "project" },
-		{ "name": "library_version", "type": "library_version" }
-	    ]
-	},	    
-	
 	"project_form": {
 	    "fields": [
 		{ "name": "organization_guid", "type": "uuid" },
@@ -608,6 +600,29 @@
             ]
         },
 
+	"project_library": {
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search project libraries. Results are paginated",
+                    "parameters": [
+                        { "name": "guid", "type": "uuid", "description": "Find project library with this guid. Exact match", "required": false },
+			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
+			{ "name": "project_guid", "type": "uuid", "description": "filter by this project", "required": false },
+			{ "name": "library_guid", "type": "uuid", "description": "filter by this library", "required": false },
+                        { "name": "is_synced", "type": "boolean", "description": "If true, filter by project libraries that have been synced. False to filter by project libraries that have not yet been synced. Main purpose of this filter is to see what libraries we are still evaluating after a project is added for the first time.", "required": false },
+                        { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[project_library]" },
+                        "401": { "type": "unit" }
+                    }
+                }
+		
+            ]
+        },
+
 	"organization": {
             "operations": [
                 {
@@ -880,26 +895,6 @@
                 }
             ]
         },
-
-	"project_library_version": {
-	    "operations": [
-		{
-                    "method": "GET",
-                    "description": "Get detailed information on every project using this library, including the precise version",
-                    "parameters": [
-			{ "name": "project_guid", "type": "uuid", "description": "Filter for this project", "required": false },
-			{ "name": "library_guid", "type": "uuid", "description": "Filter for this library", "required": false },
-			{ "name": "library_version_guid", "type": "uuid", "description": "Filter for this library version", "required": false },
-			{ "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
-			{ "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
-                    ],
-                    "responses": {
-			"200": { "type": "[project_library_version]" },
-			"401": { "type": "unit" }
-                    }
-		}
-	    ]
-	},
 
 	"binary_version": {
             "operations": [

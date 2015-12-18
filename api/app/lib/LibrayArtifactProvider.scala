@@ -71,7 +71,6 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
     limit: Long,
     offset: Long
   ): Option[ArtifactResolution] = {
-    println("internalResolve($groupId, $artifactId)")
     ResolversDao.findAll(
       Authorization.Organization(organization.guid),
       limit = limit,

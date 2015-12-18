@@ -183,6 +183,7 @@ object ProjectLibrariesDao {
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     projectGuid: Option[UUID] = None,
+    libraryGuid: Option[UUID] = None,
     groupId: Option[String] = None,
     artifactId: Option[String] = None,
     version: Option[String] = None,
@@ -198,6 +199,7 @@ object ProjectLibrariesDao {
       guid.map { v => "and project_libraries.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("project_libraries.guid", _) },
       projectGuid.map { v => "and project_libraries.project_guid = {project_guid}::uuid" },
+      libraryGuid.map { v => "and project_libraries.library_guid = {library_guid}::uuid" },
       groupId.map { v => "and lower(project_libraries.group_id) = lower(trim({group_id}))" },
       artifactId.map { v => "and lower(project_libraries.artifact_id) = lower(trim({artifact_id}))" },
       version.map { v => "and project_libraries.version = trim({version})" },
@@ -221,6 +223,7 @@ object ProjectLibrariesDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       projectGuid.map('project_guid -> _.toString),
+      libraryGuid.map('library_guid -> _.toString),
       groupId.map('group_id -> _),
       artifactId.map('artifact_id -> _),
       version.map('version -> _.toString),

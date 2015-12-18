@@ -2,7 +2,7 @@
   data: com.bryzek.dependency.www.lib.UiData,
   library: com.bryzek.dependency.v0.models.Library,
   versions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.LibraryVersion],
-  projectLibraryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectLibraryVersion]
+  projectLibraries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectLibrary]
 )(implicit flash: Flash, messages: Messages)
 
 @main(data.copy(title = Some(s"Library: ${library.groupId}.${library.artifactId}"))) {
@@ -19,10 +19,10 @@
   @if(versions.hasPrevious || versions.hasNext) {
     <ul class="pager">
       @if(versions.hasPrevious) {
-        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page - 1, projectsPage = projectLibraryVersions.page)">Previous</a></li>
+        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page - 1, projectsPage = projectLibraries.page)">Previous</a></li>
       }
       @if(versions.hasNext) {
-        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page + 1, projectsPage = projectLibraryVersions.page)">Next</a></li>
+        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page + 1, projectsPage = projectLibraries.page)">Next</a></li>
       }
     </ul>
   }
@@ -37,24 +37,24 @@
           <th>Cross built for</th>
         </tr>
       </thead>
-      @projectLibraryVersions.items.map { rec =>
+      @projectLibraries.items.map { rec =>
         <tr>
           <td><a href="@routes.ProjectsController.show(rec.project.guid)">@{rec.project.name}</a></td>
-          <td>@rec.libraryVersion.library.groupId.@rec.libraryVersion.library.artifactId</td>
-          <td>@rec.libraryVersion.version</td>
-          <td>@rec.libraryVersion.crossBuildVersion.getOrElse("-")</td>
+          <td>@rec.groupId.@rec.artifactId</td>
+          <td>@rec.version</td>
+          <td>@rec.crossBuildVersion.getOrElse("-")</td>
         </tr>
       }
     </table>
   </div>
 
-  @if(projectLibraryVersions.hasPrevious || projectLibraryVersions.hasNext) {
+  @if(projectLibraries.hasPrevious || projectLibraries.hasNext) {
     <ul class="pager">
-      @if(projectLibraryVersions.hasPrevious) {
-        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page, projectsPage = projectLibraryVersions.page - 1)">Previous</a></li>
+      @if(projectLibraries.hasPrevious) {
+        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page, projectsPage = projectLibraries.page - 1)">Previous</a></li>
       }
-      @if(projectLibraryVersions.hasNext) {
-        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page, projectsPage = projectLibraryVersions.page + 1)">Next</a></li>
+      @if(projectLibraries.hasNext) {
+        <li><a href="@routes.LibrariesController.show(library.guid, versionsPage = versions.page, projectsPage = projectLibraries.page + 1)">Next</a></li>
       }
     </ul>
   }

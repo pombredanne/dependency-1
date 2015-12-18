@@ -1227,42 +1227,6 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
-  object ProjectLibraryVersion {
-
-    case class Mappings(
-      project: com.bryzek.dependency.v0.anorm.parsers.Project.Mappings,
-      libraryVersion: com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings
-    )
-
-    object Mappings {
-
-      val base = prefix("", "")
-
-      def table(table: String) = prefix(table, ".")
-
-      def prefix(prefix: String, sep: String) = Mappings(
-        project = com.bryzek.dependency.v0.anorm.parsers.Project.Mappings.prefix(Seq(prefix, "project").filter(!_.isEmpty).mkString("_"), "_"),
-        libraryVersion = com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.Mappings.prefix(Seq(prefix, "library_version").filter(!_.isEmpty).mkString("_"), "_")
-      )
-
-    }
-
-    def table(table: String) = parser(Mappings.prefix(table, "."))
-
-    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ProjectLibraryVersion] = {
-      com.bryzek.dependency.v0.anorm.parsers.Project.parser(mappings.project) ~
-      com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.parser(mappings.libraryVersion) map {
-        case project ~ libraryVersion => {
-          com.bryzek.dependency.v0.models.ProjectLibraryVersion(
-            project = project,
-            libraryVersion = libraryVersion
-          )
-        }
-      }
-    }
-
-  }
-
   object ProjectPatchForm {
 
     case class Mappings(

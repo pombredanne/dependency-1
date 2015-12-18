@@ -54,7 +54,7 @@ class LibrariesController @javax.inject.Inject() (
           limit = VersionsPerPage+1,
           offset = versionsPage * VersionsPerPage
         )
-        projectLibraryVersions <- dependencyClient(request).projectLibraryVersions.get(
+        projectLibraries <- dependencyClient(request).projectLibraries.get(
           libraryGuid = Some(guid),
           limit = Pagination.DefaultLimit+1,
           offset = projectsPage * Pagination.DefaultLimit
@@ -65,7 +65,7 @@ class LibrariesController @javax.inject.Inject() (
             uiData(request),
             library,
             PaginatedCollection(versionsPage, versions, VersionsPerPage),
-            PaginatedCollection(projectsPage, projectLibraryVersions)
+            PaginatedCollection(projectsPage, projectLibraries)
           )
         )
       }
