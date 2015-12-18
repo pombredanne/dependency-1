@@ -1,6 +1,6 @@
 package com.bryzek.dependency.actors
 
-import com.bryzek.dependency.api.lib.{Dependencies, GithubDependencyProviderClient}
+import com.bryzek.dependency.api.lib.{DefaultLibraryArtifactProvider, Dependencies, GithubDependencyProviderClient}
 import com.bryzek.dependency.v0.models.{Project, WatchProjectForm}
 import io.flow.play.postgresql.Pager
 import db.{Authorization, BinariesDao, LibrariesDao, ProjectLibrariesDao, ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
@@ -57,10 +57,30 @@ class ProjectActor extends Actor with Util {
     }
 
     case m @ ProjectActor.Messages.ProjectLibraryCreated(guid) => withVerboseErrorHandler(m.toString) {
-      dataProject.foreach { project =>
-        ProjectLibrariesDao.findByGuid(Authorization.All, guid).map { projectLibrary =>
-          println(s"project guid[${project.guid}] projectLibraryCreated[${projectLibrary.guid}]")
-          // TODO
+      SyncsDao.withStartedAndCompleted(MainActor.SystemUser, guid) {
+        dataProject.foreach { project =>
+          ProjectLibrariesDao.findByGuid(Authorization.All, guid).map { projectLibrary =>
+            println(s"project guid[${project.guid}] projectLibraryCreated[${projectLibrary.guid}] group[${projectLibrary.groupId}] artifact[${projectLibrary.artifactId}]")
+            LibrariesDao.findByGroupIdAndArtifactId(Authorization.All, projectLibrary.groupId, projectLibrary.artifactId) match {
+              case Some(lib) => {
+                println("  -- found existing lib: " + lib)
+              }
+              case None => {
+                DefaultLibraryArtifactProvider().resolve(
+                  organization = project.organization,
+                  groupId = projectLibrary.groupId,
+                  artifactId = projectLibrary.artifactId
+                ) match {
+                  case None => {
+                    println(s"  -- Could not resolve library")
+                  }
+                  case Some(resolution) => {
+                    println(s"  -- resolved library: $resolution")
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }

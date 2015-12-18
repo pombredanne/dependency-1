@@ -18,11 +18,10 @@ trait LibraryArtifactProvider {
     * @param organization Used to look up private resolvers for this organization.
     * @param resolver If specified, we search this resolver first
     */
-  def artifacts(
+  def resolve(
     organization: OrganizationSummary,
     groupId: String,
-    artifactId: String,
-    resolver: Option[ResolverSummary]
+    artifactId: String
   ): Option[ArtifactResolution]
 
   /**
@@ -51,41 +50,28 @@ trait LibraryArtifactProvider {
 
 case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
 
-  override def artifacts(
+  override def resolve(
     organization: OrganizationSummary,
     groupId: String,
-    artifactId: String,
-    resolver: Option[ResolverSummary]
+    artifactId: String
   ): Option[ArtifactResolution] = {
-    resolver.flatMap { r => ResolversDao.findByGuid(Authorization.All, r.guid) }.flatMap { r =>
-      resolve(
-        resolver = r,
-        groupId = groupId,
-        artifactId = artifactId
-      )
-    } match {
-      case None => {
-        internalArtifacts(
-          organization = organization,
-          groupId = groupId,
-          artifactId = artifactId,
-          limit = 100,
-          offset = 0
-        )
-      }
-      case Some(resolution) => {
-        Some(resolution)
-      }
-    }
+    internalResolve(
+      organization = organization,
+      groupId = groupId,
+      artifactId = artifactId,
+      limit = 100,
+      offset = 0
+    )
   }
 
-  private[this] def internalArtifacts(
+  private[this] def internalResolve(
     organization: OrganizationSummary,
     groupId: String,
     artifactId: String,
     limit: Long,
     offset: Long
   ): Option[ArtifactResolution] = {
+    println("internalResolve($groupId, $artifactId)")
     ResolversDao.findAll(
       Authorization.Organization(organization.guid),
       limit = limit,
@@ -95,7 +81,7 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
         None
       }
       case resolvers => {
-         resolvers.foreach { resolver =>
+        resolvers.foreach { resolver =>
           RemoteVersions.fetch(
             resolver = resolver.uri,
             groupId = groupId,
@@ -122,7 +108,7 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
           }
         }
 
-        internalArtifacts(
+        internalResolve(
           organization = organization,
           groupId = groupId,
           artifactId = artifactId,
