@@ -1137,6 +1137,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       version: String = "version",
       crossBuildVersion: String = "cross_build_version",
       path: String = "path",
+      library: io.flow.common.v0.anorm.parsers.Reference.Mappings,
       audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
     )
 
@@ -1154,6 +1155,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
         version = s"${prefix}${sep}version",
         crossBuildVersion = s"${prefix}${sep}cross_build_version",
         path = s"${prefix}${sep}path",
+        library = io.flow.common.v0.anorm.parsers.Reference.Mappings.prefix(Seq(prefix, "library").filter(!_.isEmpty).mkString("_"), "_"),
         audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
       )
 
@@ -1169,8 +1171,9 @@ package com.bryzek.dependency.v0.anorm.parsers {
       SqlParser.str(mappings.version) ~
       SqlParser.str(mappings.crossBuildVersion).? ~
       SqlParser.str(mappings.path) ~
+      io.flow.common.v0.anorm.parsers.Reference.parser(mappings.library).? ~
       io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
-        case guid ~ project ~ groupId ~ artifactId ~ version ~ crossBuildVersion ~ path ~ audit => {
+        case guid ~ project ~ groupId ~ artifactId ~ version ~ crossBuildVersion ~ path ~ library ~ audit => {
           com.bryzek.dependency.v0.models.ProjectLibrary(
             guid = guid,
             project = project,
@@ -1179,6 +1182,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
             version = version,
             crossBuildVersion = crossBuildVersion,
             path = path,
+            library = library,
             audit = audit
           )
         }

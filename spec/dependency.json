@@ -259,6 +259,7 @@
 		{ "name": "version", "type": "string" },
 		{ "name": "cross_build_version", "type": "string", "required": false },
 		{ "name": "path", "type": "string" },
+		{ "name": "library", "type": "io.flow.common.v0.models.reference", "required": false },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},

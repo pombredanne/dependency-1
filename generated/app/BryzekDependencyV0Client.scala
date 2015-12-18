@@ -179,6 +179,7 @@ package com.bryzek.dependency.v0.models {
     version: String,
     crossBuildVersion: _root_.scala.Option[String] = None,
     path: String,
+    library: _root_.scala.Option[io.flow.common.v0.models.Reference] = None,
     audit: io.flow.common.v0.models.Audit
   )
 
@@ -1029,6 +1030,7 @@ package com.bryzek.dependency.v0.models {
         (__ \ "version").read[String] and
         (__ \ "cross_build_version").readNullable[String] and
         (__ \ "path").read[String] and
+        (__ \ "library").readNullable[io.flow.common.v0.models.Reference] and
         (__ \ "audit").read[io.flow.common.v0.models.Audit]
       )(ProjectLibrary.apply _)
     }
@@ -1042,6 +1044,7 @@ package com.bryzek.dependency.v0.models {
         (__ \ "version").write[String] and
         (__ \ "cross_build_version").writeNullable[String] and
         (__ \ "path").write[String] and
+        (__ \ "library").writeNullable[io.flow.common.v0.models.Reference] and
         (__ \ "audit").write[io.flow.common.v0.models.Audit]
       )(unlift(ProjectLibrary.unapply _))
     }

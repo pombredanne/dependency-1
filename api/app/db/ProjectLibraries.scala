@@ -28,6 +28,7 @@ object ProjectLibrariesDao {
            project_libraries.version,
            project_libraries.cross_build_version,
            project_libraries.path,
+           project_libraries.library_guid as project_libraries_library_guid,
            ${AuditsDao.all("project_libraries")},
            projects.guid as project_libraries_project_guid,
            projects.name as project_libraries_project_name,
