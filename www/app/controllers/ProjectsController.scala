@@ -262,29 +262,31 @@ class ProjectsController @javax.inject.Inject() (
     * Waits for the latest sync to complete for this project.
     */
   def sync(guid: UUID, n: Int) = Identified.async { implicit request =>
-    for {
-      syncs <- dependencyClient(request).syncs.get(
-        objectGuid = Some(guid)
-      )
-    } yield {
-      val nextN = (n * 1.1).toInt match {
-        case `n` => n + 1
-        case other => other
-      }
-
-      syncs.find { _.event == SyncEvent.Completed } match {
-        case Some(rec) => {
-          Redirect(routes.ProjectsController.show(guid))
+    withProject(request, guid) { project =>
+      for {
+        syncs <- dependencyClient(request).syncs.get(
+          objectGuid = Some(guid)
+        )
+      } yield {
+        val nextN = (n * 1.1).toInt match {
+          case `n` => n + 1
+          case other => other
         }
-        case None => {
-          Ok(
-            views.html.projects.sync(
-              uiData(request),
-              guid,
-              nextN,
-              syncs.find { _.event == SyncEvent.Started }
+
+        syncs.find { _.event == SyncEvent.Completed } match {
+          case Some(rec) => {
+            Redirect(routes.ProjectsController.show(guid))
+          }
+          case None => {
+            Ok(
+              views.html.projects.sync(
+                uiData(request),
+                guid,
+                nextN,
+                syncs.find { _.event == SyncEvent.Started }
+              )
             )
-          )
+          }
         }
       }
     }
