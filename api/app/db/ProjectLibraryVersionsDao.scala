@@ -40,7 +40,7 @@ object ProjectLibraryVersionsDao {
       join projects on projects.deleted_at is null and project_library_versions.project_guid = projects.guid
       join organizations on organizations.deleted_at is null and organizations.guid = projects.organization_guid
       join resolvers on resolvers.deleted_at is null and resolvers.guid = libraries.resolver_guid
-      join organizations resolver_orgs on resolver_orgs.deleted_at is null and resolver_orgs.guid = resolvers.organization_guid
+      left join organizations resolver_orgs on resolver_orgs.deleted_at is null and resolver_orgs.guid = resolvers.organization_guid
      where true
   """
 
