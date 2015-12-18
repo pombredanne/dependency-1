@@ -29,15 +29,6 @@ object LibraryRecommendationsDao {
       )
     } { projectLibrary =>
       projectLibrary.library.flatMap { lib => LibrariesDao.findByGuid(Authorization.All, lib.guid) }.map { library =>
-        println("")
-        println("")
-
-        println(s"project[${project.name}]")
-        println(s"  -- library ${library.groupId}.${library.artifactId} version[${projectLibrary.version}]")
-
-        println("")
-        println("")
-
         val recentVersions = versionsGreaterThan(library, projectLibrary.version)
         recommend(projectLibrary, recentVersions).map { v =>
           recommendations ++= Seq(
@@ -45,7 +36,7 @@ object LibraryRecommendationsDao {
               library = library,
               from = projectLibrary.version,
               to = v,
-              latest = recentVersions.lastOption.getOrElse(v)
+              latest = recentVersions.headOption.getOrElse(v)
             )
           )
         }

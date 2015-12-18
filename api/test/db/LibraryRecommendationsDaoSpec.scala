@@ -12,6 +12,29 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
 
   lazy val org = createOrganization()
 
+  def verify(actual: Seq[LibraryRecommendation], expected: Seq[LibraryRecommendation]) {
+    (actual == expected) match {
+      case true => {}
+      case false => {
+        (actual.size == expected.size) match {
+          case false => {
+            sys.error(s"Expected[${expected.size}] recommendations but got [${actual.size}]")
+          }
+          case true => {
+            (actual zip expected).map { case (a, b) =>
+              (a == b) match {
+                case true => {}
+                case false => {
+                  sys.error(s"Expected[${b.from} => ${b.to.version}] but got[${a.from} => ${a.to.version}]. For latest version, expected[${b.latest.version}] but got[${a.latest.version}]")
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
   "no-op if nothing to upgrade" in {
     val project = createProject(org)
     LibraryRecommendationsDao.forProject(project) must be(Nil)
@@ -28,11 +51,12 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
     val (library, libraryVersions) = createLibraryWithMultipleVersions(org)
     val project = createProject(org)
     addLibraryVersion(project, libraryVersions.head)
-    LibraryRecommendationsDao.forProject(project) must be(
+    verify(
+      LibraryRecommendationsDao.forProject(project),
       Seq(
         LibraryRecommendation(
           library = library,
-          from =  libraryVersions.head.version,
+          from =  "1.0.0",
           to = libraryVersions.last,
           latest = libraryVersions.last
         )
@@ -46,7 +70,8 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
     )
     val project = createProject(org)
     addLibraryVersion(project, libraryVersions.head)
-    LibraryRecommendationsDao.forProject(project) must be(
+    verify(
+      LibraryRecommendationsDao.forProject(project),
       Seq(
         LibraryRecommendation(
           library = library,
