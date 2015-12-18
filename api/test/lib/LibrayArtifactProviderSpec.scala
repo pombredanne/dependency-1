@@ -35,7 +35,7 @@ class LibraryArtifactProviderSpec extends PlaySpec with OneAppPerSuite {
 
   "parseUri" in {
     val library = makeLibrary(org = orgSummary, groupId = "com.github.tototoshi", artifactId = "scala-csv")
-    val resolution = provider.artifacts(library, organization = orgSummary, resolver = None).getOrElse {
+    val resolution = provider.artifacts(organization = orgSummary, groupId = library.groupId, artifactId = library.artifactId, resolver = None).getOrElse {
       sys.error("Could not find scala-csv library")
     }
     resolution.versions.find { v =>
@@ -45,7 +45,7 @@ class LibraryArtifactProviderSpec extends PlaySpec with OneAppPerSuite {
 
   "swagger" in {
     val library = makeLibrary(org = orgSummary, groupId = "io.swagger", artifactId = "swagger-parser")
-    val resolution = provider.artifacts(library, organization = orgSummary, resolver = None).getOrElse {
+    val resolution = provider.artifacts(organization = orgSummary, groupId = library.groupId, artifactId = library.artifactId, resolver = None).getOrElse {
       sys.error("Could not find swagger-parser library")
     }
     val tags = resolution.versions.map(_.tag.value)

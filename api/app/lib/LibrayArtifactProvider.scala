@@ -1,12 +1,7 @@
 package com.bryzek.dependency.api.lib
 
 import db.{Authorization, ResolversDao}
-import com.bryzek.dependency.v0.models.{Library, OrganizationSummary, ResolverSummary, Visibility}
-import io.flow.play.util.Config
-import io.flow.play.postgresql.Pager
-
-import scala.util.{Failure, Success, Try}
-import java.net.URI
+import com.bryzek.dependency.v0.models.{OrganizationSummary, ResolverSummary, Visibility}
 
 case class ArtifactResolution(
   resolver: ResolverSummary,
@@ -24,8 +19,9 @@ trait LibraryArtifactProvider {
     * @param resolver If specified, we search this resolver first
     */
   def artifacts(
-    library: Library,
     organization: OrganizationSummary,
+    groupId: String,
+    artifactId: String,
     resolver: Option[ResolverSummary]
   ): Option[ArtifactResolution]
 
@@ -34,22 +30,24 @@ trait LibraryArtifactProvider {
 case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
 
   override def artifacts(
-    library: Library,
     organization: OrganizationSummary,
+    groupId: String,
+    artifactId: String,
     resolver: Option[ResolverSummary]
   ): Option[ArtifactResolution] = {
     resolver.flatMap { r => ResolversDao.findByGuid(Authorization.All, r.guid) }.map { r =>
       RemoteVersions.fetch(
         resolver = r.uri,
-        groupId = library.groupId,
-        artifactId = library.artifactId,
+        groupId = groupId,
+        artifactId = artifactId,
         credentials = ResolversDao.credentials(r)
       )
     }.getOrElse(Nil) match {
       case Nil => {
         internalArtifacts(
-          library = library,
           organization = organization,
+          groupId = groupId,
+          artifactId = artifactId,
           limit = 100,
           offset = 0
         )
@@ -61,8 +59,9 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
   }
 
   private[this] def internalArtifacts(
-    library: Library,
     organization: OrganizationSummary,
+    groupId: String,
+    artifactId: String,
     limit: Long,
     offset: Long
   ): Option[ArtifactResolution] = {
@@ -78,8 +77,8 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
          resolvers.foreach { resolver =>
           RemoteVersions.fetch(
             resolver = resolver.uri,
-            groupId = library.groupId,
-            artifactId = library.artifactId,
+            groupId = groupId,
+            artifactId = artifactId,
             credentials = ResolversDao.credentials(resolver)
           ) match {
             case Nil => {}
@@ -103,8 +102,9 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
         }
 
         internalArtifacts(
-          library = library,
           organization = organization,
+          groupId = groupId,
+          artifactId = artifactId,
           limit = limit,
           offset = offset + limit
         )

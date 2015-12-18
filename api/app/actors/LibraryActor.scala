@@ -30,8 +30,9 @@ class LibraryActor extends Actor with Util {
       dataLibrary.foreach { lib =>
         SyncsDao.withStartedAndCompleted(MainActor.SystemUser, lib.guid) {
           DefaultLibraryArtifactProvider().artifacts(
-            lib,
             organization = lib.organization,
+            groupId = lib.groupId,
+            artifactId = lib.artifactId,
             resolver = lib.resolver
           ).map { resolution =>
             println(s"Library[${lib.groupId}.${lib.artifactId}] resolver[${lib.resolver}] -- found[${resolution.resolver}]")

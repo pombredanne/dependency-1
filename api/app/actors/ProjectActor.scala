@@ -95,7 +95,6 @@ class ProjectActor extends Actor with Util {
               )
 
               dependencies.librariesAndPlugins.map(_.map { artifact =>
-                println(s"Project[${project.name}] processing artifact[${artifact}]")
                 ProjectLibrariesDao.upsert(
                   user,
                   artifact.toProjectLibraryForm(
