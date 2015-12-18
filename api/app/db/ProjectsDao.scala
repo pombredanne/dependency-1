@@ -44,13 +44,6 @@ object ProjectsDao {
      where guid = {guid}::uuid
   """
 
-  private[this] val InsertLibraryVersionQuery = """
-    insert into project_library_versions
-    (guid, project_guid, library_version_guid, created_by_guid, updated_by_guid)
-    values
-    ({guid}::uuid, {project_guid}::uuid, {library_version_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
-  """
-
   private[this] val InsertBinaryVersionQuery = """
     insert into project_binary_versions
     (guid, project_guid, binary_version_guid, created_by_guid, updated_by_guid)
@@ -233,15 +226,8 @@ object ProjectsDao {
     findAll(auth, guid = Some(guid), limit = 1).headOption
   }
 
-  private val FilterLibraryVersions = """
-    and projects.guid in (select project_library_versions.project_guid
-                            from project_library_versions
-                            join library_versions on library_versions.deleted_at is null
-                                                 and library_versions.guid = project_library_versions.library_version_guid
-                            join libraries on libraries.deleted_at is null
-                                                 and libraries.guid = library_versions.library_guid
-                           where project_library_versions.deleted_at is null
-                             and %s)
+  private val FilterProjectLibraries = """
+    and projects.guid in (select project_guid from project_libraries where deleted_at is null and %s)
   """.trim
 
   private val FilterBinaryVersions = """
@@ -266,7 +252,6 @@ object ProjectsDao {
     artifactId: Option[String] = None,
     version: Option[String] = None,
     libraryGuid: Option[_root_.java.util.UUID] = None,
-    libraryVersionGuid: Option[_root_.java.util.UUID] = None,
     binary: Option[String] = None,
     binaryGuid: Option[_root_.java.util.UUID] = None,
     binaryVersionGuid: Option[_root_.java.util.UUID] = None,
@@ -282,11 +267,10 @@ object ProjectsDao {
       org.map { LocalFilters.organizationByKey("organizations.key", "org_key", _) },
       organizationGuid.map { v => "and projects.organization_guid = {organization_guid}::uuid" },
       name.map { v => "and lower(projects.name) = lower(trim({name}))" },
-      groupId.map { v => FilterLibraryVersions.format("libraries.group_id = trim({group_id})") },
-      artifactId.map { v => FilterLibraryVersions.format("libraries.artifact_id = trim({artifact_id})") },
-      version.map { v => FilterLibraryVersions.format("library_versions.version = trim({version})") },
-      libraryGuid.map { v => FilterLibraryVersions.format("libraries.guid = {library_guid}::uuid") },
-      libraryVersionGuid.map { v => FilterLibraryVersions.format("library_versions.guid = {library_version_guid}::uuid") },
+      groupId.map { v => FilterProjectLibraries.format("project_libraries.group_id = trim({group_id})") },
+      artifactId.map { v => FilterProjectLibraries.format("project_libraries.artifact_id = trim({artifact_id})") },
+      version.map { v => FilterProjectLibraries.format("project_libraries.version = trim({version})") },
+      libraryGuid.map { v => FilterProjectLibraries.format("project_libraries.library_guid = {library_guid}::uuid") },
       binary.map { v => FilterBinaryVersions.format("lower(binaries.name) = lower(trim({binary}))") },
       binaryGuid.map { v => FilterBinaryVersions.format("binaries.guid = {binary_guid}::uuid") },
       binaryVersionGuid.map { v => FilterBinaryVersions.format("binary_versions.guid = {binary_version_guid}::uuid") },
@@ -303,7 +287,6 @@ object ProjectsDao {
       artifactId.map('artifact_id -> _.toString),
       version.map('version -> _.toString),
       libraryGuid.map('library_guid -> _.toString),
-      libraryVersionGuid.map('library_version_guid -> _.toString),
       binary.map('binary -> _.toString),
       binaryGuid.map('binary_guid -> _.toString),
       binaryVersionGuid.map('binary_version_guid -> _.toString)

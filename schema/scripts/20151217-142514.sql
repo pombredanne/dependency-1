@@ -52,6 +52,9 @@ comment on column project_libraries.library_guid is '
 ';
 
 create index on project_libraries(project_guid);
+create index on project_libraries(group_id);
+create index on project_libraries(artifact_id);
+create index on project_libraries(version);
 
 create unique index project_libraries_project_guid_group_id_artifact_id_version_no_cross_not_deleted_un_idx
     on project_libraries(project_guid, group_id, artifact_id, version)

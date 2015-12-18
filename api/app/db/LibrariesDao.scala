@@ -162,15 +162,7 @@ object LibrariesDao {
       guids.map { Filters.multipleGuids("libraries.guid", _) },
       organizationGuid.map { v => "and libraries.organization_guid = {organization_guid}::uuid" },
       projectGuid.map { v => """
-        and libraries.guid in (
-          select library_versions.library_guid
-            from library_versions
-            join project_library_versions
-              on project_library_versions.library_version_guid = library_versions.guid
-             and project_library_versions.deleted_at is null
-             and project_library_versions.project_guid = {project_guid}::uuid
-           where library_versions.deleted_at is null
-        )
+        and libraries.guid in (select library_guid from project_libraries where deleted_at is null and project_guid = {project_guid}::uuid)
       """.trim },
       groupId.map { v => "and lower(libraries.group_id) = lower(trim({group_id}))" },
       artifactId.map { v => "and lower(libraries.artifact_id) = lower(trim({artifact_id}))" },

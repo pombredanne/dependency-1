@@ -8,11 +8,6 @@ update projects
  where deleted_at is null
    and name like 'Z Test %';
 
-update project_library_versions
-   set deleted_at=now(), deleted_by_guid = created_by_guid
- where deleted_at is null
-   and project_guid in (select guid from projects where deleted_at is null);
-
 update project_libraries
    set deleted_at=now(), deleted_by_guid = created_by_guid
  where deleted_at is null

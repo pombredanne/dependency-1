@@ -169,22 +169,30 @@ trait Helpers {
   }
 
   def createProjectWithLibrary(
-    org: Organization = createOrganization()
+    org: Organization = createOrganization(),
+    version: VersionForm = VersionForm(version = "0.0.1")
   ) (
-    libraryForm: LibraryForm = createLibraryForm(org)().copy(
+    implicit libraryForm: LibraryForm = createLibraryForm(org)().copy(
       groupId = s"z-test-${UUID.randomUUID}".toLowerCase,
-      artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
-      version = Some(createVersionForm())
+      artifactId = s"z-test-${UUID.randomUUID}".toLowerCase
     )
   ): (Project, LibraryVersion) = {
     val project = createProject(org)
-    val library = createLibrary(org)
-    val version = VersionForm(version = "0.0.1")
+    val library = createLibrary(org)(libraryForm)
+
     val projectLibrary = createProjectLibrary(project)(
-      createProjectLibraryForm(project, groupId= library.groupId, artifactId = library.artifactId, version = version.version)
+      createProjectLibraryForm(
+        project,
+        groupId = library.groupId,
+        artifactId = library.artifactId,
+        version = version.version,
+        crossBuildVersion = version.crossBuildVersion
+      )
     )
+
+    val libraryVersion = LibraryVersionsDao.upsert(systemUser, library.guid, version)
+
     ProjectLibrariesDao.setLibrary(systemUser, projectLibrary, library)
-    val libraryVersion = LibraryVersionsDao.create(systemUser, library.guid, version)
 
     (project, libraryVersion)
   }

@@ -522,7 +522,6 @@
                         { "name": "artifact_id", "type": "string", "description": "Find projects that are dependent on a library with this artifact ID. Exact match", "required": false },
                         { "name": "version", "type": "string", "description": "Find projects that are dependent on a library with this version number. Exact match", "required": false },
                         { "name": "library_guid", "type": "uuid", "description": "Find projects that are dependent on a library", "required": false },
-                        { "name": "library_version_guid", "type": "uuid", "description": "Find projects that are dependent on a specific library version", "required": false },
                         { "name": "binary", "type": "string", "description": "Find projects that are dependent on this binary. Case in-sensitive. Exact match", "required": false },
                         { "name": "binary_guid", "type": "uuid", "description": "Find projects that are dependent on a binary", "required": false },
                         { "name": "binary_version_guid", "type": "uuid", "description": "Find projects that are dependent on a binary", "required": false },

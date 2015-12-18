@@ -1,3 +1,5 @@
+can we drop project_library_versions tables?
+
 When adding a new resolver:
   - for all project_libraries for that org that have a null
     library_guid, attempt to resolve
