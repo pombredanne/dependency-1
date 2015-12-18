@@ -1,7 +1,7 @@
 package com.bryzek.dependency.api.lib
 
 import db.{Authorization, ResolversDao}
-import com.bryzek.dependency.v0.models.{OrganizationSummary, ResolverSummary, Visibility}
+import com.bryzek.dependency.v0.models.{OrganizationSummary, ResolverSummary, Resolver, Visibility}
 
 case class ArtifactResolution(
   resolver: ResolverSummary,
@@ -25,7 +25,24 @@ trait LibraryArtifactProvider {
     resolver: Option[ResolverSummary]
   ): Option[ArtifactResolution]
 
+  def resolve(
+    resolver: Resolver,
+    groupId: String,
+    artifactId: String
+  ): Option[ArtifactResolution] = {
+    RemoteVersions.fetch(
+      resolver = resolver.uri,
+      groupId = groupId,
+      artifactId = artifactId,
+      credentials = ResolversDao.credentials(resolver)
+    ) match {
+      case Nil => None
+      case versions => Some(ArtifactResolution(ResolversDao.toSummary(resolver), versions))
+    }
+  }
+
 }
+
 
 case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
 
@@ -35,15 +52,14 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
     artifactId: String,
     resolver: Option[ResolverSummary]
   ): Option[ArtifactResolution] = {
-    resolver.flatMap { r => ResolversDao.findByGuid(Authorization.All, r.guid) }.map { r =>
-      RemoteVersions.fetch(
-        resolver = r.uri,
+    resolver.flatMap { r => ResolversDao.findByGuid(Authorization.All, r.guid) }.flatMap { r =>
+      resolve(
+        resolver = r,
         groupId = groupId,
-        artifactId = artifactId,
-        credentials = ResolversDao.credentials(r)
+        artifactId = artifactId
       )
-    }.getOrElse(Nil) match {
-      case Nil => {
+    } match {
+      case None => {
         internalArtifacts(
           organization = organization,
           groupId = groupId,
@@ -52,8 +68,8 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
           offset = 0
         )
       }
-      case versions => {
-        Some(ArtifactResolution(resolver.get, versions))
+      case Some(resolution) => {
+        Some(resolution)
       }
     }
   }

@@ -1,7 +1,8 @@
 package db
 
 import com.bryzek.dependency.api.lib.Validation
-import com.bryzek.dependency.v0.models.{Credentials, CredentialsUndefinedType, Resolver, ResolverForm, UsernamePassword, Visibility}
+import com.bryzek.dependency.v0.models.{Credentials, CredentialsUndefinedType, Resolver, ResolverForm, ResolverSummary}
+import com.bryzek.dependency.v0.models.{OrganizationSummary, UsernamePassword, Visibility}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.user.v0.models.User
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
@@ -49,6 +50,17 @@ object ResolversDao {
         ).headOption
       }
     }
+  }
+
+  def toSummary(resolver: Resolver): ResolverSummary = {
+    ResolverSummary(
+      guid = resolver.guid,
+      organization = resolver.organization.map { org =>
+        OrganizationSummary(org.guid, org.key)
+      },
+      visibility = resolver.visibility,
+      uri = resolver.uri
+    )
   }
 
   def validate(user: User, form: ResolverForm): Seq[String] = {
