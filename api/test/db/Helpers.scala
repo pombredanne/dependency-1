@@ -352,16 +352,19 @@ trait Helpers {
     org: Organization
   ) (
     implicit versions: Seq[String] = Seq("1.0.0", "1.0.1", "1.0.2")
-  ): Seq[LibraryVersion] = {
+  ): (Library, Seq[LibraryVersion]) = {
     val library = createLibrary(org)(createLibraryForm(org)().copy(version = None))
-    versions.map { version =>
-      createLibraryVersion(
-        org
-      ) (
-        library = library,
-        version = VersionForm(version = version)
-      )
-    }
+    (
+      library,
+      versions.map { version =>
+        createLibraryVersion(
+          org
+        ) (
+          library = library,
+          version = VersionForm(version = version)
+        )
+      }
+    )
   }
 
   def addLibraryVersion(project: Project, libraryVersion: LibraryVersion) {

@@ -144,10 +144,9 @@ object LibraryVersionsDao {
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     libraryGuid: Option[UUID] = None,
-    projectGuid: Option[UUID] = None,
     version: Option[String] = None,
     crossBuildVersion: Option[Option[String]] = None,
-    greaterThanVersion: Option[LibraryVersion] = None,
+    greaterThanVersion: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -157,7 +156,6 @@ object LibraryVersionsDao {
         guid = guid,
         guids = guids,
         libraryGuid = libraryGuid,
-        projectGuid = projectGuid,
         version = version,
         crossBuildVersion = crossBuildVersion,
         greaterThanVersion = greaterThanVersion,
@@ -172,10 +170,9 @@ object LibraryVersionsDao {
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     libraryGuid: Option[UUID] = None,
-    projectGuid: Option[UUID] = None,
     version: Option[String] = None,
     crossBuildVersion: Option[Option[String]] = None,
-    greaterThanVersion: Option[LibraryVersion] = None,
+    greaterThanVersion: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -187,7 +184,6 @@ object LibraryVersionsDao {
       guid.map { v => s"and library_versions.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids(s"library_versions.guid", _) },
       libraryGuid.map { v => s"and library_versions.library_guid = {library_guid}::uuid" },
-      projectGuid.map { v => s"and library_versions.library_guid in (select library_guid from project_libraries where deleted_at is null and library_guid is not null and project_guid = {project_guid}::uuid)" },
       version.map { v => s"and lower(library_versions.version) = lower(trim({version}))" },
       crossBuildVersion.map { v =>
         v match {
@@ -196,7 +192,7 @@ object LibraryVersionsDao {
         }
       },
       greaterThanVersion.map { v =>
-        s"and library_versions.sort_key > (select sort_key from library_versions where guid = {greater_than_version_guid}::uuid)"
+        s"and library_versions.sort_key > {greater_than_version_sort_key}"
       },
       isDeleted.map(Filters.isDeleted("library_versions", _)),
       Some(s"order by library_versions.sort_key desc, library_versions.created_at limit ${limit} offset ${offset}")
@@ -205,7 +201,6 @@ object LibraryVersionsDao {
     val bind = Seq[Option[NamedParameter]](
       guid.map('guid -> _.toString),
       libraryGuid.map('library_guid -> _.toString),
-      projectGuid.map('project_guid -> _.toString),
       version.map('version -> _.toString),
       crossBuildVersion.flatMap { optionalValue =>
         optionalValue match {
@@ -213,7 +208,9 @@ object LibraryVersionsDao {
           case Some(value) => Some('cross_build_version -> value.toString)
         }
       },
-      greaterThanVersion.map('greater_than_version_guid -> _.guid)
+      greaterThanVersion.map( v =>
+        'greater_than_version_sort_key -> Version(v).sortKey
+      )
     ).flatten
 
     SQL(sql).on(bind: _*).as(

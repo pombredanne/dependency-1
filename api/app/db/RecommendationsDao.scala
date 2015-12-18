@@ -54,9 +54,9 @@ object RecommendationsDao {
       RecommendationForm(
         projectGuid = project.guid,
         `type` = RecommendationType.Library,
-        objectGuid = rec.from.library.guid,
-        name = Seq(rec.from.library.groupId, rec.from.library.artifactId).mkString("."),
-        from = rec.from.version,
+        objectGuid = rec.library.guid,
+        name = Seq(rec.library.groupId, rec.library.artifactId).mkString("."),
+        from = rec.from,
         to = rec.to.version
       )
     }

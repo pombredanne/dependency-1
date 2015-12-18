@@ -14,7 +14,7 @@ class RecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   def createRecommendation(
     org: Organization
   ): Recommendation = {
-    val libraryVersions = createLibraryWithMultipleVersions(org)
+    val (library,  libraryVersions) = createLibraryWithMultipleVersions(org)
     val project = createProject(org)
     addLibraryVersion(project, libraryVersions.head)
     RecommendationsDao.sync(systemUser, project)
@@ -39,7 +39,7 @@ class RecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
 
   "ignores earlier versions of library" in {
-    val libraryVersions = createLibraryWithMultipleVersions(org)()
+    val (library,  libraryVersions) = createLibraryWithMultipleVersions(org)
     val project = createProject(org)()
     addLibraryVersion(project, libraryVersions.last)
     RecommendationsDao.sync(systemUser, project)
@@ -56,7 +56,7 @@ class RecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "Prefers latest production release even when more recent beta release is available" in {
-    val libraryVersions = createLibraryWithMultipleVersions(org)(
+    val (library,  libraryVersions) = createLibraryWithMultipleVersions(org)(
       versions = Seq("1.0.0", "1.0.2-RC1", "1.0.1")
     )
     val project = createProject(org)()
@@ -64,7 +64,8 @@ class RecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     LibraryRecommendationsDao.forProject(project) must be(
       Seq(
         LibraryRecommendation(
-          from = libraryVersions.find(_.version == "1.0.0").get,
+          library = library,
+          from = "1.0.0",
           to = libraryVersions.find(_.version == "1.0.1").get,
           latest = libraryVersions.find(_.version == "1.0.2-RC1").get
         )

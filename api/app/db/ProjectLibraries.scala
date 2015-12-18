@@ -190,6 +190,7 @@ object ProjectLibrariesDao {
     version: Option[String] = None,
     crossBuildVersion: Option[Option[String]] = None,
     isSynced: Option[Boolean] = None,
+    hasLibrary: Option[Boolean] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -215,6 +216,12 @@ object ProjectLibrariesDao {
         value match {
           case true => s"and exists ($clause)"
           case false => s"and not exists ($clause)"
+        }
+      },
+      hasLibrary.map { value =>
+        value match {
+          case true => s"and project_libraries.library_guid is not null"
+          case false => s"and project_libraries.library_guid is null"
         }
       },
       isDeleted.map(Filters.isDeleted("project_libraries", _)),

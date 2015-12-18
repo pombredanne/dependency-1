@@ -13,25 +13,26 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
   lazy val org = createOrganization()
 
   "no-op if nothing to upgrade" in {
-    val project = createProject(org)()
+    val project = createProject(org)
     LibraryRecommendationsDao.forProject(project) must be(Nil)
   }
 
   "ignores earlier versions of library" in {
-    val libraryVersions = createLibraryWithMultipleVersions(org)()
-    val project = createProject(org)()
+    val (library, libraryVersions) = createLibraryWithMultipleVersions(org)
+    val project = createProject(org)
     addLibraryVersion(project, libraryVersions.last)
     LibraryRecommendationsDao.forProject(project) must be(Nil)
   }
 
   "with library to upgrade" in {
-    val libraryVersions = createLibraryWithMultipleVersions(org)()
-    val project = createProject(org)()
+    val (library, libraryVersions) = createLibraryWithMultipleVersions(org)
+    val project = createProject(org)
     addLibraryVersion(project, libraryVersions.head)
     LibraryRecommendationsDao.forProject(project) must be(
       Seq(
         LibraryRecommendation(
-          from = libraryVersions.head,
+          library = library,
+          from =  libraryVersions.head.version,
           to = libraryVersions.last,
           latest = libraryVersions.last
         )
@@ -40,15 +41,16 @@ class LibraryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with He
   }
 
   "Prefers latest production release even when more recent beta release is available" in {
-    val libraryVersions = createLibraryWithMultipleVersions(org)(
+    val (library, libraryVersions) = createLibraryWithMultipleVersions(org)(
       versions = Seq("1.0.0", "1.0.2-RC1", "1.0.1")
     )
-    val project = createProject(org)()
+    val project = createProject(org)
     addLibraryVersion(project, libraryVersions.head)
     LibraryRecommendationsDao.forProject(project) must be(
       Seq(
         LibraryRecommendation(
-          from = libraryVersions.find(_.version == "1.0.0").get,
+          library = library,
+          from = "1.0.0",
           to = libraryVersions.find(_.version == "1.0.1").get,
           latest = libraryVersions.find(_.version == "1.0.2-RC1").get
         )

@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.api.lib.Recommendations
-import com.bryzek.dependency.v0.models.{LibraryVersion, Project, VersionForm}
+import com.bryzek.dependency.v0.models.{Library, LibraryVersion, Project, ProjectLibrary, VersionForm}
 import io.flow.play.postgresql.Pager
 import anorm._
 import play.api.db._
@@ -9,7 +9,8 @@ import play.api.Play.current
 import play.api.libs.json._
 
 case class LibraryRecommendation(
-  from: LibraryVersion,
+  library: Library,
+  from: String,
   to: LibraryVersion,
   latest: LibraryVersion
 )
@@ -17,30 +18,50 @@ case class LibraryRecommendation(
 object LibraryRecommendationsDao {
 
   def forProject(project: Project): Seq[LibraryRecommendation] = {
-    var versions = scala.collection.mutable.ListBuffer[LibraryRecommendation]()
+    var recommendations = scala.collection.mutable.ListBuffer[LibraryRecommendation]()
+
     Pager.eachPage { offset =>
-      LibraryVersionsDao.findAll(projectGuid = Some(project.guid), offset = offset)
-    } { currentVersion =>
-      recommend(currentVersion, versionsGreaterThan(currentVersion)).map { v =>
-        versions ++= Seq(
-          LibraryRecommendation(
-            from = currentVersion,
-            to = v,
-            latest = LibraryVersionsDao.findAll(libraryGuid = Some(currentVersion.library.guid), limit = 1).headOption.getOrElse(v)
+      ProjectLibrariesDao.findAll(
+        Authorization.Organization(project.organization.guid),
+        projectGuid = Some(project.guid),
+        hasLibrary = Some(true),
+        offset = offset
+      )
+    } { projectLibrary =>
+      projectLibrary.library.flatMap { lib => LibrariesDao.findByGuid(Authorization.All, lib.guid) }.map { library =>
+        println("")
+        println("")
+
+        println(s"project[${project.name}]")
+        println(s"  -- library ${library.groupId}.${library.artifactId} version[${projectLibrary.version}]")
+
+        println("")
+        println("")
+
+        val recentVersions = versionsGreaterThan(library, projectLibrary.version)
+        recommend(projectLibrary, recentVersions).map { v =>
+          recommendations ++= Seq(
+            LibraryRecommendation(
+              library = library,
+              from = projectLibrary.version,
+              to = v,
+              latest = recentVersions.lastOption.getOrElse(v)
+            )
           )
-        )
+        }
       }
     }
-    versions
+
+    recommendations
   }
 
-  def recommend(currentVersion: LibraryVersion, others: Seq[LibraryVersion]): Option[LibraryVersion] = {
+  def recommend(current: ProjectLibrary, others: Seq[LibraryVersion]): Option[LibraryVersion] = {
     Recommendations.version(
-      VersionForm(currentVersion.version, currentVersion.crossBuildVersion),
+      VersionForm(current.version, current.crossBuildVersion),
       others.map(v => VersionForm(v.version, v.crossBuildVersion))
     ).map { version =>
       others.find { _.version == version }.getOrElse {
-        sys.error(s"Failed to find library tag[$version]")
+        sys.error(s"Failed to find recommended library with version[$version]")
       }
     }
   }
@@ -48,19 +69,18 @@ object LibraryRecommendationsDao {
   /**
    * Returns all versions of a library greater than the one specified
    */
-  def versionsGreaterThan(libraryVersion: LibraryVersion): Seq[LibraryVersion] = {
-    var versions = scala.collection.mutable.ListBuffer[LibraryVersion]()
+  private[this] def versionsGreaterThan(library: Library, version: String): Seq[LibraryVersion] = {
+    var recommendations = scala.collection.mutable.ListBuffer[LibraryVersion]()
     Pager.eachPage { offset =>
       LibraryVersionsDao.findAll(
-        libraryGuid = Some(libraryVersion.library.guid),
-        greaterThanVersion = Some(libraryVersion),
+        libraryGuid = Some(library.guid),
+        greaterThanVersion = Some(version),
         offset = offset
       )
     } { libraryVersion =>
-      versions ++= Seq(libraryVersion)
+      recommendations ++= Seq(libraryVersion)
     }
-    versions
+    recommendations
   }
-    
 
 }
