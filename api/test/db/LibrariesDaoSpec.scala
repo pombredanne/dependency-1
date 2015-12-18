@@ -99,9 +99,7 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       val resolver = createResolver(org, user) (
         createResolverForm(org).copy(visibility = Visibility.Public)
       )
-      println("CREATED RESOLVER")
       val lib = createLibrary(org, user = user)(createLibraryForm(org)(resolver = resolver))
-      println("CREATED LIBRARY")
 
       LibrariesDao.findAll(Authorization.PublicOnly, guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
       LibrariesDao.findAll(Authorization.All, guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))

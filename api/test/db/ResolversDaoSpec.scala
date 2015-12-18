@@ -16,6 +16,7 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   private[this] lazy val publicResolver = ResolversDao.findAll(
     Authorization.All,
     visibility = Some(Visibility.Public),
+    uri = Some("http://jcenter.bintray.com/"),
     limit = 1
   ).headOption.getOrElse {
     sys.error("No public resolvers found")
