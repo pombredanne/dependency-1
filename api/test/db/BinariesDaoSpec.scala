@@ -52,6 +52,13 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     BinariesDao.findAll(Authorization.All, guid = Some(binary.guid), isSynced = Some(false)) must be(Nil)
   }
 
+  "findAll by projectGuid" in {
+    val (project, binaryVersion) = createProjectWithBinary(org)
+
+    BinariesDao.findAll(Authorization.All, guid = Some(binaryVersion.binary.guid), projectGuid = Some(project.guid)).map(_.guid) must be(Seq(binaryVersion.binary.guid))
+    BinariesDao.findAll(Authorization.All, guid = Some(binaryVersion.binary.guid), projectGuid = Some(createProject().guid)) must be(Nil)
+  }
+
   "create" must {
     "validates empty name" in {
       val form = createBinaryForm(org).copy(name = BinaryType.UNDEFINED("   "))

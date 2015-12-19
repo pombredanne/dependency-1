@@ -117,7 +117,6 @@ private[lib] case class GithubDependencyProvider(
   ) (
     implicit ec: ExecutionContext
   ): Future[Option[Dependencies]] = {
-    val sbtVersionPath = "sbt.version"
     github.file(user, projectUri, BuildPropertiesFilename).map { result =>
       result.flatMap { text =>
         val properties = PropertiesParser(
@@ -125,7 +124,7 @@ private[lib] case class GithubDependencyProvider(
           path = BuildPropertiesFilename,
           contents = text
         )
-        properties.get(sbtVersionPath).map { value =>
+        properties.get("sbt.version").map { value =>
           Dependencies(
             Some(
               Seq(
@@ -133,7 +132,7 @@ private[lib] case class GithubDependencyProvider(
                   projectGuid = project.guid,
                   name = BinaryType.Sbt,
                   version = value,
-                  path = sbtVersionPath
+                  path = BuildPropertiesFilename
                 )
               )
             )
