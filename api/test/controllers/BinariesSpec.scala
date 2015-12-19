@@ -67,7 +67,7 @@ class BinariesSpec extends PlaySpecification with MockClient {
 
   "POST /binaries validates duplicate name" in new WithServer(port=port) {
     expectErrors(
-      client.binaries.post(createBinaryForm(org).copy(name = binary1.name.toString))
+      client.binaries.post(createBinaryForm(org).copy(name = binary1.name))
     ).errors.map(_.message) must beEqualTo(
       Seq("Binary with this name already exists")
     )

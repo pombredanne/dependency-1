@@ -1,7 +1,7 @@
 package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.api.lib.{DefaultLibraryArtifactProvider, Dependencies, GithubDependencyProviderClient}
-import com.bryzek.dependency.v0.models.{Binary, LibraryForm, Project, ProjectBinary, VersionForm, WatchProjectForm}
+import com.bryzek.dependency.v0.models.{Binary, BinaryForm, BinaryType, LibraryForm, Project, ProjectBinary, VersionForm, WatchProjectForm}
 import io.flow.play.postgresql.Pager
 import db.{Authorization, BinariesDao, LibrariesDao, LibraryVersionsDao, ProjectBinariesDao, ProjectLibrariesDao}
 import db.{ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
@@ -146,11 +146,14 @@ class ProjectActor extends Actor with Util {
             GithubDependencyProviderClient.instance(summary, user).dependencies(project).map { dependencies =>
               println(s" - project[${project.guid}] name[${project.name}] dependencies: $dependencies")
 
-              ProjectsDao.setDependencies(
-                createdBy = MainActor.SystemUser,
-                project = project,
-                binaries = dependencies.binaries
-              )
+              dependencies.binaries.map(_.map { form =>
+                ProjectBinariesDao.upsert(user, form) match {
+                  case Left(errors) => {
+                    Logger.error(s"Project[${project.name}] guid[${project.guid}] Error storing binary[$form]: " + errors.mkString(", "))
+                  }
+                  case Right(_) => {}
+                }
+              })
 
               dependencies.librariesAndPlugins.map(_.map { artifact =>
                 ProjectLibrariesDao.upsert(
@@ -223,14 +226,26 @@ class ProjectActor extends Actor with Util {
 
   private[this] def resolveBinary(projectBinary: ProjectBinary): Option[Binary] = {
     println(s"project guid[${projectBinary.project.guid}] projectBinaryCreated[${projectBinary.guid}] name[${projectBinary.name}]")
-    BinariesDao.findByName(Authorization.All, projectBinary.name) match {
-      case Some(binary) => {
-        println("  -- found existing binary: " + binary)
-        Some(binary)
+    BinaryType(projectBinary.name) match {
+      case BinaryType.Scala | BinaryType.Sbt => {
+        BinariesDao.upsert(
+          MainActor.SystemUser,
+          BinaryForm(
+            organizationGuid = projectBinary.project.organization.guid,
+            name = BinaryType(projectBinary.name)
+          )
+        ) match {
+          case Left(errors) => {
+            Logger.error(s"Project[${projectBinary.project.guid}] name[${projectBinary.project.name}] - error upserting binary[$projectBinary]: " + errors.mkString(", "))
+            None
+          }
+          case Right(binary) => {
+            Some(binary)
+          }
+        }
       }
-      case None => {
-        println("TODO: resolve unknown Binary")
-        // TODO
+      case BinaryType.UNDEFINED(_) => {
+        Logger.warn(s"Project[${projectBinary.guid}] name[${projectBinary.name}] references an unknown binary[${projectBinary.name}]")
         None
       }
     }

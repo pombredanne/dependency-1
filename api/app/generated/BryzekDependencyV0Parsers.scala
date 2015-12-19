@@ -227,8 +227,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       organizationGuid: String = "organization_guid",
-      name: String = "name",
-      version: String = "version"
+      name: String = "name"
     )
 
     object Mappings {
@@ -239,8 +238,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         organizationGuid = s"${prefix}${sep}organization_guid",
-        name = s"${prefix}${sep}name",
-        version = s"${prefix}${sep}version"
+        name = s"${prefix}${sep}name"
       )
 
     }
@@ -249,53 +247,11 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.BinaryForm] = {
       SqlParser.get[_root_.java.util.UUID](mappings.organizationGuid) ~
-      SqlParser.str(mappings.name) ~
-      SqlParser.str(mappings.version) map {
-        case organizationGuid ~ name ~ version => {
+      com.bryzek.dependency.v0.anorm.parsers.BinaryType.parser(com.bryzek.dependency.v0.anorm.parsers.BinaryType.Mappings(mappings.name)) map {
+        case organizationGuid ~ name => {
           com.bryzek.dependency.v0.models.BinaryForm(
             organizationGuid = organizationGuid,
-            name = name,
-            version = version
-          )
-        }
-      }
-    }
-
-  }
-
-  object BinaryRecommendation {
-
-    case class Mappings(
-      from: com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings,
-      to: com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings,
-      latest: com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings
-    )
-
-    object Mappings {
-
-      val base = prefix("", "")
-
-      def table(table: String) = prefix(table, ".")
-
-      def prefix(prefix: String, sep: String) = Mappings(
-        from = com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings.prefix(Seq(prefix, "from").filter(!_.isEmpty).mkString("_"), "_"),
-        to = com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings.prefix(Seq(prefix, "to").filter(!_.isEmpty).mkString("_"), "_"),
-        latest = com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings.prefix(Seq(prefix, "latest").filter(!_.isEmpty).mkString("_"), "_")
-      )
-
-    }
-
-    def table(table: String) = parser(Mappings.prefix(table, "."))
-
-    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.BinaryRecommendation] = {
-      com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.parser(mappings.from) ~
-      com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.parser(mappings.to) ~
-      com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.parser(mappings.latest) map {
-        case from ~ to ~ latest => {
-          com.bryzek.dependency.v0.models.BinaryRecommendation(
-            from = from,
-            to = to,
-            latest = latest
+            name = name
           )
         }
       }

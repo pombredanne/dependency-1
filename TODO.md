@@ -1,4 +1,4 @@
-binary_form: Change name to binary_type
+library / binary versions dao - findAll needs an Authorization
 
 When adding a new resolver:
   - for all project_libraries for that org that have a null

@@ -1,6 +1,7 @@
 package com.bryzek.dependency.api.lib
 
-import com.bryzek.dependency.v0.models.{BinaryForm, ProjectSummary}
+import db.ProjectBinaryForm
+import com.bryzek.dependency.v0.models.{BinaryType, ProjectSummary}
 
 /**
   * Takes the contents of a build.sbt file and parses it, providing
@@ -12,25 +13,24 @@ case class BuildSbtScalaParser(
   contents: String
 ) extends SimpleScalaParser {
 
-  private val BinaryScala = "scala"
-
   private lazy val pluginParser = ProjectPluginsSbtScalaParser(project, path, contents)
 
   val resolverUris = pluginParser.resolverUris
 
   val libraries: Seq[Artifact] = parseLibraries
 
-  val binaries: Seq[BinaryForm] = {
+  val binaries: Seq[ProjectBinaryForm] = {
     lines.
       filter(_.startsWith("scalaVersion")).
       flatMap { line =>
       line.split(":=").map(_.trim).toList match {
         case head :: version :: Nil => {
           Some(
-            BinaryForm(
-              organizationGuid = project.organization.guid,
-              name = BinaryScala,
-              version = interpolate(version)
+            ProjectBinaryForm(
+              projectGuid = project.guid,
+              name = BinaryType.Scala,
+              version = interpolate(version),
+              path
             )
           )
         }
@@ -39,6 +39,6 @@ case class BuildSbtScalaParser(
         }
       }
     }
-  }.distinct.sortBy { l => (l.name, l.version) }
+  }.distinct.sortBy { l => (l.name.toString.toLowerCase, l.version) }
 
 }

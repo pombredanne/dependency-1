@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
-import com.bryzek.dependency.v0.models.{Binary, ProjectBinary, SyncEvent}
+import com.bryzek.dependency.v0.models.{Binary, BinaryType, ProjectBinary, SyncEvent}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
@@ -13,7 +13,7 @@ import java.util.UUID
 
 case class ProjectBinaryForm(
   projectGuid: UUID,
-  name: String,
+  name: BinaryType,
   version: String,
   path: String
 )
@@ -55,7 +55,7 @@ object ProjectBinariesDao {
     user: User,
     form: ProjectBinaryForm
   ): Seq[String] = {
-    val nameErrors = if (form.name.trim.isEmpty) {
+    val nameErrors = if (form.name.toString.trim.isEmpty) {
       Seq("Name cannot be empty")
     } else {
       Nil
@@ -79,7 +79,7 @@ object ProjectBinariesDao {
 
     val existsErrors = if (nameErrors.isEmpty && versionErrors.isEmpty) {
       ProjectBinariesDao.findByProjectGuidAndNameAndVersion(
-        Authorization.All, form.projectGuid, form.name, form.version
+        Authorization.All, form.projectGuid, form.name.toString, form.version
       ) match {
         case None => Nil
         case Some(lib) => {
@@ -95,7 +95,7 @@ object ProjectBinariesDao {
 
   def upsert(createdBy: User, form: ProjectBinaryForm): Either[Seq[String], ProjectBinary] = {
     ProjectBinariesDao.findByProjectGuidAndNameAndVersion(
-      Authorization.All, form.projectGuid, form.name, form.version
+      Authorization.All, form.projectGuid, form.name.toString, form.version
     ) match {
       case None => {
         create(createdBy, form)
@@ -115,7 +115,7 @@ object ProjectBinariesDao {
           SQL(InsertQuery).on(
             'guid -> guid,
             'project_guid -> form.projectGuid,
-            'name -> form.name.trim,
+            'name -> form.name.toString.trim,
             'version -> form.version.trim,
             'path -> form.path.trim,
             'created_by_guid -> createdBy.guid

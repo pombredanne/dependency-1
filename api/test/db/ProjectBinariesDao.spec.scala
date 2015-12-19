@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.SyncEvent
+import com.bryzek.dependency.v0.models.{BinaryType, SyncEvent}
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -20,7 +20,7 @@ class ProjectBinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     "catch empty name" in {
       ProjectBinariesDao.validate(
         systemUser,
-        createProjectBinaryForm(project).copy(name = "   ")
+        createProjectBinaryForm(project).copy(name = BinaryType.UNDEFINED("   "))
       ) must be(Seq("Name cannot be empty"))
     }
 

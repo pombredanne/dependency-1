@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.SyncEvent
+import com.bryzek.dependency.v0.models.{BinaryType, SyncEvent}
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -54,7 +54,7 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "create" must {
     "validates empty name" in {
-      val form = createBinaryForm(org).copy(name = "   ")
+      val form = createBinaryForm(org).copy(name = BinaryType.UNDEFINED("   "))
       BinariesDao.validate(form) must be(
         Seq("Name cannot be empty")
       )
@@ -62,7 +62,7 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     "validates duplicate names" in {
       val lang = createBinary(org)
-      val form = createBinaryForm(org).copy(name = lang.name.toString.toUpperCase)
+      val form = createBinaryForm(org).copy(name = BinaryType.UNDEFINED(lang.name.toString.toUpperCase))
       BinariesDao.validate(form) must be(
         Seq("Binary with this name already exists")
       )

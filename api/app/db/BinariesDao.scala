@@ -33,11 +33,11 @@ object BinariesDao {
   private[db] def validate(
     form: BinaryForm
   ): Seq[String] = {
-    if (form.name.trim == "") {
+    if (form.name.toString.trim == "") {
       Seq("Name cannot be empty")
 
     } else {
-      BinariesDao.findByName(Authorization.All, form.name) match {
+      BinariesDao.findByName(Authorization.All, form.name.toString) match {
         case None => Seq.empty
         case Some(_) => Seq("Binary with this name already exists")
       }
@@ -45,16 +45,9 @@ object BinariesDao {
   }
 
   def upsert(createdBy: User, form: BinaryForm): Either[Seq[String], Binary] = {
-    BinariesDao.findByName(Authorization.All, form.name) match {
-      case None => {
-        create(createdBy, form)
-      }
-      case Some(lang) => {
-        DB.withConnection { implicit c =>
-          BinaryVersionsDao.upsertWithConnection(createdBy, lang.guid, form.version)
-        }
-        Right(lang)
-      }
+    BinariesDao.findByName(Authorization.All, form.name.toString) match {
+      case Some(binary) => Right(binary)
+      case None => create(createdBy, form)
     }
   }
 
@@ -63,15 +56,13 @@ object BinariesDao {
       case Nil => {
         val guid = UUID.randomUUID
 
-        DB.withTransaction { implicit c =>
+        DB.withConnection { implicit c =>
           SQL(InsertQuery).on(
             'guid -> guid,
             'organization_guid -> form.organizationGuid,
-            'name -> form.name.trim,
+            'name -> form.name.toString.toLowerCase,
             'created_by_guid -> createdBy.guid
           ).execute()
-
-          BinaryVersionsDao.upsertWithConnection(createdBy, guid, form.version)
         }
 
         MainActor.ref ! MainActor.Messages.BinaryCreated(guid)

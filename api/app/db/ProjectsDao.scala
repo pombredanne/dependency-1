@@ -106,51 +106,6 @@ object ProjectsDao {
     nameErrors ++ visibilityErrors ++ uriErrors ++ organizationErrors
   }
 
-  def setDependencies(
-    createdBy: User,
-    project: Project,
-    binaries: Option[Seq[BinaryForm]] = None
-  ) {
-    DB.withTransaction { implicit c =>
-      binaries.map { setBinaryVersions(c, createdBy, project, _) }
-    }
-  }
-
-  private[this] def setBinaryVersions(
-    implicit c: java.sql.Connection,
-    createdBy: User,
-    project: Project,
-    binaries: Seq[BinaryForm]
-  ) {
-    val newGuids = binaries.map { form =>
-      val binary = BinariesDao.upsert(createdBy, form) match {
-        case Left(errors) => sys.error(errors.mkString(", n"))
-        case Right(binary) => binary
-      }
-      BinaryVersionsDao.findByBinaryAndVersion(binary, form.version).getOrElse {
-        sys.error("Could not create binary version")
-      }.guid
-    }
-
-    val existingGuids = BinaryVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.guid)
-
-    val toAdd = newGuids.filter { guid => !existingGuids.contains(guid) }
-    val toRemove = existingGuids.filter { guid => !newGuids.contains(guid) }
-
-    toAdd.distinct.foreach { guid =>
-      SQL(InsertBinaryVersionQuery).on(
-        'guid -> UUID.randomUUID,
-        'project_guid -> project.guid,
-        'binary_version_guid -> guid,
-        'created_by_guid -> createdBy.guid
-      ).execute()
-    }
-
-    toRemove.distinct.foreach { guid =>
-      SoftDelete.delete(c, "project_binary_versions", createdBy.guid, ("binary_version_guid", Some("::uuid"), guid.toString))
-    }
-  }
-
   def create(createdBy: User, form: ProjectForm): Either[Seq[String], Project] = {
     validate(createdBy, form) match {
       case Nil => {
@@ -230,15 +185,8 @@ object ProjectsDao {
     and projects.guid in (select project_guid from project_libraries where deleted_at is null and %s)
   """.trim
 
-  private val FilterBinaryVersions = """
-    and projects.guid in (select project_binary_versions.project_guid
-                            from project_binary_versions
-                            join binary_versions on binary_versions.deleted_at is null
-                                                 and binary_versions.guid = project_binary_versions.binary_version_guid
-                            join binaries on binaries.deleted_at is null
-                                                 and binaries.guid = binary_versions.binary_guid
-                           where project_binary_versions.deleted_at is null
-                             and %s)
+  private val FilterProjectBinaries = """
+    and projects.guid in (select project_guid from project_binaries where deleted_at is null and %s)
   """.trim
 
   def findAll(
@@ -254,7 +202,6 @@ object ProjectsDao {
     libraryGuid: Option[_root_.java.util.UUID] = None,
     binary: Option[String] = None,
     binaryGuid: Option[_root_.java.util.UUID] = None,
-    binaryVersionGuid: Option[_root_.java.util.UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
@@ -271,9 +218,8 @@ object ProjectsDao {
       artifactId.map { v => FilterProjectLibraries.format("project_libraries.artifact_id = trim({artifact_id})") },
       version.map { v => FilterProjectLibraries.format("project_libraries.version = trim({version})") },
       libraryGuid.map { v => FilterProjectLibraries.format("project_libraries.library_guid = {library_guid}::uuid") },
-      binary.map { v => FilterBinaryVersions.format("lower(binaries.name) = lower(trim({binary}))") },
-      binaryGuid.map { v => FilterBinaryVersions.format("binaries.guid = {binary_guid}::uuid") },
-      binaryVersionGuid.map { v => FilterBinaryVersions.format("binary_versions.guid = {binary_version_guid}::uuid") },
+      binary.map { v => FilterProjectBinaries.format("project_binaries.name = trim({binary})") },
+      binaryGuid.map { v => FilterProjectBinaries.format("project_binaries.binary_guid = {binary_guid}::uuid") },
       isDeleted.map(Filters.isDeleted("projects", _)),
       Some(s"order by projects.created_at limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
@@ -288,8 +234,7 @@ object ProjectsDao {
       version.map('version -> _.toString),
       libraryGuid.map('library_guid -> _.toString),
       binary.map('binary -> _.toString),
-      binaryGuid.map('binary_guid -> _.toString),
-      binaryVersionGuid.map('binary_version_guid -> _.toString)
+      binaryGuid.map('binary_guid -> _.toString)
     ).flatten
 
     DB.withConnection { implicit c =>

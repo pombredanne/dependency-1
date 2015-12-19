@@ -18,14 +18,7 @@ package com.bryzek.dependency.v0.models {
 
   case class BinaryForm(
     organizationGuid: _root_.java.util.UUID,
-    name: String,
-    version: String
-  )
-
-  case class BinaryRecommendation(
-    from: com.bryzek.dependency.v0.models.BinaryVersion,
-    to: com.bryzek.dependency.v0.models.BinaryVersion,
-    latest: com.bryzek.dependency.v0.models.BinaryVersion
+    name: com.bryzek.dependency.v0.models.BinaryType
   )
 
   case class BinarySummary(
@@ -661,33 +654,15 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyBinaryForm: play.api.libs.json.Reads[BinaryForm] = {
       (
         (__ \ "organization_guid").read[_root_.java.util.UUID] and
-        (__ \ "name").read[String] and
-        (__ \ "version").read[String]
+        (__ \ "name").read[com.bryzek.dependency.v0.models.BinaryType]
       )(BinaryForm.apply _)
     }
 
     implicit def jsonWritesDependencyBinaryForm: play.api.libs.json.Writes[BinaryForm] = {
       (
         (__ \ "organization_guid").write[_root_.java.util.UUID] and
-        (__ \ "name").write[String] and
-        (__ \ "version").write[String]
+        (__ \ "name").write[com.bryzek.dependency.v0.models.BinaryType]
       )(unlift(BinaryForm.unapply _))
-    }
-
-    implicit def jsonReadsDependencyBinaryRecommendation: play.api.libs.json.Reads[BinaryRecommendation] = {
-      (
-        (__ \ "from").read[com.bryzek.dependency.v0.models.BinaryVersion] and
-        (__ \ "to").read[com.bryzek.dependency.v0.models.BinaryVersion] and
-        (__ \ "latest").read[com.bryzek.dependency.v0.models.BinaryVersion]
-      )(BinaryRecommendation.apply _)
-    }
-
-    implicit def jsonWritesDependencyBinaryRecommendation: play.api.libs.json.Writes[BinaryRecommendation] = {
-      (
-        (__ \ "from").write[com.bryzek.dependency.v0.models.BinaryVersion] and
-        (__ \ "to").write[com.bryzek.dependency.v0.models.BinaryVersion] and
-        (__ \ "latest").write[com.bryzek.dependency.v0.models.BinaryVersion]
-      )(unlift(BinaryRecommendation.unapply _))
     }
 
     implicit def jsonReadsDependencyBinarySummary: play.api.libs.json.Reads[BinarySummary] = {
@@ -1526,8 +1501,6 @@ package com.bryzek.dependency.v0 {
 
     def binaries: Binaries = Binaries
 
-    def binaryRecommendations: BinaryRecommendations = BinaryRecommendations
-
     def binaryVersions: BinaryVersions = BinaryVersions
 
     def githubUsers: GithubUsers = GithubUsers
@@ -1619,18 +1592,6 @@ package com.bryzek.dependency.v0 {
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
-        }
-      }
-    }
-
-    object BinaryRecommendations extends BinaryRecommendations {
-      override def getRecommendationsAndBinariesAndProjectsByProjectGuid(
-        projectGuid: _root_.java.util.UUID
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.BinaryRecommendation]] = {
-        _executeRequest("GET", s"/recommendations/binaries/projects/${projectGuid}").map {
-          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.BinaryRecommendation]", r, _.validate[Seq[com.bryzek.dependency.v0.models.BinaryRecommendation]])
-          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
     }
@@ -1969,7 +1930,6 @@ package com.bryzek.dependency.v0 {
         libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
         binary: _root_.scala.Option[String] = None,
         binaryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        binaryVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Project]] = {
@@ -1983,7 +1943,6 @@ package com.bryzek.dependency.v0 {
           libraryGuid.map("library_guid" -> _.toString),
           binary.map("binary" -> _),
           binaryGuid.map("binary_guid" -> _.toString),
-          binaryVersionGuid.map("binary_version_guid" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
@@ -2472,15 +2431,6 @@ package com.bryzek.dependency.v0 {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
-  trait BinaryRecommendations {
-    /**
-     * Get recommendations for which binaries to upgrade
-     */
-    def getRecommendationsAndBinariesAndProjectsByProjectGuid(
-      projectGuid: _root_.java.util.UUID
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.BinaryRecommendation]]
-  }
-
   trait BinaryVersions {
     /**
      * Search binary versions. Results are paginated
@@ -2672,7 +2622,6 @@ package com.bryzek.dependency.v0 {
       libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
       binary: _root_.scala.Option[String] = None,
       binaryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      binaryVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Project]]

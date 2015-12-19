@@ -89,8 +89,7 @@ trait Helpers {
     org: Organization = createOrganization()
   ) = BinaryForm(
     organizationGuid = org.guid,
-    name = s"z-test-binary-${UUID.randomUUID}".toLowerCase,
-    version = "0.0.1"
+    name = BinaryType.UNDEFINED(s"z-test-binary-${UUID.randomUUID}".toLowerCase)
   )
 
   def createBinaryVersion(
@@ -200,21 +199,20 @@ trait Helpers {
   def createProjectWithBinary(
     org: Organization = createOrganization()
   ): (Project, BinaryVersion) = {
-    val binaryForm = createBinaryForm(org).copy(
-      name = createTestName(),
-      version = UUID.randomUUID.toString
-    )
+    val binary = createBinary(org)
+    val binaryVersion = createBinaryVersion(org)(binary = binary)
+    val project = createProject(org)
 
-    val project = createProject(org)()
-    ProjectsDao.setDependencies(systemUser, project, binaries = Some(Seq(binaryForm)))
+    val projectBinary = create(ProjectBinariesDao.create(
+      systemUser,
+      createProjectBinaryForm(
+        project = project,
+        name = binary.name,
+        version = binaryVersion.version
+      )
+    ))
 
-    val binary = BinariesDao.findByName(Authorization.All, binaryForm.name).getOrElse {
-      sys.error("Failed to find binary")
-    }
-
-    val binaryVersion = BinaryVersionsDao.findByBinaryAndVersion(binary, binaryForm.version).getOrElse {
-      sys.error("Failed to find binary version")
-    }
+    ProjectBinariesDao.setBinary(systemUser, projectBinary, binary)
 
     (project, binaryVersion)
   }
@@ -348,7 +346,7 @@ trait Helpers {
     org: Organization
   ) (
     user: User = createUser(),
-    project: Project = createProject(org)()
+    project: Project = createProject(org)
   ) = {
     WatchProjectForm(
       userGuid = user.guid,
@@ -496,7 +494,7 @@ trait Helpers {
 
   def createProjectBinaryForm(
     project: Project = createProject(),
-    name: String = s"z-test-${UUID.randomUUID}".toLowerCase,
+    name: BinaryType = BinaryType.UNDEFINED(createTestKey()),
     path: String = "build.sbt",
     version: String = "0.0.1"
   ) = {

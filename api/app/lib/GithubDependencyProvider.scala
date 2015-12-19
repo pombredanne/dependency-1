@@ -1,7 +1,8 @@
 package com.bryzek.dependency.api.lib
 
+import db.ProjectBinaryForm
 import io.flow.user.v0.models.User
-import com.bryzek.dependency.v0.models.{BinaryForm, LibraryForm, Project, ProjectSummary}
+import com.bryzek.dependency.v0.models.{BinaryForm, BinaryType, LibraryForm, Project, ProjectSummary}
 import io.flow.github.v0.Client
 import io.flow.github.v0.errors.UnitResponse
 import io.flow.github.v0.models.{Contents, Encoding}
@@ -116,6 +117,7 @@ private[lib] case class GithubDependencyProvider(
   ) (
     implicit ec: ExecutionContext
   ): Future[Option[Dependencies]] = {
+    val sbtVersionPath = "sbt.version"
     github.file(user, projectUri, BuildPropertiesFilename).map { result =>
       result.flatMap { text =>
         val properties = PropertiesParser(
@@ -123,14 +125,15 @@ private[lib] case class GithubDependencyProvider(
           path = BuildPropertiesFilename,
           contents = text
         )
-        properties.get("sbt.version").map { value =>
+        properties.get(sbtVersionPath).map { value =>
           Dependencies(
             Some(
               Seq(
-                BinaryForm(
-                  organizationGuid = project.organization.guid,
-                  name = "sbt",
-                  version = value
+                ProjectBinaryForm(
+                  projectGuid = project.guid,
+                  name = BinaryType.Sbt,
+                  version = value,
+                  path = sbtVersionPath
                 )
               )
             )

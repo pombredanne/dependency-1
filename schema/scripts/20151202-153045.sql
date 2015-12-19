@@ -1,5 +1,3 @@
-drop table if exists project_library_recommendations;
-drop table if exists project_binary_recommendations;
 drop table if exists recommendations;
 
 create table recommendations (

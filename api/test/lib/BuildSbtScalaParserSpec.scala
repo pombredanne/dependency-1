@@ -1,6 +1,7 @@
 package com.bryzek.dependency.api.lib
 
-import com.bryzek.dependency.v0.models.BinaryForm
+import db.ProjectBinaryForm
+import com.bryzek.dependency.v0.models.{BinaryForm, BinaryType}
 import org.specs2.mutable._
 
 class BuildSbtScalaParserSpec extends Specification with Factories {
@@ -48,8 +49,8 @@ lazy val root = project
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser(projectSummary, "test", contents)
-      result.binaries must beEqualTo(Seq(BinaryForm(projectSummary.guid, "scala", "2.11.7")))
+      val result = BuildSbtScalaParser(projectSummary, "test.sbt", contents)
+      result.binaries must beEqualTo(Seq(ProjectBinaryForm(projectSummary.guid, BinaryType.Scala, "2.11.7", "test.sbt")))
       result.libraries must beEqualTo(
         Seq(
           Artifact(projectSummary, "test.sbt", "io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT", true),

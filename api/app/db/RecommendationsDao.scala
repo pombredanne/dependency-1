@@ -65,9 +65,9 @@ object RecommendationsDao {
       RecommendationForm(
         projectGuid = project.guid,
         `type` = RecommendationType.Binary,
-        objectGuid = rec.from.binary.guid,
-        name = rec.from.binary.name.toString,
-        from = rec.from.version,
+        objectGuid = rec.binary.guid,
+        name = rec.binary.name.toString,
+        from = rec.from,
         to = rec.to.version
       )
     }

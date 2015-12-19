@@ -124,8 +124,7 @@
 	"binary_form": {
 	    "fields": [
 		{ "name": "organization_guid", "type": "uuid" },
-		{ "name": "name", "type": "string" },
-		{ "name": "version", "type": "string", "description": "If provided, we automatically record this version of theacc binary." }
+		{ "name": "name", "type": "binary_type" }
 	    ]
 	},
 
@@ -306,14 +305,6 @@
 		{ "name": "from", "type": "string", "description": "The current version" },
 		{ "name": "to", "type": "string", "description": "The version to which we recommend upgrading" },
                 { "name": "audit", "type": "io.flow.common.v0.models.audit" }
-	    ]
-	},
-
-	"binary_recommendation": {
-	    "fields": [
-		{ "name": "from", "type": "binary_version" },
-		{ "name": "to", "type": "binary_version" },
-		{ "name": "latest", "type": "binary_version" }
 	    ]
 	},
 
@@ -528,7 +519,6 @@
                         { "name": "library_guid", "type": "uuid", "description": "Find projects that are dependent on a library", "required": false },
                         { "name": "binary", "type": "string", "description": "Find projects that are dependent on this binary. Case in-sensitive. Exact match", "required": false },
                         { "name": "binary_guid", "type": "uuid", "description": "Find projects that are dependent on a binary", "required": false },
-                        { "name": "binary_version_guid", "type": "uuid", "description": "Find projects that are dependent on a binary", "required": false },
 			{ "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
                     ],
@@ -946,25 +936,6 @@
 
             ]
         },
-
-	"binary_recommendation": {
-	    "path": "/recommendations/binaries",
-
-	    "operations": [
-		{
-                    "method": "GET",
-		    "path": "/projects/:project_guid",
-                    "description": "Get recommendations for which binaries to upgrade",
-                    "parameters": [
-			{ "name": "project_guid", "type": "uuid" }
-                    ],
-                    "responses": {
-			"200": { "type": "[binary_recommendation]" },
-			"401": { "type": "unit" }
-                    }
-		}
-	    ]
-	},
 
 	"repository": {
 	    "operations": [

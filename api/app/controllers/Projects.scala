@@ -27,7 +27,6 @@ class Projects @javax.inject.Inject() (
     libraryGuid: _root_.scala.Option[_root_.java.util.UUID],
     binary: _root_.scala.Option[String],
     binaryGuid: _root_.scala.Option[_root_.java.util.UUID],
-    binaryVersionGuid: _root_.scala.Option[_root_.java.util.UUID],
     limit: Long = 25,
     offset: Long = 0
   ) = Identified { request =>
@@ -44,7 +43,6 @@ class Projects @javax.inject.Inject() (
           libraryGuid = libraryGuid,
           binary = binary,
           binaryGuid = binaryGuid,
-          binaryVersionGuid = binaryVersionGuid,
           limit = limit,
           offset = offset
         )

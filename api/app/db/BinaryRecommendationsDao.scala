@@ -1,40 +1,58 @@
 package db
 
 import com.bryzek.dependency.api.lib.Recommendations
-import com.bryzek.dependency.v0.models.{BinaryRecommendation, BinaryVersion, Project, VersionForm}
+import com.bryzek.dependency.v0.models.{Binary, BinaryVersion, Project, ProjectBinary, VersionForm}
 import io.flow.play.postgresql.Pager
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 
+case class BinaryRecommendation(
+  binary: Binary,
+  from: String,
+  to: BinaryVersion,
+  latest: BinaryVersion
+)
+
 object BinaryRecommendationsDao {
 
   def forProject(project: Project): Seq[BinaryRecommendation] = {
-    var versions = scala.collection.mutable.ListBuffer[BinaryRecommendation]()
+    var recommendations = scala.collection.mutable.ListBuffer[BinaryRecommendation]()
+
     Pager.eachPage { offset =>
-      BinaryVersionsDao.findAll(projectGuid = Some(project.guid), offset = offset)
-    } { currentVersion =>
-      recommend(currentVersion, versionsGreaterThan(currentVersion)).map { v =>
-        versions ++= Seq(
-          BinaryRecommendation(
-            from = currentVersion,
-            to = v,
-            latest = BinaryVersionsDao.findAll(binaryGuid = Some(currentVersion.binary.guid), limit = 1).headOption.getOrElse(v)
+      ProjectBinariesDao.findAll(
+        Authorization.Organization(project.organization.guid),
+        projectGuid = Some(project.guid),
+        hasBinary = Some(true),
+        offset = offset
+      )
+    } { projectBinary =>
+      projectBinary.binary.flatMap { lib => BinariesDao.findByGuid(Authorization.All, lib.guid) }.map { binary =>
+        val recentVersions = versionsGreaterThan(binary, projectBinary.version)
+        recommend(projectBinary, recentVersions).map { v =>
+          recommendations ++= Seq(
+            BinaryRecommendation(
+              binary = binary,
+              from = projectBinary.version,
+              to = v,
+              latest = recentVersions.headOption.getOrElse(v)
+            )
           )
-        )
+        }
       }
     }
-    versions
+
+    recommendations
   }
 
-  def recommend(currentVersion: BinaryVersion, others: Seq[BinaryVersion]): Option[BinaryVersion] = {
+  def recommend(current: ProjectBinary, others: Seq[BinaryVersion]): Option[BinaryVersion] = {
     Recommendations.version(
-      VersionForm(currentVersion.version),
+      VersionForm(current.version),
       others.map(v => VersionForm(v.version))
     ).map { version =>
       others.find { _.version == version }.getOrElse {
-        sys.error(s"Failed to find binary tag[$version]")
+        sys.error(s"Failed to find recommended binary with version[$version]")
       }
     }
   }
@@ -42,19 +60,18 @@ object BinaryRecommendationsDao {
   /**
    * Returns all versions of a binary greater than the one specified
    */
-  def versionsGreaterThan(binaryVersion: BinaryVersion): Seq[BinaryVersion] = {
-    var versions = scala.collection.mutable.ListBuffer[BinaryVersion]()
+  private[this] def versionsGreaterThan(binary: Binary, version: String): Seq[BinaryVersion] = {
+    var recommendations = scala.collection.mutable.ListBuffer[BinaryVersion]()
     Pager.eachPage { offset =>
       BinaryVersionsDao.findAll(
-        binaryGuid = Some(binaryVersion.binary.guid),
-        greaterThanVersion = Some(binaryVersion),
+        binaryGuid = Some(binary.guid),
+        greaterThanVersion = Some(version),
         offset = offset
       )
     } { binaryVersion =>
-      versions ++= Seq(binaryVersion)
+      recommendations ++= Seq(binaryVersion)
     }
-    versions
+    recommendations
   }
-    
 
 }

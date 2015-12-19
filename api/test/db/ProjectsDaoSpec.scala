@@ -14,7 +14,7 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   lazy val org = createOrganization()
   lazy val project1 = createProject(org)
   lazy val project2 = createProject(org)
-/*
+
   "findByOrganizationGuidAndName" in {
     ProjectsDao.findByOrganizationGuidAndName(Authorization.All, org.guid, project1.name).map(_.guid) must be(
       Some(project1.guid)
@@ -84,30 +84,6 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   }
 
-  "setDependencies" must {
-
-    "set binaries" in {
-      val project = createProject(org)
-      val binary = createBinaryForm()
-      ProjectsDao.setDependencies(systemUser, project, binaries = Some(Seq(binary)))
-      BinariesDao.findAll(Authorization.All, projectGuid = Some(project.guid)).map(_.name.toString) must be(Seq(binary.name.toString))
-
-      // Make sure we can reset w/out error
-      ProjectsDao.setDependencies(systemUser, project, binaries = Some(Seq(binary)))
-    }
-
-    "set binaries can upgrade version" in {
-      val project = createProject(org)
-      val binary = createBinaryForm().copy(version = "2.11.6")
-      ProjectsDao.setDependencies(systemUser, project, binaries = Some(Seq(binary)))
-      BinaryVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.version.toString) must be(Seq("2.11.6"))
-
-      ProjectsDao.setDependencies(systemUser, project, binaries = Some(Seq(binary.copy(version = "2.11.7"))))
-      BinaryVersionsDao.findAll(projectGuid = Some(project.guid)).map(_.version.toString) must be(Seq("2.11.7"))
-    }
-
-  }
- */
   "findAll" must {
 
     "guids" in {
@@ -158,7 +134,6 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
       "artifactId" in {
         val (project, version) = createProjectWithLibrary(org)
-        println(s"project[${project.guid}] version[${version.guid}] artifactId[${version.library.artifactId}]")
 
         ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), artifactId = Some(version.library.artifactId)).map(_.guid) must be(
           Seq(project.guid)
@@ -208,16 +183,6 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
         )
 
         ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), binaryGuid = Some(UUID.randomUUID)) must be(Nil)
-      }
-
-      "binary version guid" in {
-        val (project, version) = createProjectWithBinary(org)
-
-        ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), binaryVersionGuid = Some(version.guid)).map(_.guid) must be(
-          Seq(project.guid)
-        )
-
-        ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), binaryVersionGuid = Some(UUID.randomUUID)) must be(Nil)
       }
 
     }
