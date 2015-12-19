@@ -2,7 +2,7 @@
   data: com.bryzek.dependency.www.lib.UiData,
   project: com.bryzek.dependency.v0.models.Project,
   recommendations: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Recommendation],
-  binaryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.BinaryVersion],
+  binaries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectBinary],
   libraries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectLibrary],
   isWatching: Boolean
 )(implicit flash: Flash, messages: Messages)
@@ -55,18 +55,42 @@
   }
 
   <h3>Dependencies</h3>
-  @if(binaryVersions.isEmpty && libraries.isEmpty) {
+  @if(binaries.isEmpty && libraries.isEmpty) {
     <em>No dependencies found</em>
   } else {
-    @if(!binaryVersions.isEmpty) {
-      @views.html.binaries.versions.table(binaryVersions)
-      @if(binaryVersions.hasPrevious || binaryVersions.hasNext) {
+    @if(!binaries.isEmpty) {
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+          <tr>
+  	    <th>Name</th>
+  	    <th>Version</th>
+            <th>File</th>
+          </tr>
+        </thead>
+        @binaries.items.map { pb =>
+          <tr>
+            <td>
+	      @if(pb.binary.isEmpty) {
+  	        @pb.name.toString
+  	      } else {
+	        <a href="@routes.BinariesController.show(pb.binary.get.guid)">@pb.name.toString</a>
+	      }
+            </td>
+            <td>@pb.version</td>
+            <td>@pb.path</td>
+          </tr>
+        }
+        </table>
+      </div>
+
+      @if(binaries.hasPrevious || binaries.hasNext) {
         <ul class="pager">
-          @if(binaryVersions.hasPrevious) {
-            <li><a href="@routes.ProjectsController.show(project.guid, recommendationsPage = recommendations.page, binariesPage = binaryVersions.page - 1, librariesPage = libraries.page)">Previous</a></li>
+          @if(binaries.hasPrevious) {
+            <li><a href="@routes.ProjectsController.show(project.guid, recommendationsPage = recommendations.page, binariesPage = binaries.page - 1, librariesPage = libraries.page)">Previous</a></li>
           }
-          @if(binaryVersions.hasNext) {
-            <li><a href="@routes.ProjectsController.show(project.guid, recommendationsPage = recommendations.page, binariesPage = binaryVersions.page + 1, librariesPage = libraries.page)">Next</a></li>
+          @if(binaries.hasNext) {
+            <li><a href="@routes.ProjectsController.show(project.guid, recommendationsPage = recommendations.page, binariesPage = binaries.page + 1, librariesPage = libraries.page)">Next</a></li>
           }
         </ul>
       }

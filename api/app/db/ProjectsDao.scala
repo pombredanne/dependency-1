@@ -44,13 +44,6 @@ object ProjectsDao {
      where guid = {guid}::uuid
   """
 
-  private[this] val InsertBinaryVersionQuery = """
-    insert into project_binary_versions
-    (guid, project_guid, binary_version_guid, created_by_guid, updated_by_guid)
-    values
-    ({guid}::uuid, {project_guid}::uuid, {binary_version_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
-  """
-
   def toSummary(project: Project): ProjectSummary = {
     ProjectSummary(
       guid = project.guid,

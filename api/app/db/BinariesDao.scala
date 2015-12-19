@@ -110,17 +110,7 @@ object BinariesDao {
       Some(BaseQuery.trim),
       guid.map { v => "and binaries.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids("binaries.guid", _) },
-      projectGuid.map { v => """
-        and binaries.guid in (
-          select binary_versions.binary_guid
-            from binary_versions
-            join project_binary_versions
-              on project_binary_versions.binary_version_guid = binary_versions.guid
-             and project_binary_versions.deleted_at is null
-             and project_binary_versions.project_guid = {project_guid}::uuid
-           where binary_versions.deleted_at is null
-        )
-      """.trim },
+      projectGuid.map { v => "and binaries.guid in (select binary_guid from project_binaries where deleted_at is null and binary_guid is not null and project_guid = {project_guid}::uuid" },
       organizationGuid.map { v => "and binaries.organization_guid = {organization_guid}::uuid" },
       name.map { v => "and lower(binaries.name) = lower(trim({name}))" },
       isSynced.map { value =>

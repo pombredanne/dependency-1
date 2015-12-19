@@ -50,7 +50,7 @@ class ProjectsController @javax.inject.Inject() (
           limit = Pagination.DefaultLimit+1,
           offset = recommendationsPage * Pagination.DefaultLimit
         )
-        binaries <- dependencyClient(request).binaryVersions.get(
+        projectBinaries <- dependencyClient(request).projectBinaries.get(
           projectGuid = Some(guid),
           limit = Pagination.DefaultLimit+1,
           offset = binariesPage * Pagination.DefaultLimit
@@ -70,7 +70,7 @@ class ProjectsController @javax.inject.Inject() (
             uiData(request),
             project,
             PaginatedCollection(recommendationsPage, recommendations),
-            PaginatedCollection(binariesPage, binaries),
+            PaginatedCollection(binariesPage, projectBinaries),
             PaginatedCollection(librariesPage, projectLibraries),
             isWatching = !watches.isEmpty
           )

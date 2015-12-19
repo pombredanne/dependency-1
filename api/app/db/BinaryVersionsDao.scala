@@ -164,7 +164,7 @@ object BinaryVersionsDao {
       guid.map { v => s"and binary_versions.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids(s"binary_versions.guid", _) },
       binaryGuid.map { v => s"and binary_versions.binary_guid = {binary_guid}::uuid" },
-      projectGuid.map { v => s"and binary_versions.guid in (select binary_version_guid from project_binary_versions where deleted_at is null and project_guid = {project_guid}::uuid)" },
+      projectGuid.map { v => s"and binary_versions.binary_guid in (select binary_guid from project_binaries where deleted_at is null and binary_guid is not null and project_guid = {project_guid}::uuid)" },
       version.map { v => s"and lower(binary_versions.version) = lower(trim({version}))" },
       greaterThanVersion.map { v =>
         s"and binary_versions.sort_key > {greater_than_version_sort_key}"
