@@ -78,7 +78,7 @@
 	      }
             </td>
             <td>@pb.version</td>
-            <td>@pb.path</td>
+            <td><a href="@com.bryzek.dependency.www.lib.Config.scmsUrl(project.scms, project.uri, pb.path)">@pb.path</a></td>
           </tr>
         }
         </table>
@@ -118,7 +118,7 @@
             </td>
             <td>@lib.version</td>
             <td>@lib.crossBuildVersion.getOrElse("-")</td>
-            <td>@lib.path</td>
+            <td><a href="@com.bryzek.dependency.www.lib.Config.scmsUrl(project.scms, project.uri, lib.path)">@lib.path</a></td>
           </tr>
         }
         </table>
