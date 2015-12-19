@@ -3,7 +3,7 @@
   recommendations: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Recommendation]
 )(implicit flash: Flash, messages: Messages)
 
-@main(data) {
+@main(data.copy(title = Some("Recommended Upgrades"))) {
 
   @if(recommendations.isEmpty) {
 
