@@ -179,6 +179,31 @@ package io.flow.common.v0.anorm.parsers {
     }
 
   }
+  object Visibility {
+
+    case class Mappings(value: String)
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        value = s"${prefix}${sep}value"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.Visibility] = {
+      SqlParser.str(mappings.value) map {
+        case value => io.flow.common.v0.models.Visibility(value)
+      }
+    }
+
+  }
   object Audit {
 
     case class Mappings(

@@ -78,7 +78,7 @@ trait Helpers {
   def createBinary(
     org: Organization = createOrganization()
   ) (
-    form: BinaryForm = createBinaryForm(org)
+    implicit form: BinaryForm = createBinaryForm(org)
   ): Binary = {
     BinariesDao.create(systemUser, form).right.getOrElse {
       sys.error("Failed to create binary")
@@ -483,6 +483,28 @@ trait Helpers {
       artifactId = artifactId,
       path = path,
       version = VersionForm(version, crossBuildVersion)
+    )
+  }
+
+  def createProjectBinary(
+    project: Project = createProject()
+  ) (
+    implicit form: ProjectBinaryForm = createProjectBinaryForm(project)
+  ): ProjectBinary = {
+    create(ProjectBinariesDao.create(systemUser, form))
+  }
+
+  def createProjectBinaryForm(
+    project: Project = createProject(),
+    name: String = s"z-test-${UUID.randomUUID}".toLowerCase,
+    path: String = "build.sbt",
+    version: String = "0.0.1"
+  ) = {
+    ProjectBinaryForm(
+      projectGuid = project.guid,
+      name = name,
+      path = path,
+      version = version
     )
   }
 

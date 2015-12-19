@@ -6,7 +6,8 @@ create table project_binaries (
   project_guid            uuid references projects,
   name                    text not null check(non_empty_trimmed_string(name)),
   version                 text not null check(non_empty_trimmed_string(version)),
-  path                    text not null check(non_empty_trimmed_string(path))  
+  path                    text not null check(non_empty_trimmed_string(path)),
+  binary_guid             uuid references binaries
 );
 
 select schema_evolution_manager.create_basic_audit_data('public', 'project_binaries');
@@ -21,6 +22,8 @@ comment on column project_binaries.path is '
 ';
 
 create index on project_binaries(project_guid);
+create index on project_binaries(binary_guid);
+create index on project_binaries(lower(name));
 create unique index project_binaries_project_guid_lower_name_version_not_deleted_un_idx on project_binaries(project_guid, lower(name), version) where deleted_at is null;
 
 create table project_libraries (
@@ -52,6 +55,7 @@ comment on column project_libraries.library_guid is '
 ';
 
 create index on project_libraries(project_guid);
+create index on project_libraries(library_guid);
 create index on project_libraries(group_id);
 create index on project_libraries(artifact_id);
 create index on project_libraries(version);

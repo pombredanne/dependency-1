@@ -1,4 +1,4 @@
-can we drop project_library_versions tables?
+binary_form: Change name to binary_type
 
 When adding a new resolver:
   - for all project_libraries for that org that have a null
@@ -10,3 +10,5 @@ UI:
   - From organization page, should see info on all its resolvers as
     well - or at least a link to the resolvers page filtered by the
     org
+
+Handle http 500 from github

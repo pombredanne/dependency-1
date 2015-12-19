@@ -146,14 +146,6 @@
 	    ]
 	},
 
-	"project_binary_version": {
-	    "description": "A projection of projects and the specific binary versions the project is dependent on",
-	    "fields": [
-		{ "name": "project", "type": "project" },
-		{ "name": "binary_version", "type": "binary_version" }
-	    ]
-	},	    
-	
 	"library": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
@@ -260,6 +252,18 @@
 		{ "name": "cross_build_version", "type": "string", "required": false },
 		{ "name": "path", "type": "string" },
 		{ "name": "library", "type": "io.flow.common.v0.models.reference", "required": false },
+		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+	    ]
+	},
+
+	"project_binary": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+		{ "name": "project", "type": "project_detail" },
+		{ "name": "name", "type": "string" },
+		{ "name": "version", "type": "string" },
+		{ "name": "path", "type": "string" },
+		{ "name": "binary", "type": "io.flow.common.v0.models.reference", "required": false },
 		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
 	    ]
 	},
@@ -615,6 +619,29 @@
             ]
         },
 
+	"project_binary": {
+            "operations": [
+                {
+                    "method": "GET",
+                    "description": "Search project binaries. Results are paginated",
+                    "parameters": [
+                        { "name": "guid", "type": "uuid", "description": "Find project binary with this guid. Exact match", "required": false },
+			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
+			{ "name": "project_guid", "type": "uuid", "description": "filter by this project", "required": false },
+			{ "name": "binary_guid", "type": "uuid", "description": "filter by this binary", "required": false },
+                        { "name": "is_synced", "type": "boolean", "description": "If true, filter by project binaries that have been synced. False to filter by project binaries that have not yet been synced. Main purpose of this filter is to see what binaries we are still evaluating after a project is added for the first time.", "required": false },
+                        { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
+                        { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+                    ],
+                    "responses": {
+                        "200": { "type": "[project_binary]" },
+                        "401": { "type": "unit" }
+                    }
+                }
+		
+            ]
+        },
+
 	"organization": {
             "operations": [
                 {
@@ -919,26 +946,6 @@
 
             ]
         },
-
-	"project_binary_version": {
-	    "operations": [
-		{
-                    "method": "GET",
-                    "description": "Get detailed information on every project using this binary, including the precise version",
-                    "parameters": [
-			{ "name": "project_guid", "type": "uuid", "description": "Filter for this project", "required": false },
-			{ "name": "binary_guid", "type": "uuid", "description": "Filter for this binary", "required": false },
-			{ "name": "binary_version_guid", "type": "uuid", "description": "Filter for this binary version", "required": false },
-			{ "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
-			{ "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
-                    ],
-                    "responses": {
-			"200": { "type": "[project_binary_version]" },
-			"401": { "type": "unit" }
-                    }
-		}
-	    ]
-	},
 
 	"binary_recommendation": {
 	    "path": "/recommendations/binaries",

@@ -86,9 +86,9 @@ object ProjectLibrariesDao {
       }
     }
 
-    val existsErrors = if (groupIdErrors.isEmpty && artifactIdErrors.isEmpty && versionErrors.isEmpty) {
-      ProjectLibrariesDao.findByGroupIdAndArtifactIdAndVersion(
-        Authorization.All, form.groupId, form.artifactId, form.version
+    val existsErrors = if (Seq(groupIdErrors, artifactIdErrors, versionErrors, projectErrors).flatten.isEmpty) {
+      ProjectLibrariesDao.findByProjectGuidAndGroupIdAndArtifactIdAndVersion(
+        Authorization.All, form.projectGuid, form.groupId, form.artifactId, form.version
       ) match {
         case None => Nil
         case Some(lib) => {
@@ -103,8 +103,8 @@ object ProjectLibrariesDao {
   }
 
   def upsert(createdBy: User, form: ProjectLibraryForm): Either[Seq[String], ProjectLibrary] = {
-    ProjectLibrariesDao.findByGroupIdAndArtifactIdAndVersion(
-      Authorization.All, form.groupId, form.artifactId, form.version
+    ProjectLibrariesDao.findByProjectGuidAndGroupIdAndArtifactIdAndVersion(
+      Authorization.All, form.projectGuid, form.groupId, form.artifactId, form.version
     ) match {
       case None => {
         create(createdBy, form)
@@ -159,14 +159,16 @@ object ProjectLibrariesDao {
     MainActor.ref ! MainActor.Messages.ProjectLibraryDeleted(library.project.guid, library.guid)
   }
 
-  def findByGroupIdAndArtifactIdAndVersion(
+  def findByProjectGuidAndGroupIdAndArtifactIdAndVersion(
     auth: Authorization,
+    projectGuid: UUID,
     groupId: String,
     artifactId: String,
     version: VersionForm
   ): Option[ProjectLibrary] = {
     findAll(
       auth,
+      projectGuid = Some(projectGuid),
       groupId = Some(groupId),
       artifactId = Some(artifactId),
       version = Some(version.version),

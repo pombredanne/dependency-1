@@ -1,9 +1,9 @@
 package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.api.lib.{DefaultLibraryArtifactProvider, Dependencies, GithubDependencyProviderClient}
-import com.bryzek.dependency.v0.models.{LibraryForm, Project, VersionForm, WatchProjectForm}
+import com.bryzek.dependency.v0.models.{Binary, LibraryForm, Project, ProjectBinary, VersionForm, WatchProjectForm}
 import io.flow.play.postgresql.Pager
-import db.{Authorization, BinariesDao, LibrariesDao, LibraryVersionsDao, ProjectLibrariesDao}
+import db.{Authorization, BinariesDao, LibrariesDao, LibraryVersionsDao, ProjectBinariesDao, ProjectLibrariesDao}
 import db.{ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
 import play.api.Logger
 import play.libs.Akka
@@ -23,6 +23,7 @@ object ProjectActor {
     case object Watch extends Message
 
     case class ProjectLibraryCreated(guid: UUID) extends Message
+    case class ProjectBinaryCreated(guid: UUID) extends Message
 
     case class LibrarySynced(guid: UUID) extends Message
     case class BinarySynced(guid: UUID) extends Message
@@ -110,6 +111,18 @@ class ProjectActor extends Actor with Util {
       }
     }
 
+    case m @ ProjectActor.Messages.ProjectBinaryCreated(guid) => withVerboseErrorHandler(m.toString) {
+      SyncsDao.withStartedAndCompleted(MainActor.SystemUser, guid) {
+        dataProject.foreach { project =>
+          ProjectBinariesDao.findByGuid(Authorization.All, guid).map { projectBinary =>
+            resolveBinary(projectBinary).map { binary =>
+              ProjectBinariesDao.setBinary(MainActor.SystemUser, projectBinary, binary)
+            }
+          }
+        }
+      }
+    }
+  
     case m @ ProjectActor.Messages.LibrarySynced(guid) => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         processPendingSync(project)
@@ -206,6 +219,21 @@ class ProjectActor extends Actor with Util {
       projectGuid = Some(project.guid),
       isSynced = Some(false)
     ).map( bin => s"Binary ${bin.name}" )
+  }
+
+  private[this] def resolveBinary(projectBinary: ProjectBinary): Option[Binary] = {
+    println(s"project guid[${projectBinary.project.guid}] projectBinaryCreated[${projectBinary.guid}] name[${projectBinary.name}]")
+    BinariesDao.findByName(Authorization.All, projectBinary.name) match {
+      case Some(binary) => {
+        println("  -- found existing binary: " + binary)
+        Some(binary)
+      }
+      case None => {
+        println("TODO: resolve unknown Binary")
+        // TODO
+        None
+      }
+    }
   }
 
 }

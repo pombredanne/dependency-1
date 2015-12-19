@@ -14,7 +14,7 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   lazy val org = createOrganization()
 
   "findByName" in {
-    val lang = createBinary(org)()
+    val lang = createBinary(org)
     BinariesDao.findByName(Authorization.All, lang.name.toString).map(_.name) must be(
       Some(lang.name)
     )
@@ -23,7 +23,7 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findByGuid" in {
-    val lang = createBinary(org)()
+    val lang = createBinary(org)
     BinariesDao.findByGuid(Authorization.All, lang.guid).map(_.guid) must be(
       Some(lang.guid)
     )
@@ -32,8 +32,8 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by guids" in {
-    val binary1 = createBinary(org)()
-    val binary2 = createBinary(org)()
+    val binary1 = createBinary(org)
+    val binary2 = createBinary(org)
 
     BinariesDao.findAll(Authorization.All, guids = Some(Seq(binary1.guid, binary2.guid))).map(_.guid) must be(
       Seq(binary1, binary2).sortWith { (x,y) => x.name.toString < y.name.toString }.map(_.guid)
@@ -45,7 +45,7 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by isSynced" in {
-    val binary = createBinary(org)()
+    val binary = createBinary(org)
     createSync(createSyncForm(objectGuid = binary.guid, event = SyncEvent.Completed))
 
     BinariesDao.findAll(Authorization.All, guid = Some(binary.guid), isSynced = Some(true)).map(_.guid) must be(Seq(binary.guid))
@@ -61,7 +61,7 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     }
 
     "validates duplicate names" in {
-      val lang = createBinary(org)()
+      val lang = createBinary(org)
       val form = createBinaryForm(org).copy(name = lang.name.toString.toUpperCase)
       BinariesDao.validate(form) must be(
         Seq("Binary with this name already exists")

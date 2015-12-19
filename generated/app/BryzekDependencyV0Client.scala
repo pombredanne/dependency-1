@@ -148,13 +148,14 @@ package com.bryzek.dependency.v0.models {
     audit: io.flow.common.v0.models.Audit
   )
 
-  /**
-   * A projection of projects and the specific binary versions the project is
-   * dependent on
-   */
-  case class ProjectBinaryVersion(
-    project: com.bryzek.dependency.v0.models.Project,
-    binaryVersion: com.bryzek.dependency.v0.models.BinaryVersion
+  case class ProjectBinary(
+    guid: _root_.java.util.UUID,
+    project: com.bryzek.dependency.v0.models.ProjectDetail,
+    name: String,
+    version: String,
+    path: String,
+    binary: _root_.scala.Option[io.flow.common.v0.models.Reference] = None,
+    audit: io.flow.common.v0.models.Audit
   )
 
   case class ProjectDetail(
@@ -971,18 +972,28 @@ package com.bryzek.dependency.v0.models {
       )(unlift(Project.unapply _))
     }
 
-    implicit def jsonReadsDependencyProjectBinaryVersion: play.api.libs.json.Reads[ProjectBinaryVersion] = {
+    implicit def jsonReadsDependencyProjectBinary: play.api.libs.json.Reads[ProjectBinary] = {
       (
-        (__ \ "project").read[com.bryzek.dependency.v0.models.Project] and
-        (__ \ "binary_version").read[com.bryzek.dependency.v0.models.BinaryVersion]
-      )(ProjectBinaryVersion.apply _)
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "project").read[com.bryzek.dependency.v0.models.ProjectDetail] and
+        (__ \ "name").read[String] and
+        (__ \ "version").read[String] and
+        (__ \ "path").read[String] and
+        (__ \ "binary").readNullable[io.flow.common.v0.models.Reference] and
+        (__ \ "audit").read[io.flow.common.v0.models.Audit]
+      )(ProjectBinary.apply _)
     }
 
-    implicit def jsonWritesDependencyProjectBinaryVersion: play.api.libs.json.Writes[ProjectBinaryVersion] = {
+    implicit def jsonWritesDependencyProjectBinary: play.api.libs.json.Writes[ProjectBinary] = {
       (
-        (__ \ "project").write[com.bryzek.dependency.v0.models.Project] and
-        (__ \ "binary_version").write[com.bryzek.dependency.v0.models.BinaryVersion]
-      )(unlift(ProjectBinaryVersion.unapply _))
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "project").write[com.bryzek.dependency.v0.models.ProjectDetail] and
+        (__ \ "name").write[String] and
+        (__ \ "version").write[String] and
+        (__ \ "path").write[String] and
+        (__ \ "binary").writeNullable[io.flow.common.v0.models.Reference] and
+        (__ \ "audit").write[io.flow.common.v0.models.Audit]
+      )(unlift(ProjectBinary.unapply _))
     }
 
     implicit def jsonReadsDependencyProjectDetail: play.api.libs.json.Reads[ProjectDetail] = {
@@ -1531,7 +1542,7 @@ package com.bryzek.dependency.v0 {
 
     def organizations: Organizations = Organizations
 
-    def projectBinaryVersions: ProjectBinaryVersions = ProjectBinaryVersions
+    def projectBinaries: ProjectBinaries = ProjectBinaries
 
     def projectLibraries: ProjectLibraries = ProjectLibraries
 
@@ -1890,24 +1901,28 @@ package com.bryzek.dependency.v0 {
       }
     }
 
-    object ProjectBinaryVersions extends ProjectBinaryVersions {
+    object ProjectBinaries extends ProjectBinaries {
       override def get(
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
         projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
         binaryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        binaryVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        isSynced: _root_.scala.Option[Boolean] = None,
         limit: Long = 25,
         offset: Long = 0
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.ProjectBinaryVersion]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.ProjectBinary]] = {
         val queryParameters = Seq(
+          guid.map("guid" -> _.toString),
           projectGuid.map("project_guid" -> _.toString),
           binaryGuid.map("binary_guid" -> _.toString),
-          binaryVersionGuid.map("binary_version_guid" -> _.toString),
+          isSynced.map("is_synced" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
-        ).flatten
+        ).flatten ++
+          guids.getOrElse(Nil).map("guids" -> _.toString)
 
-        _executeRequest("GET", s"/project_binary_versions", queryParameters = queryParameters).map {
-          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.ProjectBinaryVersion]", r, _.validate[Seq[com.bryzek.dependency.v0.models.ProjectBinaryVersion]])
+        _executeRequest("GET", s"/project_binaries", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.ProjectBinary]", r, _.validate[Seq[com.bryzek.dependency.v0.models.ProjectBinary]])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
@@ -2612,18 +2627,19 @@ package com.bryzek.dependency.v0 {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
-  trait ProjectBinaryVersions {
+  trait ProjectBinaries {
     /**
-     * Get detailed information on every project using this binary, including the
-     * precise version
+     * Search project binaries. Results are paginated
      */
     def get(
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
       projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
       binaryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      binaryVersionGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      isSynced: _root_.scala.Option[Boolean] = None,
       limit: Long = 25,
       offset: Long = 0
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.ProjectBinaryVersion]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.ProjectBinary]]
   }
 
   trait ProjectLibraries {

@@ -14,7 +14,7 @@ class BinaryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   lazy val org = createOrganization()
 
   "upsert" in {
-    val binary = createBinary(org)()
+    val binary = createBinary(org)
     val version1 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.0")
     val version2 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.0")
     val version3 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.1")
@@ -46,7 +46,7 @@ class BinaryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "softDelete" in {
-    val binary = createBinary(org)()
+    val binary = createBinary(org)
     val version1 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.0")
     BinaryVersionsDao.softDelete(systemUser, version1.guid)
     val version2 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.0")

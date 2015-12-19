@@ -27,6 +27,9 @@ object MainActor {
     case class ProjectLibraryCreated(projectGuid: UUID, guid: UUID)
     case class ProjectLibraryDeleted(projectGuid: UUID, guid: UUID)
 
+    case class ProjectBinaryCreated(projectGuid: UUID, guid: UUID)
+    case class ProjectBinaryDeleted(projectGuid: UUID, guid: UUID)
+
     case class LibraryCreated(guid: UUID)
     case class LibraryDeleted(guid: UUID)
     case class LibrarySync(guid: UUID)
@@ -122,6 +125,14 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
     }
 
     case m @ MainActor.Messages.ProjectLibraryDeleted(projectGuid, guid) => withVerboseErrorHandler(m) {
+      // intentional no-op
+    }
+
+    case m @ MainActor.Messages.ProjectBinaryCreated(projectGuid, guid) => withVerboseErrorHandler(m) {
+      upsertProjectActor(projectGuid) ! ProjectActor.Messages.ProjectBinaryCreated(guid)
+    }
+
+    case m @ MainActor.Messages.ProjectBinaryDeleted(projectGuid, guid) => withVerboseErrorHandler(m) {
       // intentional no-op
     }
 

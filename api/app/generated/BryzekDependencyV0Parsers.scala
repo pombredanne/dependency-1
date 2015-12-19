@@ -1003,11 +1003,16 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
-  object ProjectBinaryVersion {
+  object ProjectBinary {
 
     case class Mappings(
-      project: com.bryzek.dependency.v0.anorm.parsers.Project.Mappings,
-      binaryVersion: com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings
+      guid: String = "guid",
+      project: com.bryzek.dependency.v0.anorm.parsers.ProjectDetail.Mappings,
+      name: String = "name",
+      version: String = "version",
+      path: String = "path",
+      binary: io.flow.common.v0.anorm.parsers.Reference.Mappings,
+      audit: io.flow.common.v0.anorm.parsers.Audit.Mappings
     )
 
     object Mappings {
@@ -1017,21 +1022,36 @@ package com.bryzek.dependency.v0.anorm.parsers {
       def table(table: String) = prefix(table, ".")
 
       def prefix(prefix: String, sep: String) = Mappings(
-        project = com.bryzek.dependency.v0.anorm.parsers.Project.Mappings.prefix(Seq(prefix, "project").filter(!_.isEmpty).mkString("_"), "_"),
-        binaryVersion = com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.Mappings.prefix(Seq(prefix, "binary_version").filter(!_.isEmpty).mkString("_"), "_")
+        guid = s"${prefix}${sep}guid",
+        project = com.bryzek.dependency.v0.anorm.parsers.ProjectDetail.Mappings.prefix(Seq(prefix, "project").filter(!_.isEmpty).mkString("_"), "_"),
+        name = s"${prefix}${sep}name",
+        version = s"${prefix}${sep}version",
+        path = s"${prefix}${sep}path",
+        binary = io.flow.common.v0.anorm.parsers.Reference.Mappings.prefix(Seq(prefix, "binary").filter(!_.isEmpty).mkString("_"), "_"),
+        audit = io.flow.common.v0.anorm.parsers.Audit.Mappings.prefix(Seq(prefix, "audit").filter(!_.isEmpty).mkString("_"), "_")
       )
 
     }
 
     def table(table: String) = parser(Mappings.prefix(table, "."))
 
-    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ProjectBinaryVersion] = {
-      com.bryzek.dependency.v0.anorm.parsers.Project.parser(mappings.project) ~
-      com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.parser(mappings.binaryVersion) map {
-        case project ~ binaryVersion => {
-          com.bryzek.dependency.v0.models.ProjectBinaryVersion(
+    def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.ProjectBinary] = {
+      SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
+      com.bryzek.dependency.v0.anorm.parsers.ProjectDetail.parser(mappings.project) ~
+      SqlParser.str(mappings.name) ~
+      SqlParser.str(mappings.version) ~
+      SqlParser.str(mappings.path) ~
+      io.flow.common.v0.anorm.parsers.Reference.parser(mappings.binary).? ~
+      io.flow.common.v0.anorm.parsers.Audit.parser(mappings.audit) map {
+        case guid ~ project ~ name ~ version ~ path ~ binary ~ audit => {
+          com.bryzek.dependency.v0.models.ProjectBinary(
+            guid = guid,
             project = project,
-            binaryVersion = binaryVersion
+            name = name,
+            version = version,
+            path = path,
+            binary = binary,
+            audit = audit
           )
         }
       }

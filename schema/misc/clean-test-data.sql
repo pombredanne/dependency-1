@@ -11,12 +11,12 @@ update projects
 update project_libraries
    set deleted_at=now(), deleted_by_guid = created_by_guid
  where deleted_at is null
-   and project_guid in (select guid from projects where deleted_at is null);
+   and project_guid in (select guid from projects where deleted_at is not null);
 
-update project_binary_versions
+update project_binaries
    set deleted_at=now(), deleted_by_guid = created_by_guid
  where deleted_at is null
-   and project_guid in (select guid from projects where deleted_at is null);
+   and project_guid in (select guid from projects where deleted_at is not null);
 
 update libraries
    set deleted_at=now(), deleted_by_guid = created_by_guid
@@ -40,10 +40,10 @@ update binaries
 update binary_versions
    set deleted_at=now(), deleted_by_guid = created_by_guid
  where deleted_at is null
-   and binary_guid not in (
+   and binary_guid in (
      select binaries.guid
        from binaries
-      where binaries.deleted_at is null
+      where binaries.deleted_at is not null
   );
 
 update users

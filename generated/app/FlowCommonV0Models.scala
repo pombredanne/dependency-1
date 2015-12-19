@@ -369,6 +369,40 @@ package io.flow.common.v0.models {
 
   }
 
+  sealed trait Visibility
+
+  object Visibility {
+
+    case object Public extends Visibility { override def toString = "public" }
+    case object Private extends Visibility { override def toString = "private" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends Visibility
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(Public, Private)
+
+    private[this]
+    val byName = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): Visibility = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[Visibility] = byName.get(value.toLowerCase)
+
+  }
+
 }
 
 package io.flow.common.v0.models {
@@ -432,6 +466,11 @@ package io.flow.common.v0.models {
     implicit val jsonReadsCommonValueAddedService = __.read[String].map(ValueAddedService.apply)
     implicit val jsonWritesCommonValueAddedService = new Writes[ValueAddedService] {
       def writes(x: ValueAddedService) = JsString(x.toString)
+    }
+
+    implicit val jsonReadsCommonVisibility = __.read[String].map(Visibility.apply)
+    implicit val jsonWritesCommonVisibility = new Writes[Visibility] {
+      def writes(x: Visibility) = JsString(x.toString)
     }
 
     implicit def jsonReadsCommonAudit: play.api.libs.json.Reads[Audit] = {
@@ -666,6 +705,17 @@ package io.flow.common.v0 {
 
     implicit val queryStringBindableEnumValueAddedService = new QueryStringBindable.Parsing[io.flow.common.v0.models.ValueAddedService](
       ValueAddedService.fromString(_).get, _.toString, enumValueAddedServiceNotFound
+    )
+
+    // Enum: Visibility
+    private[this] val enumVisibilityNotFound = (key: String, e: Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.Visibility.all.mkString(", ")}"
+
+    implicit val pathBindableEnumVisibility = new PathBindable.Parsing[io.flow.common.v0.models.Visibility] (
+      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
+    )
+
+    implicit val queryStringBindableEnumVisibility = new QueryStringBindable.Parsing[io.flow.common.v0.models.Visibility](
+      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
     )
 
   }
