@@ -1,0 +1,11 @@
+@(items: Seq[String])
+
+<div class="table-responsive">
+  <table class="table">
+    @items.map { description =>
+      <tr>
+        <td>@description</td>
+      </tr>
+    }
+  </table>
+</div>

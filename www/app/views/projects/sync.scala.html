@@ -3,38 +3,31 @@
   guid: java.util.UUID,
   n: Int,
   syncStarted: Option[com.bryzek.dependency.v0.models.Sync],
-  libraries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectLibrary]
+  pending: Seq[String],
+  completed: Seq[String]
 )(implicit flash: Flash, messages: Messages)
 
 @main(data.copy(title = Some("Please wait while we sync your project"))) {
   <meta http-equiv="refresh" content="@n; url=@routes.ProjectsController.sync(guid, (n * 1.1).toInt)" />
 
   @if(syncStarted.isEmpty) {
-    <em>Waiting for project to be synced.</em>
+    <em>Waiting for project to sync.</em>
   } else {
     <em>
       Project sync started at
       @com.bryzek.dependency.www.lib.DateHelper.longDateTimeOption(syncStarted.map(_.audit.createdAt)).
       Waiting for sync to complete.
     </em>
-  }
 
-  @if(!libraries.isEmpty) {
-    <p><b>Libraries pending sync</b><p>
-    <div class="table-responsive">
-      <table class="table">
-        @libraries.items.map { lib =>
-          <tr>
-            <td>@lib.groupId.@lib.artifactId</td>
-          </tr>
-        }
-        @if(libraries.hasNext) {
-          <tr>
-            <td>and more...</td>
-          </tr>
-        }
-      </table>
-    </div>
+    @if(!pending.isEmpty) {
+      <p><b>Pending:</b><p>
+      @syncTable(pending)
+    }
+
+    @if(!completed.isEmpty) {
+      <p><b>Completed:</b><p>
+      @syncTable(completed)
+    }
   }
     
 }

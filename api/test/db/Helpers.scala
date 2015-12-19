@@ -286,10 +286,12 @@ trait Helpers {
   }
 
   def createSyncForm(
+    `type`: String = "test",
     objectGuid: UUID = UUID.randomUUID,
     event: SyncEvent = SyncEvent.Started
   ) = {
     SyncForm(
+      `type` = `type`,
       objectGuid = objectGuid,
       event = event
     )

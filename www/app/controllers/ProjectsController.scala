@@ -269,11 +269,25 @@ class ProjectsController @javax.inject.Inject() (
         syncs <- dependencyClient(request).syncs.get(
           objectGuid = Some(guid)
         )
-        projectLibraries <- dependencyClient(request).projectLibraries.get(
+        pendingProjectLibraries <- dependencyClient(request).projectLibraries.get(
           projectGuid = Some(guid),
           isSynced = Some(false),
-          limit = Pagination.DefaultLimit+1,
-          offset = librariesPage * Pagination.DefaultLimit
+          limit = 100
+        )
+        completedProjectLibraries <- dependencyClient(request).projectLibraries.get(
+          projectGuid = Some(guid),
+          isSynced = Some(true),
+          limit = 100
+        )
+        pendingProjectBinaries <- dependencyClient(request).projectBinaries.get(
+          projectGuid = Some(guid),
+          isSynced = Some(false),
+          limit = 100
+        )
+        completedProjectBinaries <- dependencyClient(request).projectBinaries.get(
+          projectGuid = Some(guid),
+          isSynced = Some(true),
+          limit = 100
         )
       } yield {
         val nextN = (n * 1.1).toInt match {
@@ -281,20 +295,38 @@ class ProjectsController @javax.inject.Inject() (
           case other => other
         }
 
+        val pending = pendingProjectLibraries.map { lib =>
+          s"Library ${lib.artifactId}.${lib.groupId}"
+        } ++ pendingProjectBinaries.map { bin =>
+          s"Binary ${bin.name}"
+        }
+
+        val completed = completedProjectLibraries.map { lib =>
+          s"Library ${lib.artifactId}.${lib.groupId}"
+        } ++ completedProjectBinaries.map { bin =>
+          s"Binary ${bin.name}"
+        }
+
         syncs.find { _.event == SyncEvent.Completed && false } match {
           case Some(rec) => {
             Redirect(routes.ProjectsController.show(guid))
           }
           case None => {
-            Ok(
-              views.html.projects.sync(
-                uiData(request),
-                guid,
-                nextN,
-                syncs.find { _.event == SyncEvent.Started },
-                PaginatedCollection(librariesPage, projectLibraries)
+            val syncStarted = syncs.find { _.event == SyncEvent.Started }
+            if (n > 2 && !syncStarted.isEmpty && pending.isEmpty) {
+              Redirect(routes.ProjectsController.show(guid))
+            } else {
+              Ok(
+                views.html.projects.sync(
+                  uiData(request),
+                  guid,
+                  nextN,
+                  syncStarted,
+                  pending,
+                  completed
+                )
               )
-            )
+            }
           }
         }
       }

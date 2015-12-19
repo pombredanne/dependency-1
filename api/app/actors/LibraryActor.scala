@@ -28,7 +28,7 @@ class LibraryActor extends Actor with Util {
 
     case m @ LibraryActor.Messages.Sync => withVerboseErrorHandler(m) {
       dataLibrary.foreach { lib =>
-        SyncsDao.withStartedAndCompleted(MainActor.SystemUser, lib.guid) {
+        SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "library", lib.guid) {
           ResolversDao.findByGuid(Authorization.All, lib.resolver.guid).map { resolver =>
             DefaultLibraryArtifactProvider().resolve(
               resolver = resolver,

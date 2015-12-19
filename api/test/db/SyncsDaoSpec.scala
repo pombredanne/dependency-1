@@ -21,8 +21,8 @@ class SyncsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "withStartedAndCompleted" in {
-    val project = createProject(org)()
-    SyncsDao.withStartedAndCompleted(systemUser, project.guid) {
+    val project = createProject(org)
+    SyncsDao.withStartedAndCompleted(systemUser, "project", project.guid) {
       // NO-OP
     }
     val events = SyncsDao.findAll(objectGuid = Some(project.guid)).map(_.event)
@@ -31,14 +31,14 @@ class SyncsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "recordStarted" in {
-    val project = createProject(org)()
-    SyncsDao.recordStarted(systemUser, project.guid)
+    val project = createProject(org)
+    SyncsDao.recordStarted(systemUser, "project", project.guid)
     SyncsDao.findAll(objectGuid = Some(project.guid)).map(_.event).contains(SyncEvent.Started) must be(true)
   }
 
   "recordCompleted" in {
-    val project = createProject(org)()
-    SyncsDao.recordCompleted(systemUser, project.guid)
+    val project = createProject(org)
+    SyncsDao.recordCompleted(systemUser, "project", project.guid)
     SyncsDao.findAll(objectGuid = Some(project.guid)).map(_.event).contains(SyncEvent.Completed) must be(true)
   }
 

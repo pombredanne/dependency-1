@@ -29,13 +29,12 @@ class BinaryActor extends Actor with Util {
 
     case m @ BinaryActor.Messages.Sync => withVerboseErrorHandler(m) {
       dataBinary.foreach { binary =>
-        SyncsDao.withStartedAndCompleted(MainActor.SystemUser, binary.guid) {
+        SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "binary", binary.guid) {
           DefaultBinaryVersionProvider.versions(binary.name).foreach { version =>
             BinaryVersionsDao.upsert(UsersDao.systemUser, binary.guid, version.value)
           }
         }
 
-        // TODO: Should we only send if something changed?
         sender ! MainActor.Messages.BinarySyncCompleted(binary.guid)
       }
     }

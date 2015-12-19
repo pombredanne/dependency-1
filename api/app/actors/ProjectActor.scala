@@ -1,7 +1,7 @@
 package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.api.lib.{DefaultLibraryArtifactProvider, Dependencies, GithubDependencyProviderClient}
-import com.bryzek.dependency.v0.models.{Binary, BinaryForm, BinaryType, LibraryForm, Project, ProjectBinary, VersionForm, WatchProjectForm}
+import com.bryzek.dependency.v0.models.{Binary, BinaryForm, BinaryType, Library, LibraryForm, Project, ProjectBinary, ProjectLibrary, VersionForm, WatchProjectForm}
 import io.flow.play.postgresql.Pager
 import db.{Authorization, BinariesDao, LibrariesDao, LibraryVersionsDao, ProjectBinariesDao, ProjectLibrariesDao}
 import db.{ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
@@ -59,66 +59,28 @@ class ProjectActor extends Actor with Util {
     }
 
     case m @ ProjectActor.Messages.ProjectLibraryCreated(guid) => withVerboseErrorHandler(m.toString) {
-      SyncsDao.withStartedAndCompleted(MainActor.SystemUser, guid) {
+      SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "project_library", guid) {
         dataProject.foreach { project =>
           ProjectLibrariesDao.findByGuid(Authorization.All, guid).map { projectLibrary =>
             println(s"project guid[${project.guid}] projectLibraryCreated[${projectLibrary.guid}] group[${projectLibrary.groupId}] artifact[${projectLibrary.artifactId}]")
-            LibrariesDao.findByGroupIdAndArtifactId(Authorization.All, projectLibrary.groupId, projectLibrary.artifactId) match {
-              case Some(lib) => {
-                println("  -- found existing lib: " + lib)
-                ProjectLibrariesDao.setLibrary(MainActor.SystemUser, projectLibrary, lib)
-              }
-              case None => {
-                DefaultLibraryArtifactProvider().resolve(
-                  organization = project.organization,
-                  groupId = projectLibrary.groupId,
-                  artifactId = projectLibrary.artifactId
-                ) match {
-                  case None => {
-                    println(s"  -- Could not resolve library")
-                  }
-                  case Some(resolution) => {
-                    println(s"  -- resolved library: $resolution")
-                    LibrariesDao.upsert(
-                      MainActor.SystemUser,
-                      form = LibraryForm(
-                        organizationGuid = project.organization.guid,
-                        groupId = projectLibrary.groupId,
-                        artifactId = projectLibrary.artifactId,
-                        resolverGuid = resolution.resolver.guid
-                      )
-                    ) match {
-                      case Left(errors) => {
-                        Logger.error(s"Project[${project.guid}] name[${project.name}] - error upserting library: " + errors.mkString(", "))
-                      }
-                      case Right(library) => {
-                        ProjectLibrariesDao.setLibrary(MainActor.SystemUser, projectLibrary, library)
-                        resolution.versions.foreach { version =>
-                          LibraryVersionsDao.upsert(
-                            createdBy = MainActor.SystemUser,
-                            libraryGuid = library.guid,
-                            form = VersionForm(version.tag.value, version.crossBuildVersion.map(_.value))
-                          )
-                        }
-                      }
-                    }
-                  }
-                }
-              }
+            resolveLibrary(projectLibrary).map { lib =>
+              ProjectLibrariesDao.setLibrary(MainActor.SystemUser, projectLibrary, lib)
             }
           }
+          processPendingSync(project)
         }
       }
     }
 
     case m @ ProjectActor.Messages.ProjectBinaryCreated(guid) => withVerboseErrorHandler(m.toString) {
-      SyncsDao.withStartedAndCompleted(MainActor.SystemUser, guid) {
+      SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "project_binary", guid) {
         dataProject.foreach { project =>
           ProjectBinariesDao.findByGuid(Authorization.All, guid).map { projectBinary =>
             resolveBinary(projectBinary).map { binary =>
               ProjectBinariesDao.setBinary(MainActor.SystemUser, projectBinary, binary)
             }
           }
+          processPendingSync(project)
         }
       }
     }
@@ -137,7 +99,7 @@ class ProjectActor extends Actor with Util {
 
     case m @ ProjectActor.Messages.Sync => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
-        SyncsDao.recordStarted(MainActor.SystemUser, project.guid)
+        SyncsDao.recordStarted(MainActor.SystemUser, "project", project.guid)
 
         val user = UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
           val summary = ProjectsDao.toSummary(project)
@@ -203,7 +165,7 @@ class ProjectActor extends Actor with Util {
       dependenciesPendingCompletion(project) match {
         case Nil => {
           RecommendationsDao.sync(MainActor.SystemUser, project)
-          SyncsDao.recordCompleted(MainActor.SystemUser, project.guid)
+          SyncsDao.recordCompleted(MainActor.SystemUser, "project", project.guid)
           pendingSync = None
         }
         case deps => {
@@ -220,11 +182,49 @@ class ProjectActor extends Actor with Util {
       projectGuid = Some(project.guid),
       isSynced = Some(false)
     ).map( lib => s"Library ${lib.groupId}.${lib.artifactId}" ) ++ 
-    BinariesDao.findAll(
+    ProjectBinariesDao.findAll(
       Authorization.All,
       projectGuid = Some(project.guid),
       isSynced = Some(false)
     ).map( bin => s"Binary ${bin.name}" )
+  }
+
+  private[this] def resolveLibrary(projectLibrary: ProjectLibrary): Option[Library] = {
+    LibrariesDao.findByGroupIdAndArtifactId(Authorization.All, projectLibrary.groupId, projectLibrary.artifactId) match {
+      case Some(lib) => {
+        Some(lib)
+      }
+      case None => {
+        DefaultLibraryArtifactProvider().resolve(
+          organization = projectLibrary.project.organization,
+          groupId = projectLibrary.groupId,
+          artifactId = projectLibrary.artifactId
+        ) match {
+          case None => {
+            None
+          }
+          case Some(resolution) => {
+            LibrariesDao.upsert(
+              MainActor.SystemUser,
+              form = LibraryForm(
+                organizationGuid = projectLibrary.project.organization.guid,
+                groupId = projectLibrary.groupId,
+                artifactId = projectLibrary.artifactId,
+                resolverGuid = resolution.resolver.guid
+              )
+            ) match {
+              case Left(errors) => {
+                Logger.error(s"Project[${projectLibrary.project.guid}] name[${projectLibrary.project.name}] - error upserting library: " + errors.mkString(", "))
+                None
+              }
+              case Right(library) => {
+                Some(library)
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   private[this] def resolveBinary(projectBinary: ProjectBinary): Option[Binary] = {

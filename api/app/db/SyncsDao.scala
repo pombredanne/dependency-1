@@ -11,6 +11,7 @@ import java.util.UUID
 import scala.util.{Failure, Success, Try}
 
 case class SyncForm(
+  `type`: String,
   objectGuid: UUID,
   event: SyncEvent
 )
@@ -19,6 +20,7 @@ object SyncsDao {
 
   private[this] val BaseQuery = s"""
     select syncs.guid,
+           syncs.type,
            syncs.object_guid,
            syncs.event,
            ${AuditsDao.creationOnly("syncs")}
@@ -28,9 +30,9 @@ object SyncsDao {
 
   private[this] val InsertQuery = """
     insert into syncs
-    (guid, object_guid, event, created_by_guid)
+    (guid, type, object_guid, event, created_by_guid)
     values
-    ({guid}::uuid, {object_guid}::uuid, {event}, {created_by_guid}::uuid)
+    ({guid}::uuid, {type}, {object_guid}::uuid, {event}, {created_by_guid}::uuid)
   """
 
   private[this] val PurgeQuery = """
@@ -38,22 +40,22 @@ object SyncsDao {
   """
 
   def withStartedAndCompleted[T](
-    createdBy: User, guid: UUID
+    createdBy: User, `type`: String, guid: UUID
   ) (
     f: => T
   ): T = {
-    recordStarted(createdBy, guid)
+    recordStarted(createdBy, `type`, guid)
     val result = f
-    recordCompleted(createdBy, guid)
+    recordCompleted(createdBy, `type`, guid)
     result
   }
 
-  def recordStarted(createdBy: User, guid: UUID) {
-    createInternal(createdBy, SyncForm(guid, SyncEvent.Started))
+  def recordStarted(createdBy: User, `type`: String, guid: UUID) {
+    createInternal(createdBy, SyncForm(`type`, guid, SyncEvent.Started))
   }
 
-  def recordCompleted(createdBy: User, guid: UUID) {
-    createInternal(createdBy, SyncForm(guid, SyncEvent.Completed))
+  def recordCompleted(createdBy: User, `type`: String, guid: UUID) {
+    createInternal(createdBy, SyncForm(`type`, guid, SyncEvent.Completed))
   }
 
   def create(createdBy: User, form: SyncForm): Sync = {
@@ -61,7 +63,6 @@ object SyncsDao {
     findByGuid(guid).getOrElse {
       sys.error("Failed to create sync")
     }
-
   }
 
   private[this] def createInternal(createdBy: User, form: SyncForm): UUID = {
@@ -70,6 +71,7 @@ object SyncsDao {
     DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'guid -> guid,
+        'type -> form.`type`,
         'object_guid -> form.objectGuid,
         'event -> form.event.toString,
         'created_by_guid -> createdBy.guid
