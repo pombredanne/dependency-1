@@ -2,7 +2,7 @@
   data: com.bryzek.dependency.www.lib.UiData,
   binary: com.bryzek.dependency.v0.models.Binary,
   versions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.BinaryVersion],
-  projectBinaryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectBinaryVersion]
+  projectBinaries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectBinary]
 )(implicit flash: Flash, messages: Messages)
 
 @main(data.copy(title = Some(s"Binary: ${binary.name}"))) {
@@ -23,22 +23,22 @@
   <h3>Projects</h3>
   <div class="table-responsive">
     <table class="table">
-      @projectBinaryVersions.items.map { rec =>
+      @projectBinaries.items.map { rec =>
         <tr>
           <td><a href="@routes.ProjectsController.show(rec.project.guid)">@{rec.project.name}</a></td>
-          <td><a href="">@{rec.binaryVersion.version}</a></td>
+          <td><a href="">@{rec.version}</a></td>
         </tr>
       }
     </table>
   </div>
 
-  @if(projectBinaryVersions.hasPrevious || projectBinaryVersions.hasNext) {
+  @if(projectBinaries.hasPrevious || projectBinaries.hasNext) {
     <ul class="pager">
-      @if(projectBinaryVersions.hasPrevious) {
-        <li><a href="@routes.LibrariesController.show(binary.guid, projectsPage = projectBinaryVersions.page - 1)">Previous</a></li>
+      @if(projectBinaries.hasPrevious) {
+        <li><a href="@routes.LibrariesController.show(binary.guid, projectsPage = projectBinaries.page - 1)">Previous</a></li>
       }
-      @if(projectBinaryVersions.hasNext) {
-        <li><a href="@routes.LibrariesController.show(binary.guid, projectsPage = projectBinaryVersions.page + 1)">Next</a></li>
+      @if(projectBinaries.hasNext) {
+        <li><a href="@routes.LibrariesController.show(binary.guid, projectsPage = projectBinaries.page + 1)">Next</a></li>
       }
     </ul>
   }

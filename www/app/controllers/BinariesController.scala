@@ -49,7 +49,7 @@ class BinariesController @javax.inject.Inject() (
           limit = 5+1,
           offset = 0
         )
-        projectBinaryVersions <- dependencyClient(request).projectBinaryVersions.get(
+        projectBinaries <- dependencyClient(request).projectBinaries.get(
           binaryGuid = Some(guid),
           limit = Pagination.DefaultLimit+1,
           offset = projectsPage * Pagination.DefaultLimit
@@ -60,7 +60,7 @@ class BinariesController @javax.inject.Inject() (
             uiData(request),
             binary,
             PaginatedCollection(0, versions, 5),
-            PaginatedCollection(projectsPage, projectBinaryVersions)
+            PaginatedCollection(projectsPage, projectBinaries)
           )
         )
       }
