@@ -290,8 +290,10 @@ class ProjectsController @javax.inject.Inject() (
           limit = 100
         )
       } yield {
-        val nextN = (n * 1.1).toInt match {
-          case `n` => n + 1
+        val actualN = if (n < 1) { 1 } else { n }
+
+        val sleepTime = (actualN * 1.1).toInt match {
+          case `actualN` => actualN + 1
           case other => other
         }
 
@@ -307,20 +309,23 @@ class ProjectsController @javax.inject.Inject() (
           s"Binary ${bin.name}"
         }
 
-        syncs.find { _.event == SyncEvent.Completed && false } match {
+        syncs.find { _.event == SyncEvent.Completed } match {
           case Some(rec) => {
             Redirect(routes.ProjectsController.show(guid))
           }
           case None => {
             val syncStarted = syncs.find { _.event == SyncEvent.Started }
-            if (n > 2 && !syncStarted.isEmpty && pending.isEmpty) {
+            if (!syncStarted.isEmpty && pending.isEmpty && !completed.isEmpty) {
+              Redirect(routes.ProjectsController.show(guid))
+            } else if (n >= 10) {
               Redirect(routes.ProjectsController.show(guid))
             } else {
               Ok(
                 views.html.projects.sync(
                   uiData(request),
                   guid,
-                  nextN,
+                  actualN + 1,
+                  sleepTime,
                   syncStarted,
                   pending,
                   completed
