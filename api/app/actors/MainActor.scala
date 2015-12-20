@@ -159,7 +159,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
 
     case m @ MainActor.Messages.LibraryDeleted(guid) => withVerboseErrorHandler(m) {
       libraryActors.remove(guid).map { ref =>
-        // TODO: ref ! LibraryActor.Messages.Deleted
+        ref ! LibraryActor.Messages.Deleted
         context.stop(ref)
       }
     }

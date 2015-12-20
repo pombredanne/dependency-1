@@ -54,6 +54,13 @@ object ProjectLibrariesDao {
      where guid = {guid}::uuid
   """
 
+  private[this] val RemoveLibraryQuery = """
+    update project_libraries
+       set library_guid = null,
+           updated_by_guid = {updated_by_guid}::uuid
+     where guid = {guid}::uuid
+  """
+
   private[db] def validate(
     user: User,
     form: ProjectLibraryForm
@@ -141,6 +148,15 @@ object ProjectLibrariesDao {
         )
       }
       case errors => Left(errors)
+    }
+  }
+
+  def removeLibrary(user: User, projectLibrary: ProjectLibrary) {
+    DB.withConnection { implicit c =>
+      SQL(RemoveLibraryQuery).on(
+        'guid -> projectLibrary.guid,
+        'updated_by_guid -> user.guid
+      ).execute()
     }
   }
 

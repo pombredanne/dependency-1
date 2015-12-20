@@ -2,7 +2,8 @@ package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.v0.models.{Library, LibraryForm, Resolver, VersionForm}
 import com.bryzek.dependency.api.lib.DefaultLibraryArtifactProvider
-import db.{Authorization, LibrariesDao, LibraryVersionsDao, ResolversDao, SyncsDao, UsersDao}
+import io.flow.play.postgresql.Pager
+import db.{Authorization, LibrariesDao, LibraryVersionsDao, ProjectLibrariesDao, ResolversDao, SyncsDao, UsersDao}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -12,6 +13,7 @@ object LibraryActor {
   object Messages {
     case class Data(guid: UUID)
     case object Sync
+    case object Deleted
   }
 
 }
@@ -50,6 +52,17 @@ class LibraryActor extends Actor with Util {
 
         // TODO: Should we only send if something changed?
         sender ! MainActor.Messages.LibrarySyncCompleted(lib.guid)
+      }
+    }
+
+    case m @ LibraryActor.Messages.Deleted => withVerboseErrorHandler(m) {
+      dataLibrary.foreach { lib =>
+        Pager.eachPage { offset =>
+          ProjectLibrariesDao.findAll(Authorization.All, libraryGuid = Some(lib.guid), offset = offset)
+        } { projectLibrary =>
+          ProjectLibrariesDao.removeLibrary(MainActor.SystemUser, projectLibrary)
+          sender ! MainActor.Messages.ProjectLibrarySync(projectLibrary.project.guid, projectLibrary.guid)
+        }
       }
     }
 
