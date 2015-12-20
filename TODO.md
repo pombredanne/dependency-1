@@ -1,9 +1,3 @@
-add authorization to user
-
-When adding a new resolver:
-  - for all project_libraries for that org that have a null
-    library_guid, attempt to resolve
-
 UI:
   - Add page to see organizations, create organization, add members
 
