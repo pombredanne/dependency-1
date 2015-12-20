@@ -1,8 +1,9 @@
 package controllers
 
-import db.BinaryVersionsDao
+import db.{Authorization, BinaryVersionsDao}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
+import io.flow.user.v0.models.User
 import io.flow.play.util.Validation
 import com.bryzek.dependency.v0.models.BinaryVersion
 import com.bryzek.dependency.v0.models.json._
@@ -27,6 +28,7 @@ class BinaryVersions @javax.inject.Inject() (
     Ok(
       Json.toJson(
         BinaryVersionsDao.findAll(
+          Authorization.User(request.user.guid),
           guid = guid,
           guids = optionalGuids(guids),
           binaryGuid = binaryGuid,
@@ -39,15 +41,15 @@ class BinaryVersions @javax.inject.Inject() (
   }
 
   def getByGuid(guid: UUID) = Identified { request =>
-    withBinaryVersion(guid) { binary =>
+    withBinaryVersion(request.user, guid) { binary =>
       Ok(Json.toJson(binary))
     }
   }
 
-  def withBinaryVersion(guid: UUID)(
+  def withBinaryVersion(user: User, guid: UUID)(
     f: BinaryVersion => Result
   ): Result = {
-    BinaryVersionsDao.findByGuid(guid) match {
+    BinaryVersionsDao.findByGuid(Authorization.User(user.guid), guid) match {
       case None => {
         NotFound
       }

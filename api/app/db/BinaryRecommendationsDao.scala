@@ -29,7 +29,7 @@ object BinaryRecommendationsDao {
       )
     } { projectBinary =>
       projectBinary.binary.flatMap { lib => BinariesDao.findByGuid(Authorization.All, lib.guid) }.map { binary =>
-        val recentVersions = versionsGreaterThan(binary, projectBinary.version)
+        val recentVersions = versionsGreaterThan(Authorization.Organization(project.organization.guid), binary, projectBinary.version)
         recommend(projectBinary, recentVersions).map { v =>
           recommendations ++= Seq(
             BinaryRecommendation(
@@ -60,10 +60,11 @@ object BinaryRecommendationsDao {
   /**
    * Returns all versions of a binary greater than the one specified
    */
-  private[this] def versionsGreaterThan(binary: Binary, version: String): Seq[BinaryVersion] = {
+  private[this] def versionsGreaterThan(auth: Authorization, binary: Binary, version: String): Seq[BinaryVersion] = {
     var recommendations = scala.collection.mutable.ListBuffer[BinaryVersion]()
     Pager.eachPage { offset =>
       BinaryVersionsDao.findAll(
+        auth,
         binaryGuid = Some(binary.guid),
         greaterThanVersion = Some(version),
         offset = offset

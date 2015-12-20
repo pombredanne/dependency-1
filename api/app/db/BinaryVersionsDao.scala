@@ -44,7 +44,9 @@ object BinaryVersionsDao {
   private[db] def upsertWithConnection(createdBy: User, binaryGuid: UUID, version: String)(
     implicit c: java.sql.Connection
   ): BinaryVersion = {
+    val auth = Authorization.User(createdBy.guid)
     findAllWithConnection(
+      auth,
       binaryGuid = Some(binaryGuid),
       version = Some(version),
       limit = 1
@@ -55,6 +57,7 @@ object BinaryVersionsDao {
         case Success(version) => version
         case Failure(ex) => {
           findAllWithConnection(
+            auth,
             binaryGuid = Some(binaryGuid),
             version = Some(version),
             limit = 1
@@ -85,7 +88,7 @@ object BinaryVersionsDao {
       'created_by_guid -> createdBy.guid
     ).execute()
 
-    findByGuidWithConnection(guid).getOrElse {
+    findByGuidWithConnection(Authorization.All, guid).getOrElse {
       sys.error("Failed to create version")
     }
   }
@@ -95,9 +98,11 @@ object BinaryVersionsDao {
   }
 
   def findByBinaryAndVersion(
+    auth: Authorization,
     binary: Binary, version: String
   ): Option[BinaryVersion] = {
     findAll(
+      auth,
       binaryGuid = Some(binary.guid),
       version = Some(version),
       limit = 1
@@ -105,22 +110,25 @@ object BinaryVersionsDao {
   }
 
   def findByGuid(
+    auth: Authorization,
     guid: UUID
   ): Option[BinaryVersion] = {
     DB.withConnection { implicit c =>
-      findByGuidWithConnection(guid)
+      findByGuidWithConnection(auth, guid)
     }
   }
 
   def findByGuidWithConnection(
+    auth: Authorization,
     guid: UUID
   ) (
     implicit c: java.sql.Connection
   ): Option[BinaryVersion] = {
-    findAllWithConnection(guid = Some(guid), limit = 1).headOption
+    findAllWithConnection(auth, guid = Some(guid), limit = 1).headOption
   }
 
   def findAll(
+    auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     binaryGuid: Option[UUID] = None,
@@ -133,6 +141,7 @@ object BinaryVersionsDao {
   ) = {
     DB.withConnection { implicit c =>
       findAllWithConnection(
+        auth,
         guid = guid,
         guids = guids,
         binaryGuid = binaryGuid,
@@ -147,6 +156,7 @@ object BinaryVersionsDao {
   }
 
   def findAllWithConnection(
+    auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     binaryGuid: Option[UUID] = None,
@@ -159,6 +169,10 @@ object BinaryVersionsDao {
   ) (
     implicit c: java.sql.Connection
   ): Seq[BinaryVersion] = {
+    // N.B.: at this time, all binary versions are public and thus we
+    // do not need to filter by auth. It is here in the API for
+    // consistency and to explicitly declare we are respecting it.
+
     val sql = Seq(
       Some(BaseQuery.trim),
       guid.map { v => s"and binary_versions.guid = {guid}::uuid" },

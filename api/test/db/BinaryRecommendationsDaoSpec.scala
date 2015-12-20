@@ -24,7 +24,11 @@ class BinaryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Hel
     }
     (
       binary,
-      BinaryVersionsDao.findAll(binaryGuid = Some(binary.guid), limit = versions.size).reverse
+      BinaryVersionsDao.findAll(
+        Authorization.Organization(org.guid),
+        binaryGuid = Some(binary.guid),
+        limit = versions.size
+      ).reverse
     )
   }
 
