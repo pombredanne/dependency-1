@@ -12,5 +12,3 @@ UI:
     org
 
 Handle http 500 from github
-
-don't send daily summary until at least 1 hour past user's registration date.

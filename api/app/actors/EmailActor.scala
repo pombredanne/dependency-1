@@ -110,7 +110,6 @@ case class DailySummaryEmailMessage(user: User) extends EmailMessageGenerator {
    */
   override def shouldSend(): Boolean = {
     PreferredHourToSendEst == (new DateTime()).toDateTime(DateTimeZone.forID("America/New_York")).getHourOfDay
-    true
   }
 
   override def subject() = "Daily Summary"
