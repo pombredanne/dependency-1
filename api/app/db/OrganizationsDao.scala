@@ -1,8 +1,8 @@
 package db
 
-import com.bryzek.dependency.lib.UrlKey
 import com.bryzek.dependency.v0.models.{MembershipForm, Organization, OrganizationForm, Role}
 import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
+import io.flow.play.util.UrlKey
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
@@ -42,6 +42,8 @@ object OrganizationsDao {
     values
     ({guid}::uuid, {user_guid}::uuid, {organization_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
+
+  private[this] val urlKey = UrlKey(minKeyLength = 3)
 
   private[db] def validate(
     form: OrganizationForm,
@@ -128,7 +130,7 @@ object OrganizationsDao {
 
   def upsertForUser(user: User): Organization = {
     findAll(Authorization.All, forUserGuid = Some(user.guid), limit = 1).headOption.getOrElse {
-      val key = UrlKey.generate(defaultUserName(user))
+      val key = urlKey.generate(defaultUserName(user))
       val orgGuid = DB.withTransaction { implicit c =>
         val orgGuid = create(c, user, OrganizationForm(
           key = key
@@ -154,14 +156,14 @@ object OrganizationsDao {
    * name.
    */
   def defaultUserName(user: User): String = {
-    UrlKey.format(
+    urlKey.format(
       user.email match {
         case Some(email) => {
           email.substring(0, email.indexOf("@"))
         }
         case None => {
           (user.name.first, user.name.last) match {
-            case (None, None) => UrlKey.randomAlphanumericString(DefaultUserNameLength)
+            case (None, None) => urlKey.randomAlphanumericString(DefaultUserNameLength)
             case (Some(first), None) => first
             case (None, Some(last)) => last
             case (Some(first), Some(last)) => first(0) + last
