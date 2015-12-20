@@ -44,6 +44,13 @@ object ProjectBinariesDao {
     ({guid}::uuid, {project_guid}::uuid, {name}, {version}, {path}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
+  private[this] val RemoveBinaryQuery = """
+    update project_binaries
+       set binary_guid = null,
+           updated_by_guid = {updated_by_guid}::uuid
+     where guid = {guid}::uuid
+  """
+
   private[this] val SetBinaryQuery = """
     update project_binaries
        set binary_guid = {binary_guid}::uuid,
@@ -130,6 +137,15 @@ object ProjectBinariesDao {
         )
       }
       case errors => Left(errors)
+    }
+  }
+
+  def removeBinary(user: User, projectBinary: ProjectBinary) {
+    DB.withConnection { implicit c =>
+      SQL(RemoveBinaryQuery).on(
+        'guid -> projectBinary.guid,
+        'updated_by_guid -> user.guid
+      ).execute()
     }
   }
 

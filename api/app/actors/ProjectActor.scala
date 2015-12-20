@@ -24,7 +24,9 @@ object ProjectActor {
 
     case class ProjectLibraryCreated(guid: UUID) extends Message
     case class ProjectLibrarySync(guid: UUID) extends Message
+
     case class ProjectBinaryCreated(guid: UUID) extends Message
+    case class ProjectBinarySync(guid: UUID) extends Message
 
     case class LibrarySynced(guid: UUID) extends Message
     case class BinarySynced(guid: UUID) extends Message
@@ -68,18 +70,13 @@ class ProjectActor extends Actor with Util {
     }
 
     case m @ ProjectActor.Messages.ProjectBinaryCreated(guid) => withVerboseErrorHandler(m.toString) {
-      SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "project_binary", guid) {
-        dataProject.foreach { project =>
-          ProjectBinariesDao.findByGuid(Authorization.All, guid).map { projectBinary =>
-            resolveBinary(projectBinary).map { binary =>
-              ProjectBinariesDao.setBinary(MainActor.SystemUser, projectBinary, binary)
-            }
-          }
-          processPendingSync(project)
-        }
-      }
+      syncProjectBinary(guid)
     }
-  
+
+    case m @ ProjectActor.Messages.ProjectBinarySync(guid) => withVerboseErrorHandler(m.toString) {
+      syncProjectBinary(guid)
+    }
+
     case m @ ProjectActor.Messages.LibrarySynced(guid) => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         processPendingSync(project)
@@ -172,6 +169,19 @@ class ProjectActor extends Actor with Util {
     }
   }
 
+  def syncProjectBinary(guid: UUID) {
+    SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "project_binary", guid) {
+      dataProject.foreach { project =>
+        ProjectBinariesDao.findByGuid(Authorization.All, guid).map { projectBinary =>
+          resolveBinary(projectBinary).map { binary =>
+            ProjectBinariesDao.setBinary(MainActor.SystemUser, projectBinary, binary)
+          }
+        }
+        processPendingSync(project)
+      }
+    }
+  }
+  
   def processPendingSync(project: Project) {
     pendingSync.foreach { _ =>
       dependenciesPendingCompletion(project) match {

@@ -29,6 +29,7 @@ object MainActor {
     case class ProjectLibraryDeleted(projectGuid: UUID, guid: UUID)
 
     case class ProjectBinaryCreated(projectGuid: UUID, guid: UUID)
+    case class ProjectBinarySync(projectGuid: UUID, guid: UUID)
     case class ProjectBinaryDeleted(projectGuid: UUID, guid: UUID)
 
     case class ResolverCreated(guid: UUID)
@@ -141,6 +142,10 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
       upsertProjectActor(projectGuid) ! ProjectActor.Messages.ProjectBinaryCreated(guid)
     }
 
+    case m @ MainActor.Messages.ProjectBinarySync(projectGuid, guid) => withVerboseErrorHandler(m) {
+      upsertProjectActor(projectGuid) ! ProjectActor.Messages.ProjectBinarySync(guid)
+    }
+
     case m @ MainActor.Messages.ProjectBinaryDeleted(projectGuid, guid) => withVerboseErrorHandler(m) {
       // intentional no-op
     }
@@ -177,7 +182,11 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
     }
 
     case m @ MainActor.Messages.BinaryDeleted(guid) => withVerboseErrorHandler(m) {
-      upsertResolverActor(guid) ! ResolverActor.Messages.Created
+      binaryActors.remove(guid).map { ref =>
+        ref ! BinaryActor.Messages.Deleted
+        context.stop(ref)
+      }
+
     }
 
     case m @ MainActor.Messages.ResolverCreated(guid) => withVerboseErrorHandler(m) {
