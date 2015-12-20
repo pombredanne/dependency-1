@@ -25,10 +25,14 @@ object MainActor {
     case class ProjectSync(guid: UUID)
 
     case class ProjectLibraryCreated(projectGuid: UUID, guid: UUID)
+    case class ProjectLibrarySync(projectGuid: UUID, guid: UUID)
     case class ProjectLibraryDeleted(projectGuid: UUID, guid: UUID)
 
     case class ProjectBinaryCreated(projectGuid: UUID, guid: UUID)
     case class ProjectBinaryDeleted(projectGuid: UUID, guid: UUID)
+
+    case class ResolverCreated(guid: UUID)
+    case class ResolverDeleted(guid: UUID)
 
     case class LibraryCreated(guid: UUID)
     case class LibraryDeleted(guid: UUID)
@@ -56,6 +60,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
   private[this] val libraryActors = scala.collection.mutable.Map[UUID, ActorRef]()
   private[this] val projectActors = scala.collection.mutable.Map[UUID, ActorRef]()
   private[this] val userActors = scala.collection.mutable.Map[UUID, ActorRef]()
+  private[this] val resolverActors = scala.collection.mutable.Map[UUID, ActorRef]()
 
   implicit val mainActorExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("main-actor-context")
 
@@ -124,6 +129,10 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
       upsertProjectActor(projectGuid) ! ProjectActor.Messages.ProjectLibraryCreated(guid)
     }
 
+    case m @ MainActor.Messages.ProjectLibrarySync(projectGuid, guid) => withVerboseErrorHandler(m) {
+      upsertProjectActor(projectGuid) ! ProjectActor.Messages.ProjectLibrarySync(guid)
+    }
+
     case m @ MainActor.Messages.ProjectLibraryDeleted(projectGuid, guid) => withVerboseErrorHandler(m) {
       // intentional no-op
     }
@@ -149,7 +158,10 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
     }
 
     case m @ MainActor.Messages.LibraryDeleted(guid) => withVerboseErrorHandler(m) {
-      libraryActors.remove(guid).map { context.stop(_) }
+      libraryActors.remove(guid).map { ref =>
+        // TODO: ref ! LibraryActor.Messages.Deleted
+        context.stop(ref)
+      }
     }
 
     case m @ MainActor.Messages.BinaryCreated(guid) => withVerboseErrorHandler(m) {
@@ -165,7 +177,18 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
     }
 
     case m @ MainActor.Messages.BinaryDeleted(guid) => withVerboseErrorHandler(m) {
-      binaryActors.remove(guid).map { context.stop(_) }
+      upsertResolverActor(guid) ! ResolverActor.Messages.Created
+    }
+
+    case m @ MainActor.Messages.ResolverCreated(guid) => withVerboseErrorHandler(m) {
+      resolverActors.remove(guid).map { ref =>
+        ref ! ResolverActor.Messages.Deleted
+        context.stop(ref)
+      }
+    }
+
+    case m @ MainActor.Messages.ResolverDeleted(guid) => withVerboseErrorHandler(m) {
+      resolverActors.remove(guid).map { context.stop(_) }
     }
 
     case m: Any => logUnhandledMessage(m)
@@ -204,6 +227,15 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
       val ref = Akka.system.actorOf(Props[BinaryActor], name = s"$name:binaryActor:$guid")
       ref ! BinaryActor.Messages.Data(guid)
       binaryActors += (guid -> ref)
+      ref
+    }
+  }
+
+  def upsertResolverActor(guid: UUID): ActorRef = {
+    resolverActors.lift(guid).getOrElse {
+      val ref = Akka.system.actorOf(Props[ResolverActor], name = s"$name:resolverActor:$guid")
+      ref ! ResolverActor.Messages.Data(guid)
+      resolverActors += (guid -> ref)
       ref
     }
   }

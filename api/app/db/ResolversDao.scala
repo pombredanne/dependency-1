@@ -1,5 +1,6 @@
 package db
 
+import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Validation
 import com.bryzek.dependency.v0.models.{Credentials, CredentialsUndefinedType, Resolver, ResolverForm, ResolverSummary}
 import com.bryzek.dependency.v0.models.{OrganizationSummary, UsernamePassword, Visibility}
@@ -127,6 +128,8 @@ object ResolversDao {
           ).execute()
         }
 
+        MainActor.ref ! MainActor.Messages.ResolverCreated(guid)
+
         Right(
           findByGuid(Authorization.All, guid).getOrElse {
             sys.error("Failed to create resolver")
@@ -138,6 +141,7 @@ object ResolversDao {
   }
 
   def softDelete(deletedBy: User, resolver: Resolver) {
+    MainActor.ref ! MainActor.Messages.ResolverDeleted(resolver.guid)
     SoftDelete.delete("resolvers", deletedBy.guid, resolver.guid)
   }
 

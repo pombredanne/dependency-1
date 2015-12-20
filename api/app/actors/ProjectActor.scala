@@ -23,6 +23,7 @@ object ProjectActor {
     case object Watch extends Message
 
     case class ProjectLibraryCreated(guid: UUID) extends Message
+    case class ProjectLibrarySync(guid: UUID) extends Message
     case class ProjectBinaryCreated(guid: UUID) extends Message
 
     case class LibrarySynced(guid: UUID) extends Message
@@ -59,17 +60,11 @@ class ProjectActor extends Actor with Util {
     }
 
     case m @ ProjectActor.Messages.ProjectLibraryCreated(guid) => withVerboseErrorHandler(m.toString) {
-      SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "project_library", guid) {
-        dataProject.foreach { project =>
-          ProjectLibrariesDao.findByGuid(Authorization.All, guid).map { projectLibrary =>
-            println(s"project guid[${project.guid}] projectLibraryCreated[${projectLibrary.guid}] group[${projectLibrary.groupId}] artifact[${projectLibrary.artifactId}]")
-            resolveLibrary(projectLibrary).map { lib =>
-              ProjectLibrariesDao.setLibrary(MainActor.SystemUser, projectLibrary, lib)
-            }
-          }
-          processPendingSync(project)
-        }
-      }
+      syncProjectLibrary(guid)
+    }
+
+    case m @ ProjectActor.Messages.ProjectLibrarySync(guid) => withVerboseErrorHandler(m.toString) {
+      syncProjectLibrary(guid)
     }
 
     case m @ ProjectActor.Messages.ProjectBinaryCreated(guid) => withVerboseErrorHandler(m.toString) {
@@ -158,6 +153,23 @@ class ProjectActor extends Actor with Util {
     }
 
     case m: Any => logUnhandledMessage(m)
+  }
+
+  /**
+    * Attempts to resolve the library. If successful, sets the
+    * project_libraries.library_guid
+    */
+  def syncProjectLibrary(guid: UUID) {
+    SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "project_library", guid) {
+      dataProject.foreach { project =>
+        ProjectLibrariesDao.findByGuid(Authorization.All, guid).map { projectLibrary =>
+          resolveLibrary(projectLibrary).map { lib =>
+            ProjectLibrariesDao.setLibrary(MainActor.SystemUser, projectLibrary, lib)
+          }
+        }
+        processPendingSync(project)
+      }
+    }
   }
 
   def processPendingSync(project: Project) {
