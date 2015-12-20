@@ -7,7 +7,7 @@ GET     /libraries/:guid                        controllers.LibrariesController.
 
 GET     /binaries                              controllers.ApplicationController.redirect
 GET     /binaries/                             controllers.BinariesController.index(page: Int ?= 0)
-GET     /binaries/:guid                        controllers.BinariesController.show(guid: java.util.UUID, projectsPage: Int ?= 0)
+GET     /binaries/:guid                        controllers.BinariesController.show(guid: java.util.UUID, versionsPage: Int ?= 0, projectsPage: Int ?= 0)
 
 GET     /projects                               controllers.ApplicationController.redirect
 GET     /projects/                              controllers.ProjectsController.index(page: Int ?= 0)

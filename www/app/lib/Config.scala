@@ -10,6 +10,8 @@ object Config {
   lazy val dependencyWwwHost = DefaultConfig.requiredString("dependency.www.host")
   lazy val githubBaseUrl = s"$dependencyWwwHost/login/github"
 
+  val VersionsPerPage = 5
+
   private val GithubScopes = Seq("user:email", "repo")
 
   private[this] val GitHubOauthUrl = "https://github.com/login/oauth/authorize"

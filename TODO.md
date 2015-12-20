@@ -1,6 +1,3 @@
-/binaries/guid
-  - show all versions in paginated table
-
 library / binary versions dao - findAll needs an Authorization
 
 When adding a new resolver:

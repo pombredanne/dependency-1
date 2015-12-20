@@ -20,6 +20,19 @@
     <li>@audit(binary.audit)</li>
   </ul>
 
+  @views.html.binaries.versions.table(versions)
+  @if(versions.hasPrevious || versions.hasNext) {
+    <ul class="pager">
+      @if(versions.hasPrevious) {
+        <li><a href="@routes.BinariesController.show(binary.guid, versionsPage = versions.page - 1, projectsPage = projectBinaries.page)">Previous</a></li>
+      }
+      @if(versions.hasNext) {
+        <li><a href="@routes.BinariesController.show(binary.guid, versionsPage = versions.page + 1, projectsPage = projectBinaries.page)">Next</a></li>
+      }
+    </ul>
+  }
+
+
   <h3>Projects</h3>
   <div class="table-responsive">
     <table class="table">
@@ -35,10 +48,10 @@
   @if(projectBinaries.hasPrevious || projectBinaries.hasNext) {
     <ul class="pager">
       @if(projectBinaries.hasPrevious) {
-        <li><a href="@routes.LibrariesController.show(binary.guid, projectsPage = projectBinaries.page - 1)">Previous</a></li>
+        <li><a href="@routes.LibrariesController.show(binary.guid, versionsPage = versions.page, projectsPage = projectBinaries.page - 1)">Previous</a></li>
       }
       @if(projectBinaries.hasNext) {
-        <li><a href="@routes.LibrariesController.show(binary.guid, projectsPage = projectBinaries.page + 1)">Next</a></li>
+        <li><a href="@routes.LibrariesController.show(binary.guid, versionsPage = versions.page, projectsPage = projectBinaries.page + 1)">Next</a></li>
       }
     </ul>
   }

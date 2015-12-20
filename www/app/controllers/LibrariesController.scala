@@ -2,7 +2,7 @@ package controllers
 
 import com.bryzek.dependency.v0.errors.UnitResponse
 import com.bryzek.dependency.v0.models.{Library, LibraryForm, Scms}
-import com.bryzek.dependency.www.lib.DependencyClientProvider
+import com.bryzek.dependency.www.lib.{Config, DependencyClientProvider}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
 import java.util.UUID
@@ -21,8 +21,6 @@ class LibrariesController @javax.inject.Inject() (
 ) extends BaseController(userTokensClient, dependencyClientProvider) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
-
-  val VersionsPerPage = 5
 
   override def section = Some(com.bryzek.dependency.www.lib.Section.Libraries)
 
@@ -51,8 +49,8 @@ class LibrariesController @javax.inject.Inject() (
       for {
         versions <- dependencyClient(request).libraryVersions.get(
           libraryGuid = Some(guid),
-          limit = VersionsPerPage+1,
-          offset = versionsPage * VersionsPerPage
+          limit = Config.VersionsPerPage+1,
+          offset = versionsPage * Config.VersionsPerPage
         )
         projectLibraries <- dependencyClient(request).projectLibraries.get(
           libraryGuid = Some(guid),
@@ -64,7 +62,7 @@ class LibrariesController @javax.inject.Inject() (
           views.html.libraries.show(
             uiData(request),
             library,
-            PaginatedCollection(versionsPage, versions, VersionsPerPage),
+            PaginatedCollection(versionsPage, versions, Config.VersionsPerPage),
             PaginatedCollection(projectsPage, projectLibraries)
           )
         )

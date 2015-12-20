@@ -15,7 +15,7 @@
     <li>@audit(library.audit)</li>
   </ul>
 
-  @views.html.libraries.versions.table(versions, displayLibrary = false)
+  @views.html.libraries.versions.table(versions)
   @if(versions.hasPrevious || versions.hasNext) {
     <ul class="pager">
       @if(versions.hasPrevious) {

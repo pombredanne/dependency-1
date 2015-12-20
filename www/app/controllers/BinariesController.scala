@@ -2,7 +2,7 @@ package controllers
 
 import com.bryzek.dependency.v0.errors.UnitResponse
 import com.bryzek.dependency.v0.models.Binary
-import com.bryzek.dependency.www.lib.DependencyClientProvider
+import com.bryzek.dependency.www.lib.{Config, DependencyClientProvider}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
 import java.util.UUID
@@ -40,14 +40,15 @@ class BinariesController @javax.inject.Inject() (
 
   def show(
     guid: UUID,
+    versionsPage: Int = 0,
     projectsPage: Int = 0
   ) = Identified.async { implicit request =>
     withBinary(request, guid) { binary =>
       for {
         versions <- dependencyClient(request).binaryVersions.get(
           binaryGuid = Some(guid),
-          limit = 5+1,
-          offset = 0
+          limit = Config.VersionsPerPage+1,
+          offset = versionsPage * Config.VersionsPerPage
         )
         projectBinaries <- dependencyClient(request).projectBinaries.get(
           binaryGuid = Some(guid),
@@ -59,7 +60,7 @@ class BinariesController @javax.inject.Inject() (
           views.html.binaries.show(
             uiData(request),
             binary,
-            PaginatedCollection(0, versions, 5),
+            PaginatedCollection(versionsPage, versions, Config.VersionsPerPage),
             PaginatedCollection(projectsPage, projectBinaries)
           )
         )

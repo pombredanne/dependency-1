@@ -1,4 +1,6 @@
-@(binaryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.BinaryVersion])
+@(
+  binaryVersions: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.BinaryVersion]
+)
 
 @if(binaryVersions.isEmpty) {
   <em>No binaries</em>
@@ -7,13 +9,11 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Binary</th>
           <th>Version</th>
         </tr>
       </thead>
       @binaryVersions.items.map { lang =>
         <tr>
-	  <td><a href="@routes.BinariesController.show(lang.binary.guid)">@lang.binary.name</a></td>
           <td>@lang.version</td>
         </tr>
       }
