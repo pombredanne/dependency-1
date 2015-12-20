@@ -60,36 +60,39 @@ class ResolversController @javax.inject.Inject() (
     }
   }
 
-  def create() = Identified { implicit request =>
-    Ok(
-      views.html.resolvers.create(
-        uiData(request), ResolversController.uiForm
+  def create() = Identified.async { implicit request =>
+    organizations(request).map { orgs =>
+      Ok(
+        views.html.resolvers.create(
+          uiData(request), ResolversController.uiForm, orgs
+        )
       )
-    )
+    }
   }
 
   def postCreate() = Identified.async { implicit request =>
     val boundForm = ResolversController.uiForm.bindFromRequest
-    boundForm.fold (
 
-      formWithErrors => Future {
-        Ok(views.html.resolvers.create(uiData(request), formWithErrors))
-      },
+    organizations(request).flatMap { orgs =>
+      boundForm.fold (
 
-      uiForm => {
-        userOrg(request).flatMap { org =>
+        formWithErrors => Future {
+          Ok(views.html.resolvers.create(uiData(request), formWithErrors, orgs))
+        },
+
+        uiForm => {
           dependencyClient(request).resolvers.post(
-            resolverForm = uiForm.resolverForm(org)
+            resolverForm = uiForm.resolverForm()
           ).map { resolver =>
             Redirect(routes.ResolversController.show(resolver.guid)).flashing("success" -> "Resolver created")
           }.recover {
             case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
-              Ok(views.html.resolvers.create(uiData(request), boundForm, response.errors.map(_.message)))
+              Ok(views.html.resolvers.create(uiData(request), boundForm, orgs, response.errors.map(_.message)))
             }
           }
         }
-      }
-    )
+      )
+    }
   }
 
   def withResolver[T](
@@ -122,14 +125,15 @@ class ResolversController @javax.inject.Inject() (
 object ResolversController {
 
   case class UiForm(
+    organizationGuid: String,
     uri: String,
     username: Option[String],
     password: Option[String]
   ) {
 
-    def resolverForm(org: Organization) = ResolverForm(
+    def resolverForm() = ResolverForm(
+      organizationGuid = UUID.fromString(organizationGuid),
       visibility = Visibility.Private,
-      organizationGuid = org.guid,
       uri = uri,
       credentials = credentials
     )
@@ -151,6 +155,7 @@ object ResolversController {
 
   private val uiForm = Form(
     mapping(
+      "organization_guid" -> nonEmptyText,
       "uri" -> nonEmptyText,
       "username" -> optional(text),
       "password" -> optional(text)

@@ -66,6 +66,7 @@ class LibraryActor extends Actor with Util {
           sender ! MainActor.Messages.ProjectLibrarySync(projectLibrary.project.guid, projectLibrary.guid)
         }
       }
+      context.stop(self)
     }
 
     case m: Any => logUnhandledMessage(m)

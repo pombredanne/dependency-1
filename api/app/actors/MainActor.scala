@@ -117,7 +117,6 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
       // TODO: Cleanup recommendations for this project
       projectActors.remove(guid).map { actor =>
         actor ! ProjectActor.Messages.Deleted
-        context.stop(_)
       }
       searchActor ! SearchActor.Messages.SyncProject(guid)
     }
@@ -165,7 +164,6 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
     case m @ MainActor.Messages.LibraryDeleted(guid) => withVerboseErrorHandler(m) {
       libraryActors.remove(guid).map { ref =>
         ref ! LibraryActor.Messages.Deleted
-        context.stop(ref)
       }
     }
 
@@ -184,20 +182,18 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
     case m @ MainActor.Messages.BinaryDeleted(guid) => withVerboseErrorHandler(m) {
       binaryActors.remove(guid).map { ref =>
         ref ! BinaryActor.Messages.Deleted
-        context.stop(ref)
       }
 
     }
 
     case m @ MainActor.Messages.ResolverCreated(guid) => withVerboseErrorHandler(m) {
-      resolverActors.remove(guid).map { ref =>
-        ref ! ResolverActor.Messages.Deleted
-        context.stop(ref)
-      }
+      upsertResolverActor(guid) ! ResolverActor.Messages.Sync
     }
 
     case m @ MainActor.Messages.ResolverDeleted(guid) => withVerboseErrorHandler(m) {
-      resolverActors.remove(guid).map { context.stop(_) }
+      resolverActors.remove(guid).map { ref =>
+        ref ! ResolverActor.Messages.Deleted
+      }
     }
 
     case m: Any => logUnhandledMessage(m)

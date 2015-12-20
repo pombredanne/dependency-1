@@ -51,6 +51,7 @@ class BinaryActor extends Actor with Util {
           sender ! MainActor.Messages.ProjectBinarySync(projectBinary.project.guid, projectBinary.guid)
         }
       }
+      context.stop(self)
     }
 
     case m: Any => logUnhandledMessage(m)

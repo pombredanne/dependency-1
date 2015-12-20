@@ -14,6 +14,7 @@ object ResolverActor {
   object Messages {
     case class Data(guid: UUID) extends Message
     case object Created extends Message
+    case object Sync extends Message
     case object Deleted extends Message
   }
 
@@ -30,39 +31,39 @@ class ResolverActor extends Actor with Util {
     }
 
     case m @ ResolverActor.Messages.Created => withVerboseErrorHandler(m.toString) {
-      dataResolver.foreach { resolver =>
-        // Trigger resolution for any project libraries that are currently not resolved.
-        val auth = (resolver.organization, resolver.visibility) match {
-          case (None, _) => Authorization.All
-          case (Some(org), Visibility.Public | Visibility.UNDEFINED(_)) => {
-            Authorization.All
-          }
-          case (Some(org), Visibility.Private) => {
-            Authorization.Organization(org.guid)
-          }
-        }
+      sync()
+    }
 
-        Pager.eachPage { offset =>
-          ProjectLibrariesDao.findAll(auth, hasLibrary = Some(false), offset = offset)
-        } { projectLibrary =>
-          sender ! MainActor.Messages.ProjectLibrarySync(projectLibrary.project.guid, projectLibrary.guid)
-        }
-      }
+    case m @ ResolverActor.Messages.Sync => withVerboseErrorHandler(m.toString) {
+      sync()
     }
 
     case m @ ResolverActor.Messages.Deleted => withVerboseErrorHandler(m.toString) {
-      dataResolver.foreach { resolver =>
-        Pager.eachPage { offset =>
-          LibrariesDao.findAll(Authorization.All, resolverGuid = Some(resolver.guid), offset = offset)
-        } { library =>
-          ProjectLibrariesDao.findAll(Authorization.All, libraryGuid = Some(library.guid)).map { projectLibrary =>
-            ProjectLibrariesDao.softDelete(MainActor.SystemUser, projectLibrary)
-          }
-        }
-      }
+      context.stop(self)
     }
 
     case m: Any => logUnhandledMessage(m)
+  }
+
+  def sync() {
+    dataResolver.foreach { resolver =>
+      // Trigger resolution for any project libraries that are currently not resolved.
+      val auth = (resolver.organization, resolver.visibility) match {
+        case (None, _) => Authorization.All
+        case (Some(org), Visibility.Public | Visibility.UNDEFINED(_)) => {
+          Authorization.All
+        }
+        case (Some(org), Visibility.Private) => {
+          Authorization.Organization(org.guid)
+        }
+      }
+
+      Pager.eachPage { offset =>
+        ProjectLibrariesDao.findAll(auth, hasLibrary = Some(false), offset = offset)
+      } { projectLibrary =>
+        sender ! MainActor.Messages.ProjectLibrarySync(projectLibrary.project.guid, projectLibrary.guid)
+      }
+    }
   }
 
 }

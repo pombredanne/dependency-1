@@ -1,8 +1,11 @@
 @(form: Form[controllers.ResolversController.UiForm],
+  orgs: Seq[com.bryzek.dependency.v0.models.Organization],
   cancelUrl: play.api.mvc.Call
 )(implicit flash: Flash, messages: Messages)
 
 <fieldset>
+
+    @organizations.select(orgs, form("organization_guid"), form.error("organization_guid"))
 
     @helper.inputText(
         form("uri"),

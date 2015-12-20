@@ -1,6 +1,7 @@
 @(
   data: com.bryzek.dependency.www.lib.UiData,
   form: Form[controllers.ResolversController.UiForm],
+  orgs: Seq[com.bryzek.dependency.v0.models.Organization],
   errorMessages: Seq[String] = Nil
 )(implicit flash: Flash, messages: Messages)
 
@@ -10,7 +11,7 @@
 
     @helper.form(action = routes.ResolversController.postCreate()) {
 
-      @resolverForm(form, routes.ResolversController.index())
+      @resolverForm(form, orgs, routes.ResolversController.index())
 
     }
 

@@ -147,6 +147,7 @@ class ProjectActor extends Actor with Util {
           RecommendationsDao.softDelete(MainActor.SystemUser, rec)
         }
       }
+      context.stop(self)
     }
 
     case m: Any => logUnhandledMessage(m)

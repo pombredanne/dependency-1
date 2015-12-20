@@ -24,6 +24,17 @@ abstract class BaseController(
     Redirect(routes.LoginController.index(return_url = Some(request.path))).flashing("warning" -> "Please login")
   }
 
+  def organizations[T](
+    request: IdentifiedRequest[T]
+  ) (
+    implicit ec: scala.concurrent.ExecutionContext
+  ): Future[Seq[Organization]] = {
+    dependencyClient(request).organizations.get(
+      userGuid = Some(request.user.guid),
+      limit = 100
+    )
+  }
+
   override def user(
     session: play.api.mvc.Session,
     headers: play.api.mvc.Headers

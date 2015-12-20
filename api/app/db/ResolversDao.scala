@@ -6,7 +6,7 @@ import com.bryzek.dependency.v0.models.{Credentials, CredentialsUndefinedType, R
 import com.bryzek.dependency.v0.models.{OrganizationSummary, UsernamePassword, Visibility}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.user.v0.models.User
-import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
+import io.flow.play.postgresql.{AuditsDao, Filters, Pager, SoftDelete}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -141,6 +141,17 @@ object ResolversDao {
   }
 
   def softDelete(deletedBy: User, resolver: Resolver) {
+    Pager.eachPage { offset =>
+      LibrariesDao.findAll(
+        Authorization.All,
+        resolverGuid = Some(resolver.guid),
+        offset = offset
+      )
+    } { library =>
+      println(s"Soft deleting library: " + library)
+      LibrariesDao.softDelete(MainActor.SystemUser, library)
+    }
+
     MainActor.ref ! MainActor.Messages.ResolverDeleted(resolver.guid)
     SoftDelete.delete("resolvers", deletedBy.guid, resolver.guid)
   }

@@ -353,13 +353,6 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  private[this] def organizations[T](request: IdentifiedRequest[T]): Future[Seq[Organization]] = {
-    dependencyClient(request).organizations.get(
-      userGuid = Some(request.user.guid),
-      limit = 100
-    )
-  }
-
 }
 
 object ProjectsController {
