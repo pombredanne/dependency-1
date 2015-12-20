@@ -298,16 +298,12 @@ class ProjectsController @javax.inject.Inject() (
         }
 
         val pending = pendingProjectLibraries.map { lib =>
-          s"Library ${lib.artifactId}.${lib.groupId}"
-        } ++ pendingProjectBinaries.map { bin =>
-          s"Binary ${bin.name}"
-        }
+          s"${lib.artifactId}.${lib.groupId}"
+        } ++ pendingProjectBinaries.map { _.name }
 
         val completed = completedProjectLibraries.map { lib =>
-          s"Library ${lib.artifactId}.${lib.groupId}"
-        } ++ completedProjectBinaries.map { bin =>
-          s"Binary ${bin.name}"
-        }
+          s"${lib.artifactId}.${lib.groupId}"
+        } ++ completedProjectBinaries.map { _.name }
 
         syncs.find { _.event == SyncEvent.Completed } match {
           case Some(rec) => {
