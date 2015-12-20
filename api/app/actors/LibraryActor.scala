@@ -3,7 +3,7 @@ package com.bryzek.dependency.actors
 import com.bryzek.dependency.v0.models.{Library, LibraryForm, VersionForm}
 import com.bryzek.dependency.api.lib.DefaultLibraryArtifactProvider
 import io.flow.play.postgresql.Pager
-import db.{Authorization, LibrariesDao, LibraryVersionsDao, ProjectLibrariesDao, ResolversDao, SyncsDao, UsersDao}
+import db.{Authorization, ItemsDao, LibrariesDao, LibraryVersionsDao, ProjectLibrariesDao, ResolversDao, SyncsDao, UsersDao}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -57,6 +57,8 @@ class LibraryActor extends Actor with Util {
 
     case m @ LibraryActor.Messages.Deleted => withVerboseErrorHandler(m) {
       dataLibrary.foreach { lib =>
+        ItemsDao.softDeleteByObjectGuid(Authorization.All, MainActor.SystemUser, lib.guid)
+
         Pager.eachPage { offset =>
           ProjectLibrariesDao.findAll(Authorization.All, libraryGuid = Some(lib.guid), offset = offset)
         } { projectLibrary =>

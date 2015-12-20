@@ -3,7 +3,7 @@ package com.bryzek.dependency.actors
 import com.bryzek.dependency.v0.models.{Binary, BinaryForm}
 import com.bryzek.dependency.api.lib.DefaultBinaryVersionProvider
 import io.flow.play.postgresql.Pager
-import db.{Authorization, BinariesDao, BinaryVersionsDao, ProjectBinariesDao, SyncsDao, UsersDao}
+import db.{Authorization, BinariesDao, BinaryVersionsDao, ItemsDao, ProjectBinariesDao, SyncsDao, UsersDao}
 import play.api.Logger
 import akka.actor.Actor
 import java.util.UUID
@@ -42,6 +42,8 @@ class BinaryActor extends Actor with Util {
 
     case m @ BinaryActor.Messages.Deleted => withVerboseErrorHandler(m) {
       dataBinary.foreach { binary =>
+        ItemsDao.softDeleteByObjectGuid(Authorization.All, MainActor.SystemUser, binary.guid)
+
         Pager.eachPage { offset =>
           ProjectBinariesDao.findAll(Authorization.All, binaryGuid = Some(binary.guid), offset = offset)
         } { projectBinary =>
