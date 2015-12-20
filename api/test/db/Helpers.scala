@@ -95,8 +95,8 @@ trait Helpers {
   def createBinaryVersion(
     org: Organization = createOrganization()
   ) (
-    binary: Binary = createBinary(org)(),
-    version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
+    implicit binary: Binary = createBinary(org),
+             version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
   ): BinaryVersion = {
     BinaryVersionsDao.create(systemUser, binary.guid, version)
   }
@@ -173,7 +173,7 @@ trait Helpers {
     org: Organization = createOrganization(),
     version: VersionForm = VersionForm(version = "0.0.1")
   ) (
-    implicit libraryForm: LibraryForm = createLibraryForm(org)().copy(
+    implicit libraryForm: LibraryForm = createLibraryForm(org).copy(
       groupId = s"z-test-${UUID.randomUUID}".toLowerCase,
       artifactId = s"z-test-${UUID.randomUUID}".toLowerCase
     )
@@ -341,7 +341,7 @@ trait Helpers {
   def createWatchProject(
     org: Organization
   ) (
-    form: WatchProjectForm = createWatchProjectForm(org)()
+    implicit form: WatchProjectForm = createWatchProjectForm(org)
   ): WatchProject = {
     create(WatchProjectsDao.create(systemUser, form))
   }
@@ -349,8 +349,8 @@ trait Helpers {
   def createWatchProjectForm(
     org: Organization
   ) (
-    user: User = createUser(),
-    project: Project = createProject(org)
+    implicit user: User = createUser(),
+             project: Project = createProject(org)
   ) = {
     WatchProjectForm(
       userGuid = user.guid,
@@ -363,7 +363,7 @@ trait Helpers {
   ) (
     implicit versions: Seq[String] = Seq("1.0.0", "1.0.1", "1.0.2")
   ): (Library, Seq[LibraryVersion]) = {
-    val library = createLibrary(org)(createLibraryForm(org)().copy(version = None))
+    val library = createLibrary(org)(createLibraryForm(org).copy(version = None))
     (
       library,
       versions.map { version =>
@@ -397,7 +397,7 @@ trait Helpers {
   def upsertItem(
     org: Organization
   ) (
-    form: ItemForm = createItemForm(org)()
+    implicit form: ItemForm = createItemForm(org)
   ): Item = {
     ItemsDao.upsert(systemUser, form)
   }
@@ -405,7 +405,7 @@ trait Helpers {
   def createItemSummary(
     org: Organization
   ) (
-    binary: Binary = createBinary(org)()
+    implicit binary: Binary = createBinary(org)
   ): ItemSummary = {
     BinarySummary(
       guid = binary.guid,
@@ -417,7 +417,7 @@ trait Helpers {
   def createItemForm(
     org: Organization
   ) (
-    summary: ItemSummary = createItemSummary(org)()
+    implicit summary: ItemSummary = createItemSummary(org)
   ): ItemForm = {
     val label = summary match {
       case BinarySummary(guid, org, name) => name.toString
