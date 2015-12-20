@@ -1,6 +1,6 @@
 package db
 
-import com.bryzek.dependency.v0.models.VersionForm
+import com.bryzek.dependency.v0.models.{VersionForm, Visibility}
 import org.scalatest._
 import play.api.db._
 import play.api.test._
@@ -54,25 +54,25 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findByGuid" in {
-    val version = createLibraryVersion(org)()
-    LibraryVersionsDao.findByGuid(version.guid).map(_.guid) must be(
+    val version = createLibraryVersion(org)
+    LibraryVersionsDao.findByGuid(Authorization.All, version.guid).map(_.guid) must be(
       Some(version.guid)
     )
 
-    LibraryVersionsDao.findByGuid(UUID.randomUUID) must be(None)
+    LibraryVersionsDao.findByGuid(Authorization.All, UUID.randomUUID) must be(None)
   }
 
   "findAll by guids" in {
-    val version1 = createLibraryVersion(org)()
-    val version2 = createLibraryVersion(org)()
+    val version1 = createLibraryVersion(org)
+    val version2 = createLibraryVersion(org)
 
-    LibraryVersionsDao.findAll(guids = Some(Seq(version1.guid, version2.guid))).map(_.guid).sorted must be(
+    LibraryVersionsDao.findAll(Authorization.All, guids = Some(Seq(version1.guid, version2.guid))).map(_.guid).sorted must be(
       Seq(version1.guid, version2.guid).sorted
     )
 
-    LibraryVersionsDao.findAll(guids = Some(Nil)) must be(Nil)
-    LibraryVersionsDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    LibraryVersionsDao.findAll(guids = Some(Seq(version1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(version1.guid))
+    LibraryVersionsDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
+    LibraryVersionsDao.findAll(Authorization.All, guids = Some(Seq(UUID.randomUUID))) must be(Nil)
+    LibraryVersionsDao.findAll(Authorization.All, guids = Some(Seq(version1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(version1.guid))
   }
 
   "softDelete" in {
@@ -84,5 +84,49 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     version1.guid must not be(version2.guid)
     version2.guid must be(version3.guid)
+  }
+
+  "authorization" must {
+
+    "allow all to access public libraries" in {
+      val user = createUser()
+      val org = createOrganization(user = user)
+      val resolver = createResolver(org, user)(
+        createResolverForm(org = org, visibility = Visibility.Public)
+      )
+      val library = createLibrary(org, user)(
+        createLibraryForm(org, user)(resolver = resolver)
+      )
+      val libraryVersion = createLibraryVersion(org, user = user)(library = library)
+      libraryVersion.library.resolver.visibility must be(Visibility.Public)
+
+      LibraryVersionsDao.findAll(Authorization.PublicOnly, guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
+      LibraryVersionsDao.findAll(Authorization.All, guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
+      LibraryVersionsDao.findAll(Authorization.Organization(org.guid), guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
+      LibraryVersionsDao.findAll(Authorization.Organization(createOrganization().guid), guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
+      LibraryVersionsDao.findAll(Authorization.User(user.guid), guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
+    }
+
+    "allow only org users to access private libraries" in {
+      val user = createUser()
+      val org = createOrganization(user = user)
+      val resolver = createResolver(org, user)(
+        createResolverForm(org = org, visibility = Visibility.Private)
+      )
+      val library = createLibrary(org, user)(
+        createLibraryForm(org, user)(resolver = resolver)
+      )
+      val libraryVersion = createLibraryVersion(org, user = user)(library = library)
+      libraryVersion.library.resolver.visibility must be(Visibility.Private)
+
+      LibraryVersionsDao.findAll(Authorization.All, guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
+      LibraryVersionsDao.findAll(Authorization.Organization(org.guid), guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
+      LibraryVersionsDao.findAll(Authorization.User(user.guid), guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
+
+      LibraryVersionsDao.findAll(Authorization.PublicOnly, guid = Some(libraryVersion.guid)) must be(Nil)
+      LibraryVersionsDao.findAll(Authorization.Organization(createOrganization().guid), guid = Some(libraryVersion.guid)) must be(Nil)
+      LibraryVersionsDao.findAll(Authorization.User(createUser().guid), guid = Some(libraryVersion.guid)) must be(Nil)
+    }
+
   }
 }

@@ -1,4 +1,5 @@
-library / binary versions dao - findAll needs an Authorization
+replace Clause with and or or
+  /web/dependency/api/app/db/Authorization.scala
 
 When adding a new resolver:
   - for all project_libraries for that org that have a null

@@ -1,8 +1,9 @@
 package controllers
 
-import db.LibraryVersionsDao
+import db.{Authorization, LibraryVersionsDao}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
+import io.flow.user.v0.models.User
 import io.flow.play.util.Validation
 import com.bryzek.dependency.v0.models.LibraryVersion
 import com.bryzek.dependency.v0.models.json._
@@ -26,6 +27,7 @@ class LibraryVersions @javax.inject.Inject() (
     Ok(
       Json.toJson(
         LibraryVersionsDao.findAll(
+          Authorization.User(request.user.guid),
           guid = guid,
           guids = optionalGuids(guids),
           libraryGuid = libraryGuid,
@@ -37,15 +39,18 @@ class LibraryVersions @javax.inject.Inject() (
   }
 
   def getByGuid(guid: UUID) = Identified { request =>
-    withLibraryVersion(guid) { library =>
+    withLibraryVersion(request.user, guid) { library =>
       Ok(Json.toJson(library))
     }
   }
 
-  def withLibraryVersion(guid: UUID)(
+  def withLibraryVersion(user: User, guid: UUID) (
     f: LibraryVersion => Result
   ): Result = {
-    LibraryVersionsDao.findByGuid(guid) match {
+    LibraryVersionsDao.findByGuid(
+      Authorization.User(user.guid),
+      guid
+    ) match {
       case None => {
         NotFound
       }

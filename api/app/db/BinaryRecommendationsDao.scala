@@ -19,6 +19,7 @@ object BinaryRecommendationsDao {
 
   def forProject(project: Project): Seq[BinaryRecommendation] = {
     var recommendations = scala.collection.mutable.ListBuffer[BinaryRecommendation]()
+    val auth = Authorization.Organization(project.organization.guid)
 
     Pager.eachPage { offset =>
       ProjectBinariesDao.findAll(
@@ -28,8 +29,8 @@ object BinaryRecommendationsDao {
         offset = offset
       )
     } { projectBinary =>
-      projectBinary.binary.flatMap { lib => BinariesDao.findByGuid(Authorization.All, lib.guid) }.map { binary =>
-        val recentVersions = versionsGreaterThan(Authorization.Organization(project.organization.guid), binary, projectBinary.version)
+      projectBinary.binary.flatMap { lib => BinariesDao.findByGuid(auth, lib.guid) }.map { binary =>
+        val recentVersions = versionsGreaterThan(auth, binary, projectBinary.version)
         recommend(projectBinary, recentVersions).map { v =>
           recommendations ++= Seq(
             BinaryRecommendation(

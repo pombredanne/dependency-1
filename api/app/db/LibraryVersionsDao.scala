@@ -53,7 +53,10 @@ object LibraryVersionsDao {
   private[db] def upsertWithConnection(createdBy: User, libraryGuid: UUID, form: VersionForm)(
     implicit c: java.sql.Connection
   ): LibraryVersion = {
+    val auth = Authorization.User(createdBy.guid)
+
     findAllWithConnection(
+      auth,
       libraryGuid = Some(libraryGuid),
       version = Some(form.version),
       crossBuildVersion = Some(form.crossBuildVersion),
@@ -66,6 +69,7 @@ object LibraryVersionsDao {
         case Failure(ex) => {
           // check concurrent insert
           findAllWithConnection(
+            auth,
             libraryGuid = Some(libraryGuid),
             version = Some(form.version),
             crossBuildVersion = Some(form.crossBuildVersion),
@@ -102,7 +106,7 @@ object LibraryVersionsDao {
       'created_by_guid -> createdBy.guid
     ).execute()
 
-    findByGuidWithConnection(guid).getOrElse {
+    findByGuidWithConnection(Authorization.All, guid).getOrElse {
       sys.error("Failed to create version")
     }
   }
@@ -112,11 +116,13 @@ object LibraryVersionsDao {
   }
 
   def findByLibraryAndVersionAndCrossBuildVersion(
+    auth: Authorization,
     library: Library,
     version: String,
     crossBuildVersion: Option[String]
   ): Option[LibraryVersion] = {
     findAll(
+      auth,
       libraryGuid = Some(library.guid),
       version = Some(version),
       crossBuildVersion = Some(crossBuildVersion),
@@ -125,22 +131,25 @@ object LibraryVersionsDao {
   }
 
   def findByGuid(
+    auth: Authorization,
     guid: UUID
   ): Option[LibraryVersion] = {
     DB.withConnection { implicit c =>
-      findByGuidWithConnection(guid)
+      findByGuidWithConnection(auth, guid)
     }
   }
 
   def findByGuidWithConnection(
+    auth: Authorization,
     guid: UUID
   ) (
     implicit c: java.sql.Connection
   ): Option[LibraryVersion] = {
-    findAllWithConnection(guid = Some(guid), limit = 1).headOption
+    findAllWithConnection(auth, guid = Some(guid), limit = 1).headOption
   }
 
   def findAll(
+    auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     libraryGuid: Option[UUID] = None,
@@ -153,6 +162,7 @@ object LibraryVersionsDao {
   ) = {
     DB.withConnection { implicit c =>
       findAllWithConnection(
+        auth,
         guid = guid,
         guids = guids,
         libraryGuid = libraryGuid,
@@ -167,6 +177,7 @@ object LibraryVersionsDao {
   }
 
   def findAllWithConnection(
+    auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     libraryGuid: Option[UUID] = None,
@@ -181,6 +192,7 @@ object LibraryVersionsDao {
   ): Seq[LibraryVersion] = {
     val sql = Seq(
       Some(BaseQuery.trim),
+      Some(auth.organizations("organizations.guid", Some("resolvers.visibility")).and),      
       guid.map { v => s"and library_versions.guid = {guid}::uuid" },
       guids.map { Filters.multipleGuids(s"library_versions.guid", _) },
       libraryGuid.map { v => s"and library_versions.library_guid = {library_guid}::uuid" },

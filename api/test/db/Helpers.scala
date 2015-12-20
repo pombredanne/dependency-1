@@ -105,7 +105,7 @@ trait Helpers {
     org: Organization = createOrganization(),
     user: User = systemUser
   ) (
-    implicit form: LibraryForm = createLibraryForm(org)()
+    implicit form: LibraryForm = createLibraryForm(org, user)
   ): Library = {
     LibrariesDao.create(user, form).right.getOrElse {
       sys.error("Failed to create library")
@@ -113,10 +113,11 @@ trait Helpers {
   }
 
   def createLibraryForm(
-    org: Organization = createOrganization()
+    org: Organization = createOrganization(),
+    user: User = systemUser
   ) (
     implicit versionForm: VersionForm = VersionForm("0.0.1"),
-             resolver: Resolver = createResolver(org)
+             resolver: Resolver = createResolver(org, user)
   ) = LibraryForm(
     organizationGuid = org.guid,
     groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
@@ -126,12 +127,13 @@ trait Helpers {
   )
 
   def createLibraryVersion(
-    org: Organization = createOrganization()
+    org: Organization = createOrganization(),
+    user: User = systemUser
   ) (
-    library: Library = createLibrary(org)(),
-    version: VersionForm = createVersionForm()
+    implicit library: Library = createLibrary(org, user),
+             version: VersionForm = createVersionForm()
   ): LibraryVersion = {
-    LibraryVersionsDao.create(systemUser, library.guid, version)
+    LibraryVersionsDao.create(user, library.guid, version)
   }
 
   def createVersionForm(
