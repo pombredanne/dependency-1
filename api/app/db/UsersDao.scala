@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.actors.MainActor
-import io.flow.play.postgresql.{AuditsDao, Filters, OrderBy}
+import io.flow.play.postgresql.{AuditsDao, Filters}
 import io.flow.user.v0.models.{Name, User, UserForm}
 import java.util.UUID
 import anorm._
@@ -25,7 +25,7 @@ object UsersDao {
     }
   }
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select users.guid,
            users.email,
            users.first_name as users_name_first,
@@ -33,8 +33,7 @@ object UsersDao {
            users.avatar_url,
            ${AuditsDao.all("users")}
       from users
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into users
@@ -112,28 +111,27 @@ object UsersDao {
     guids: Option[Seq[UUID]] = None,
     email: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.asc("users", "created_at"),
+    orderBy: OrderBy = OrderBy.parseOrError("users.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[User] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v => "and users.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("users.guid", _) },
-      email.map { v => "and lower(users.email) = lower(trim({email}))" },
-      isDeleted.map(Filters.isDeleted("users", _)),
-      Some(s"order by $orderBy limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      email.map('email -> _.toString)
-    ).flatten
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
-        io.flow.user.v0.anorm.parsers.User.table("users").*
-      )
+      BaseQuery.
+        uuid("users.guid", guid).
+        multi("users.guid", guids).
+        text(
+          "users.email",
+          email,
+          columnFunctions = Seq(Query.Function.Lower),
+          valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
+        ).
+        nullBoolean("users.deleted_at", isDeleted).
+        orderBy(Some(s"users.created_at")).
+        limit(Some(limit)).
+        offset(Some(offset)).
+        as(
+          io.flow.user.v0.anorm.parsers.User.table("users").*
+        )
     }
   }
 

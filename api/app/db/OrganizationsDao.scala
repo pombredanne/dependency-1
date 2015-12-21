@@ -188,6 +188,7 @@ object OrganizationsDao {
     key: Option[String] = None,
     forUserGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
+    orderBy: OrderBy = OrderBy.parseOrError("organizations.key, -organizations.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Organization] = {
@@ -209,7 +210,7 @@ object OrganizationsDao {
           s"select organization_guid from user_organizations where deleted_at is null and user_guid = {$bindVar}::uuid"
         }).
         nullBoolean("organizations.deleted_at", isDeleted).
-        orderBy(Some(s"organizations.created_at")).
+        orderBy(orderBy.sql).
         limit(Some(limit)).
         offset(Some(offset)).
         as(

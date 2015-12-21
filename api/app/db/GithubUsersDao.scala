@@ -1,6 +1,6 @@
 package db
 
-import io.flow.play.postgresql.{AuditsDao, Filters, OrderBy}
+import io.flow.play.postgresql.{AuditsDao, Filters}
 import com.bryzek.dependency.v0.models.{GithubUser, GithubUserForm}
 import io.flow.user.v0.models.User
 import java.util.UUID
@@ -75,7 +75,7 @@ object GithubUsersDao {
     login: Option[String] = None,
     id: Option[Long] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.asc("github_users", "created_at"),
+    orderBy: OrderBy = OrderBy.parseOrError("github_users.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[GithubUser] = {
@@ -86,7 +86,7 @@ object GithubUsersDao {
       login.map { v => "and github_users.login = trim({login})" },
       id.map { v => "and github_users.id = {id}" },
       isDeleted.map(Filters.isDeleted("github_users", _)),
-      Some(s"order by $orderBy limit ${limit} offset ${offset}")
+      Some(s"order by ${orderBy.sql.get} limit ${limit} offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](
