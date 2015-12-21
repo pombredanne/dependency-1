@@ -116,19 +116,23 @@ object UsersDao {
     offset: Long = 0
   ): Seq[User] = {
     DB.withConnection { implicit c =>
-      BaseQuery.
-        uuid("users.guid", guid).
-        multi("users.guid", guids).
+      Standards.query(
+        BaseQuery,
+        tableName = "users",
+        auth = Clause.True, // TODO
+        guid = guid,
+        guids = guids,
+        orderBy = orderBy,
+        isDeleted = isDeleted,
+        limit = limit,
+        offset = offset
+      ).
         text(
           "users.email",
           email,
           columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
-        nullBoolean("users.deleted_at", isDeleted).
-        orderBy(orderBy.sql).
-        limit(Some(limit)).
-        offset(Some(offset)).
         as(
           io.flow.user.v0.anorm.parsers.User.table("users").*
         )
