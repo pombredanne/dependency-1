@@ -13,7 +13,7 @@ import java.util.UUID
 
 object LibrariesDao {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select libraries.guid,
            libraries.group_id,
            libraries.artifact_id,
@@ -29,8 +29,7 @@ object LibrariesDao {
       join organizations on organizations.deleted_at is null and organizations.guid = libraries.organization_guid
       join resolvers on resolvers.deleted_at is null and resolvers.guid = libraries.resolver_guid
       left join organizations resolver_orgs on resolver_orgs.deleted_at is null and resolver_orgs.guid = resolvers.organization_guid
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into libraries
@@ -152,38 +151,42 @@ object LibrariesDao {
     artifactId: Option[String] = None,
     resolverGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
+    orderBy: OrderBy = OrderBy.parseOrError("lower(libraries.group_id), lower(libraries.artifact_id), libraries.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Library] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      Some(auth.organizations("organizations.guid", Some("resolvers.visibility")).and),
-      guid.map { v => "and libraries.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("libraries.guid", _) },
-      organizationGuid.map { v => "and libraries.organization_guid = {organization_guid}::uuid" },
-      projectGuid.map { v => """
-        and libraries.guid in (select library_guid from project_libraries where deleted_at is null and project_guid = {project_guid}::uuid)
-      """.trim },
-      groupId.map { v => "and lower(libraries.group_id) = lower(trim({group_id}))" },
-      artifactId.map { v => "and lower(libraries.artifact_id) = lower(trim({artifact_id}))" },
-      resolverGuid.map { v => "and libraries.resolver_guid = {resolver_guid}::uuid" },
-      isDeleted.map(Filters.isDeleted("libraries", _)),
-      Some(s"order by lower(libraries.group_id), lower(libraries.artifact_id), libraries.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      organizationGuid.map('organization_guid -> _.toString),
-      projectGuid.map('project_guid -> _.toString),
-      groupId.map('group_id -> _.toString),
-      artifactId.map('artifact_id -> _.toString),
-      resolverGuid.map('resolver_guid -> _.toString)
-    ).flatten
-
-    DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.Library.table("libraries").*
-      )
+    DB.withConnection { implicit c =>    
+      Standards.query(
+        BaseQuery,
+        tableName = "libraries",
+        auth = auth.organizations("organizations.guid", Some("resolvers.visibility")),
+        guid = guid,
+        guids = guids,
+        isDeleted = isDeleted,
+        orderBy = orderBy,
+        limit = limit,
+        offset = offset
+      ).
+        uuid("libraries.organization_guid", organizationGuid).
+        subquery("libraries.guid", "project_guid", projectGuid, { bindVar =>
+          s"select library_guid from project_libraries where deleted_at is null and project_guid = {$bindVar}::uuid"
+        }).
+        text(
+          "libraries.group_id",
+          groupId,
+          columnFunctions = Seq(Query.Function.Lower),
+          valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
+        ).
+        text(
+          "libraries.artifact_id",
+          artifactId,
+          columnFunctions = Seq(Query.Function.Lower),
+          valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
+        ).
+        uuid("libraries.resolver_guid", resolverGuid).
+        as(
+          com.bryzek.dependency.v0.anorm.parsers.Library.table("libraries").*
+        )
     }
   }
 
