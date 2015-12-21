@@ -1,4 +1,6 @@
-Standards: change limit to Option
+Standards:
+  - change limit to Option
+  - change order by to string (then can use it for resolvers)
 Add auth to recommendations dao
 
 Remove api/app/db/OrderBy.scala and api/app/db/Query.scala and pull in from lib-play-postgresql

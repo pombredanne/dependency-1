@@ -17,7 +17,7 @@ object ResolversDao {
 
   val GithubOauthResolverTag = "github_oauth"
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select resolvers.guid,
            resolvers.visibility,
            resolvers.credentials,
@@ -28,8 +28,7 @@ object ResolversDao {
            organizations.key as resolvers_organization_key
       from resolvers
       left join organizations on organizations.deleted_at is null and organizations.guid = resolvers.organization_guid
-     where true
-  """
+  """)
 
   private[this] val SelectCredentialsQuery = s"""
     select credentials from resolvers where guid = {guid}::uuid
@@ -185,37 +184,33 @@ object ResolversDao {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Resolver] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      Some(auth.organizations("resolvers.organization_guid", Some("resolvers.visibility")).and),
-      guid.map { v =>  "and resolvers.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("resolvers.guid", _) },
-      visibility.map { v => "and resolvers.visibility = {visibility}" },
-      org.map { LocalFilters.organizationByKey("organizations.key", "org_key", _) },
-      organizationGuid.map { v => "and resolvers.organization_guid = {organization_guid}::uuid" },
-      uri.map { v => "and resolvers.uri = trim({uri})" },
-      isDeleted.map(Filters.isDeleted("resolvers", _)),
-        Some(s"""
-          order by case when visibility = '${Visibility.Public}' then 0
-                        when visibility = '${Visibility.Private}' then 1
-                        else 2 end, resolvers.position, lower(resolvers.uri), resolvers.created_at
-          limit ${limit} offset ${offset}
-        """.trim)
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      organizationGuid.map('organization_guid -> _.toString),
-      visibility.map('visibility -> _.toString),
-      org.map('org_key -> _),
-      uri.map('uri -> _.toString),
-      Some('public -> Visibility.Public.toString)
-    ).flatten
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.Resolver.table("resolvers").*
-      ).map { maskCredentials(_) }
+      BaseQuery.
+        condition(Some(auth.organizations("resolvers.organization_guid", Some("resolvers.visibility")).sql)).
+        uuid("resolvers.guid", guid).
+        multi("resolvers.guid", guids).
+        text("resolvers.visibility", visibility).
+        text(
+          "organizations.key",
+          org,
+          valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
+        ).
+        uuid("organizations.guid", organizationGuid).
+        text("resolvers.uri", uri).
+        nullBoolean(s"resolvers.deleted_at", isDeleted).
+        orderBy(
+          Some(s"""
+          case when visibility = '${Visibility.Public}' then 0
+               when visibility = '${Visibility.Private}' then 1
+               else 2 end,
+          resolvers.position, lower(resolvers.uri),resolvers.created_at
+        """.trim)
+        ).
+        limit(Some(limit)).
+        offset(Some(offset)).
+        as(
+          com.bryzek.dependency.v0.anorm.parsers.Resolver.table("resolvers").*
+        ).map { maskCredentials(_) }
     }
   }
 
