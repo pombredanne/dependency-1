@@ -25,11 +25,10 @@ case class LastEmail(
 
 object LastEmailsDao {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select last_emails.*
       from last_emails
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into last_emails
@@ -87,29 +86,22 @@ object LastEmailsDao {
     userGuid: Option[UUID] = None,
     publication: Option[Publication] = None,
     isDeleted: Option[Boolean] = Some(false),
+    orderBy: OrderBy = OrderBy.parseOrError("-last_emails.publication, last_emails.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[LastEmail] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v =>  "and last_emails.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("last_emails.guid", _) },
-      userGuid.map { v => "and last_emails.user_guid = {user_guid}::uuid" },
-      publication.map { v => "and last_emails.publication = {publication}" },
-      isDeleted.map(Filters.isDeleted("last_emails", _)),
-      Some(s"order by last_emails.publication, last_emails.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      userGuid.map('user_guid -> _.toString),
-      publication.map('publication -> _.toString)
-    ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
-        parser.*
-      )
+      BaseQuery.
+        uuid("last_emails.guid", guid).
+        multi("last_emails.guid", guids).
+        uuid("last_emails.user_guid", userGuid).
+        text("last_emails.publication", publication).
+        nullBoolean("last_emails.deleted_at", isDeleted).
+        orderBy(orderBy.sql).
+        limit(Some(limit)).
+        offset(Some(offset)).
+        as(parser.*)
     }
   }
 
