@@ -139,7 +139,7 @@ object RecommendationsDao {
         auth = auth.organizations("projects.organization_guid", Some("projects.visibility")),
         guid = guid,
         guids = guids,
-        orderBy = orderBy,
+        orderBy = orderBy.sql,
         isDeleted = isDeleted,
         limit = limit,
         offset = offset

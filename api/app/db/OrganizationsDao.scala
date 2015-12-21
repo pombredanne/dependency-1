@@ -199,7 +199,7 @@ object OrganizationsDao {
         auth = auth.organizations("organizations.guid"),
         guid = guid,
         guids = guids,
-        orderBy = orderBy,
+        orderBy = orderBy.sql,
         isDeleted = isDeleted,
         limit = Some(limit),
         offset = offset

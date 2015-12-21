@@ -163,7 +163,7 @@ object LibrariesDao {
         guid = guid,
         guids = guids,
         isDeleted = isDeleted,
-        orderBy = orderBy,
+        orderBy = orderBy.sql,
         limit = Some(limit),
         offset = offset
       ).

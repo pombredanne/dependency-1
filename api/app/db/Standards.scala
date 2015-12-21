@@ -15,7 +15,7 @@ case object Standards {
     guid: Option[UUID],
     guids: Option[Seq[UUID]],
     isDeleted: Option[Boolean],
-    orderBy: OrderBy,
+    orderBy: Option[String],
     limit: Option[Long] = Some(25),
     offset: Long = 0
   ): Query = {
@@ -24,7 +24,7 @@ case object Standards {
       multi(s"$tableName.guid", guids).
       condition(Some(auth.sql)).
       nullBoolean(s"$tableName.deleted_at", isDeleted).
-      orderBy(orderBy.sql).
+      orderBy(orderBy).
       limit(limit).
       offset(Some(offset))
   }

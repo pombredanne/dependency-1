@@ -221,7 +221,7 @@ object ProjectLibrariesDao {
         auth = auth.organizations("organizations.guid", Some("projects.visibility")),
         guid = guid,
         guids = guids,
-        orderBy = orderBy,
+        orderBy = orderBy.sql,
         isDeleted = isDeleted,
         limit = Some(limit),
         offset = offset

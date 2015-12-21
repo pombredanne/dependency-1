@@ -126,7 +126,7 @@ object WatchProjectsDao {
         auth = Clause.True, // TODO
         guid = guid,
         guids = guids,
-        orderBy = orderBy,
+        orderBy = orderBy.sql,
         isDeleted = isDeleted,
         limit = Some(limit),
         offset = offset

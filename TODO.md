@@ -1,5 +1,5 @@
-Standards:
-  - change order by to string (then can use it for resolvers)
+Move resolevrs to standards
+
 Add auth to recommendations dao
 
 Remove api/app/db/OrderBy.scala and api/app/db/Query.scala and pull in from lib-play-postgresql

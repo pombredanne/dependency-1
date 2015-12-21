@@ -207,7 +207,7 @@ object ProjectsDao {
         auth = auth.organizations("projects.organization_guid", Some("projects.visibility")),
         guid = guid,
         guids = guids,
-        orderBy = orderBy,
+        orderBy = orderBy.sql,
         isDeleted = isDeleted,
         limit = Some(limit),
         offset = offset
