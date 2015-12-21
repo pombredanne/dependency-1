@@ -21,7 +21,7 @@ case class ProjectLibraryForm(
 
 object ProjectLibrariesDao {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select project_libraries.guid,
            project_libraries.group_id,
            project_libraries.artifact_id,
@@ -37,8 +37,7 @@ object ProjectLibrariesDao {
       from project_libraries
       join projects on projects.deleted_at is null and projects.guid = project_libraries.project_guid
       join organizations on organizations.deleted_at is null and organizations.guid = projects.organization_guid
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into project_libraries
@@ -210,59 +209,64 @@ object ProjectLibrariesDao {
     isSynced: Option[Boolean] = None,
     hasLibrary: Option[Boolean] = None,
     isDeleted: Option[Boolean] = Some(false),
+    orderBy: OrderBy = OrderBy.parseOrError("lower(project_libraries.group_id), lower(project_libraries.artifact_id), project_libraries.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[ProjectLibrary] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      Some(auth.organizations("organizations.guid", Some("projects.visibility")).and),
-      guid.map { v => "and project_libraries.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("project_libraries.guid", _) },
-      projectGuid.map { v => "and project_libraries.project_guid = {project_guid}::uuid" },
-      libraryGuid.map { v => "and project_libraries.library_guid = {library_guid}::uuid" },
-      groupId.map { v => "and lower(project_libraries.group_id) = lower(trim({group_id}))" },
-      artifactId.map { v => "and lower(project_libraries.artifact_id) = lower(trim({artifact_id}))" },
-      version.map { v => "and project_libraries.version = trim({version})" },
-      crossBuildVersion.map { v =>
-        v match {
-          case None => "and project_libraries.cross_build_version is null"
-          case Some(_) => "and project_libraries.cross_build_version = {cross_build_version}"
-        }
-      },
-      isSynced.map { value =>
-        val clause = "select 1 from syncs where object_guid = project_libraries.guid and event = {sync_event_completed}"
-        value match {
-          case true => s"and exists ($clause)"
-          case false => s"and not exists ($clause)"
-        }
-      },
-      hasLibrary.map { value =>
-        value match {
-          case true => s"and project_libraries.library_guid is not null"
-          case false => s"and project_libraries.library_guid is null"
-        }
-      },
-      isDeleted.map(Filters.isDeleted("project_libraries", _)),
-      Some(s"order by lower(project_libraries.group_id), lower(project_libraries.artifact_id), project_libraries.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      projectGuid.map('project_guid -> _.toString),
-      libraryGuid.map('library_guid -> _.toString),
-      groupId.map('group_id -> _),
-      artifactId.map('artifact_id -> _),
-      version.map('version -> _.toString),
-      crossBuildVersion.flatMap { cbv =>
-        cbv.map('cross_build_version -> _.toString)
-      },
-      isSynced.map(_ => ('sync_event_completed -> SyncEvent.Completed.toString))
-    ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.ProjectLibrary.table("project_libraries").*
-      )
+      Standards.query(
+        BaseQuery,
+        tableName = "project_libraries",
+        auth = auth.organizations("organizations.guid", Some("projects.visibility")),
+        guid = guid,
+        guids = guids,
+        orderBy = orderBy,
+        isDeleted = isDeleted,
+        limit = limit,
+        offset = offset
+      ).
+        uuid("project_libraries.project_guid", projectGuid).
+        uuid("project_libraries.library_guid", libraryGuid).
+        text(
+          "project_libraries.group_id",
+          groupId,
+          columnFunctions = Seq(Query.Function.Lower),
+          valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
+        ).
+        text(
+          "project_libraries.artifact_id",
+          artifactId,
+          columnFunctions = Seq(Query.Function.Lower),
+          valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
+        ).
+        text(
+          "project_libraries.version",
+          version
+        ).
+        condition(
+          crossBuildVersion.map { v =>
+            v match {
+              case None => "project_libraries.cross_build_version is null"
+              case Some(_) => "project_libraries.cross_build_version = {cross_build_version}"
+            }
+          }
+        ).
+        bind("cross_build_version", crossBuildVersion.flatten).
+        condition(
+          isSynced.map { value =>
+            val clause = "select 1 from syncs where object_guid = project_libraries.guid and event = {sync_event_completed}"
+            value match {
+              case true => s"exists ($clause)"
+              case false => s"not exists ($clause)"
+            }
+          }
+        ).
+        bind("sync_event_completed", isSynced.map(_ => SyncEvent.Completed.toString)).
+        nullBoolean("project_libraries.library_guid", hasLibrary).
+        as(
+          com.bryzek.dependency.v0.anorm.parsers.ProjectLibrary.table("project_libraries").*
+        )
     }
   }
 
