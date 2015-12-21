@@ -188,7 +188,7 @@ object BinaryVersionsDao {
       ).
       condition(
         greaterThanVersion.map { v =>
-          s"and binary_versions.sort_key > {greater_than_version_sort_key}"
+          s"binary_versions.sort_key > {greater_than_version_sort_key}"
         }
       ).
       bind("greater_than_version_sort_key", greaterThanVersion).
