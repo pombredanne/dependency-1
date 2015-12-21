@@ -54,7 +54,7 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val org = OrganizationsDao.create(user, form).right.getOrElse {
       sys.error("Failed to create org")
     }
-    val membership = MembershipsDao.findByOrganizationGuidAndUserGuid(org.guid, user.guid).getOrElse {
+    val membership = MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, org.guid, user.guid).getOrElse {
       sys.error("Failed to create membership record")
     }
     membership.role must be(Role.Admin)

@@ -13,7 +13,7 @@ object MembershipsDao {
 
   val DefaultUserNameLength = 8
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select memberships.guid,
            memberships.role,
            ${AuditsDao.all("memberships")},
@@ -26,8 +26,7 @@ object MembershipsDao {
       from memberships
       join organizations on organizations.deleted_at is null and organizations.guid = memberships.organization_guid
       join users on users.deleted_at is null and users.guid = memberships.user_guid
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into memberships
@@ -37,7 +36,7 @@ object MembershipsDao {
   """
 
   def isMember(orgGuid: UUID, user: User): Boolean = {
-    MembershipsDao.findByOrganizationGuidAndUserGuid(orgGuid, user.guid) match {
+    MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, orgGuid, user.guid) match {
       case None => false
       case Some(_) => true
     }
@@ -50,7 +49,7 @@ object MembershipsDao {
     val roleErrors = form.role match {
       case Role.UNDEFINED(_) => Seq("Invalid role. Must be one of: " + Role.all.map(_.toString).mkString(", "))
       case _ => {
-        MembershipsDao.findByOrganizationGuidAndUserGuid(form.organizationGuid, form.userGuid) match {
+        MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, form.organizationGuid, form.userGuid) match {
           case None => Seq.empty
           case Some(membership) => {
             if (membership.role == form.role) {
@@ -74,7 +73,7 @@ object MembershipsDao {
   def create(createdBy: User, form: MembershipForm): Either[Seq[String], Membership] = {
     validate(createdBy, form) match {
       case Nil => {
-        val guid = MembershipsDao.findByOrganizationGuidAndUserGuid(form.organizationGuid, form.userGuid) match {
+        val guid = MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, form.organizationGuid, form.userGuid) match {
           case None => {
             DB.withConnection { implicit c =>
               create(c, createdBy, form)
@@ -89,7 +88,7 @@ object MembershipsDao {
           }
         }
         Right(
-          findByGuid(guid).getOrElse {
+          findByGuid(Authorization.All, guid).getOrElse {
             sys.error("Failed to create membership")
           }
         )
@@ -115,50 +114,54 @@ object MembershipsDao {
   }
 
   def findByOrganizationGuidAndUserGuid(
+    auth: Authorization,
     organizationGuid: UUID,
     userGuid: UUID
   ): Option[Membership] = {
     findAll(
+      auth,
       organizationGuid = Some(organizationGuid),
       userGuid = Some(userGuid),
       limit = 1
     ).headOption
   }
 
-  def findByGuid(guid: UUID): Option[Membership] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+  def findByGuid(auth: Authorization, guid: UUID): Option[Membership] = {
+    findAll(auth, guid = Some(guid), limit = 1).headOption
   }
 
   def findAll(
+    auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     organizationGuid: Option[UUID] = None,
     userGuid: Option[UUID] = None,
     role: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
+    orderBy: OrderBy = OrderBy.parseOrError("memberships.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Membership] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v => "and memberships.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("memberships.guid", _) },
-      organizationGuid.map { v => "and memberships.organization_guid = {organization_guid}::uuid" },
-      userGuid.map { v => "and memberships.user_guid = {user_guid}::uuid" },
-      role.map { v => "and memberships.role = lower(trim({role}))" },
-      isDeleted.map(Filters.isDeleted("memberships", _)),
-      Some(s"order by memberships.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      role.map('role -> _.toString),
-      userGuid.map('user_guid -> _.toString),
-      organizationGuid.map('organization_guid -> _.toString)
-    ).flatten
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
+    Standards.query(
+      BaseQuery,
+      tableName = "memberships",
+      auth = auth.organizations("organizations.guid"),
+      guid = guid,
+      guids = guids,
+      orderBy = orderBy,
+      isDeleted = isDeleted,
+      limit = limit,
+      offset = offset
+    ).
+      uuid("memberships.organization_guid", organizationGuid).
+      uuid("memberships.user_guid", userGuid).
+      text(
+        "memberships.role",
+        role,
+        valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
+      ).
+      as(
         com.bryzek.dependency.v0.anorm.parsers.Membership.table("memberships").*
       )
     }
