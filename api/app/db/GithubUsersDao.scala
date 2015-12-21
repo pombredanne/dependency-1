@@ -10,15 +10,14 @@ import play.api.Play.current
 
 object GithubUsersDao {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select github_users.guid,
            github_users.user_guid as github_users_user_guid,
            github_users.id,
            github_users.login,
            ${AuditsDao.all("github_users")}
       from github_users
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into github_users
@@ -79,27 +78,19 @@ object GithubUsersDao {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[GithubUser] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v => "and github_users.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("github_users.guid", _) },
-      login.map { v => "and github_users.login = trim({login})" },
-      id.map { v => "and github_users.id = {id}" },
-      isDeleted.map(Filters.isDeleted("github_users", _)),
-      Some(s"order by ${orderBy.sql.get} limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      userGuid.map('user_guid -> _.toString),
-      login.map('login -> _.toString),
-      id.map('id -> _.toString)
-    ).flatten
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.GithubUser.table("github_users").*
-      )
+      BaseQuery.
+        uuid("github_users.guid", guid).
+        multi("github_users.guid", guids).
+        text("github_users.login", login).
+        number("github_users.login", id).
+        nullBoolean("users.deleted_at", isDeleted).
+        orderBy(orderBy.sql).
+        limit(Some(limit)).
+        offset(Some(offset)).
+        as(
+          com.bryzek.dependency.v0.anorm.parsers.GithubUser.table("github_users").*
+        )
     }
   }
 

@@ -126,7 +126,7 @@ object UsersDao {
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
         nullBoolean("users.deleted_at", isDeleted).
-        orderBy(Some(s"users.created_at")).
+        orderBy(orderBy.sql).
         limit(Some(limit)).
         offset(Some(offset)).
         as(

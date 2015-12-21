@@ -285,7 +285,6 @@ case class Query(
   ) (
     implicit c: java.sql.Connection
   ) = {
-    println(interpolate)
     anormSql().as(parser)
   }
 
