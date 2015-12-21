@@ -13,15 +13,14 @@ object TokensDao {
 
   val GithubOauthTokenTag = "github_oauth"
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select tokens.guid,
            tokens.user_guid as tokens_user_guid,
            tokens.tag,
            tokens.token,
            ${AuditsDao.all("tokens")}
       from tokens
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into tokens
@@ -118,28 +117,26 @@ object TokensDao {
     userGuid: Option[UUID] = None,
     tag: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
+    orderBy: OrderBy = OrderBy.parseOrError("tokens.created_at"),
     limit: Long = 25,
     offset: Long = 0
   )(implicit c: java.sql.Connection): Seq[Token] = {
-      val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v =>  "and tokens.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("tokens.guid", _) },
-      userGuid.map { v => "and tokens.user_guid = {user_guid}::uuid" },
-      tag.map { v => "and tokens.tag = lower(trim({tag}))" },
-      isDeleted.map(Filters.isDeleted("tokens", _)),
-      Some(s"order by tokens.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      userGuid.map('user_guid -> _.toString),
-      tag.map('tag -> _.toString)
-    ).flatten
-
-    SQL(sql).on(bind: _*).as(
-      com.bryzek.dependency.v0.anorm.parsers.Token.table("tokens").*
-    )
+    Standards.query(
+      BaseQuery,
+      tableName = "tokens",
+      auth = Clause.True, // TODO
+      guid = guid,
+      guids = guids,
+      orderBy = orderBy,
+      isDeleted = isDeleted,
+      limit = limit,
+      offset = offset
+    ).
+      uuid("tokens.user_guid", userGuid).
+      text("tokens.tag", tag, valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)).
+      as(
+        com.bryzek.dependency.v0.anorm.parsers.Token.table("tokens").*
+      )
   }
 
 }
