@@ -3,7 +3,7 @@ package com.bryzek.dependency.actors
 import io.flow.play.util.DefaultConfig
 import io.flow.play.postgresql.Pager
 import io.flow.user.v0.models.User
-import db.{LastEmail, LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UsersDao}
+import db.{Authorization, LastEmail, LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UsersDao}
 import com.bryzek.dependency.v0.models.Publication
 import com.bryzek.dependency.lib.Urls
 import com.bryzek.dependency.api.lib.{Email, Person}
@@ -116,6 +116,7 @@ case class DailySummaryEmailMessage(user: User) extends EmailMessageGenerator {
 
   override def body() = {
     val recommendations = RecommendationsDao.findAll(
+      Authorization.User(user.guid),
       userGuid = Some(user.guid),
       limit = Some(250)
     )

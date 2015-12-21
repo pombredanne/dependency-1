@@ -18,7 +18,7 @@ class RecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val project = createProject(org)
     addLibraryVersion(project, libraryVersions.head)
     RecommendationsDao.sync(systemUser, project)
-    RecommendationsDao.findAll(projectGuid = Some(project.guid)).headOption.getOrElse {
+    RecommendationsDao.findAll(Authorization.All, projectGuid = Some(project.guid)).headOption.getOrElse {
       sys.error("Failed to create recommendation")
     }
   }
@@ -28,13 +28,13 @@ class RecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "softDelete" in {
     val rec = createRecommendation(org)
     RecommendationsDao.softDelete(systemUser, rec)
-    RecommendationsDao.findAll(projectGuid = Some(rec.project.guid)) must be(Nil)
+    RecommendationsDao.findAll(Authorization.All, projectGuid = Some(rec.project.guid)) must be(Nil)
   }
 
   "no-op if nothing to upgrade" in {
     val project = createProject(org)()
     RecommendationsDao.sync(systemUser, project)
-    RecommendationsDao.findAll(projectGuid = Some(project.guid)) must be(Nil)
+    RecommendationsDao.findAll(Authorization.All, projectGuid = Some(project.guid)) must be(Nil)
   }
 
 
@@ -43,12 +43,12 @@ class RecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val project = createProject(org)()
     addLibraryVersion(project, libraryVersions.last)
     RecommendationsDao.sync(systemUser, project)
-    RecommendationsDao.findAll(projectGuid = Some(project.guid)) must be(Nil)
+    RecommendationsDao.findAll(Authorization.All, projectGuid = Some(project.guid)) must be(Nil)
   }
 
   "with library to upgrade" in {
     val rec = createRecommendation(org)
-    RecommendationsDao.findAll(projectGuid = Some(rec.project.guid)).map(rec => (rec.from, rec.to)) must be(
+    RecommendationsDao.findAll(Authorization.All, projectGuid = Some(rec.project.guid)).map(rec => (rec.from, rec.to)) must be(
       Seq(
         ("1.0.0", "1.0.2")
       )

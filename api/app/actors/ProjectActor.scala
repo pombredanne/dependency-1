@@ -142,7 +142,7 @@ class ProjectActor extends Actor with Util {
     case m @ ProjectActor.Messages.Deleted => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         Pager.eachPage { offset =>
-          RecommendationsDao.findAll(projectGuid = Some(project.guid), offset = offset)
+          RecommendationsDao.findAll(Authorization.All, projectGuid = Some(project.guid), offset = offset)
         } { rec =>
           RecommendationsDao.softDelete(MainActor.SystemUser, rec)
         }

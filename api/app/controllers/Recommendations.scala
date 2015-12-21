@@ -1,6 +1,6 @@
 package controllers
 
-import db.RecommendationsDao
+import db.{Authorization, RecommendationsDao}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import com.bryzek.dependency.v0.models.RecommendationType
@@ -24,6 +24,7 @@ class Recommendations @javax.inject.Inject() (
     Ok(
       Json.toJson(
         RecommendationsDao.findAll(
+          Authorization.User(request.user.guid),
           userGuid = Some(request.user.guid),
           projectGuid = projectGuid,
           `type` = `type`,

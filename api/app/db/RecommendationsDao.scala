@@ -73,7 +73,7 @@ object RecommendationsDao {
 
     val newRecords = libraries ++ binaries
 
-    val existing = RecommendationsDao.findAll(projectGuid = Some(project.guid), limit = None)
+    val existing = RecommendationsDao.findAll(Authorization.All, projectGuid = Some(project.guid), limit = None)
 
     val toAdd = newRecords.filter { rec => !existing.map(toForm(_)).contains(rec) }
     val toRemove = existing.filter { rec => !newRecords.contains(toForm(rec)) }
@@ -114,11 +114,12 @@ object RecommendationsDao {
     ).execute()
   }
 
-  def findByGuid(guid: UUID): Option[Recommendation] = {
-    findAll(guid = Some(guid), limit = Some(1)).headOption
+  def findByGuid(auth: Authorization, guid: UUID): Option[Recommendation] = {
+    findAll(auth, guid = Some(guid), limit = Some(1)).headOption
   }
 
   def findAll(
+    auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     userGuid: Option[UUID] = None,
@@ -130,8 +131,6 @@ object RecommendationsDao {
     limit: Option[Long] = Some(25),
     offset: Long = 0
   ): Seq[Recommendation] = {
-    val auth = Authorization.All
-
     DB.withConnection { implicit c =>
       Standards.query(
         BaseQuery,
