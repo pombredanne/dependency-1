@@ -13,7 +13,7 @@ import java.util.UUID
 
 object ProjectsDao {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select projects.guid,
            projects.visibility,
            projects.scms,
@@ -24,8 +24,15 @@ object ProjectsDao {
            organizations.key as projects_organization_key
       from projects
       left join organizations on organizations.deleted_at is null and organizations.guid = projects.organization_guid
-     where true
-  """
+  """)
+
+  private[this] val FilterProjectLibraries = """
+    projects.guid in (select project_guid from project_libraries where deleted_at is null and %s)
+  """.trim
+
+  private[this] val FilterProjectBinaries = """
+    projects.guid in (select project_guid from project_binaries where deleted_at is null and %s)
+  """.trim
 
   private[this] val InsertQuery = """
     insert into projects
@@ -174,14 +181,6 @@ object ProjectsDao {
     findAll(auth, guid = Some(guid), limit = 1).headOption
   }
 
-  private val FilterProjectLibraries = """
-    and projects.guid in (select project_guid from project_libraries where deleted_at is null and %s)
-  """.trim
-
-  private val FilterProjectBinaries = """
-    and projects.guid in (select project_guid from project_binaries where deleted_at is null and %s)
-  """.trim
-
   def findAll(
     auth: Authorization,
     guid: Option[UUID] = None,
@@ -196,44 +195,56 @@ object ProjectsDao {
     binary: Option[String] = None,
     binaryGuid: Option[_root_.java.util.UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
+    orderBy: OrderBy = OrderBy.parseOrError("lower(projects.name), projects.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Project] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      Some(auth.organizations("projects.organization_guid", Some("projects.visibility")).and),
-      guid.map { v => "and projects.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("projects.guid", _) },
-      org.map { LocalFilters.organizationByKey("organizations.key", "org_key", _) },
-      organizationGuid.map { v => "and projects.organization_guid = {organization_guid}::uuid" },
-      name.map { v => "and lower(projects.name) = lower(trim({name}))" },
-      groupId.map { v => FilterProjectLibraries.format("project_libraries.group_id = trim({group_id})") },
-      artifactId.map { v => FilterProjectLibraries.format("project_libraries.artifact_id = trim({artifact_id})") },
-      version.map { v => FilterProjectLibraries.format("project_libraries.version = trim({version})") },
-      libraryGuid.map { v => FilterProjectLibraries.format("project_libraries.library_guid = {library_guid}::uuid") },
-      binary.map { v => FilterProjectBinaries.format("project_binaries.name = trim({binary})") },
-      binaryGuid.map { v => FilterProjectBinaries.format("project_binaries.binary_guid = {binary_guid}::uuid") },
-      isDeleted.map(Filters.isDeleted("projects", _)),
-      Some(s"order by projects.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      org.map('org_key -> _),
-      organizationGuid.map('organization_guid -> _.toString),
-      name.map('name -> _.toString),
-      groupId.map('group_id -> _.toString),
-      artifactId.map('artifact_id -> _.toString),
-      version.map('version -> _.toString),
-      libraryGuid.map('library_guid -> _.toString),
-      binary.map('binary -> _.toString),
-      binaryGuid.map('binary_guid -> _.toString)
-    ).flatten
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.Project.table("projects").*
-      )
+      Standards.query(
+        BaseQuery,
+        tableName = "projects",
+        auth = auth.organizations("projects.organization_guid", Some("projects.visibility")),
+        guid = guid,
+        guids = guids,
+        orderBy = orderBy,
+        isDeleted = isDeleted,
+        limit = limit,
+        offset = offset
+      ).
+        text(
+          "organizations.key",
+          org,
+          valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
+        ).
+        uuid("organizations.guid", organizationGuid).
+        text(
+          "projects.name",
+          name,
+          columnFunctions = Seq(Query.Function.Lower),
+          valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
+        ).
+        condition(
+          groupId.map { v => FilterProjectLibraries.format("project_libraries.group_id = trim({group_id})") }
+        ).bind("group_id", groupId).
+        condition(
+          artifactId.map { v => FilterProjectLibraries.format("project_libraries.artifact_id = trim({artifact_id})") }
+        ).bind("artifact_id", artifactId).
+        condition(
+          version.map { v => FilterProjectLibraries.format("project_libraries.version = trim({version})") }
+        ).bind("version", version).
+        condition(
+          libraryGuid.map { v => FilterProjectLibraries.format("project_libraries.library_guid = {library_guid}::uuid") }
+        ).bind("library_guid", libraryGuid).
+        condition(
+          binary.map { v => FilterProjectBinaries.format("project_binaries.name = trim({binary})") }
+        ).bind("binary", binary).
+        condition(
+          binaryGuid.map { v => FilterProjectBinaries.format("project_binaries.binary_guid = {binary_guid}::uuid") }
+        ).bind("binary_guid", binaryGuid).
+        as(
+          com.bryzek.dependency.v0.anorm.parsers.Project.table("projects").*
+        )
     }
   }
 
