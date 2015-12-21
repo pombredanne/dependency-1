@@ -14,13 +14,12 @@ object OrganizationsDao {
 
   val DefaultUserNameLength = 8
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select organizations.guid,
            organizations.key,
            ${AuditsDao.all("organizations")}
       from organizations
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into organizations
@@ -192,29 +191,30 @@ object OrganizationsDao {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Organization] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      Some(auth.organizations("organizations.guid").and),
-      guid.map { v => "and organizations.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("organizations.guid", _) },
-      userGuid.map { v => "and organizations.guid in (select organization_guid from memberships where deleted_at is null and user_guid = {user_guid}::uuid)" },
-      key.map { v => "and lower(organizations.key) = lower(trim({key}))" },
-      forUserGuid.map { v => "and organizations.guid = (select organization_guid from user_organizations where deleted_at is null and user_guid = {for_user_guid}::uuid)" },
-      isDeleted.map(Filters.isDeleted("organizations", _)),
-      Some(s"order by organizations.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      key.map('key -> _.toString),
-      userGuid.map('user_guid -> _.toString),
-      forUserGuid.map('for_user_guid -> _.toString)
-    ).flatten
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.Organization.table("organizations").*
-      )
+      BaseQuery.
+        condition(Some(auth.organizations("organizations.guid").sql)).
+        uuid("organizations.guid", guid).
+        multi("organizations.guid", guids).
+        subquery("organizations.guid", "user_guid", userGuid, { bindVar =>
+          s"select organization_guid from memberships where deleted_at is null and user_guid = {$bindVar}::uuid"
+        }).
+        text(
+          "organizations.key",
+          key,
+          columnFunctions = Seq(Query.Function.Lower),
+          valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
+        ).
+        subquery("organizations.guid", "for_user_guid", forUserGuid, { bindVar =>
+          s"select organization_guid from user_organizations where deleted_at is null and user_guid = {$bindVar}::uuid"
+        }).
+        nullBoolean("organizations.deleted_at", isDeleted).
+        orderBy(Some(s"organizations.created_at")).
+        limit(Some(limit)).
+        offset(Some(offset)).
+        as(
+          com.bryzek.dependency.v0.anorm.parsers.Organization.table("organizations").*
+        )
     }
   }
 
