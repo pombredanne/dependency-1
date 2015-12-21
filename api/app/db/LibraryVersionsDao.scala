@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 
 object LibraryVersionsDao {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select library_versions.guid,
            library_versions.version,
            library_versions.cross_build_version,
@@ -34,8 +34,7 @@ object LibraryVersionsDao {
       join organizations on organizations.deleted_at is null and organizations.guid = libraries.organization_guid
       join resolvers on resolvers.deleted_at is null and resolvers.guid = libraries.resolver_guid
       left join organizations resolver_orgs on resolver_orgs.deleted_at is null and resolver_orgs.guid = resolvers.organization_guid
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = s"""
     insert into library_versions
@@ -185,49 +184,51 @@ object LibraryVersionsDao {
     crossBuildVersion: Option[Option[String]] = None,
     greaterThanVersion: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
+    orderBy: OrderBy = OrderBy.parseOrError("-library_versions.sort_key, library_versions.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ) (
     implicit c: java.sql.Connection
   ): Seq[LibraryVersion] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      Some(auth.organizations("organizations.guid", Some("resolvers.visibility")).and),      
-      guid.map { v => s"and library_versions.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids(s"library_versions.guid", _) },
-      libraryGuid.map { v => s"and library_versions.library_guid = {library_guid}::uuid" },
-      version.map { v => s"and lower(library_versions.version) = lower(trim({version}))" },
-      crossBuildVersion.map { v =>
-        v match {
-          case None => s"and library_versions.cross_build_version is null"
-          case Some(_) => s"and lower(library_versions.cross_build_version) = lower(trim({cross_build_version}))"
+    Standards.query(
+      BaseQuery,
+      tableName = "library_versions",
+      auth = auth.organizations("organizations.guid", Some("resolvers.visibility")),
+      guid = guid,
+      guids = guids,
+      orderBy = orderBy,
+      isDeleted = isDeleted,
+      limit = limit,
+      offset = offset
+    ).
+      uuid("library_versions.library_guid", libraryGuid).
+      text(
+        "library_versions.version",
+        version,
+        columnFunctions = Seq(Query.Function.Lower),
+        valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
+      ).
+      condition(
+        crossBuildVersion.map { v =>
+          v match {
+            case None => s"library_versions.cross_build_version is null"
+            case Some(_) => s"lower(library_versions.cross_build_version) = lower(trim({cross_build_version}))"
+          }
         }
-      },
-      greaterThanVersion.map { v =>
-        s"and library_versions.sort_key > {greater_than_version_sort_key}"
-      },
-      isDeleted.map(Filters.isDeleted("library_versions", _)),
-      Some(s"order by library_versions.sort_key desc, library_versions.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      libraryGuid.map('library_guid -> _.toString),
-      version.map('version -> _.toString),
-      crossBuildVersion.flatMap { optionalValue =>
-        optionalValue match {
-          case None => None
-          case Some(value) => Some('cross_build_version -> value.toString)
+      ).
+      bind(
+        "cross_build_version",
+        crossBuildVersion.flatMap { v => v }
+      ).
+      condition(
+        greaterThanVersion.map { v =>
+          s"library_versions.sort_key > {greater_than_version_sort_key}"
         }
-      },
-      greaterThanVersion.map( v =>
-        'greater_than_version_sort_key -> Version(v).sortKey
+      ).
+      bind("greater_than_version_sort_key", greaterThanVersion).
+      as(
+        com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.table("library_versions").*
       )
-    ).flatten
-
-    SQL(sql).on(bind: _*).as(
-      com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.table("library_versions").*
-    )
   }
 
 }
