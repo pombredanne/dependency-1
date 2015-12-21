@@ -18,15 +18,14 @@ case class SyncForm(
 
 object SyncsDao {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select syncs.guid,
            syncs.type,
            syncs.object_guid,
            syncs.event,
            ${AuditsDao.creationOnly("syncs")}
       from syncs
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into syncs
@@ -96,28 +95,27 @@ object SyncsDao {
     guids: Option[Seq[UUID]] = None,
     objectGuid: Option[UUID] = None,
     event: Option[SyncEvent] = None,
+    orderBy: OrderBy = OrderBy.parseOrError("-syncs.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Sync] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v =>  "and syncs.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("syncs.guid", _) },
-      objectGuid.map { v => "and syncs.object_guid = {object_guid}::uuid" },
-      event.map { v => "and syncs.event = {event}" },
-      Some("order by syncs.created_at desc")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      objectGuid.map('object_guid -> _.toString),
-      event.map('event -> _.toString)
-    ).flatten
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.Sync.table("syncs").*
-      )
+      Standards.query(
+        BaseQuery,
+        tableName = "syncs",
+        auth = Clause.True, // TODO
+        guid = guid,
+        guids = guids,
+        orderBy = orderBy,
+        isDeleted = None,
+        limit = limit,
+        offset = offset
+      ).
+        uuid("syncs.object_guid", objectGuid).
+        text("syncs.event", event).
+        as(
+          com.bryzek.dependency.v0.anorm.parsers.Sync.table("syncs").*
+        )
     }
   }
 
