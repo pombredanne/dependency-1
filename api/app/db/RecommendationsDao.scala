@@ -20,7 +20,7 @@ object RecommendationsDao {
     to: String
   )
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select recommendations.guid,
            recommendations.type,
            recommendations.object_guid as recommendations_object_guid,
@@ -39,8 +39,7 @@ object RecommendationsDao {
       join organizations on
              organizations.deleted_at is null and
              organizations.guid = projects.organization_guid
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into recommendations
@@ -127,35 +126,37 @@ object RecommendationsDao {
     `type`: Option[RecommendationType] = None,
     objectGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
+    orderBy: OrderBy = OrderBy.parseOrError("-recommendations.created_at, lower(projects.name), lower(recommendations.name)"),
     limit: Option[Long] = Some(25),
     offset: Long = 0
   ): Seq[Recommendation] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v =>  "and recommendations.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("recommendations.guid", _) },
-      userGuid.map { v => "and recommendations.project_guid in (select project_guid from watch_projects where deleted_at is null and user_guid = {user_guid}::uuid)" },
-      projectGuid.map { v => "and recommendations.project_guid = {project_guid}::uuid" },
-      `type`.map { v => "and recommendations.type = lower(trim({type}))" },
-      objectGuid.map { v => "and recommendations.object_guid = {object_guid}::uuid" },
-      isDeleted.map(Filters.isDeleted("recommendations", _)),
-      Some(s"order by recommendations.created_at desc, lower(projects.name), lower(recommendations.name)"),
-      limit.map { v => s"limit $limit" },
-      Some(s"offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      userGuid.map('user_guid -> _.toString),
-      projectGuid.map('project_guid -> _.toString),
-      `type`.map('type -> _.toString),
-      objectGuid.map('object_guid -> _.toString)
-    ).flatten
+    val auth = Authorization.All
 
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.Recommendation.table("recommendations").*
-      )
+      Standards.query(
+        BaseQuery,
+        tableName = "recommendations",
+        auth = auth.organizations("projects.organization_guid", Some("projects.visibility")),
+        guid = guid,
+        guids = guids,
+        orderBy = orderBy,
+        isDeleted = isDeleted,
+        limit = limit.getOrElse(Long.MaxValue), // TODO: Pass in option
+        offset = offset
+      ).
+        subquery("recommendations.project_guid", "user_guid", userGuid, { bind =>
+          s"select project_guid from watch_projects where deleted_at is null and user_guid = {$bind}::uuid"
+        }).
+        uuid("recommendations.project_guid", projectGuid).
+        text(
+          "recommendations.type",
+          `type`,
+          valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
+        ).
+        uuid("recommendations.object_guid", objectGuid).
+        as(
+          com.bryzek.dependency.v0.anorm.parsers.Recommendation.table("recommendations").*
+        )
     }
   }
 

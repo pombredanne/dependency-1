@@ -1,3 +1,6 @@
+Standards: change limit to Option
+Add auth to recommendations dao
+
 Remove api/app/db/OrderBy.scala and api/app/db/Query.scala and pull in from lib-play-postgresql
 
 scalatestplus vs scalatestplus_2.11
