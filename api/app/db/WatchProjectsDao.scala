@@ -11,7 +11,7 @@ import java.util.UUID
 
 object WatchProjectsDao {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select watch_projects.guid,
            watch_projects.user_guid as watch_projects_user_guid,
            ${AuditsDao.all("watch_projects")},
@@ -25,9 +25,8 @@ object WatchProjectsDao {
            organizations.key as watch_projects_project_organization_key
       from watch_projects
       join projects on projects.deleted_at is null and projects.guid = watch_projects.project_guid
-      left join organizations on organizations.deleted_at is null and organizations.guid = projects.organization_guid
-     where true
-  """
+      join organizations on organizations.deleted_at is null and organizations.guid = projects.organization_guid
+  """)
 
   private[this] val InsertQuery = """
     insert into watch_projects
@@ -116,29 +115,27 @@ object WatchProjectsDao {
     userGuid: Option[UUID] = None,
     projectGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
+    orderBy: OrderBy = OrderBy.parseOrError("watch_projects.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[WatchProject] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v =>  "and watch_projects.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("watch_projects.guid", _) },
-      userGuid.map { v => "and watch_projects.user_guid = {user_guid}::uuid" },
-      projectGuid.map { v => "and watch_projects.project_guid = {project_guid}::uuid" },
-      isDeleted.map(Filters.isDeleted("watch_projects", _)),
-      Some(s"order by watch_projects.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      userGuid.map('user_guid -> _.toString),
-      projectGuid.map('project_guid -> _.toString)
-    ).flatten
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.WatchProject.table("watch_projects").*
-      )
+      Standards.query(
+        BaseQuery,
+        tableName = "watch_projects",
+        auth = Clause.True, // TODO
+        guid = guid,
+        guids = guids,
+        orderBy = orderBy,
+        isDeleted = isDeleted,
+        limit = limit,
+        offset = offset
+      ).
+        uuid("watch_projects.user_guid", userGuid).
+        uuid("watch_projects.project_guid", projectGuid).
+        as(
+          com.bryzek.dependency.v0.anorm.parsers.WatchProject.table("watch_projects").*
+        )
     }
   }
 
