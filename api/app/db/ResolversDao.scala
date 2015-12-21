@@ -185,10 +185,22 @@ object ResolversDao {
     offset: Long = 0
   ): Seq[Resolver] = {
     DB.withConnection { implicit c =>
-      BaseQuery.
-        condition(Some(auth.organizations("resolvers.organization_guid", Some("resolvers.visibility")).sql)).
-        uuid("resolvers.guid", guid).
-        multi("resolvers.guid", guids).
+      Standards.query(
+        BaseQuery,
+        tableName = "resolvers",
+        auth = auth.organizations("resolvers.organization_guid", Some("resolvers.visibility")),
+        guid = guid,
+        guids = guids,
+        orderBy = Some(s"""
+          case when visibility = '${Visibility.Public}' then 0
+               when visibility = '${Visibility.Private}' then 1
+               else 2 end,
+          resolvers.position, lower(resolvers.uri),resolvers.created_at
+        """),
+        isDeleted = isDeleted,
+        limit = Some(limit),
+        offset = offset
+      ).
         text("resolvers.visibility", visibility).
         text(
           "organizations.key",
@@ -197,17 +209,6 @@ object ResolversDao {
         ).
         uuid("organizations.guid", organizationGuid).
         text("resolvers.uri", uri).
-        nullBoolean(s"resolvers.deleted_at", isDeleted).
-        orderBy(
-          Some(s"""
-          case when visibility = '${Visibility.Public}' then 0
-               when visibility = '${Visibility.Private}' then 1
-               else 2 end,
-          resolvers.position, lower(resolvers.uri),resolvers.created_at
-        """.trim)
-        ).
-        limit(Some(limit)).
-        offset(Some(offset)).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Resolver.table("resolvers").*
         ).map { maskCredentials(_) }
