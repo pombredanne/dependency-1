@@ -84,7 +84,7 @@ object GithubUsersDao {
         multi("github_users.guid", guids).
         text("github_users.login", login).
         number("github_users.login", id).
-        nullBoolean("users.deleted_at", isDeleted).
+        nullBoolean("github_users.deleted_at", isDeleted).
         orderBy(orderBy.sql).
         limit(Some(limit)).
         offset(Some(offset)).

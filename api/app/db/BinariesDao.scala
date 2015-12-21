@@ -12,7 +12,7 @@ import java.util.UUID
 
 object BinariesDao {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select binaries.guid,
            binaries.name,
            ${AuditsDao.all("binaries")},
@@ -20,8 +20,7 @@ object BinariesDao {
            organizations.key as binaries_organization_key
       from binaries
       left join organizations on organizations.deleted_at is null and organizations.guid = binaries.organization_guid
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into binaries
@@ -103,39 +102,41 @@ object BinariesDao {
     name: Option[String] = None,
     isSynced: Option[Boolean] = None,
     isDeleted: Option[Boolean] = Some(false),
+    orderBy: OrderBy = OrderBy.parseOrError(s"-lower(binaries.name),binaries.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Binary] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v => "and binaries.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("binaries.guid", _) },
-      projectGuid.map { v => "and binaries.guid in (select binary_guid from project_binaries where deleted_at is null and binary_guid is not null and project_guid = {project_guid}::uuid)" },
-      organizationGuid.map { v => "and binaries.organization_guid = {organization_guid}::uuid" },
-      name.map { v => "and lower(binaries.name) = lower(trim({name}))" },
-      isSynced.map { value =>
-        val clause = "select 1 from syncs where object_guid = binaries.guid and event = {sync_event_completed}"
-        value match {
-          case true => s"and exists ($clause)"
-          case false => s"and not exists ($clause)"
-        }
-      },
-      isDeleted.map(Filters.isDeleted("binaries", _)),
-      Some(s"order by lower(binaries.name), binaries.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      projectGuid.map('project_guid -> _.toString),
-      organizationGuid.map('organization_guid -> _.toString),
-      name.map('name -> _.toString),
-      isSynced.map(_ => ('sync_event_completed -> SyncEvent.Completed.toString))
-    ).flatten
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.Binary.table("binaries").*
-      )
+      BaseQuery.
+        uuid("binaries.guid", guid).
+        multi("binaries.guid", guids).
+        subquery("binaries.guid", "project_guid", projectGuid, { bindVar =>
+          s"select binary_guid from project_binaries where deleted_at is null and binary_guid is not null and project_guid = {$bindVar}::uuid"
+        }).
+        uuid("binaries.organization_guid", organizationGuid).
+        text(
+          "binaries.name",
+          name,
+          columnFunctions = Seq(Query.Function.Lower),
+          valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
+        ).
+        condition(
+          isSynced.map { value =>
+            val clause = "select 1 from syncs where object_guid = binaries.guid and event = {sync_event_completed}"
+            value match {
+              case true => s"exists ($clause)"
+              case false => s"not exists ($clause)"
+            }
+          }
+        ).
+        bind("sync_event_completed", isSynced.map(_ => SyncEvent.Completed.toString)).
+        nullBoolean("binaries.deleted_at", isDeleted).
+        orderBy(orderBy.sql).
+        limit(Some(limit)).
+        offset(Some(offset)).
+        as(
+          com.bryzek.dependency.v0.anorm.parsers.Binary.table("binaries").*
+        )
     }
   }
 

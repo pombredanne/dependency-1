@@ -35,8 +35,8 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val binary1 = createBinary(org)
     val binary2 = createBinary(org)
 
-    BinariesDao.findAll(Authorization.All, guids = Some(Seq(binary1.guid, binary2.guid))).map(_.guid) must be(
-      Seq(binary1, binary2).sortWith { (x,y) => x.name.toString < y.name.toString }.map(_.guid)
+    BinariesDao.findAll(Authorization.All, guids = Some(Seq(binary1.guid, binary2.guid))).map(_.guid).sorted must be(
+      Seq(binary1, binary2).map(_.guid).sorted
     )
 
     BinariesDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
