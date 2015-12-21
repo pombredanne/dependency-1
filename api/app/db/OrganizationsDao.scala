@@ -193,10 +193,17 @@ object OrganizationsDao {
     offset: Long = 0
   ): Seq[Organization] = {
     DB.withConnection { implicit c =>
-      BaseQuery.
-        condition(Some(auth.organizations("organizations.guid").sql)).
-        uuid("organizations.guid", guid).
-        multi("organizations.guid", guids).
+      Standards.query(
+        BaseQuery,
+        tableName = "organizations",
+        auth = auth.organizations("organizations.guid"),
+        guid = guid,
+        guids = guids,
+        orderBy = orderBy,
+        isDeleted = isDeleted,
+        limit = limit,
+        offset = offset
+      ).
         subquery("organizations.guid", "user_guid", userGuid, { bindVar =>
           s"select organization_guid from memberships where deleted_at is null and user_guid = {$bindVar}::uuid"
         }).
@@ -209,10 +216,6 @@ object OrganizationsDao {
         subquery("organizations.guid", "for_user_guid", forUserGuid, { bindVar =>
           s"select organization_guid from user_organizations where deleted_at is null and user_guid = {$bindVar}::uuid"
         }).
-        nullBoolean("organizations.deleted_at", isDeleted).
-        orderBy(orderBy.sql).
-        limit(Some(limit)).
-        offset(Some(offset)).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Organization.table("organizations").*
         )
