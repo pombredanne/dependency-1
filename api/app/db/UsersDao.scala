@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.actors.MainActor
-import io.flow.play.postgresql.{AuditsDao, Filters}
+import io.flow.play.postgresql.{AuditsDao, Query, OrderBy}
 import io.flow.user.v0.models.{Name, User, UserForm}
 import java.util.UUID
 import anorm._

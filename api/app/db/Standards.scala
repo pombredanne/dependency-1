@@ -1,8 +1,14 @@
 package db
 
 import java.util.UUID
+import io.flow.play.postgresql.Query
 
-case object Standards {
+/**
+ * Provides docuemntation and implementation for the key attributes we
+ * want on all of our findAll methods - implementing a common
+ * interface to the API when searching resources.
+ */
+private[db] case object Standards {
 
   /**
     * Returns query object decorated with standard attributes in this

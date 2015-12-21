@@ -2,7 +2,7 @@ package db
 
 import io.flow.common.v0.models.{Audit, Reference}
 import io.flow.user.v0.models.User
-import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
+import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
 import com.bryzek.dependency.v0.models.Publication
 
 import anorm._

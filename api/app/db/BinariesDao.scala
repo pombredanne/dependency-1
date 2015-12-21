@@ -3,7 +3,7 @@ package db
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Binary, BinaryForm, SyncEvent}
 import io.flow.user.v0.models.User
-import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
+import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
 import anorm._
 import play.api.db._
 import play.api.Play.current

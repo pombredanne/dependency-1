@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Library, LibraryVersion, VersionForm}
-import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
+import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._

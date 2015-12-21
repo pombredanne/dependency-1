@@ -6,7 +6,7 @@ import com.bryzek.dependency.v0.models.{Credentials, CredentialsUndefinedType, R
 import com.bryzek.dependency.v0.models.{OrganizationSummary, UsernamePassword, Visibility}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.user.v0.models.User
-import io.flow.play.postgresql.{AuditsDao, Filters, Pager, SoftDelete}
+import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, Pager, SoftDelete}
 import anorm._
 import play.api.db._
 import play.api.Play.current

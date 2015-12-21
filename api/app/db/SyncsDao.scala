@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.v0.models.{Sync, SyncEvent}
 import io.flow.user.v0.models.User
-import io.flow.play.postgresql.{AuditsDao, Filters}
+import io.flow.play.postgresql.{AuditsDao, Query, OrderBy}
 import anorm._
 import play.api.db._
 import play.api.Play.current

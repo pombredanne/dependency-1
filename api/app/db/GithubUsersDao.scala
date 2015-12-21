@@ -1,6 +1,6 @@
 package db
 
-import io.flow.play.postgresql.{AuditsDao, Filters}
+import io.flow.play.postgresql.{AuditsDao, Query, OrderBy}
 import com.bryzek.dependency.v0.models.{GithubUser, GithubUserForm}
 import io.flow.user.v0.models.User
 import java.util.UUID

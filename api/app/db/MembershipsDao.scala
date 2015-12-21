@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.v0.models.{Membership, MembershipForm, Organization, OrganizationSummary, Role}
-import io.flow.play.postgresql.{AuditsDao, Filters, SoftDelete}
+import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
