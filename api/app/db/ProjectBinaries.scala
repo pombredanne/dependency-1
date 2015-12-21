@@ -20,7 +20,7 @@ case class ProjectBinaryForm(
 
 object ProjectBinariesDao {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select project_binaries.guid,
            project_binaries.name,
            project_binaries.version,
@@ -34,8 +34,7 @@ object ProjectBinariesDao {
       from project_binaries
       join projects on projects.deleted_at is null and projects.guid = project_binaries.project_guid
       join organizations on organizations.deleted_at is null and organizations.guid = projects.organization_guid
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into project_binaries
@@ -194,48 +193,48 @@ object ProjectBinariesDao {
     isSynced: Option[Boolean] = None,
     hasBinary: Option[Boolean] = None,
     isDeleted: Option[Boolean] = Some(false),
+    orderBy: OrderBy = OrderBy.parseOrError("lower(project_binaries.name), project_binaries.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[ProjectBinary] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      Some(auth.organizations("organizations.guid", Some("projects.visibility")).and),
-      guid.map { v => "and project_binaries.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("project_binaries.guid", _) },
-      projectGuid.map { v => "and project_binaries.project_guid = {project_guid}::uuid" },
-      binaryGuid.map { v => "and project_binaries.binary_guid = {binary_guid}::uuid" },
-      name.map { v => "and lower(project_binaries.name) = lower(trim({name}))" },
-      version.map { v => "and project_binaries.version = trim({version})" },
-      isSynced.map { value =>
-        val clause = "select 1 from syncs where object_guid = project_binaries.guid and event = {sync_event_completed}"
-        value match {
-          case true => s"and exists ($clause)"
-          case false => s"and not exists ($clause)"
-        }
-      },
-      hasBinary.map { value =>
-        value match {
-          case true => s"and project_binaries.binary_guid is not null"
-          case false => s"and project_binaries.binary_guid is null"
-        }
-      },
-      isDeleted.map(Filters.isDeleted("project_binaries", _)),
-      Some(s"order by lower(project_binaries.name), project_binaries.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      projectGuid.map('project_guid -> _.toString),
-      binaryGuid.map('binary_guid -> _.toString),
-      name.map('name -> _),
-      version.map('version -> _.toString),
-      isSynced.map(_ => ('sync_event_completed -> SyncEvent.Completed.toString))
-    ).flatten
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.ProjectBinary.table("project_binaries").*
-      )
+      Standards.query(
+        BaseQuery,
+        tableName = "project_binaries",
+        auth = auth.organizations("organizations.guid", Some("projects.visibility")),
+        guid = guid,
+        guids = guids,
+        orderBy = orderBy,
+        isDeleted = isDeleted,
+        limit = limit,
+        offset = offset
+      ).
+        uuid("project_binaries.project_guid", projectGuid).
+        uuid("project_binaries.binary_guid", binaryGuid).
+        text(
+          "project_binaries.name",
+          name,
+          columnFunctions = Seq(Query.Function.Lower),
+          valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
+        ).
+        text(
+          "project_binaries.version",
+          version
+        ).
+        condition(
+          isSynced.map { value =>
+            val clause = "select 1 from syncs where object_guid = project_binaries.guid and event = {sync_event_completed}"
+            value match {
+              case true => s"exists ($clause)"
+              case false => s"not exists ($clause)"
+            }
+          }
+        ).
+        bind("sync_event_completed", isSynced.map(_ => SyncEvent.Completed.toString)).
+        nullBoolean("project_binaries.binary_guid", hasBinary).
+        as(
+          com.bryzek.dependency.v0.anorm.parsers.ProjectBinary.table("project_binaries").*
+        )
     }
   }
 
