@@ -117,7 +117,7 @@ case class DailySummaryEmailMessage(user: User) extends EmailMessageGenerator {
   override def body() = {
     val recommendations = RecommendationsDao.findAll(
       userGuid = Some(user.guid),
-      limit = 250
+      limit = Some(250)
     )
 
     val (newRecommendations, oldRecommendations) = lastEmail match {

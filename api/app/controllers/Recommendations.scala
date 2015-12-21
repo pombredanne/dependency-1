@@ -27,7 +27,7 @@ class Recommendations @javax.inject.Inject() (
           userGuid = Some(request.user.guid),
           projectGuid = projectGuid,
           `type` = `type`,
-          limit = limit,
+          limit = Some(limit),
           offset = offset
         )
       )

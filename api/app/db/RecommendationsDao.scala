@@ -74,7 +74,7 @@ object RecommendationsDao {
 
     val newRecords = libraries ++ binaries
 
-    val existing = RecommendationsDao.findAll(projectGuid = Some(project.guid), limit = -1)
+    val existing = RecommendationsDao.findAll(projectGuid = Some(project.guid), limit = None)
 
     val toAdd = newRecords.filter { rec => !existing.map(toForm(_)).contains(rec) }
     val toRemove = existing.filter { rec => !newRecords.contains(toForm(rec)) }
@@ -116,7 +116,7 @@ object RecommendationsDao {
   }
 
   def findByGuid(guid: UUID): Option[Recommendation] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+    findAll(guid = Some(guid), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -127,7 +127,7 @@ object RecommendationsDao {
     `type`: Option[RecommendationType] = None,
     objectGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
-    limit: Long = 25,
+    limit: Option[Long] = Some(25),
     offset: Long = 0
   ): Seq[Recommendation] = {
     val sql = Seq(
@@ -139,10 +139,9 @@ object RecommendationsDao {
       `type`.map { v => "and recommendations.type = lower(trim({type}))" },
       objectGuid.map { v => "and recommendations.object_guid = {object_guid}::uuid" },
       isDeleted.map(Filters.isDeleted("recommendations", _)),
-      (limit >= 0) match {
-        case true => Some(s"order by recommendations.created_at desc, lower(projects.name), lower(recommendations.name) limit ${limit} offset ${offset}")
-        case false => None
-      }
+      Some(s"order by recommendations.created_at desc, lower(projects.name), lower(recommendations.name)"),
+      limit.map { v => s"limit $limit" },
+      Some(s"offset ${offset}")
     ).flatten.mkString("\n   ")
 
     val bind = Seq[Option[NamedParameter]](

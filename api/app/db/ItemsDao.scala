@@ -21,7 +21,7 @@ case class ItemForm(
 
 object ItemsDao {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select items.guid,
            items.organization_guid,
            items.visibility,
@@ -35,9 +35,8 @@ object ItemsDao {
            organizations.guid as items_organization_guid,
            organizations.key as items_organization_key
       from items
-      left join organizations on organizations.deleted_at is null and organizations.guid = items.organization_guid
-     where true
-  """
+      join organizations on organizations.deleted_at is null and organizations.guid = items.organization_guid
+  """)
 
   private[this] val InsertQuery = """
     insert into items
@@ -188,11 +187,11 @@ object ItemsDao {
   }
 
   def findByGuid(auth: Authorization, guid: UUID): Option[Item] = {
-    findAll(auth, guid = Some(guid), limit = 1).headOption
+    findAll(auth, guid = Some(guid), limit = Some(1)).headOption
   }
 
   def findByObjectGuid(auth: Authorization, objectGuid: UUID): Option[Item] = {
-    findAll(auth, objectGuid = Some(objectGuid), limit = 1).headOption
+    findAll(auth, objectGuid = Some(objectGuid), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -202,33 +201,25 @@ object ItemsDao {
     q: Option[String] = None,
     objectGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
-    limit: Long = 25,
+    orderBy: OrderBy = OrderBy.parseOrError("-lower(items.label), items.created_at"),
+    limit: Option[Long] = Some(25),
     offset: Long = 0
   ): Seq[Item] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      Some(auth.organizations("items.organization_guid", Some("items.visibility")).and),
-      guid.map { v =>  "and items.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("items.guid", _) },
-      q.map { v => "and items.contents like '%' || lower(trim({q})) || '%' " },
-      objectGuid.map { v => "and items.object_guid = {object_guid}::uuid" },
-      isDeleted.map(Filters.isDeleted("items", _)),
-      (limit >= 0) match {
-        case true => Some(s"order by lower(items.label), items.created_at limit ${limit} offset ${offset}")
-        case false => None
-      }
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      q.map('q -> _),
-      objectGuid.map('object_guid -> _.toString)
-    ).flatten
-
     DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.Item.table("items").*
-      )
+      BaseQuery.
+        condition(Some(auth.organizations("items.organization_guid", Some("items.visibility")).sql)).
+        uuid("items.guid", guid).
+        multi("items.guid", guids).
+        condition(q.map { v => "items.contents like '%' || lower(trim({q})) || '%' " }).
+        bind("q", q).
+        uuid("items.object_guid", objectGuid).
+        nullBoolean("items.deleted_at", isDeleted).
+        orderBy(orderBy.sql).
+        limit(limit).
+        offset(Some(offset)).
+        as(
+          com.bryzek.dependency.v0.anorm.parsers.Item.table("items").*
+        )
     }
   }
 

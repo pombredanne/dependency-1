@@ -16,13 +16,12 @@ class Items @javax.inject.Inject() (
     limit: Long = 25,
     offset: Long = 0
   ) = Identified { request =>
-    // TODO: Parse query
     Ok(
       Json.toJson(
         ItemsDao.findAll(
           authorization(request),
           q = q,
-          limit = limit,
+          limit = Some(limit),
           offset = offset
         )
       )
