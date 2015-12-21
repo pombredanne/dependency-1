@@ -11,14 +11,13 @@ import java.util.UUID
 
 object SubscriptionsDao {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select subscriptions.guid,
            subscriptions.user_guid as subscriptions_user_guid,
            subscriptions.publication,
            ${AuditsDao.all("subscriptions")}
       from subscriptions
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = """
     insert into subscriptions
@@ -106,38 +105,37 @@ object SubscriptionsDao {
     publication: Option[Publication] = None,
     minHoursSinceLastEmail: Option[Int] = None,
     isDeleted: Option[Boolean] = Some(false),
+    orderBy: OrderBy = OrderBy.parseOrError("subscriptions.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Subscription] = {
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v =>  "and subscriptions.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids("subscriptions.guid", _) },
-      userGuid.map { v => "and subscriptions.user_guid = {user_guid}::uuid" },
-      publication.map { v => "and subscriptions.publication = {publication}" },
-      minHoursSinceLastEmail.map { v => """
-        and not exists (select 1
+    DB.withConnection { implicit c =>
+      Standards.query(
+        BaseQuery,
+        tableName = "subscriptions",
+        auth = Clause.True, // TODO
+        guid = guid,
+        guids = guids,
+        orderBy = orderBy,
+        isDeleted = isDeleted,
+        limit = limit,
+        offset = offset
+      ).
+        uuid("subscriptions.user_guid", userGuid).
+        text("subscriptions.publication", publication).
+        condition(
+          minHoursSinceLastEmail.map { v => """
+            not exists (select 1
                           from last_emails
                          where last_emails.deleted_at is null
                            and last_emails.user_guid = subscriptions.user_guid
                            and last_emails.publication = subscriptions.publication
-                           and last_emails.created_at > now() - interval '1 hour' * {min_hours})
-      """.trim },
-      isDeleted.map(Filters.isDeleted("subscriptions", _)),
-      Some(s"order by subscriptions.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      userGuid.map('user_guid -> _.toString),
-      publication.map('publication -> _.toString),
-      minHoursSinceLastEmail.map('min_hours -> _)
-    ).flatten
-
-    DB.withConnection { implicit c =>
-      SQL(sql).on(bind: _*).as(
-        com.bryzek.dependency.v0.anorm.parsers.Subscription.table("subscriptions").*
-      )
+                           and last_emails.created_at > now() - interval '1 hour' * {min_hours}::int)
+          """.trim }
+        ).bind("min_hours", minHoursSinceLastEmail).
+        as(
+          com.bryzek.dependency.v0.anorm.parsers.Subscription.table("subscriptions").*
+        )
     }
   }
 
