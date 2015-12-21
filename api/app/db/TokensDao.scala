@@ -129,7 +129,7 @@ object TokensDao {
       guids = guids,
       orderBy = orderBy,
       isDeleted = isDeleted,
-      limit = limit,
+      limit = Some(limit),
       offset = offset
     ).
       uuid("tokens.user_guid", userGuid).

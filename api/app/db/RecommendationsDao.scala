@@ -141,7 +141,7 @@ object RecommendationsDao {
         guids = guids,
         orderBy = orderBy,
         isDeleted = isDeleted,
-        limit = limit.getOrElse(Long.MaxValue), // TODO: Pass in option
+        limit = limit,
         offset = offset
       ).
         subquery("recommendations.project_guid", "user_guid", userGuid, { bind =>

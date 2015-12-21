@@ -223,7 +223,7 @@ object ProjectLibrariesDao {
         guids = guids,
         orderBy = orderBy,
         isDeleted = isDeleted,
-        limit = limit,
+        limit = Some(limit),
         offset = offset
       ).
         uuid("project_libraries.project_guid", projectGuid).

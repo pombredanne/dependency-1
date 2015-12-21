@@ -164,7 +164,7 @@ object LibrariesDao {
         guids = guids,
         isDeleted = isDeleted,
         orderBy = orderBy,
-        limit = limit,
+        limit = Some(limit),
         offset = offset
       ).
         uuid("libraries.organization_guid", organizationGuid).

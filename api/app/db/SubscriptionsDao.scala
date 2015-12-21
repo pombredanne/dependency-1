@@ -118,7 +118,7 @@ object SubscriptionsDao {
         guids = guids,
         orderBy = orderBy,
         isDeleted = isDeleted,
-        limit = limit,
+        limit = Some(limit),
         offset = offset
       ).
         uuid("subscriptions.user_guid", userGuid).

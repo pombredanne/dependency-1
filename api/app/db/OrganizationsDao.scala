@@ -201,7 +201,7 @@ object OrganizationsDao {
         guids = guids,
         orderBy = orderBy,
         isDeleted = isDeleted,
-        limit = limit,
+        limit = Some(limit),
         offset = offset
       ).
         subquery("organizations.guid", "user_guid", userGuid, { bindVar =>

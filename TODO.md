@@ -1,5 +1,4 @@
 Standards:
-  - change limit to Option
   - change order by to string (then can use it for resolvers)
 Add auth to recommendations dao
 

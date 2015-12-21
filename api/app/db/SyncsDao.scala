@@ -108,7 +108,7 @@ object SyncsDao {
         guids = guids,
         orderBy = orderBy,
         isDeleted = None,
-        limit = limit,
+        limit = Some(limit),
         offset = offset
       ).
         uuid("syncs.object_guid", objectGuid).

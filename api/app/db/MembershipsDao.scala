@@ -151,7 +151,7 @@ object MembershipsDao {
       guids = guids,
       orderBy = orderBy,
       isDeleted = isDeleted,
-      limit = limit,
+      limit = Some(limit),
       offset = offset
     ).
       uuid("memberships.organization_guid", organizationGuid).
