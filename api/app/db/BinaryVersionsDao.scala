@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 
 object BinaryVersionsDao {
 
-  private[this] val BaseQuery = s"""
+  private[this] val BaseQuery = Query(s"""
     select binary_versions.guid,
            binary_versions.version,
            ${AuditsDao.all("binary_versions")},
@@ -25,8 +25,7 @@ object BinaryVersionsDao {
       from binary_versions
       join binaries on binaries.deleted_at is null and binaries.guid = binary_versions.binary_guid
       left join organizations on organizations.deleted_at is null and organizations.guid = binaries.organization_guid
-     where true
-  """
+  """)
 
   private[this] val InsertQuery = s"""
     insert into binary_versions
@@ -164,6 +163,7 @@ object BinaryVersionsDao {
     version: Option[String] = None,
     greaterThanVersion: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
+    orderBy: OrderBy = OrderBy.parseOrError(s"-binary_versions.sort_key, binary_versions.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ) (
@@ -173,33 +173,32 @@ object BinaryVersionsDao {
     // do not need to filter by auth. It is here in the API for
     // consistency and to explicitly declare we are respecting it.
 
-    val sql = Seq(
-      Some(BaseQuery.trim),
-      guid.map { v => s"and binary_versions.guid = {guid}::uuid" },
-      guids.map { Filters.multipleGuids(s"binary_versions.guid", _) },
-      binaryGuid.map { v => s"and binary_versions.binary_guid = {binary_guid}::uuid" },
-      projectGuid.map { v => s"and binary_versions.binary_guid in (select binary_guid from project_binaries where deleted_at is null and binary_guid is not null and project_guid = {project_guid}::uuid)" },
-      version.map { v => s"and lower(binary_versions.version) = lower(trim({version}))" },
-      greaterThanVersion.map { v =>
-        s"and binary_versions.sort_key > {greater_than_version_sort_key}"
-      },
-      isDeleted.map(Filters.isDeleted("binary_versions", _)),
-      Some(s"order by binary_versions.sort_key desc, binary_versions.created_at limit ${limit} offset ${offset}")
-    ).flatten.mkString("\n   ")
-
-    val bind = Seq[Option[NamedParameter]](
-      guid.map('guid -> _.toString),
-      binaryGuid.map('binary_guid -> _.toString),
-      projectGuid.map('project_guid -> _.toString),
-      version.map('version -> _.toString),
-      greaterThanVersion.map( v =>
-        'greater_than_version_sort_key -> Version(v).sortKey
+    BaseQuery.
+      uuid("binary_versions.guid", guid).
+      multi("binary_versions.guid", guids).
+      uuid("binary_versions.binary_guid", binaryGuid).
+      subquery("binary_versions.binary_guid", "project_guid", projectGuid, { bind =>
+        s"select binary_guid from project_binaries where deleted_at is null and binary_guid is not null and project_guid = {$bind}::uuid"
+      }).
+      text(
+        "binary_versions.version",
+        version,
+        columnFunctions = Seq(Query.Function.Lower),
+        valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
+      ).
+      condition(
+        greaterThanVersion.map { v =>
+          s"and binary_versions.sort_key > {greater_than_version_sort_key}"
+        }
+      ).
+      bind("greater_than_version_sort_key", greaterThanVersion).
+      nullBoolean("binary_versions.deleted_at", isDeleted).
+      orderBy(orderBy.sql).
+      limit(Some(limit)).
+      offset(Some(offset)).
+      as(
+        com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.table("binary_versions").*
       )
-    ).flatten
-
-    SQL(sql).on(bind: _*).as(
-      com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.table("binary_versions").*
-    )
   }
 
 }
