@@ -1604,8 +1604,8 @@ package com.bryzek.dependency.v0 {
         _executeRequest("POST", s"/binaries", body = Some(payload)).map {
           case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Binary", r, _.validate[com.bryzek.dependency.v0.models.Binary])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
-          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 409")
+          case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
         }
       }
 
@@ -1666,8 +1666,8 @@ package com.bryzek.dependency.v0 {
 
         _executeRequest("POST", s"/authentications/github", body = Some(payload)).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("io.flow.user.v0.models.User", r, _.validate[io.flow.user.v0.models.User])
-          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 409")
+          case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 422")
         }
       }
     }
@@ -1749,8 +1749,8 @@ package com.bryzek.dependency.v0 {
         _executeRequest("POST", s"/libraries", body = Some(payload)).map {
           case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Library", r, _.validate[com.bryzek.dependency.v0.models.Library])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
-          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 409")
+          case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
         }
       }
 
@@ -1856,8 +1856,8 @@ package com.bryzek.dependency.v0 {
         _executeRequest("POST", s"/organizations", body = Some(payload)).map {
           case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Organization", r, _.validate[com.bryzek.dependency.v0.models.Organization])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
-          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 409")
+          case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
         }
       }
 
@@ -1870,8 +1870,8 @@ package com.bryzek.dependency.v0 {
         _executeRequest("PUT", s"/organizations/${guid}", body = Some(payload)).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Organization", r, _.validate[com.bryzek.dependency.v0.models.Organization])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
-          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 409")
+          case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 422")
         }
       }
 
@@ -1999,8 +1999,8 @@ package com.bryzek.dependency.v0 {
         _executeRequest("POST", s"/projects", body = Some(payload)).map {
           case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Project", r, _.validate[com.bryzek.dependency.v0.models.Project])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
-          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 409")
+          case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
         }
       }
 
@@ -2013,8 +2013,8 @@ package com.bryzek.dependency.v0 {
         _executeRequest("PUT", s"/projects/${guid}", body = Some(payload)).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Project", r, _.validate[com.bryzek.dependency.v0.models.Project])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
-          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 409")
+          case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 422")
         }
       }
 
@@ -2027,8 +2027,8 @@ package com.bryzek.dependency.v0 {
         _executeRequest("PATCH", s"/projects/${guid}", body = Some(payload)).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Project", r, _.validate[com.bryzek.dependency.v0.models.Project])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
-          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 409")
+          case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 422")
         }
       }
 
@@ -2134,8 +2134,8 @@ package com.bryzek.dependency.v0 {
         _executeRequest("POST", s"/resolvers", body = Some(payload)).map {
           case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Resolver", r, _.validate[com.bryzek.dependency.v0.models.Resolver])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
-          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 409")
+          case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
         }
       }
 
@@ -2202,8 +2202,8 @@ package com.bryzek.dependency.v0 {
         _executeRequest("POST", s"/subscriptions", body = Some(payload), queryParameters = queryParameters).map {
           case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Subscription", r, _.validate[com.bryzek.dependency.v0.models.Subscription])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
-          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 409")
+          case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
         }
       }
 
@@ -2294,8 +2294,8 @@ package com.bryzek.dependency.v0 {
 
         _executeRequest("POST", s"/users", body = Some(payload)).map {
           case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("io.flow.user.v0.models.User", r, _.validate[io.flow.user.v0.models.User])
-          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 409")
+          case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 422")
         }
       }
     }
@@ -2345,8 +2345,8 @@ package com.bryzek.dependency.v0 {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.WatchProject", r, _.validate[com.bryzek.dependency.v0.models.WatchProject])
           case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.WatchProject", r, _.validate[com.bryzek.dependency.v0.models.WatchProject])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
-          case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
-          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 201, 401, 409")
+          case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 201, 401, 422")
         }
       }
 
