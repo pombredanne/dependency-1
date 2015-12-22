@@ -26,7 +26,7 @@ create unique index users_lower_email_not_deleted_un_idx on users(lower(email)) 
 create table authorizations (
   guid                    uuid primary key,
   user_guid               uuid not null references users,
-  scms                    text not null check(enum(scms)),
+  scms                    text not null check(lower_non_empty_trimmed_string(scms)),
   token                   text not null check(non_empty_trimmed_string(token))
 );
 
@@ -43,7 +43,7 @@ create unique index authorizations_user_guid_scms_token_not_deleted_un_idx
 
 create table organizations (
   guid                    uuid primary key,
-  key                     text not null check (enum(key))
+  key                     text not null check (lower_non_empty_trimmed_string(key))
 );
 
 select schema_evolution_manager.create_basic_audit_data('public', 'organizations');
@@ -63,8 +63,8 @@ comment on column organizations.key is '
 create table projects (
   guid                    uuid primary key,
   organization_guid       uuid not null references organizations,
-  visibility              text not null check(enum(visibility)),
-  scms                    text not null check(enum(scms)),
+  visibility              text not null check(lower_non_empty_trimmed_string(visibility)),
+  scms                    text not null check(lower_non_empty_trimmed_string(scms)),
   name                    text not null check(non_empty_trimmed_string(name)),
   uri                     text not null check(non_empty_trimmed_string(uri))
 );
@@ -89,7 +89,7 @@ create unique index projects_organization_scms_lower_name_not_deleted_un_idx on 
 
 create table resolvers (
   guid                    uuid primary key,
-  visibility              text not null check(enum(visibility)),
+  visibility              text not null check(lower_non_empty_trimmed_string(visibility)),
   organization_guid       uuid references organizations,
   uri                     text not null check(non_empty_trimmed_string(uri)),
   position                integer not null check(position >= 0),

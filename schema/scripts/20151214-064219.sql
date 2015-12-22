@@ -4,7 +4,7 @@ create table memberships (
   guid                    uuid primary key,
   user_guid               uuid not null references users,
   organization_guid       uuid not null references organizations,
-  role                    text not null check(enum(role))
+  role                    text not null check(lower_non_empty_trimmed_string(role))
 );
 
 comment on table memberships is '

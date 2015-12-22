@@ -3,7 +3,7 @@ drop table if exists last_emails;
 create table last_emails (
   guid                       uuid primary key,
   user_guid                  uuid not null references users,
-  publication                text not null check(enum(publication))
+  publication                text not null check(lower_non_empty_trimmed_string(publication))
 );
 
 comment on table last_emails is '

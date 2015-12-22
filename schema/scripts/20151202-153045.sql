@@ -3,7 +3,7 @@ drop table if exists recommendations;
 create table recommendations (
   guid                       uuid primary key,
   project_guid               uuid not null references projects,
-  type                       text not null check(enum(type)),
+  type                       text not null check(lower_non_empty_trimmed_string(type)),
   object_guid                uuid not null,
   name                       text not null check(non_empty_trimmed_string(name)),
   from_version               text not null check(non_empty_trimmed_string(from_version)),
