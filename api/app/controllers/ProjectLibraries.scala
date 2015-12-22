@@ -29,7 +29,7 @@ class ProjectLibraries @javax.inject.Inject() (
         ProjectLibrariesDao.findAll(
           Authorization.User(request.user.guid),
           guid = guid,
-          guids = optionalGuids(guids),
+          guids = optionals(guids),
           projectGuid = projectGuid,
           libraryGuid = libraryGuid,
           isSynced = isSynced,

@@ -30,7 +30,7 @@ class Binaries @javax.inject.Inject() (
         BinariesDao.findAll(
           Authorization.User(request.user.guid),
           guid = guid,
-          guids = optionalGuids(guids),
+          guids = optionals(guids),
           projectGuid = projectGuid,
           name = name,
           limit = limit,

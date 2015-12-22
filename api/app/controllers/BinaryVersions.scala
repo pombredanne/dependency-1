@@ -30,7 +30,7 @@ class BinaryVersions @javax.inject.Inject() (
         BinaryVersionsDao.findAll(
           Authorization.User(request.user.guid),
           guid = guid,
-          guids = optionalGuids(guids),
+          guids = optionals(guids),
           binaryGuid = binaryGuid,
           projectGuid = projectGuid,
           limit = limit,

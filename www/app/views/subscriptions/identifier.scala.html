@@ -1,5 +1,6 @@
 @(
   data: com.bryzek.dependency.www.lib.UiData,
+  identifier: String,
   userPublications: Seq[controllers.Subscriptions.UserPublication]
 )(implicit flash: Flash, messages: Messages)
 
@@ -19,7 +20,7 @@
                Not subscribed
              }
              </br>
-             (<a href="@routes.SubscriptionsController.postToggle(up.publication)" class="postForm">Toggle</a>)
+             (<a href="@routes.SubscriptionsController.postToggle(identifier, up.publication)" class="postForm">Toggle</a>)
            </td>
            <td>@up.label</td>
          </tr>

@@ -29,7 +29,7 @@ class LibraryVersions @javax.inject.Inject() (
         LibraryVersionsDao.findAll(
           Authorization.User(request.user.guid),
           guid = guid,
-          guids = optionalGuids(guids),
+          guids = optionals(guids),
           libraryGuid = libraryGuid,
           limit = limit,
           offset = offset

@@ -21,7 +21,9 @@ class Emails @javax.inject.Inject() (
 
   override def user(
     session: play.api.mvc.Session,
-    headers: play.api.mvc.Headers
+    headers: play.api.mvc.Headers,
+    path: String,
+    queryString: Map[String, Seq[String]]
   ) (
     implicit ec: scala.concurrent.ExecutionContext
   ) = scala.concurrent.Future { None }

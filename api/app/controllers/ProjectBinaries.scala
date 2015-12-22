@@ -29,7 +29,7 @@ class ProjectBinaries @javax.inject.Inject() (
         ProjectBinariesDao.findAll(
           Authorization.User(request.user.guid),
           guid = guid,
-          guids = optionalGuids(guids),
+          guids = optionals(guids),
           projectGuid = projectGuid,
           binaryGuid = binaryGuid,
           isSynced = isSynced,

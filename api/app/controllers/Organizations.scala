@@ -29,7 +29,7 @@ class Organizations @javax.inject.Inject() (
         OrganizationsDao.findAll(
           authorization(request),
           guid = guid,
-          guids = optionalGuids(guids),
+          guids = optionals(guids),
           userGuid = userGuid,
           key = key,
           limit = limit,

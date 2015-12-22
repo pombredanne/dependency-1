@@ -4,11 +4,35 @@ import com.bryzek.dependency.v0.Client
 import com.bryzek.dependency.v0.models.Organization
 import com.bryzek.dependency.www.lib.{DependencyClientProvider, Section, UiData}
 import io.flow.play.clients.UserTokensClient
+import io.flow.user.v0.models.User
 import io.flow.play.controllers.IdentifiedController
 import scala.concurrent.{ExecutionContext, Future}
 import play.api._
 import play.api.i18n._
 import play.api.mvc._
+
+object Helpers {
+
+  def userFromSession(
+    userTokensClient: UserTokensClient,
+    session: play.api.mvc.Session
+  ) (
+    implicit ec: scala.concurrent.ExecutionContext
+  ): scala.concurrent.Future[Option[io.flow.user.v0.models.User]] = {
+    session.get("user_guid") match {
+      case None => {
+        scala.concurrent.Future { None }
+      }
+      case Some(userGuid) => {
+        println(s"get user by token($userGuid)")
+        val user  = userTokensClient.getUserByToken(userGuid)
+        println(s" -- get $user")
+        user
+      }
+    }
+  }
+
+}
 
 abstract class BaseController(
   val userTokensClient: UserTokensClient,
@@ -37,20 +61,27 @@ abstract class BaseController(
 
   override def user(
     session: play.api.mvc.Session,
-    headers: play.api.mvc.Headers
+    headers: play.api.mvc.Headers,
+    path: String,
+    queryString: Map[String, Seq[String]]
   ) (
     implicit ec: scala.concurrent.ExecutionContext
   ): scala.concurrent.Future[Option[io.flow.user.v0.models.User]] = {
-    session.get("user_guid") match {
-      case None => scala.concurrent.Future { None }
-      case Some(userGuid) => userTokensClient.getUserByToken(userGuid)
-    }
+    Helpers.userFromSession(userTokensClient, session)
   }
 
   def uiData[T](request: IdentifiedRequest[T]): UiData = {
     UiData(
       requestPath = request.path,
       user = Some(request.user),
+      section = section
+    )
+  }
+
+  def uiData[T](request: AnonymousRequest[T], user: Option[User]): UiData = {
+    UiData(
+      requestPath = request.path,
+      user = user,
       section = section
     )
   }

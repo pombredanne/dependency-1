@@ -32,7 +32,7 @@ class Libraries @javax.inject.Inject() (
         LibrariesDao.findAll(
           Authorization.User(request.user.guid),
           guid = guid,
-          guids = optionalGuids(guids),
+          guids = optionals(guids),
           projectGuid = projectGuid,
           groupId = groupId,
           artifactId = artifactId,

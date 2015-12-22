@@ -24,18 +24,22 @@ class Users @javax.inject.Inject() (
     guid: Option[UUID],
     email: Option[String],
     identifier: Option[String]
-  ) = Identified { request =>
-    Ok(
-      Json.toJson(
-        UsersDao.findAll(
-          guid = guid,
-          email = email,
-          identifier = identifier,
-          limit = 1,
-          offset = 0
+  ) = Anonymous { request =>
+    if (Seq(guid, email, identifier).isEmpty) {
+      Conflict(Json.toJson(Validation.error("Must specify guid, email or identifier")))
+    } else {
+      Ok(
+        Json.toJson(
+          UsersDao.findAll(
+            guid = guid,
+            email = email,
+            identifier = identifier,
+            limit = 1,
+            offset = 0
+          )
         )
       )
-    )
+    }
   }
 
   def getByGuid(guid: UUID) = Identified { request =>

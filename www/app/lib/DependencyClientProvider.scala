@@ -47,19 +47,12 @@ class DefaultDependencyClientProvider() extends DependencyClientProvider {
   )(implicit ec: ExecutionContext): Future[Option[User]] = {
     Try(UUID.fromString(token)) match {
       case Success(guid) => {
-        client.users.getByGuid(guid).
-          map {
-            Some(_)
-          }.
-          recover {
-            case UnitResponse(404) => None
-          }
+        client.users.get(guid = Some(guid)).map { _.headOption }
       }
       case Failure(_) => Future {
         None
       }
     }
   }
-
 
 }

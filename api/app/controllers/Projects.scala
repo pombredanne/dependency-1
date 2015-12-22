@@ -35,7 +35,7 @@ class Projects @javax.inject.Inject() (
         ProjectsDao.findAll(
           Authorization.User(request.user.guid),
           guid = guid,
-          guids = optionalGuids(guids),
+          guids = optionals(guids),
           name = name,
           groupId = groupId,
           artifactId = artifactId,

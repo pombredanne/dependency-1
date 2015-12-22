@@ -28,7 +28,7 @@ class WatchProjects @javax.inject.Inject() (
       Json.toJson(
         WatchProjectsDao.findAll(
           guid = guid,
-          guids = optionalGuids(guids),
+          guids = optionals(guids),
           userGuid = userGuid,
           projectGuid = projectGuid,
           limit = limit,

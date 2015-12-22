@@ -2190,11 +2190,16 @@ package com.bryzek.dependency.v0 {
       }
 
       override def post(
-        subscriptionForm: com.bryzek.dependency.v0.models.SubscriptionForm
+        subscriptionForm: com.bryzek.dependency.v0.models.SubscriptionForm,
+        identifier: _root_.scala.Option[String] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Subscription] = {
         val payload = play.api.libs.json.Json.toJson(subscriptionForm)
 
-        _executeRequest("POST", s"/subscriptions", body = Some(payload)).map {
+        val queryParameters = Seq(
+          identifier.map("identifier" -> _)
+        ).flatten
+
+        _executeRequest("POST", s"/subscriptions", body = Some(payload), queryParameters = queryParameters).map {
           case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Subscription", r, _.validate[com.bryzek.dependency.v0.models.Subscription])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
@@ -2203,9 +2208,14 @@ package com.bryzek.dependency.v0 {
       }
 
       override def deleteByGuid(
-        guid: _root_.java.util.UUID
+        guid: _root_.java.util.UUID,
+        identifier: _root_.scala.Option[String] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/subscriptions/${guid}").map {
+        val queryParameters = Seq(
+          identifier.map("identifier" -> _)
+        ).flatten
+
+        _executeRequest("DELETE", s"/subscriptions/${guid}", queryParameters = queryParameters).map {
           case r if r.status == 204 => ()
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -2784,11 +2794,13 @@ package com.bryzek.dependency.v0 {
      * Create a new subscription.
      */
     def post(
-      subscriptionForm: com.bryzek.dependency.v0.models.SubscriptionForm
+      subscriptionForm: com.bryzek.dependency.v0.models.SubscriptionForm,
+      identifier: _root_.scala.Option[String] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Subscription]
 
     def deleteByGuid(
-      guid: _root_.java.util.UUID
+      guid: _root_.java.util.UUID,
+      identifier: _root_.scala.Option[String] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 

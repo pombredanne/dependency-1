@@ -1,12 +1,14 @@
 package controllers
 
 import com.bryzek.dependency.v0.models.{Publication, SubscriptionForm}
-import com.bryzek.dependency.www.lib.DependencyClientProvider
+import com.bryzek.dependency.www.lib.{DependencyClientProvider, UiData}
 import io.flow.play.clients.UserTokensClient
+import io.flow.user.v0.models.User
 import java.util.UUID
+import scala.concurrent.Future
 
 import play.api._
-import play.api.i18n.MessagesApi
+import play.api.i18n._
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
@@ -24,18 +26,38 @@ object Subscriptions {
 
 class SubscriptionsController @javax.inject.Inject() (
   val messagesApi: MessagesApi,
-  override val userTokensClient: UserTokensClient,
-  override val dependencyClientProvider: DependencyClientProvider
-) extends BaseController(userTokensClient, dependencyClientProvider) {
+  val userTokensClient: UserTokensClient,
+  val dependencyClientProvider: DependencyClientProvider
+) extends Controller
+    with I18nSupport
+{
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  override def section = Some(com.bryzek.dependency.www.lib.Section.Subscriptions)
+  lazy val client = dependencyClientProvider.newClient(user = None)
 
-  def index() = Identified.async { implicit request =>
+  def index() = Action.async { implicit request =>
+    Helpers.userFromSession(userTokensClient, request.session).flatMap { userOption =>
+      userOption match {
+        case None => Future {
+          Redirect(routes.LoginController.index(return_url = Some(request.path)))
+        }
+        case Some(user) => {
+          dependencyClientProvider.newClient(user = Some(user)).users.getIdentifierByGuid(user.guid).map { id =>
+            Redirect(routes.SubscriptionsController.identifier(id.value))
+          }
+        }
+      }
+    }
+  }
+
+  def identifier(identifier: String) = Action.async { implicit request =>
     for {
-      subscriptions <- dependencyClient(request).subscriptions.get(
-        userGuid = Some(request.user.guid),
+      users <- client.users.get(
+        identifier = Some(identifier)
+      )
+      subscriptions <- client.subscriptions.get(
+        identifier = Some(identifier),
         limit = Publication.all.size + 1
       )
     } yield {
@@ -43,35 +65,57 @@ class SubscriptionsController @javax.inject.Inject() (
         Subscriptions.UserPublication(
           publication = p,
           isSubscribed = !subscriptions.find(_.publication == p).isEmpty
-        )
+            )
       }
-      Ok(views.html.subscriptions.index(uiData(request), userPublications))
+      Ok(views.html.subscriptions.identifier(uiData(request, users.headOption), identifier, userPublications))
     }
   }
 
-  def postToggle(publication: Publication) = Identified.async { implicit request =>
-    dependencyClient(request).subscriptions.get(
-      userGuid = Some(request.user.guid),
-      publication = Some(publication)
-    ).flatMap { subscriptions =>
-      subscriptions.headOption match {
-        case None => {
-          dependencyClient(request).subscriptions.post(
-            SubscriptionForm(
-              userGuid = request.user.guid,
-              publication = publication
-            )
-          ).map { _ =>
-            Redirect(routes.SubscriptionsController.index()).flashing("success" -> "Subscription added")
-          }
+  def postToggle(identifier: String, publication: Publication) = Action.async { implicit request =>
+    client.users.get(identifier = Some(identifier)).flatMap { users =>
+      println("postToggle got users: " + users)
+      users.headOption match {
+        case None => Future {
+          Redirect(routes.SubscriptionsController.index()).flashing("warning" -> "User could not be found")
         }
-        case Some(subscription) => {
-          dependencyClient(request).subscriptions.deleteByGuid(subscription.guid).map { _ =>
-            Redirect(routes.SubscriptionsController.index()).flashing("success" -> "Subscription removed")
+        case Some(user) => {
+          client.subscriptions.get(
+            identifier = Some(identifier),
+            publication = Some(publication)
+          ).flatMap { subscriptions =>
+            subscriptions.headOption match {
+              case None => {
+                client.subscriptions.post(
+                  SubscriptionForm(
+                    userGuid = user.guid,
+                    publication = publication
+                  ),
+                  identifier = Some(identifier)
+                ).map { _ =>
+                  Redirect(routes.SubscriptionsController.identifier(identifier)).flashing("success" -> "Subscription added")
+                }
+              }
+              case Some(subscription) => {
+                client.subscriptions.deleteByGuid(
+                  subscription.guid,
+                  identifier = Some(identifier)
+                ).map { _ =>
+                  Redirect(routes.SubscriptionsController.identifier(identifier)).flashing("success" -> "Subscription removed")
+                }
+              }
+            }
           }
         }
       }
     }
+  }
+
+  def uiData[T](request: Request[T], user: Option[User]): UiData = {
+    UiData(
+      requestPath = request.path,
+      user = user,
+      section = Some(com.bryzek.dependency.www.lib.Section.Subscriptions)
+    )
   }
 
 }

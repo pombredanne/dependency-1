@@ -29,7 +29,7 @@ class Resolvers @javax.inject.Inject() (
         ResolversDao.findAll(
           Authorization.User(request.user.guid),
           guid = guid,
-          guids = optionalGuids(guids),
+          guids = optionals(guids),
           visibility = visibility,
           org = org,
           limit = limit,

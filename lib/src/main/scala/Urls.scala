@@ -28,7 +28,7 @@ case class Urls(
       case None => base
       case Some(id) => {
         val encoded = play.utils.UriEncoding.encodePathSegment(id, "UTF-8")
-        s"$base/?identifier=$encoded"
+        s"$base?identifier=$encoded"
       }
     }
   }
