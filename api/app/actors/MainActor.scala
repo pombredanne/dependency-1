@@ -248,11 +248,13 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
   def syncLibrary(guid: UUID) {
     upsertLibraryActor(guid) ! LibraryActor.Messages.Sync
     searchActor ! SearchActor.Messages.SyncLibrary(guid)
+    projectBroadcast(ProjectActor.Messages.LibrarySynced(guid))
   }
 
   def syncBinary(guid: UUID) {
     upsertBinaryActor(guid) ! BinaryActor.Messages.Sync
     searchActor ! SearchActor.Messages.SyncBinary(guid)
+    projectBroadcast(ProjectActor.Messages.BinarySynced(guid))
   }
 
   def projectBroadcast(message: ProjectActor.Message) {

@@ -39,7 +39,6 @@ class ProjectActor extends Actor with Util {
   implicit val projectExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("project-actor-context")
 
   var dataProject: Option[Project] = None
-  var pendingSync: Option[Boolean] = None
 
   def receive = {
 
@@ -125,7 +124,6 @@ class ProjectActor extends Actor with Util {
               }
             })
 
-            pendingSync = Some(true)
             processPendingSync(project)
           }.recover {
             case e => {
@@ -182,16 +180,13 @@ class ProjectActor extends Actor with Util {
   }
   
   def processPendingSync(project: Project) {
-    pendingSync.foreach { _ =>
-      dependenciesPendingCompletion(project) match {
-        case Nil => {
-          RecommendationsDao.sync(MainActor.SystemUser, project)
-          SyncsDao.recordCompleted(MainActor.SystemUser, "project", project.guid)
-          pendingSync = None
-        }
-        case deps => {
-          println(s" -- project[${project.name}] guid[${project.guid}] waiting on dependencies to sync: " + deps.mkString(", "))
-        }
+    dependenciesPendingCompletion(project) match {
+      case Nil => {
+        RecommendationsDao.sync(MainActor.SystemUser, project)
+        SyncsDao.recordCompleted(MainActor.SystemUser, "project", project.guid)
+      }
+      case deps => {
+        println(s" -- project[${project.name}] guid[${project.guid}] waiting on dependencies to sync: " + deps.mkString(", "))
       }
     }
   }

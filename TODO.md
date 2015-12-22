@@ -1,6 +1,3 @@
-When a new library or binary version is created, trigger a sync of all
-projects that have that library/binary.
-
 scalatestplus vs scalatestplus_2.11
 
 Daily Summary:
