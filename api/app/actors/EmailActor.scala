@@ -43,8 +43,8 @@ class EmailActor extends Actor with Util {
       BatchEmailProcessor(
         publication = Publication.DailySummary,
         minHoursSinceLastEmail = 23
-      ) { user =>
-        Person.fromUser(user).map(DailySummaryEmailMessage(user, _))
+      ) { (user, person) =>
+        DailySummaryEmailMessage(user, person)
       }.process()
     }
 
@@ -56,7 +56,7 @@ case class BatchEmailProcessor(
   publication: Publication,
   minHoursSinceLastEmail: Int
 ) (
-  userGenerator: User => Option[EmailMessageGenerator]
+  generator: (User, Person) => EmailMessageGenerator
 ) {
 
   def process() {
@@ -70,7 +70,7 @@ case class BatchEmailProcessor(
       println(s"subscription: $subscription")
       UsersDao.findByGuid(subscription.user.guid).foreach { user =>
         println(s" - user[${user.guid}] email[${user.email}]")
-        userGenerator(user).map { generator =>
+        Person.fromUser(user).map { DailySummaryEmailMessage(user, _) }.map { generator =>
           if (generator.shouldSend()) {
             // Record before send in case of crash - prevent loop of
             // emails.
