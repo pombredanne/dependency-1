@@ -25,7 +25,7 @@ case class Dependencies(
     binaries match {
       case None => None
       case Some(langs) => {
-        langs.sortBy { l => Version(l.version) }.reverse.find(_.name == BinaryType.Scala.toString).headOption.map { lang =>
+        langs.sortBy { l => Version(l.version) }.reverse.find(_.name == BinaryType.Scala).headOption.map { lang =>
           DependencyHelper.crossBuildVersion(lang.name, lang.version)
         }
       }
