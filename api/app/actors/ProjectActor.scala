@@ -93,48 +93,45 @@ class ProjectActor extends Actor with Util {
       dataProject.foreach { project =>
         SyncsDao.recordStarted(MainActor.SystemUser, "project", project.guid)
 
-        val user = UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
+        UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
           val summary = ProjectsDao.toSummary(project)
 
-          UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
-            GithubDependencyProviderClient.instance(summary, user).dependencies(project).map { dependencies =>
-              println(s" - project[${project.guid}] name[${project.name}] dependencies: $dependencies")
+          GithubDependencyProviderClient.instance(summary, user).dependencies(project).map { dependencies =>
+            println(s" - project[${project.guid}] name[${project.name}] dependencies: $dependencies")
 
-              dependencies.binaries.map(_.map { form =>
-                println(s" -- project binaries dao upsert")
-                ProjectBinariesDao.upsert(user, form) match {
-                  case Left(errors) => {
-                    Logger.error(s"Project[${project.name}] guid[${project.guid}] Error storing binary[$form]: " + errors.mkString(", "))
-                  }
-                  case Right(_) => {}
+            dependencies.binaries.map(_.map { form =>
+              println(s" -- project binaries dao upsert")
+              ProjectBinariesDao.upsert(user, form) match {
+                case Left(errors) => {
+                  Logger.error(s"Project[${project.name}] guid[${project.guid}] Error storing binary[$form]: " + errors.mkString(", "))
                 }
-              })
-
-              dependencies.librariesAndPlugins.map(_.map { artifact =>
-                println(s" -- project artifact upsert: " + artifact)
-                ProjectLibrariesDao.upsert(
-                  user,
-                  artifact.toProjectLibraryForm(
-                    crossBuildVersion = dependencies.crossBuildVersion()
-                  )
-                ) match {
-                  case Left(errors) => {
-                    Logger.error(s"Project[${project.name}] guid[${project.guid}] Error storing artifact[$artifact]: " + errors.mkString(", "))
-                  }
-                  case Right(_) => {}
-                }
-              })
-
-              pendingSync = Some(true)
-              processPendingSync(project)
-            }.recover {
-              case e => {
-                e.printStackTrace(                System.err)
-                Logger.error(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")
+                case Right(_) => {}
               }
+            })
+
+            dependencies.librariesAndPlugins.map(_.map { artifact =>
+              println(s" -- project artifact upsert: " + artifact)
+              ProjectLibrariesDao.upsert(
+                user,
+                artifact.toProjectLibraryForm(
+                  crossBuildVersion = dependencies.crossBuildVersion()
+                )
+              ) match {
+                case Left(errors) => {
+                  Logger.error(s"Project[${project.name}] guid[${project.guid}] Error storing artifact[$artifact]: " + errors.mkString(", "))
+                }
+                case Right(_) => {}
+              }
+            })
+
+            pendingSync = Some(true)
+            processPendingSync(project)
+          }.recover {
+            case e => {
+              e.printStackTrace(                System.err)
+              Logger.error(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")
             }
           }
-
         }
       }
     }
