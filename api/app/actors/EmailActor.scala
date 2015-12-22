@@ -24,6 +24,21 @@ class EmailActor extends Actor with Util {
 
   def receive = {
 
+    /**
+      * Selects people to whom we delivery email by:
+      *
+      *   a. never received a daily summary before. We want to leave
+      *      at least 1 hour from time of registration to time of first
+      *      email to allow them to add projects.
+      *
+      *   b. It's between 7 and 8am EST - standard delivery
+      *      time. Deliver email to anybody whose last email was >= 23
+      *      hours ago
+      *
+      *   c. It's not 7am - we want to deliver email only to catch
+      *      up. So in this case we select anybody with a last email
+      *      delivered more than 24 hours ago.
+      */
     case m @ EmailActor.Messages.ProcessDailySummary => withVerboseErrorHandler(m) {
       BatchEmailProcessor(
         publication = Publication.DailySummary,
