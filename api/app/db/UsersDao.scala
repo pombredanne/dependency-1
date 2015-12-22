@@ -110,6 +110,7 @@ object UsersDao {
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     email: Option[String] = None,
+    identifier: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy.parseOrError("users.created_at"),
     limit: Long = 25,
@@ -133,6 +134,9 @@ object UsersDao {
           columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
+        subquery("users.guid", "identifier", identifier, { bindVar =>
+          s"select user_guid from user_identifiers where deleted_at is null and value = trim({$bindVar})"
+        }).
         as(
           io.flow.user.v0.anorm.parsers.User.table("users").*
         )

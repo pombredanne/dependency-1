@@ -2,7 +2,7 @@ package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.v0.models.{Publication, SubscriptionForm}
 import io.flow.user.v0.models.User
-import db.{OrganizationsDao, SubscriptionsDao, UsersDao}
+import db.{OrganizationsDao, SubscriptionsDao, UserIdentifiersDao, UsersDao}
 import akka.actor.Actor
 import java.util.UUID
 import scala.concurrent.ExecutionContext
@@ -31,6 +31,9 @@ class UserActor extends Actor with Util {
     case m @ UserActor.Messages.Created => withVerboseErrorHandler(m.toString) {
       dataUser.foreach { user =>
         OrganizationsDao.upsertForUser(user)
+
+        // This method will force create an identifier
+        UserIdentifiersDao.latestForUser(MainActor.SystemUser, user)
 
         // Subscribe the user automatically to key personalized emails.
         Seq(Publication.DailySummary).foreach { publication =>

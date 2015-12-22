@@ -1,6 +1,6 @@
 package controllers
 
-import db.UsersDao
+import db.{UserIdentifiersDao, UsersDao}
 import io.flow.common.v0.models.Error
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
@@ -23,24 +23,30 @@ class Users @javax.inject.Inject() (
   def get(
     guid: Option[UUID],
     email: Option[String],
-    limit: Long = 25,
-    offset: Long = 0
-  ) = Anonymous { request =>
+    identifier: Option[String]
+  ) = Identified { request =>
     Ok(
       Json.toJson(
         UsersDao.findAll(
           guid = guid,
           email = email,
-          limit = limit,
-          offset = offset
+          identifier = identifier,
+          limit = 1,
+          offset = 0
         )
       )
     )
   }
 
-  def getByGuid(guid: UUID) = Anonymous { request =>
+  def getByGuid(guid: UUID) = Identified { request =>
     withUser(guid) { user =>
       Ok(Json.toJson(user))
+    }
+  }
+
+  def getIdentifierByGuid(guid: UUID) = Identified { request =>
+    withUser(guid) { user =>
+      Ok(Json.toJson(UserIdentifiersDao.latestForUser(request.user, user)))
     }
   }
 

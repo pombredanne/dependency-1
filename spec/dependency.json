@@ -333,6 +333,15 @@
             ]
 	},
 
+	"user_identifier": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" },
+                { "name": "user", "type": "io.flow.common.v0.models.reference" },
+		{ "name": "value", "type": "string" },
+                { "name": "audit", "type": "io.flow.common.v0.models.audit" }
+	    ]
+	},
+
 	"token": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
@@ -464,15 +473,18 @@
 		}
 	    ]
 	},
-	
+
 	"io.flow.user.v0.models.user": {
+	    "path": "/users",
+
             "operations": [
                 {
                     "method": "GET",
                     "description": "Search for a specific user. You must specify at least 1 parameter - either a guid or email - and will receive back either 0 or 1 users.",
                     "parameters": [
                         { "name": "guid", "type": "uuid", "description": "Find user with this guid. Exact match", "required": false },
-                        { "name": "email", "type": "string", "description": "Find user with this email address. Case in-sensitive. Exact match", "required": false }
+                        { "name": "email", "type": "string", "description": "Find user with this email address. Case in-sensitive. Exact match", "required": false },
+			{ "name": "identifier", "type": "string", "description": "Find user associated with this randomly generated identifier. Exact match", "required": false }
                     ],
                     "responses": {
                         "200": { "type": "[io.flow.user.v0.models.user]" },
@@ -486,6 +498,17 @@
                     "path": "/:guid",
                     "responses": {
                         "200": { "type": "io.flow.user.v0.models.user" },
+                        "401": { "type": "unit" },
+                        "404": { "type": "unit" }
+                    }
+                },
+
+                {
+                    "method": "GET",
+                    "description": "Returns the latest identifier for this user. The basic use case is to enable things like unsubscribe w/out  login (and thus once you have an identifier, you can GET /users?identifier=xxx). Identifiers are rotated regularly with last n identifiers being valid (allowing eventual expiration).",
+                    "path": "/:guid/identifier",
+                    "responses": {
+                        "200": { "type": "user_identifier" },
                         "401": { "type": "unit" },
                         "404": { "type": "unit" }
                     }

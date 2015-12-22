@@ -272,6 +272,13 @@ package com.bryzek.dependency.v0.models {
     token: String
   )
 
+  case class UserIdentifier(
+    guid: _root_.java.util.UUID,
+    user: io.flow.common.v0.models.Reference,
+    value: String,
+    audit: io.flow.common.v0.models.Audit
+  )
+
   case class UserSummary(
     guid: _root_.java.util.UUID,
     email: _root_.scala.Option[String] = None,
@@ -1253,6 +1260,24 @@ package com.bryzek.dependency.v0.models {
       )(unlift(TokenForm.unapply _))
     }
 
+    implicit def jsonReadsDependencyUserIdentifier: play.api.libs.json.Reads[UserIdentifier] = {
+      (
+        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "user").read[io.flow.common.v0.models.Reference] and
+        (__ \ "value").read[String] and
+        (__ \ "audit").read[io.flow.common.v0.models.Audit]
+      )(UserIdentifier.apply _)
+    }
+
+    implicit def jsonWritesDependencyUserIdentifier: play.api.libs.json.Writes[UserIdentifier] = {
+      (
+        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "user").write[io.flow.common.v0.models.Reference] and
+        (__ \ "value").write[String] and
+        (__ \ "audit").write[io.flow.common.v0.models.Audit]
+      )(unlift(UserIdentifier.unapply _))
+    }
+
     implicit def jsonReadsDependencyUserSummary: play.api.libs.json.Reads[UserSummary] = {
       (
         (__ \ "guid").read[_root_.java.util.UUID] and
@@ -2212,14 +2237,16 @@ package com.bryzek.dependency.v0 {
     object Users extends Users {
       override def get(
         guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        email: _root_.scala.Option[String] = None
+        email: _root_.scala.Option[String] = None,
+        identifier: _root_.scala.Option[String] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.user.v0.models.User]] = {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
-          email.map("email" -> _)
+          email.map("email" -> _),
+          identifier.map("identifier" -> _)
         ).flatten
 
-        _executeRequest("GET", s"/", queryParameters = queryParameters).map {
+        _executeRequest("GET", s"/users", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[io.flow.user.v0.models.User]", r, _.validate[Seq[io.flow.user.v0.models.User]])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
@@ -2229,8 +2256,19 @@ package com.bryzek.dependency.v0 {
       override def getByGuid(
         guid: _root_.java.util.UUID
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User] = {
-        _executeRequest("GET", s"/${guid}").map {
+        _executeRequest("GET", s"/users/${guid}").map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("io.flow.user.v0.models.User", r, _.validate[io.flow.user.v0.models.User])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+        }
+      }
+
+      override def getIdentifierByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.UserIdentifier] = {
+        _executeRequest("GET", s"/users/${guid}/identifier").map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.UserIdentifier", r, _.validate[com.bryzek.dependency.v0.models.UserIdentifier])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
@@ -2242,7 +2280,7 @@ package com.bryzek.dependency.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User] = {
         val payload = play.api.libs.json.Json.toJson(userForm)
 
-        _executeRequest("POST", s"/", body = Some(payload)).map {
+        _executeRequest("POST", s"/users", body = Some(payload)).map {
           case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("io.flow.user.v0.models.User", r, _.validate[io.flow.user.v0.models.User])
           case r if r.status == 409 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 409")
@@ -2767,7 +2805,8 @@ package com.bryzek.dependency.v0 {
      */
     def get(
       guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      email: _root_.scala.Option[String] = None
+      email: _root_.scala.Option[String] = None,
+      identifier: _root_.scala.Option[String] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.user.v0.models.User]]
 
     /**
@@ -2776,6 +2815,16 @@ package com.bryzek.dependency.v0 {
     def getByGuid(
       guid: _root_.java.util.UUID
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.user.v0.models.User]
+
+    /**
+     * Returns the latest identifier for this user. The basic use case is to enable
+     * things like unsubscribe w/out  login (and thus once you have an identifier, you
+     * can GET /users?identifier=xxx). Identifiers are rotated regularly with last n
+     * identifiers being valid (allowing eventual expiration).
+     */
+    def getIdentifierByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.UserIdentifier]
 
     /**
      * Create a new user.
