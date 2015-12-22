@@ -62,7 +62,7 @@ class BinariesSpec extends PlaySpecification with MockClient {
   "POST /binaries" in new WithServer(port=port) {
     val form = createBinaryForm(org)
     val binary = await(client.binaries.post(form))
-    binary.name.toString must beEqualTo(form.name)
+    binary.name must beEqualTo(form.name)
   }
 
   "POST /binaries validates duplicate name" in new WithServer(port=port) {
