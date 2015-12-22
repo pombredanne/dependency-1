@@ -98,31 +98,43 @@ class ProjectActor extends Actor with Util {
           GithubDependencyProviderClient.instance(summary, user).dependencies(project).map { dependencies =>
             println(s" - project[${project.guid}] name[${project.name}] dependencies: $dependencies")
 
-            dependencies.binaries.map(_.map { form =>
-              println(s" -- project[${project.guid}] name[${project.name}] binaries dao upsert")
-              ProjectBinariesDao.upsert(user, form) match {
-                case Left(errors) => {
-                  Logger.error(s"Project[${project.name}] guid[${project.guid}] Error storing binary[$form]: " + errors.mkString(", "))
+            dependencies.binaries.map { binaries =>
+              val projectBinaries = binaries.map { form =>
+                println(s" -- project[${project.guid}] name[${project.name}] binaries dao upsert")
+                ProjectBinariesDao.upsert(user, form) match {
+                  case Left(errors) => {
+                    Logger.error(s"Project[${project.name}] guid[${project.guid}] Error storing binary[$form]: " + errors.mkString(", "))
+                    None
+                  }
+                  case Right(projectBinary) => {
+                    Some(projectBinary)
+                  }
                 }
-                case Right(_) => {}
               }
-            })
+              ProjectBinariesDao.setGuids(user, project.guid, projectBinaries.flatten)
+            }
 
-            dependencies.librariesAndPlugins.map(_.map { artifact =>
-              println(s" -- project[${project.guid}] name[${project.name}] artifact upsert: " + artifact)
-              println(s" -- project[${project.guid}] name[${project.name}] crossBuildVersion: " + dependencies.crossBuildVersion() + " binaries: " + dependencies.binaries)
-              ProjectLibrariesDao.upsert(
-                user,
-                artifact.toProjectLibraryForm(
-                  crossBuildVersion = dependencies.crossBuildVersion()
-                )
-              ) match {
-                case Left(errors) => {
-                  Logger.error(s"Project[${project.name}] guid[${project.guid}] Error storing artifact[$artifact]: " + errors.mkString(", "))
+            dependencies.librariesAndPlugins.map { libraries =>
+              val projectLibraries = libraries.map { artifact =>
+                println(s" -- project[${project.guid}] name[${project.name}] artifact upsert: " + artifact)
+                println(s" -- project[${project.guid}] name[${project.name}] crossBuildVersion: " + dependencies.crossBuildVersion() + " binaries: " + dependencies.binaries)
+                ProjectLibrariesDao.upsert(
+                  user,
+                  artifact.toProjectLibraryForm(
+                    crossBuildVersion = dependencies.crossBuildVersion()
+                  )
+                ) match {
+                  case Left(errors) => {
+                    Logger.error(s"Project[${project.name}] guid[${project.guid}] Error storing artifact[$artifact]: " + errors.mkString(", "))
+                    None
+                  }
+                  case Right(library) => {
+                    Some(library)
+                  }
                 }
-                case Right(_) => {}
               }
-            })
+              ProjectLibrariesDao.setGuids(user, project.guid, projectLibraries.flatten)
+            }
 
             processPendingSync(project)
           }.recover {

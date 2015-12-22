@@ -105,6 +105,16 @@ class ProjectLibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
     ProjectLibrariesDao.findByGuid(Authorization.All, projectLibrary.guid).flatMap(_.library) must be(None)
   }
 
+  "setGuids" in {
+    val projectLibrary = createProjectLibrary(project)
+
+    ProjectLibrariesDao.setGuids(systemUser, projectLibrary.project.guid, Seq(projectLibrary))
+    ProjectLibrariesDao.findByGuid(Authorization.All, projectLibrary.guid).map(_.guid) must be(Some(projectLibrary.guid))
+
+    ProjectLibrariesDao.setGuids(systemUser, projectLibrary.project.guid, Nil)
+    ProjectLibrariesDao.findByGuid(Authorization.All, projectLibrary.guid).flatMap(_.library) must be(None)
+  }
+
   "softDelete" in {
     val projectLibrary = createProjectLibrary(project)
     ProjectLibrariesDao.softDelete(systemUser, projectLibrary)

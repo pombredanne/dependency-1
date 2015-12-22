@@ -2,8 +2,8 @@ package db
 
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
-import com.bryzek.dependency.v0.models.{Binary, BinaryType, ProjectBinary, SyncEvent}
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import com.bryzek.dependency.v0.models.{Binary, BinaryType, Project, ProjectBinary, SyncEvent}
+import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, Pager, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
@@ -146,6 +146,21 @@ object ProjectBinariesDao {
         'updated_by_guid -> user.guid
       ).execute()
     }
+  }
+
+  /**
+    * Removes any project binary guids for this project not specified in this list
+    */
+  def setGuids(user: User, projectGuid: UUID, projectBinaries: Seq[ProjectBinary]) {
+    val guids = projectBinaries.map(_.guid)
+    Pager.eachPage { offset =>
+      findAll(Authorization.All, projectGuid = Some(projectGuid), limit = 100, offset = offset)
+    } { projectBinary =>
+      if (!guids.contains(projectBinary.guid)) {
+        softDelete(user, projectBinary)
+      }
+    }
+
   }
 
   def setBinary(user: User, projectBinary: ProjectBinary, binary: Binary) {

@@ -3,7 +3,7 @@ package db
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Library, ProjectLibrary, SyncEvent, VersionForm}
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, Pager, SoftDelete}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
@@ -157,6 +157,21 @@ object ProjectLibrariesDao {
         'updated_by_guid -> user.guid
       ).execute()
     }
+  }
+
+  /**
+    * Removes any project library guids for this project not specified in this list
+    */
+  def setGuids(user: User, projectGuid: UUID, projectBinaries: Seq[ProjectLibrary]) {
+    val guids = projectBinaries.map(_.guid)
+    Pager.eachPage { offset =>
+      findAll(Authorization.All, projectGuid = Some(projectGuid), limit = 100, offset = offset)
+    } { projectLibrary =>
+      if (!guids.contains(projectLibrary.guid)) {
+        softDelete(user, projectLibrary)
+      }
+    }
+
   }
 
   def setLibrary(user: User, projectLibrary: ProjectLibrary, library: Library) {

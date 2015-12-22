@@ -77,6 +77,16 @@ class ProjectBinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     ProjectBinariesDao.removeBinary(systemUser, projectBinary)
     ProjectBinariesDao.findByGuid(Authorization.All, projectBinary.guid).flatMap(_.binary) must be(None)
+  }
+
+  "setGuids" in {
+    val projectBinary = createProjectBinary(project)
+
+    ProjectBinariesDao.setGuids(systemUser, projectBinary.project.guid, Seq(projectBinary))
+    ProjectBinariesDao.findByGuid(Authorization.All, projectBinary.guid).map(_.guid) must be(Some(projectBinary.guid))
+
+    ProjectBinariesDao.setGuids(systemUser, projectBinary.project.guid, Nil)
+    ProjectBinariesDao.findByGuid(Authorization.All, projectBinary.guid).flatMap(_.binary) must be(None)
 }
 
   "softDelete" in {
