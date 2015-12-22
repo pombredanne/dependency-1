@@ -100,7 +100,7 @@ class ProjectActor extends Actor with Util {
             println(s" - project[${project.guid}] name[${project.name}] dependencies: $dependencies")
 
             dependencies.binaries.map(_.map { form =>
-              println(s" -- project binaries dao upsert")
+              println(s" -- project[${project.guid}] name[${project.name}] binaries dao upsert")
               ProjectBinariesDao.upsert(user, form) match {
                 case Left(errors) => {
                   Logger.error(s"Project[${project.name}] guid[${project.guid}] Error storing binary[$form]: " + errors.mkString(", "))
@@ -110,7 +110,8 @@ class ProjectActor extends Actor with Util {
             })
 
             dependencies.librariesAndPlugins.map(_.map { artifact =>
-              println(s" -- project artifact upsert: " + artifact)
+              println(s" -- project[${project.guid}] name[${project.name}] artifact upsert: " + artifact)
+              println(s" -- project[${project.guid}] name[${project.name}] crossBuildVersion: " + dependencies.crossBuildVersion() + " binaries: " + dependencies.binaries)
               ProjectLibrariesDao.upsert(
                 user,
                 artifact.toProjectLibraryForm(
