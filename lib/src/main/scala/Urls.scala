@@ -21,7 +21,13 @@ case class Urls(
   def binary(guid: UUID) = s"/binaries/$guid"
   def library(guid: UUID) = s"/libraries/$guid"
   def project(guid: UUID) = s"/projects/$guid"
-  def subscriptions(): String = "/subscriptions"
+
+  def subscriptionsRawUrl() = "/subscriptions"
+
+  def subscriptions(userIdentifier: String): String = {
+    val encoded = play.utils.UriEncoding.encodePathSegment(userIdentifier, "UTF-8")
+    s"/$subscriptionsRawUrl/$encoded"
+  }
 
   def www(rest: play.api.mvc.Call): String = {
     www(rest.toString)

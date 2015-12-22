@@ -33,7 +33,10 @@ class Emails @javax.inject.Inject() (
         UsersDao.findByEmail("mbryzek@alum.mit.edu") match {
           case None => Ok(s"No user with email address[$email] found")
           case Some(user) => {
-            val generator = DailySummaryEmailMessage(user)
+            val person = Person.fromUser(user).getOrElse {
+              Person(email = "noemail@test.flow.io", name = user.name)
+            }
+            val generator = DailySummaryEmailMessage(user, person)
             generator.shouldSend()
 
             Ok(

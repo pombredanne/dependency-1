@@ -3,10 +3,10 @@ package com.bryzek.dependency.actors
 import io.flow.play.util.DefaultConfig
 import io.flow.play.postgresql.Pager
 import io.flow.user.v0.models.User
-import db.{Authorization, LastEmail, LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UsersDao}
+import db.{Authorization, LastEmail, LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UserIdentifiersDao, UsersDao}
 import com.bryzek.dependency.v0.models.Publication
 import com.bryzek.dependency.lib.Urls
-import com.bryzek.dependency.api.lib.{Email, Person}
+import com.bryzek.dependency.api.lib.{Email, Person, Recipient}
 import org.joda.time.{DateTime, DateTimeZone}
 import play.api.Logger
 import akka.actor.Actor
@@ -29,7 +29,7 @@ class EmailActor extends Actor with Util {
         publication = Publication.DailySummary,
         minHoursSinceLastEmail = 23
       ) { user =>
-        DailySummaryEmailMessage(user)
+        Person.fromUser(user).map(DailySummaryEmailMessage(user, _))
       }.process()
     }
 
@@ -41,7 +41,7 @@ case class BatchEmailProcessor(
   publication: Publication,
   minHoursSinceLastEmail: Int
 ) (
-  userGenerator: User => EmailMessageGenerator
+  userGenerator: User => Option[EmailMessageGenerator]
 ) {
 
   def process() {
@@ -55,10 +55,8 @@ case class BatchEmailProcessor(
       println(s"subscription: $subscription")
       UsersDao.findByGuid(subscription.user.guid).foreach { user =>
         println(s" - user[${user.guid}] email[${user.email}]")
-        val generator = userGenerator(user)
-        if (generator.shouldSend()) {
-          Person.fromUser(user).map { person =>
-
+        userGenerator(user).map { generator =>
+          if (generator.shouldSend()) {
             // Record before send in case of crash - prevent loop of
             // emails.
             LastEmailsDao.record(
@@ -70,7 +68,7 @@ case class BatchEmailProcessor(
             )
 
             Email.sendHtml(
-              to = person,
+              to = generator.person,
               subject = generator.subject(),
               body = generator.body()
             )
@@ -83,6 +81,8 @@ case class BatchEmailProcessor(
 
 trait EmailMessageGenerator {
   def shouldSend(): Boolean
+  def person(): Person
+  def recipient(): Recipient
   def subject(): String
   def body(): String
 }
@@ -90,7 +90,13 @@ trait EmailMessageGenerator {
 /**
   * Class which generates email message
   */
-case class DailySummaryEmailMessage(user: User) extends EmailMessageGenerator {
+case class DailySummaryEmailMessage(user: User, override val person: Person) extends EmailMessageGenerator {
+
+  override val recipient = Recipient(
+    email = person.email,
+    name = person.name,
+    identifier = UserIdentifiersDao.latestForUser(MainActor.SystemUser, user).value
+  )
 
   private[this] val PreferredHourToSendEst = {
     val value = DefaultConfig.requiredString("com.bryzek.dependency.api.email.daily.summary.hour.est").toInt
@@ -132,7 +138,7 @@ case class DailySummaryEmailMessage(user: User) extends EmailMessageGenerator {
     }
 
     views.html.emails.dailySummary(
-      name = user.name,
+      recipient = recipient,
       newRecommendations = newRecommendations,
       oldRecommendations = oldRecommendations,
       lastEmail = lastEmail,

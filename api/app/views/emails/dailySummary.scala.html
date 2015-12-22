@@ -1,12 +1,12 @@
-@(name: io.flow.user.v0.models.Name,
+@(recipient: com.bryzek.dependency.api.lib.Recipient,
   urls: com.bryzek.dependency.lib.Urls,
   newRecommendations: Seq[com.bryzek.dependency.v0.models.Recommendation],
   oldRecommendations: Seq[com.bryzek.dependency.v0.models.Recommendation],
   lastEmail: Option[db.LastEmail]
 )
 
-@if(!name.first.isEmpty) {
-  <p>Dear @name.first.get,</p>
+@if(!recipient.name.first.isEmpty) {
+  <p>Dear @recipient.name.first.get,</p>
 }
 
 @if(lastEmail.isEmpty) {
@@ -14,7 +14,7 @@
 
     This is your personalized daily summary of dependency
     recommendations. At any time, you can unsubscribe by
-    visiting <a href="@urls.www(urls.subscriptions)">@urls.www(urls.subscriptions)</a>
+    visiting <a href="@urls.www(urls.subscriptions(recipient.identifier))">@urls.www(urls.subscriptionsRawUrl)</a>
 
   </p>
 
@@ -53,4 +53,4 @@
 </p>
   
 
-@footer(urls)
+@footer(recipient, urls)
