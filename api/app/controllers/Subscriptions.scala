@@ -20,6 +20,7 @@ class Subscriptions @javax.inject.Inject() (
     guid: Option[UUID],
     guids: Option[Seq[UUID]],
     userGuid: Option[UUID],
+    identifier: Option[String],
     publication: Option[Publication],
     limit: Long = 25,
     offset: Long = 0
@@ -30,6 +31,7 @@ class Subscriptions @javax.inject.Inject() (
           guid = guid,
           guids = optionalGuids(guids),
           userGuid = userGuid,
+          identifier = identifier,
           publication = publication,
           limit = limit,
           offset = offset

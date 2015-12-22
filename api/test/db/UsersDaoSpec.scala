@@ -86,7 +86,6 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       UsersDao.findAll(identifier = Some(createTestKey())) must be(Nil)
     }
 
-
   }
 
   "create" must {

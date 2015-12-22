@@ -56,6 +56,15 @@ class SubscriptionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     SubscriptionsDao.findAll(guids = Some(Seq(subscription1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(subscription1.guid))
   }
 
+  "findAll by identifier" in {
+    val user = createUser()
+    val identifier = UserIdentifiersDao.latestForUser(systemUser, user).value
+    val subscription = createSubscription(createSubscriptionForm(user = user))
+
+    SubscriptionsDao.findAll(identifier = Some(identifier)).map(_.guid) must be(Seq(subscription.guid))
+    SubscriptionsDao.findAll(identifier = Some(createTestKey())) must be(Nil)
+  }
+
   "findAll by minHoursSinceLastEmail" in {
     val user = createUser()
     val subscription = createSubscription(

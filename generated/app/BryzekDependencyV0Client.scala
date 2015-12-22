@@ -2156,6 +2156,7 @@ package com.bryzek.dependency.v0 {
         guid: _root_.scala.Option[_root_.java.util.UUID] = None,
         guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
         userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        identifier: _root_.scala.Option[String] = None,
         publication: _root_.scala.Option[com.bryzek.dependency.v0.models.Publication] = None,
         limit: Long = 25,
         offset: Long = 0
@@ -2163,6 +2164,7 @@ package com.bryzek.dependency.v0 {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
           userGuid.map("user_guid" -> _.toString),
+          identifier.map("identifier" -> _),
           publication.map("publication" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
@@ -2765,6 +2767,7 @@ package com.bryzek.dependency.v0 {
       guid: _root_.scala.Option[_root_.java.util.UUID] = None,
       guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
       userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      identifier: _root_.scala.Option[String] = None,
       publication: _root_.scala.Option[com.bryzek.dependency.v0.models.Publication] = None,
       limit: Long = 25,
       offset: Long = 0

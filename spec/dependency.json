@@ -990,6 +990,7 @@
                         { "name": "guid", "type": "uuid", "description": "Find the subscription with this guid.", "required": false },
 			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
                         { "name": "user_guid", "type": "uuid", "description": "Find subscriptions for this user.", "required": false },
+			{ "name": "identifier", "type": "string", "description": "Find subscriptions associated with this user identifier. Exact match", "required": false },
                         { "name": "publication", "type": "publication", "description": "Find subscriptions for this publication.", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }

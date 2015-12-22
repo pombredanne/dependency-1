@@ -22,11 +22,15 @@ case class Urls(
   def library(guid: UUID) = s"/libraries/$guid"
   def project(guid: UUID) = s"/projects/$guid"
 
-  def subscriptionsRawUrl() = "/subscriptions"
-
-  def subscriptions(userIdentifier: String): String = {
-    val encoded = play.utils.UriEncoding.encodePathSegment(userIdentifier, "UTF-8")
-    s"/$subscriptionsRawUrl/$encoded"
+  def subscriptions(userIdentifier: Option[String]): String = {
+    val base = "/subscriptions/"
+    userIdentifier match {
+      case None => base
+      case Some(id) => {
+        val encoded = play.utils.UriEncoding.encodePathSegment(id, "UTF-8")
+        s"$base/?identifier=$encoded"
+      }
+    }
   }
 
   def www(rest: play.api.mvc.Call): String = {

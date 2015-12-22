@@ -102,6 +102,7 @@ object SubscriptionsDao {
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     userGuid: Option[UUID] = None,
+    identifier: Option[String] = None,
     publication: Option[Publication] = None,
     minHoursSinceLastEmail: Option[Int] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -133,6 +134,9 @@ object SubscriptionsDao {
                            and last_emails.created_at > now() - interval '1 hour' * {min_hours}::int)
           """.trim }
         ).bind("min_hours", minHoursSinceLastEmail).
+        subquery("subscriptions.user_guid", "identifier", identifier, { bindVar =>
+          s"select user_guid from user_identifiers where deleted_at is null and value = trim({$bindVar})"
+        }).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Subscription.table("subscriptions").*
         )
