@@ -147,7 +147,6 @@ object ResolversDao {
         offset = offset
       )
     } { library =>
-      println(s"Soft deleting library: " + library)
       LibrariesDao.softDelete(MainActor.SystemUser, library)
     }
 

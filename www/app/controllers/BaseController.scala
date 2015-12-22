@@ -24,10 +24,7 @@ object Helpers {
         scala.concurrent.Future { None }
       }
       case Some(userGuid) => {
-        println(s"get user by token($userGuid)")
-        val user  = userTokensClient.getUserByToken(userGuid)
-        println(s" -- get $user")
-        user
+        userTokensClient.getUserByToken(userGuid)
       }
     }
   }

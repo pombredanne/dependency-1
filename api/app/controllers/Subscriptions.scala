@@ -31,13 +31,11 @@ class Subscriptions @javax.inject.Inject() (
   ) (
     implicit ec: ExecutionContext
   ): Future[Option[User]] = {
-    println(s"user from session path[$path] queryString[$queryString]")
     queryString.get("identifier").getOrElse(Nil).toList match {
       case Nil => {
         super.user(session, headers, path, queryString)
       }
       case id :: Nil => {
-        println(s"user from identifiers: " + id)
         Future {
           UsersDao.findAll(identifier = Some(id), limit = 1).headOption
         }

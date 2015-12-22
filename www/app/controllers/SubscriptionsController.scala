@@ -73,7 +73,6 @@ class SubscriptionsController @javax.inject.Inject() (
 
   def postToggle(identifier: String, publication: Publication) = Action.async { implicit request =>
     client.users.get(identifier = Some(identifier)).flatMap { users =>
-      println("postToggle got users: " + users)
       users.headOption match {
         case None => Future {
           Redirect(routes.SubscriptionsController.index()).flashing("warning" -> "User could not be found")
