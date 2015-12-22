@@ -48,11 +48,11 @@ class Resolvers @javax.inject.Inject() (
   def post() = Identified(parse.json) { request =>
     request.body.validate[ResolverForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[ResolverForm] => {
         ResolversDao.create(request.user, s.get) match {
-          case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+          case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
           case Right(resolver) => Created(Json.toJson(resolver))
         }
       }

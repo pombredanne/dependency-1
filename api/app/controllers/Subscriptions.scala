@@ -80,12 +80,12 @@ class Subscriptions @javax.inject.Inject() (
   def post(identifier: Option[String]) = Identified(parse.json) { request =>
     request.body.validate[SubscriptionForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[SubscriptionForm] => {
         val form = s.get
         SubscriptionsDao.create(request.user, form) match {
-          case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+          case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
           case Right(subscription) => Created(Json.toJson(subscription))
         }
       }

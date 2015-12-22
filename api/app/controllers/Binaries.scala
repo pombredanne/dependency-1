@@ -49,12 +49,12 @@ class Binaries @javax.inject.Inject() (
   def post() = Identified(parse.json) { request =>
     request.body.validate[BinaryForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[BinaryForm] => {
         val form = s.get
         BinariesDao.create(request.user, form) match {
-          case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+          case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
           case Right(binary) => Created(Json.toJson(binary))
         }
       }

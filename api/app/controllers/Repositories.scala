@@ -29,7 +29,7 @@ class Repositories @javax.inject.Inject() (
   ) = Identified.async { request =>
     if (!existingProject.isEmpty && organizationGuid.isEmpty) {
       Future {
-        Conflict(Json.toJson(Validation.error("When filtering by existing projects, you must also provide the organization_guid")))
+        UnprocessableEntity(Json.toJson(Validation.error("When filtering by existing projects, you must also provide the organization_guid")))
       }
     } else {
       val auth = Authorization.User(request.user.guid)

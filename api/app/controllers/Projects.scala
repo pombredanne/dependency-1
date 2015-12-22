@@ -59,11 +59,11 @@ class Projects @javax.inject.Inject() (
   def post() = Identified(parse.json) { request =>
     request.body.validate[ProjectForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[ProjectForm] => {
         ProjectsDao.create(request.user, s.get) match {
-          case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+          case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
           case Right(project) => Created(Json.toJson(project))
         }
       }
@@ -74,7 +74,7 @@ class Projects @javax.inject.Inject() (
     withProject(request.user, guid) { project =>
       request.body.validate[ProjectPatchForm] match {
         case e: JsError => {
-          Conflict(Json.toJson(Validation.invalidJson(e)))
+          UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
         }
         case s: JsSuccess[ProjectPatchForm] => {
           val patch = s.get
@@ -86,7 +86,7 @@ class Projects @javax.inject.Inject() (
             uri = patch.uri.getOrElse(project.uri)
           )
           ProjectsDao.update(request.user, project, form) match {
-            case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+            case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
             case Right(updated) => Ok(Json.toJson(updated))
           }
         }
@@ -98,11 +98,11 @@ class Projects @javax.inject.Inject() (
     withProject(request.user, guid) { project =>
       request.body.validate[ProjectForm] match {
         case e: JsError => {
-          Conflict(Json.toJson(Validation.invalidJson(e)))
+          UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
         }
         case s: JsSuccess[ProjectForm] => {
           ProjectsDao.update(request.user, project, s.get) match {
-            case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+            case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
             case Right(updated) => Ok(Json.toJson(updated))
           }
         }

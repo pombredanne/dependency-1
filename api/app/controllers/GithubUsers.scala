@@ -21,12 +21,12 @@ class GithubUsers @javax.inject.Inject() (
   def postAuthenticationsAndGithub() = Action.async(parse.json) { request =>
     request.body.validate[GithubAuthenticationForm] match {
       case e: JsError => Future {
-        Conflict(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[GithubAuthenticationForm] => {
         val form = s.get
         github.getUserFromCode(form.code).map {
-          case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+          case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
           case Right(user) => Ok(Json.toJson(user))
         }
       }

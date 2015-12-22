@@ -53,11 +53,11 @@ class Libraries @javax.inject.Inject() (
   def post() = Identified(parse.json) { request =>
     request.body.validate[LibraryForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[LibraryForm] => {
         LibrariesDao.create(request.user, s.get) match {
-          case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+          case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
           case Right(library) => Created(Json.toJson(library))
         }
       }

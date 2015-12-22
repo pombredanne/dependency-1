@@ -468,7 +468,7 @@
 		    "body": { "type": "github_authentication_form" },
                     "responses": {
                         "200": { "type": "io.flow.user.v0.models.user" },
-                        "409": { "type": "[io.flow.common.v0.models.error]" }
+                        "422": { "type": "[io.flow.common.v0.models.error]" }
 		    }
 		}
 	    ]
@@ -520,7 +520,7 @@
                     "body": { "type": "io.flow.user.v0.models.user_form" },
                     "responses": {
                         "201": { "type": "io.flow.user.v0.models.user" },
-                        "409": { "type": "[io.flow.common.v0.models.error]" }
+                        "422": { "type": "[io.flow.common.v0.models.error]" }
                     }
                 }
             ]
@@ -569,7 +569,7 @@
                     "responses": {
                         "201": { "type": "project" },
                         "401": { "type": "unit" },
-                        "409": { "type": "[io.flow.common.v0.models.error]" }
+                        "422": { "type": "[io.flow.common.v0.models.error]" }
                     }
                 },
 
@@ -581,7 +581,7 @@
                     "responses": {
                         "200": { "type": "project", "description": "Project successfully updated" },
                         "401": { "type": "unit" },
-                        "409": { "type": "[io.flow.common.v0.models.error]" }
+                        "422": { "type": "[io.flow.common.v0.models.error]" }
                     }
                 },
 
@@ -593,7 +593,7 @@
                     "responses": {
                         "200": { "type": "project", "description": "Project successfully updated" },
                         "401": { "type": "unit" },
-                        "409": { "type": "[io.flow.common.v0.models.error]" }
+                        "422": { "type": "[io.flow.common.v0.models.error]" }
                     }
                 },
 
@@ -706,7 +706,7 @@
                     "responses": {
                         "201": { "type": "organization" },
                         "401": { "type": "unit" },
-                        "409": { "type": "[io.flow.common.v0.models.error]" }
+                        "422": { "type": "[io.flow.common.v0.models.error]" }
                     }
                 },
 
@@ -718,7 +718,7 @@
                     "responses": {
                         "200": { "type": "organization", "description": "Organization successfully updated" },
                         "401": { "type": "unit" },
-                        "409": { "type": "[io.flow.common.v0.models.error]" }
+                        "422": { "type": "[io.flow.common.v0.models.error]" }
                     }
                 },
 
@@ -771,7 +771,7 @@
                     "responses": {
                         "201": { "type": "resolver" },
                         "401": { "type": "unit" },
-                        "409": { "type": "[io.flow.common.v0.models.error]" }
+                        "422": { "type": "[io.flow.common.v0.models.error]" }
                     }
                 },
 
@@ -826,7 +826,7 @@
                     "responses": {
                         "201": { "type": "library" },
                         "401": { "type": "unit" },
-                        "409": { "type": "[io.flow.common.v0.models.error]" }
+                        "422": { "type": "[io.flow.common.v0.models.error]" }
                     }
                 },
 
@@ -911,7 +911,7 @@
                     "responses": {
                         "201": { "type": "binary" },
                         "401": { "type": "unit" },
-                        "409": { "type": "[io.flow.common.v0.models.error]" }
+                        "422": { "type": "[io.flow.common.v0.models.error]" }
                     }
                 },
 
@@ -1022,7 +1022,7 @@
                     "responses": {
                         "201": { "type": "subscription" },
                         "401": { "type": "unit" },
-                        "409": { "type": "[io.flow.common.v0.models.error]" }
+                        "422": { "type": "[io.flow.common.v0.models.error]" }
                     }
                 },
 
@@ -1079,7 +1079,7 @@
 			"200": { "type": "watch_project", "description": "User was already watching this project. Existing record returned" },
 			"201": { "type": "watch_project", "description": "Watch record created and returned" },
 			"401": { "type": "unit" },
-                        "409": { "type": "[io.flow.common.v0.models.error]" }
+                        "422": { "type": "[io.flow.common.v0.models.error]" }
                     }
 		},
 

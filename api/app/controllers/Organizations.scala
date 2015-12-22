@@ -54,11 +54,11 @@ class Organizations @javax.inject.Inject() (
   def post() = Identified(parse.json) { request =>
     request.body.validate[OrganizationForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[OrganizationForm] => {
         OrganizationsDao.create(request.user, s.get) match {
-          case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+          case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
           case Right(organization) => Created(Json.toJson(organization))
         }
       }
@@ -69,11 +69,11 @@ class Organizations @javax.inject.Inject() (
     withOrganization(request.user, guid) { organization =>
       request.body.validate[OrganizationForm] match {
         case e: JsError => {
-          Conflict(Json.toJson(Validation.invalidJson(e)))
+          UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
         }
         case s: JsSuccess[OrganizationForm] => {
           OrganizationsDao.update(request.user, organization, s.get) match {
-            case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+            case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
             case Right(updated) => Ok(Json.toJson(updated))
           }
         }

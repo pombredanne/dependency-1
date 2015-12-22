@@ -47,12 +47,12 @@ class WatchProjects @javax.inject.Inject() (
   def postWatchesAndProjects() = Identified(parse.json) { request =>
     request.body.validate[WatchProjectForm] match {
       case e: JsError => {
-        Conflict(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[WatchProjectForm] => {
         val form = s.get
         WatchProjectsDao.create(request.user, form) match {
-          case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+          case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
           case Right(watchProject) => Created(Json.toJson(watchProject))
         }
       }

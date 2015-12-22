@@ -26,7 +26,7 @@ class Users @javax.inject.Inject() (
     identifier: Option[String]
   ) = Anonymous { request =>
     if (Seq(guid, email, identifier).isEmpty) {
-      Conflict(Json.toJson(Validation.error("Must specify guid, email or identifier")))
+      UnprocessableEntity(Json.toJson(Validation.error("Must specify guid, email or identifier")))
     } else {
       Ok(
         Json.toJson(
@@ -57,12 +57,12 @@ class Users @javax.inject.Inject() (
   def post() = Anonymous.async(parse.json) { request =>
     request.body.validate[UserForm] match {
       case e: JsError => Future {
-        Conflict(Json.toJson(Validation.invalidJson(e)))
+        UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[UserForm] => {
         request.user.map { userOption =>
           UsersDao.create(userOption, s.get) match {
-            case Left(errors) => Conflict(Json.toJson(Validation.errors(errors)))
+            case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
             case Right(user) => Created(Json.toJson(user))
           }
         }
