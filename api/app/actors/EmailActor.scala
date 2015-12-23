@@ -18,34 +18,49 @@ object EmailActor {
     case object ProcessDailySummary
   }
 
+  val PreferredHourToSendEst: Int = {
+    val value = DefaultConfig.requiredString("com.bryzek.dependency.api.email.daily.summary.hour.est").toInt
+    assert( value >= 0 && value < 23 )
+    value
+  }
+
 }
 
 class EmailActor extends Actor with Util {
+
+  private[this] val currentHourEst: Int = {
+    (new DateTime()).toDateTime(DateTimeZone.forID("America/New_York")).getHourOfDay
+  }
 
   def receive = {
 
     /**
       * Selects people to whom we delivery email by:
-      *
-      *   a. never received a daily summary before. We want to leave
-      *      at least 1 hour from time of registration to time of first
-      *      email to allow them to add projects.
-      *
-      *   b. It's between 7 and 8am EST - standard delivery
-      *      time. Deliver email to anybody whose last email was >= 23
-      *      hours ago
-      *
-      *   c. It's not 7am - we want to deliver email only to catch
-      *      up. So in this case we select anybody with a last email
-      *      delivered more than 24 hours ago.
+      * 
+      *  If it is our preferred time to send (7am), filter by anybody
+      *  who has been a member for at least 2 hours and who has not
+      *  received an email in last 2 hours. We use 2 hours to catch up
+      *  from emails sent the prior day late (at say 10am) to get them
+      *  back on schedule, while making sure we don't send back to
+      *  back emails
+      * 
+      *  Otherwise, filter by 26 hours to allow us to catch up on any
+      *  missed emails
       */
     case m @ EmailActor.Messages.ProcessDailySummary => withVerboseErrorHandler(m) {
+      val hoursForPreferredTime = 2
+      val hours = currentHourEst match {
+        case EmailActor.PreferredHourToSendEst => hoursForPreferredTime
+        case _ => 24 + hoursForPreferredTime
+      }
+
       BatchEmailProcessor(
         Publication.DailySummary,
         Pager.create { offset =>
           SubscriptionsDao.findAll(
             publication = Some(Publication.DailySummary),
-            minHoursSinceLastEmail = Some(23),
+            minHoursSinceLastEmail = Some(hours),
+            minHoursSinceRegistration = Some(hours),
             offset = offset
           )
         }
@@ -71,23 +86,21 @@ case class BatchEmailProcessor(
       UsersDao.findByGuid(subscription.user.guid).foreach { user =>
         println(s" - user[${user.guid}] email[${user.email}]")
         Recipient.fromUser(user).map { DailySummaryEmailMessage(_) }.map { generator =>
-          if (generator.shouldSend()) {
-            // Record before send in case of crash - prevent loop of
-            // emails.
-            LastEmailsDao.record(
-              MainActor.SystemUser,
-              LastEmailForm(
-                userGuid = user.guid,
-                publication = publication
-              )
+          // Record before send in case of crash - prevent loop of
+          // emails.
+          LastEmailsDao.record(
+            MainActor.SystemUser,
+            LastEmailForm(
+              userGuid = user.guid,
+              publication = publication
             )
+          )
 
-            Email.sendHtml(
-              to = generator.recipient,
-              subject = generator.subject(),
-              body = generator.body()
-            )
-          }
+          Email.sendHtml(
+            to = generator.recipient,
+            subject = generator.subject(),
+            body = generator.body()
+          )
         }
       }
     }
@@ -95,7 +108,6 @@ case class BatchEmailProcessor(
 }
 
 trait EmailMessageGenerator {
-  def shouldSend(): Boolean
   def recipient(): Recipient
   def subject(): String
   def body(): String
@@ -106,27 +118,9 @@ trait EmailMessageGenerator {
   */
 case class DailySummaryEmailMessage(recipient: Recipient) extends EmailMessageGenerator {
 
-  private[this] val PreferredHourToSendEst = {
-    val value = DefaultConfig.requiredString("com.bryzek.dependency.api.email.daily.summary.hour.est").toInt
-    assert( value >= 0 && value < 23 )
-    value
-  }
-
   private val MaxRecommendations = 250
 
-  private lazy val lastEmail = LastEmailsDao.findByUserGuidAndPublication(recipient.userGuid, Publication.DailySummary)
-
-  /**
-   * We send anytime within the preferred hour - Since we select
-   * people we have not yet emailed in 23 hours - this gives us an
-   * hour each day in which for the jobs to run to get the email
-   * sent. If we are down for the entire hour - we will just pick up
-   * tomorrow. Main priority here is to ensure email is consistently
-   * sent in the morning while keeping code simple.
-   */
-  override def shouldSend(): Boolean = {
-    PreferredHourToSendEst == (new DateTime()).toDateTime(DateTimeZone.forID("America/New_York")).getHourOfDay
-  }
+  private val lastEmail = LastEmailsDao.findByUserGuidAndPublication(recipient.userGuid, Publication.DailySummary)
 
   override def subject() = "Daily Summary"
 
