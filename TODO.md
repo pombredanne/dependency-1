@@ -1,12 +1,5 @@
 scalatestplus vs scalatestplus_2.11
 
-Daily Summary:
-
-  - separate into 3 audiences
-    a. first email
-    b. it's 7am
-    c. it's not 7am - catch up
-
 UI:
   - Add page to see organizations, create organization, add members
 
