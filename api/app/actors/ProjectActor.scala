@@ -179,6 +179,7 @@ class ProjectActor extends Actor with Util {
             }
           }
         }
+        processPendingSync(project)
       }
     }
 
@@ -201,6 +202,7 @@ class ProjectActor extends Actor with Util {
             }
           }
         }
+        processPendingSync(project)
       }
     }
 
@@ -240,6 +242,7 @@ class ProjectActor extends Actor with Util {
   def processPendingSync(project: Project) {
     dependenciesPendingCompletion(project) match {
       case Nil => {
+        println(s" -- project[${project.name}] guid[${project.guid}] dependencies satisfied")
         RecommendationsDao.sync(MainActor.SystemUser, project)
         SyncsDao.recordCompleted(MainActor.SystemUser, "project", project.guid)
       }
