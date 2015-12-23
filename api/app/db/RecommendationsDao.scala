@@ -8,6 +8,7 @@ import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
 import java.util.UUID
+import scala.util.{Failure, Success, Try}
 
 object RecommendationsDao {
 
@@ -79,7 +80,7 @@ object RecommendationsDao {
     val toRemove = existing.filter { rec => !newRecords.contains(toForm(rec)) }
 
     DB.withTransaction { implicit c =>
-      toAdd.foreach { create(user, _) }
+      toAdd.foreach { upsert(user, _) }
       toRemove.foreach { rec =>
         SoftDelete.delete(c, "recommendations", user.guid, rec.guid)
       }
@@ -93,6 +94,43 @@ object RecommendationsDao {
 
   def softDelete(deletedBy: User, rec: Recommendation) {
     SoftDelete.delete("recommendations", deletedBy.guid, rec.guid)
+  }
+
+  private[this] def upsert(
+    createdBy: User,
+    form: RecommendationForm
+  ) (
+    implicit c: java.sql.Connection
+  ) {
+    findByProjectGuidAndTypeAndObjectGuidAndNameAndFromVersion(
+      Authorization.All,
+      form.projectGuid,
+      form.`type`,
+      form.objectGuid,
+      form.name,
+      form.from
+    ) match {
+      case None => {
+        Try(create(createdBy, form)) match {
+          case Success(rec) => rec
+          case Failure(ex) => {
+            findByProjectGuidAndTypeAndObjectGuidAndNameAndFromVersion(
+              Authorization.All,
+              form.projectGuid,
+              form.`type`,
+              form.objectGuid,
+              form.name,
+              form.from
+            ).getOrElse {
+              throw ex
+            }
+          }
+        }
+      }
+      case Some(rec) => {
+        // No-op
+      }
+    }
   }
 
   private[this] def create(
@@ -114,6 +152,24 @@ object RecommendationsDao {
     ).execute()
   }
 
+  def findByProjectGuidAndTypeAndObjectGuidAndNameAndFromVersion(
+    auth: Authorization,
+    projectGuid: UUID,
+    `type`: RecommendationType,
+    objectGuid: UUID,
+    name: String,
+    fromVersion: String
+  ): Option[Recommendation] = {
+    findAll(
+      auth,
+      projectGuid = Some(projectGuid),
+      `type` = Some(`type`),
+      objectGuid = Some(objectGuid),
+      name = Some(name),
+      fromVersion = Some(fromVersion)
+    ).headOption
+  }
+
   def findByGuid(auth: Authorization, guid: UUID): Option[Recommendation] = {
     findAll(auth, guid = Some(guid), limit = Some(1)).headOption
   }
@@ -126,6 +182,8 @@ object RecommendationsDao {
     projectGuid: Option[UUID] = None,
     `type`: Option[RecommendationType] = None,
     objectGuid: Option[UUID] = None,
+    name: Option[String] = None,
+    fromVersion: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy.parseOrError("-recommendations.created_at, lower(projects.name), lower(recommendations.name)"),
     limit: Option[Long] = Some(25),
@@ -152,6 +210,8 @@ object RecommendationsDao {
           `type`,
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
+        text("recommendations.name", name).
+        text("recommendations.from_version", fromVersion).
         uuid("recommendations.object_guid", objectGuid).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Recommendation.table("recommendations").*

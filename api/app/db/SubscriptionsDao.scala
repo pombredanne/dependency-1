@@ -105,6 +105,7 @@ object SubscriptionsDao {
     identifier: Option[String] = None,
     publication: Option[Publication] = None,
     minHoursSinceLastEmail: Option[Int] = None,
+    minHoursSinceRegistration: Option[Int] = None,
     isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy.parseOrError("subscriptions.created_at"),
     limit: Long = 25,
@@ -134,6 +135,15 @@ object SubscriptionsDao {
                            and last_emails.created_at > now() - interval '1 hour' * {min_hours}::int)
           """.trim }
         ).bind("min_hours", minHoursSinceLastEmail).
+        condition(
+          minHoursSinceRegistration.map { v => """
+            exists (select 1
+                      from users
+                     where users.deleted_at is null
+                       and users.guid = subscriptions.user_guid
+                       and users.created_at <= now() - interval '1 hour' * {min_hours_since_registration}::int)
+          """.trim }
+        ).bind("min_hours_since_registration", minHoursSinceRegistration).
         subquery("subscriptions.user_guid", "identifier", identifier, { bindVar =>
           s"select user_guid from user_identifiers where deleted_at is null and value = trim({$bindVar})"
         }).
