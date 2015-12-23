@@ -9,19 +9,6 @@ import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 import com.sendgrid._
 
-case class Person(email: String, name: Name = Name())
-
-object Person {
-  def fromUser(user: User): Option[Person] = {
-    user.email.map { email =>
-      Person(
-        email = email,
-        name = user.name
-      )
-    }
-  }
-}
-
 object Email {
 
   private[this] val SubjectPrefix = DefaultConfig.requiredString("mail.subject.prefix")
@@ -30,12 +17,10 @@ object Email {
     SubjectPrefix + " " + subject
   }
 
-  private[this] val from = Person(
-    email = DefaultConfig.requiredString("mail.default.from.email"),
-    name = Name(
-      Some(DefaultConfig.requiredString("mail.default.from.name.first")),
-      Some(DefaultConfig.requiredString("mail.default.from.name.last"))
-    )
+  private[this] val fromEmail = DefaultConfig.requiredString("mail.default.from.email")
+  private[this] val fromName = Name(
+    Some(DefaultConfig.requiredString("mail.default.from.name.first")),
+    Some(DefaultConfig.requiredString("mail.default.from.name.last"))
   )
 
   val localDeliveryDir = DefaultConfig.optionalString("mail.local.delivery.dir").map(Paths.get(_))
@@ -51,7 +36,7 @@ object Email {
   }
 
   def sendHtml(
-    to: Person,
+    to: Recipient,
     subject: String,
     body: String
   ) {
@@ -60,8 +45,8 @@ object Email {
     val email = new SendGrid.Email()
     email.addTo(to.email)
     fullName(to.name).map { n => email.addToName(n) }
-    email.setFrom(from.email)
-    fullName(from.name).map { n => email.setFromName(n) }
+    email.setFrom(fromEmail)
+    fullName(fromName).map { n => email.setFromName(n) }
     email.setSubject(prefixedSubject)
     email.setHtml(body)
 
@@ -84,7 +69,7 @@ object Email {
     }
   }
 
-  private[this] def localDelivery(dir: Path, to: Person, subject: String, body: String): String = {
+  private[this] def localDelivery(dir: Path, to: Recipient, subject: String, body: String): String = {
     val timestamp = ISODateTimeFormat.dateTimeNoMillis.print(new DateTime())
 
     Files.createDirectories(dir)

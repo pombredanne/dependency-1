@@ -6,7 +6,7 @@ import io.flow.user.v0.models.User
 import db.{Authorization, LastEmail, LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UserIdentifiersDao, UsersDao}
 import com.bryzek.dependency.v0.models.Publication
 import com.bryzek.dependency.lib.Urls
-import com.bryzek.dependency.api.lib.{Email, Person, Recipient}
+import com.bryzek.dependency.api.lib.{Email, Recipient}
 import org.joda.time.{DateTime, DateTimeZone}
 import play.api.Logger
 import akka.actor.Actor
@@ -43,8 +43,8 @@ class EmailActor extends Actor with Util {
       BatchEmailProcessor(
         publication = Publication.DailySummary,
         minHoursSinceLastEmail = 23
-      ) { (user, person) =>
-        DailySummaryEmailMessage(user, person)
+      ) { recipient =>
+        DailySummaryEmailMessage(recipient)
       }.process()
     }
 
@@ -56,7 +56,7 @@ case class BatchEmailProcessor(
   publication: Publication,
   minHoursSinceLastEmail: Int
 ) (
-  generator: (User, Person) => EmailMessageGenerator
+  generator: Recipient => EmailMessageGenerator
 ) {
 
   def process() {
@@ -70,7 +70,7 @@ case class BatchEmailProcessor(
       println(s"subscription: $subscription")
       UsersDao.findByGuid(subscription.user.guid).foreach { user =>
         println(s" - user[${user.guid}] email[${user.email}]")
-        Person.fromUser(user).map { DailySummaryEmailMessage(user, _) }.map { generator =>
+        Recipient.fromUser(user).map { DailySummaryEmailMessage(_) }.map { generator =>
           if (generator.shouldSend()) {
             // Record before send in case of crash - prevent loop of
             // emails.
@@ -83,7 +83,7 @@ case class BatchEmailProcessor(
             )
 
             Email.sendHtml(
-              to = generator.person,
+              to = generator.recipient,
               subject = generator.subject(),
               body = generator.body()
             )
@@ -96,7 +96,6 @@ case class BatchEmailProcessor(
 
 trait EmailMessageGenerator {
   def shouldSend(): Boolean
-  def person(): Person
   def recipient(): Recipient
   def subject(): String
   def body(): String
@@ -105,13 +104,7 @@ trait EmailMessageGenerator {
 /**
   * Class which generates email message
   */
-case class DailySummaryEmailMessage(user: User, override val person: Person) extends EmailMessageGenerator {
-
-  override val recipient = Recipient(
-    email = person.email,
-    name = person.name,
-    identifier = UserIdentifiersDao.latestForUser(MainActor.SystemUser, user).value
-  )
+case class DailySummaryEmailMessage(recipient: Recipient) extends EmailMessageGenerator {
 
   private[this] val PreferredHourToSendEst = {
     val value = DefaultConfig.requiredString("com.bryzek.dependency.api.email.daily.summary.hour.est").toInt
@@ -119,7 +112,7 @@ case class DailySummaryEmailMessage(user: User, override val person: Person) ext
     value
   }
 
-  private val lastEmail = LastEmailsDao.findByUserGuidAndPublication(user.guid, Publication.DailySummary)
+  private val lastEmail = LastEmailsDao.findByUserGuidAndPublication(recipient.userGuid, Publication.DailySummary)
 
   /**
    * We send anytime within the preferred hour - Since we select
@@ -137,8 +130,8 @@ case class DailySummaryEmailMessage(user: User, override val person: Person) ext
 
   override def body() = {
     val recommendations = RecommendationsDao.findAll(
-      Authorization.User(user.guid),
-      userGuid = Some(user.guid),
+      Authorization.User(recipient.userGuid),
+      userGuid = Some(recipient.userGuid),
       limit = Some(250)
     )
 
