@@ -140,13 +140,13 @@ object ResolversDao {
   }
 
   def softDelete(deletedBy: User, resolver: Resolver) {
-    Pager.eachPage { offset =>
+    Pager.create { offset =>
       LibrariesDao.findAll(
         Authorization.All,
         resolverGuid = Some(resolver.guid),
         offset = offset
       )
-    } { library =>
+    }.foreach { library =>
       LibrariesDao.softDelete(MainActor.SystemUser, library)
     }
 

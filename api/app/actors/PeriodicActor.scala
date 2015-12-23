@@ -28,25 +28,25 @@ class PeriodicActor extends Actor with Util {
     }
 
     case m @ PeriodicActor.Messages.SyncProjects => withVerboseErrorHandler(m) {
-      Pager.eachPage { offset =>
+      Pager.create { offset =>
         ProjectsDao.findAll(Authorization.All, offset = offset)
-      } { project =>
+      }.foreach { project =>
         sender ! MainActor.Messages.ProjectSync(project.guid)
       }
     }
 
     case m @ PeriodicActor.Messages.SyncBinaries => withVerboseErrorHandler(m) {
-      Pager.eachPage { offset =>
+      Pager.create { offset =>
         BinariesDao.findAll(Authorization.All, offset = offset)
-      } { bin =>
+      }.foreach { bin =>
         sender ! MainActor.Messages.BinarySync(bin.guid)
       }
     }
 
     case m @ PeriodicActor.Messages.SyncLibraries => withVerboseErrorHandler(m) {
-      Pager.eachPage { offset =>
+      Pager.create { offset =>
         LibrariesDao.findAll(Authorization.All, offset = offset)
-      } { library =>
+      }.foreach { library =>
         sender ! MainActor.Messages.LibrarySync(library.guid)
       }
     }

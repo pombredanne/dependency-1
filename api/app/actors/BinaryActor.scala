@@ -44,9 +44,9 @@ class BinaryActor extends Actor with Util {
       dataBinary.foreach { binary =>
         ItemsDao.softDeleteByObjectGuid(Authorization.All, MainActor.SystemUser, binary.guid)
 
-        Pager.eachPage { offset =>
+        Pager.create { offset =>
           ProjectBinariesDao.findAll(Authorization.All, binaryGuid = Some(binary.guid), offset = offset)
-        } { projectBinary =>
+        }.foreach { projectBinary =>
           ProjectBinariesDao.removeBinary(MainActor.SystemUser, projectBinary)
           sender ! MainActor.Messages.ProjectBinarySync(projectBinary.project.guid, projectBinary.guid)
         }

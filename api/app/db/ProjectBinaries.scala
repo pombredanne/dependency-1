@@ -153,9 +153,9 @@ object ProjectBinariesDao {
     */
   def setGuids(user: User, projectGuid: UUID, projectBinaries: Seq[ProjectBinary]) {
     val guids = projectBinaries.map(_.guid)
-    Pager.eachPage { offset =>
+    Pager.create { offset =>
       findAll(Authorization.All, projectGuid = Some(projectGuid), limit = 100, offset = offset)
-    } { projectBinary =>
+    }.foreach { projectBinary =>
       if (!guids.contains(projectBinary.guid)) {
         softDelete(user, projectBinary)
       }

@@ -4,7 +4,7 @@ import io.flow.play.util.DefaultConfig
 import io.flow.play.postgresql.Pager
 import io.flow.user.v0.models.User
 import db.{Authorization, LastEmail, LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UserIdentifiersDao, UsersDao}
-import com.bryzek.dependency.v0.models.Publication
+import com.bryzek.dependency.v0.models.{Publication, Subscription}
 import com.bryzek.dependency.lib.Urls
 import com.bryzek.dependency.api.lib.{Email, Recipient}
 import org.joda.time.{DateTime, DateTimeZone}
@@ -41,8 +41,14 @@ class EmailActor extends Actor with Util {
       */
     case m @ EmailActor.Messages.ProcessDailySummary => withVerboseErrorHandler(m) {
       BatchEmailProcessor(
-        publication = Publication.DailySummary,
-        minHoursSinceLastEmail = 23
+        Publication.DailySummary,
+        Pager.create { offset =>
+          SubscriptionsDao.findAll(
+            publication = Some(Publication.DailySummary),
+            minHoursSinceLastEmail = Some(23),
+            offset = offset
+          )
+        }
       ) { recipient =>
         DailySummaryEmailMessage(recipient)
       }.process()
@@ -54,19 +60,13 @@ class EmailActor extends Actor with Util {
 
 case class BatchEmailProcessor(
   publication: Publication,
-  minHoursSinceLastEmail: Int
+  subscriptions: Iterator[Subscription]
 ) (
   generator: Recipient => EmailMessageGenerator
 ) {
 
   def process() {
-    Pager.eachPage { offset =>
-      SubscriptionsDao.findAll(
-        publication = Some(publication),
-        minHoursSinceLastEmail = Some(minHoursSinceLastEmail),
-        offset = offset
-      )
-    } { subscription =>
+    subscriptions.foreach { subscription =>
       println(s"subscription: $subscription")
       UsersDao.findByGuid(subscription.user.guid).foreach { user =>
         println(s" - user[${user.guid}] email[${user.email}]")

@@ -59,9 +59,9 @@ class LibraryActor extends Actor with Util {
       dataLibrary.foreach { lib =>
         ItemsDao.softDeleteByObjectGuid(Authorization.All, MainActor.SystemUser, lib.guid)
 
-        Pager.eachPage { offset =>
+        Pager.create { offset =>
           ProjectLibrariesDao.findAll(Authorization.All, libraryGuid = Some(lib.guid), offset = offset)
-        } { projectLibrary =>
+        }.foreach { projectLibrary =>
           ProjectLibrariesDao.removeLibrary(MainActor.SystemUser, projectLibrary)
           sender ! MainActor.Messages.ProjectLibrarySync(projectLibrary.project.guid, projectLibrary.guid)
         }
