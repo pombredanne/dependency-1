@@ -112,7 +112,9 @@ case class DailySummaryEmailMessage(recipient: Recipient) extends EmailMessageGe
     value
   }
 
-  private val lastEmail = LastEmailsDao.findByUserGuidAndPublication(recipient.userGuid, Publication.DailySummary)
+  private val MaxRecommendations = 250
+
+  private lazy val lastEmail = LastEmailsDao.findByUserGuidAndPublication(recipient.userGuid, Publication.DailySummary)
 
   /**
    * We send anytime within the preferred hour - Since we select
@@ -132,7 +134,7 @@ case class DailySummaryEmailMessage(recipient: Recipient) extends EmailMessageGe
     val recommendations = RecommendationsDao.findAll(
       Authorization.User(recipient.userGuid),
       userGuid = Some(recipient.userGuid),
-      limit = Some(250)
+      limit = Some(MaxRecommendations)
     )
 
     val (newRecommendations, oldRecommendations) = lastEmail match {
