@@ -114,21 +114,20 @@ object RecommendationsDao {
         Try(create(createdBy, form)) match {
           case Success(rec) => rec
           case Failure(ex) => {
-            findByProjectGuidAndTypeAndObjectGuidAndNameAndFromVersion(
-              Authorization.All,
-              form.projectGuid,
-              form.`type`,
-              form.objectGuid,
-              form.name,
-              form.from
-            ).getOrElse {
-              throw ex
-            }
+            throw ex
           }
         }
       }
       case Some(rec) => {
-        // No-op
+        (rec.to == form.to) match {
+          case true => {
+            // No-op
+          }
+          case false => {
+            SoftDelete.delete(c, "recommendations", createdBy.guid, rec.guid)
+            create(createdBy, form)
+          }
+        }
       }
     }
   }

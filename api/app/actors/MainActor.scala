@@ -114,7 +114,6 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
     }
 
     case m @ MainActor.Messages.ProjectDeleted(guid) => withVerboseErrorHandler(m) {
-      // TODO: Cleanup recommendations for this project
       projectActors.remove(guid).map { actor =>
         actor ! ProjectActor.Messages.Deleted
       }
@@ -134,7 +133,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
     }
 
     case m @ MainActor.Messages.ProjectLibraryDeleted(projectGuid, guid) => withVerboseErrorHandler(m) {
-      // intentional no-op
+      upsertProjectActor(projectGuid) ! ProjectActor.Messages.ProjectLibraryDeleted(guid)
     }
 
     case m @ MainActor.Messages.ProjectBinaryCreated(projectGuid, guid) => withVerboseErrorHandler(m) {
@@ -146,7 +145,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
     }
 
     case m @ MainActor.Messages.ProjectBinaryDeleted(projectGuid, guid) => withVerboseErrorHandler(m) {
-      // intentional no-op
+      upsertProjectActor(projectGuid) ! ProjectActor.Messages.ProjectBinaryDeleted(guid)
     }
 
     case m @ MainActor.Messages.LibraryCreated(guid) => withVerboseErrorHandler(m) {

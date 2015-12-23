@@ -1,7 +1,7 @@
 package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.api.lib.{DefaultLibraryArtifactProvider, Dependencies, GithubDependencyProviderClient}
-import com.bryzek.dependency.v0.models.{Binary, BinaryForm, BinaryType, Library, LibraryForm, Project, ProjectBinary, ProjectLibrary, VersionForm, WatchProjectForm}
+import com.bryzek.dependency.v0.models.{Binary, BinaryForm, BinaryType, Library, LibraryForm, Project, ProjectBinary, ProjectLibrary, RecommendationType, VersionForm, WatchProjectForm}
 import io.flow.play.postgresql.Pager
 import db.{Authorization, BinariesDao, LibrariesDao, LibraryVersionsDao, ProjectBinariesDao, ProjectLibrariesDao}
 import db.{ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
@@ -24,9 +24,11 @@ object ProjectActor {
 
     case class ProjectLibraryCreated(guid: UUID) extends Message
     case class ProjectLibrarySync(guid: UUID) extends Message
+    case class ProjectLibraryDeleted(guid: UUID) extends Message
 
     case class ProjectBinaryCreated(guid: UUID) extends Message
     case class ProjectBinarySync(guid: UUID) extends Message
+    case class ProjectBinaryDeleted(guid: UUID) extends Message
 
     case class LibrarySynced(guid: UUID) extends Message
     case class BinarySynced(guid: UUID) extends Message
@@ -156,6 +158,50 @@ class ProjectActor extends Actor with Util {
         }
       }
       context.stop(self)
+    }
+
+    case m @ ProjectActor.Messages.ProjectLibraryDeleted(guid) => withVerboseErrorHandler(m.toString) {
+      dataProject.foreach { project =>
+        ProjectLibrariesDao.findAll(
+          Authorization.All,
+          guid = Some(guid),
+          isDeleted = Some(true)
+        ).map { projectLibrary =>
+          projectLibrary.library.map { lib =>
+            RecommendationsDao.findAll(
+              Authorization.All,
+              projectGuid = Some(project.guid),
+              `type` = Some(RecommendationType.Library),
+              objectGuid = Some(lib.guid),
+              fromVersion = Some(projectLibrary.version)
+            ).foreach { rec =>
+              RecommendationsDao.softDelete(MainActor.SystemUser, rec)
+            }
+          }
+        }
+      }
+    }
+
+    case m @ ProjectActor.Messages.ProjectBinaryDeleted(guid) => withVerboseErrorHandler(m.toString) {
+      dataProject.foreach { project =>
+        ProjectBinariesDao.findAll(
+          Authorization.All,
+          guid = Some(guid),
+          isDeleted = Some(true)
+        ).map { projectBinary =>
+          projectBinary.binary.map { lib =>
+            RecommendationsDao.findAll(
+              Authorization.All,
+              projectGuid = Some(project.guid),
+              `type` = Some(RecommendationType.Binary),
+              objectGuid = Some(lib.guid),
+              fromVersion = Some(projectBinary.version)
+            ).foreach { rec =>
+              RecommendationsDao.softDelete(MainActor.SystemUser, rec)
+            }
+          }
+        }
+      }
     }
 
     case m: Any => logUnhandledMessage(m)
