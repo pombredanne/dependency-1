@@ -16,6 +16,7 @@ class Recommendations @javax.inject.Inject() (
 ) extends Controller with IdentifiedRestController with Helpers {
 
   def get(
+    organization: Option[String],
     projectGuid: Option[UUID],
     `type`: Option[RecommendationType],
     limit: Long = 25,
@@ -26,6 +27,7 @@ class Recommendations @javax.inject.Inject() (
         RecommendationsDao.findAll(
           Authorization.User(request.user.guid),
           userGuid = Some(request.user.guid),
+          organization = organization,
           projectGuid = projectGuid,
           `type` = `type`,
           limit = Some(limit),

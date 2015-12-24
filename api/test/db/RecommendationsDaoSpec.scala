@@ -48,11 +48,28 @@ class RecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "with library to upgrade" in {
     val rec = createRecommendation(org)
+
     RecommendationsDao.findAll(Authorization.All, projectGuid = Some(rec.project.guid)).map(rec => (rec.from, rec.to)) must be(
       Seq(
         ("1.0.0", "1.0.2")
       )
     )
+
+    RecommendationsDao.findAll(
+      Authorization.All,
+      organization = Some(rec.project.organization.key),
+      projectGuid = Some(rec.project.guid)
+    ).map(rec => (rec.from, rec.to)) must be(
+      Seq(
+        ("1.0.0", "1.0.2")
+      )
+    )
+
+    RecommendationsDao.findAll(
+      Authorization.All,
+      organization = Some(createOrganization().key),
+      projectGuid = Some(rec.project.guid)
+    ) must be(Nil)
   }
 
   "Prefers latest production release even when more recent beta release is available" in {

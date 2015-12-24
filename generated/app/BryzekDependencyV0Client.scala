@@ -2046,12 +2046,14 @@ package com.bryzek.dependency.v0 {
 
     object Recommendations extends Recommendations {
       override def get(
+        organization: _root_.scala.Option[String] = None,
         projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
         `type`: _root_.scala.Option[com.bryzek.dependency.v0.models.RecommendationType] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Recommendation]] = {
         val queryParameters = Seq(
+          organization.map("organization" -> _),
           projectGuid.map("project_guid" -> _.toString),
           `type`.map("type" -> _.toString),
           Some("limit" -> limit.toString),
@@ -2717,6 +2719,7 @@ package com.bryzek.dependency.v0 {
      * user is watching
      */
     def get(
+      organization: _root_.scala.Option[String] = None,
       projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
       `type`: _root_.scala.Option[com.bryzek.dependency.v0.models.RecommendationType] = None,
       limit: Long = 25,

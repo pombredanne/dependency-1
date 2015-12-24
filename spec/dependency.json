@@ -1102,6 +1102,7 @@
                     "method": "GET",
                     "description": "Returns a list of recommendations for this user across all of the projects the user is watching",
                     "parameters": [
+			{ "name": "organization", "type": "string", "required": false, "description": "Optionally filter to recommendations for this organization" },			
 			{ "name": "project_guid", "type": "uuid", "required": false, "description": "Optionally filter by project" },
 			{ "name": "type", "type": "recommendation_type", "required": false, "description": "Optionally filter by type of recommendation." },
 			{ "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },

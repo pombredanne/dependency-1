@@ -5,6 +5,19 @@
  */
 package io.flow.common.v0.models {
 
+  /**
+   * Defines structured fields for address to be used in user/form input. Either text
+   * or the structured input needs to be present.
+   */
+  case class Address(
+    text: _root_.scala.Option[String] = None,
+    streets: _root_.scala.Option[Seq[String]] = None,
+    city: _root_.scala.Option[String] = None,
+    province: _root_.scala.Option[String] = None,
+    postalCode: _root_.scala.Option[String] = None,
+    country: _root_.scala.Option[io.flow.common.v0.models.Country] = None
+  )
+
   case class Audit(
     createdAt: _root_.org.joda.time.DateTime,
     createdBy: io.flow.common.v0.models.Reference,
@@ -471,6 +484,28 @@ package io.flow.common.v0.models {
     implicit val jsonReadsCommonVisibility = __.read[String].map(Visibility.apply)
     implicit val jsonWritesCommonVisibility = new Writes[Visibility] {
       def writes(x: Visibility) = JsString(x.toString)
+    }
+
+    implicit def jsonReadsCommonAddress: play.api.libs.json.Reads[Address] = {
+      (
+        (__ \ "text").readNullable[String] and
+        (__ \ "streets").readNullable[Seq[String]] and
+        (__ \ "city").readNullable[String] and
+        (__ \ "province").readNullable[String] and
+        (__ \ "postal_code").readNullable[String] and
+        (__ \ "country").readNullable[io.flow.common.v0.models.Country]
+      )(Address.apply _)
+    }
+
+    implicit def jsonWritesCommonAddress: play.api.libs.json.Writes[Address] = {
+      (
+        (__ \ "text").writeNullable[String] and
+        (__ \ "streets").writeNullable[Seq[String]] and
+        (__ \ "city").writeNullable[String] and
+        (__ \ "province").writeNullable[String] and
+        (__ \ "postal_code").writeNullable[String] and
+        (__ \ "country").writeNullable[io.flow.common.v0.models.Country]
+      )(unlift(Address.unapply _))
     }
 
     implicit def jsonReadsCommonAudit: play.api.libs.json.Reads[Audit] = {

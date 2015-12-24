@@ -204,6 +204,58 @@ package io.flow.common.v0.anorm.parsers {
     }
 
   }
+  object Address {
+
+    case class Mappings(
+      text: String = "text",
+      streets: String = "streets",
+      city: String = "city",
+      province: String = "province",
+      postalCode: String = "postal_code",
+      country: String = "country"
+    )
+
+    object Mappings {
+
+      val base = prefix("", "")
+
+      def table(table: String) = prefix(table, ".")
+
+      def prefix(prefix: String, sep: String) = Mappings(
+        text = s"${prefix}${sep}text",
+        streets = s"${prefix}${sep}streets",
+        city = s"${prefix}${sep}city",
+        province = s"${prefix}${sep}province",
+        postalCode = s"${prefix}${sep}postal_code",
+        country = s"${prefix}${sep}country"
+      )
+
+    }
+
+    def table(table: String) = parser(Mappings.prefix(table, "."))
+
+    def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.Address] = {
+      SqlParser.str(mappings.text).? ~
+      SqlParser.get[Seq[String]](mappings.streets).? ~
+      SqlParser.str(mappings.city).? ~
+      SqlParser.str(mappings.province).? ~
+      SqlParser.str(mappings.postalCode).? ~
+      io.flow.common.v0.anorm.parsers.Country.parser(io.flow.common.v0.anorm.parsers.Country.Mappings(mappings.country)).? map {
+        case text ~ streets ~ city ~ province ~ postalCode ~ country => {
+          io.flow.common.v0.models.Address(
+            text = text,
+            streets = streets,
+            city = city,
+            province = province,
+            postalCode = postalCode,
+            country = country
+          )
+        }
+      }
+    }
+
+  }
+
   object Audit {
 
     case class Mappings(
