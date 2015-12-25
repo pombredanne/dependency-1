@@ -44,7 +44,9 @@ GET     /login/github                           controllers.LoginController.gith
 GET     /logout                                 controllers.LogoutController.index
 GET     /logged_out                             controllers.LogoutController.logged_out
 
-GET     /:org                                   controllers.OrganizationsController.index(org: String)
+GET     /organizations                          controllers.OrganizationsController.index()
+
+GET     /:org                                   controllers.OrganizationsController.show(org: String)
 GET     /:org/members                           controllers.MembersController.index(org: String, page: Int ?= 0)
 GET     /:org/members/create                    controllers.MembersController.create(org: String)
 POST    /:org/members/createPost                controllers.MembersController.postCreate(org: String)

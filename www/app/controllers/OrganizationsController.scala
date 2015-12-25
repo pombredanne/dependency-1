@@ -17,7 +17,11 @@ class OrganizationsController @javax.inject.Inject() (
  
   override def section = Some(com.bryzek.dependency.www.lib.Section.Dashboard)
 
-  def index(org: String) = Identified { implicit request =>
+  def index() = Identified { implicit request =>
+    sys.error("TODO")
+  }
+
+  def show(org: String) = Identified { implicit request =>
     Redirect(routes.ApplicationController.index(organization = Some(org)))
   }
 
