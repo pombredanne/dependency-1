@@ -125,14 +125,14 @@ class ResolversController @javax.inject.Inject() (
 object ResolversController {
 
   case class UiForm(
-    organizationGuid: String,
+    organization: String,
     uri: String,
     username: Option[String],
     password: Option[String]
   ) {
 
     def resolverForm() = ResolverForm(
-      organizationGuid = UUID.fromString(organizationGuid),
+      organization = organization,
       visibility = Visibility.Private,
       uri = uri,
       credentials = credentials
@@ -155,7 +155,7 @@ object ResolversController {
 
   private val uiForm = Form(
     mapping(
-      "organization_guid" -> nonEmptyText,
+      "organization" -> nonEmptyText,
       "uri" -> nonEmptyText,
       "username" -> optional(text),
       "password" -> optional(text)

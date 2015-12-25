@@ -112,7 +112,7 @@ package com.bryzek.dependency.v0.models {
 
   case class MembershipForm(
     userGuid: _root_.java.util.UUID,
-    organizationGuid: _root_.java.util.UUID,
+    organization: String,
     role: com.bryzek.dependency.v0.models.Role = com.bryzek.dependency.v0.models.Role("member")
   )
 
@@ -158,7 +158,7 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class ProjectForm(
-    organizationGuid: _root_.java.util.UUID,
+    organization: String,
     name: String,
     visibility: com.bryzek.dependency.v0.models.Visibility,
     scms: com.bryzek.dependency.v0.models.Scms,
@@ -222,7 +222,7 @@ package com.bryzek.dependency.v0.models {
 
   case class ResolverForm(
     visibility: com.bryzek.dependency.v0.models.Visibility,
-    organizationGuid: _root_.java.util.UUID,
+    organization: String,
     uri: String,
     credentials: _root_.scala.Option[com.bryzek.dependency.v0.models.Credentials] = None
   )
@@ -877,7 +877,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyMembershipForm: play.api.libs.json.Reads[MembershipForm] = {
       (
         (__ \ "user_guid").read[_root_.java.util.UUID] and
-        (__ \ "organization_guid").read[_root_.java.util.UUID] and
+        (__ \ "organization").read[String] and
         (__ \ "role").read[com.bryzek.dependency.v0.models.Role]
       )(MembershipForm.apply _)
     }
@@ -885,7 +885,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyMembershipForm: play.api.libs.json.Writes[MembershipForm] = {
       (
         (__ \ "user_guid").write[_root_.java.util.UUID] and
-        (__ \ "organization_guid").write[_root_.java.util.UUID] and
+        (__ \ "organization").write[String] and
         (__ \ "role").write[com.bryzek.dependency.v0.models.Role]
       )(unlift(MembershipForm.unapply _))
     }
@@ -996,7 +996,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyProjectForm: play.api.libs.json.Reads[ProjectForm] = {
       (
-        (__ \ "organization_guid").read[_root_.java.util.UUID] and
+        (__ \ "organization").read[String] and
         (__ \ "name").read[String] and
         (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "scms").read[com.bryzek.dependency.v0.models.Scms] and
@@ -1006,7 +1006,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyProjectForm: play.api.libs.json.Writes[ProjectForm] = {
       (
-        (__ \ "organization_guid").write[_root_.java.util.UUID] and
+        (__ \ "organization").write[String] and
         (__ \ "name").write[String] and
         (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "scms").write[com.bryzek.dependency.v0.models.Scms] and
@@ -1143,7 +1143,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyResolverForm: play.api.libs.json.Reads[ResolverForm] = {
       (
         (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
-        (__ \ "organization_guid").read[_root_.java.util.UUID] and
+        (__ \ "organization").read[String] and
         (__ \ "uri").read[String] and
         (__ \ "credentials").readNullable[com.bryzek.dependency.v0.models.Credentials]
       )(ResolverForm.apply _)
@@ -1152,7 +1152,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyResolverForm: play.api.libs.json.Writes[ResolverForm] = {
       (
         (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
-        (__ \ "organization_guid").write[_root_.java.util.UUID] and
+        (__ \ "organization").write[String] and
         (__ \ "uri").write[String] and
         (__ \ "credentials").writeNullable[com.bryzek.dependency.v0.models.Credentials]
       )(unlift(ResolverForm.unapply _))
@@ -1538,6 +1538,8 @@ package com.bryzek.dependency.v0 {
 
     def libraryVersions: LibraryVersions = LibraryVersions
 
+    def memberships: Memberships = Memberships
+
     def organizations: Organizations = Organizations
 
     def projectBinaries: ProjectBinaries = ProjectBinaries
@@ -1801,6 +1803,70 @@ package com.bryzek.dependency.v0 {
       }
     }
 
+    object Memberships extends Memberships {
+      override def get(
+        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+        organization: _root_.scala.Option[String] = None,
+        userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        role: _root_.scala.Option[com.bryzek.dependency.v0.models.Role] = None,
+        limit: Long = 25,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Membership]] = {
+        val queryParameters = Seq(
+          guid.map("guid" -> _.toString),
+          organization.map("organization" -> _),
+          userGuid.map("user_guid" -> _.toString),
+          role.map("role" -> _.toString),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten ++
+          guids.getOrElse(Nil).map("guids" -> _.toString)
+
+        _executeRequest("GET", s"/memberships", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Membership]", r, _.validate[Seq[com.bryzek.dependency.v0.models.Membership]])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+        }
+      }
+
+      override def getByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Membership] = {
+        _executeRequest("GET", s"/memberships/${guid}").map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Membership", r, _.validate[com.bryzek.dependency.v0.models.Membership])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+        }
+      }
+
+      override def post(
+        membershipForm: com.bryzek.dependency.v0.models.MembershipForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Membership] = {
+        val payload = play.api.libs.json.Json.toJson(membershipForm)
+
+        _executeRequest("POST", s"/memberships", body = Some(payload)).map {
+          case r if r.status == 201 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Membership", r, _.validate[com.bryzek.dependency.v0.models.Membership])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 404, 422")
+        }
+      }
+
+      override def deleteByGuid(
+        guid: _root_.java.util.UUID
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
+        _executeRequest("DELETE", s"/memberships/${guid}").map {
+          case r if r.status == 204 => ()
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+        }
+      }
+    }
+
     object Organizations extends Organizations {
       override def get(
         guid: _root_.scala.Option[_root_.java.util.UUID] = None,
@@ -1947,7 +2013,7 @@ package com.bryzek.dependency.v0 {
       override def get(
         guid: _root_.scala.Option[_root_.java.util.UUID] = None,
         guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-        org: _root_.scala.Option[String] = None,
+        organization: _root_.scala.Option[String] = None,
         name: _root_.scala.Option[String] = None,
         groupId: _root_.scala.Option[String] = None,
         artifactId: _root_.scala.Option[String] = None,
@@ -1960,7 +2026,7 @@ package com.bryzek.dependency.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Project]] = {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
-          org.map("org" -> _),
+          organization.map("organization" -> _),
           name.map("name" -> _),
           groupId.map("group_id" -> _),
           artifactId.map("artifact_id" -> _),
@@ -2096,14 +2162,14 @@ package com.bryzek.dependency.v0 {
       override def get(
         guid: _root_.scala.Option[_root_.java.util.UUID] = None,
         guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-        org: _root_.scala.Option[String] = None,
+        organization: _root_.scala.Option[String] = None,
         visibility: _root_.scala.Option[com.bryzek.dependency.v0.models.Visibility] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Resolver]] = {
         val queryParameters = Seq(
           guid.map("guid" -> _.toString),
-          org.map("org" -> _),
+          organization.map("organization" -> _),
           visibility.map("visibility" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
@@ -2582,6 +2648,33 @@ package com.bryzek.dependency.v0 {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.LibraryVersion]
   }
 
+  trait Memberships {
+    /**
+     * Search all memberships. Results are always paginated.
+     */
+    def get(
+      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+      organization: _root_.scala.Option[String] = None,
+      userGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      role: _root_.scala.Option[com.bryzek.dependency.v0.models.Role] = None,
+      limit: Long = 25,
+      offset: Long = 0
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Membership]]
+
+    def getByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Membership]
+
+    def post(
+      membershipForm: com.bryzek.dependency.v0.models.MembershipForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Membership]
+
+    def deleteByGuid(
+      guid: _root_.java.util.UUID
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
+  }
+
   trait Organizations {
     /**
      * Search organizations. Results are paginated
@@ -2666,7 +2759,7 @@ package com.bryzek.dependency.v0 {
     def get(
       guid: _root_.scala.Option[_root_.java.util.UUID] = None,
       guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-      org: _root_.scala.Option[String] = None,
+      organization: _root_.scala.Option[String] = None,
       name: _root_.scala.Option[String] = None,
       groupId: _root_.scala.Option[String] = None,
       artifactId: _root_.scala.Option[String] = None,
@@ -2747,7 +2840,7 @@ package com.bryzek.dependency.v0 {
     def get(
       guid: _root_.scala.Option[_root_.java.util.UUID] = None,
       guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-      org: _root_.scala.Option[String] = None,
+      organization: _root_.scala.Option[String] = None,
       visibility: _root_.scala.Option[com.bryzek.dependency.v0.models.Visibility] = None,
       limit: Long = 25,
       offset: Long = 0

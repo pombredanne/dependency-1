@@ -19,7 +19,7 @@ class Projects @javax.inject.Inject() (
   def get(
     guid: Option[UUID],
     guids: Option[Seq[UUID]],
-    org: Option[String],
+    organization: Option[String],
     name: Option[String],
     groupId: _root_.scala.Option[String],
     artifactId: _root_.scala.Option[String],
@@ -37,6 +37,7 @@ class Projects @javax.inject.Inject() (
           guid = guid,
           guids = optionals(guids),
           name = name,
+          organization = organization,
           groupId = groupId,
           artifactId = artifactId,
           version = version,
@@ -79,7 +80,7 @@ class Projects @javax.inject.Inject() (
         case s: JsSuccess[ProjectPatchForm] => {
           val patch = s.get
           val form = ProjectForm(
-            organizationGuid = project.organization.guid,  // not yet supported
+            organization = project.organization.key,  // do not support patch to move project to a new org
             name = patch.name.getOrElse(project.name),
             visibility = patch.visibility.getOrElse(project.visibility),
             scms = patch.scms.getOrElse(project.scms),

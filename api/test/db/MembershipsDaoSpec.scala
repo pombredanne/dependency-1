@@ -15,12 +15,20 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   lazy val user = createUser()
   lazy val membership = createMembership(createMembershipForm(org = org, user = user))
 
-  "isMember" in {
+  "isMember by guid" in {
     membership // Create the membership record
 
     MembershipsDao.isMember(org.guid, user) must be(true)
     MembershipsDao.isMember(org.guid, createUser()) must be(false)
     MembershipsDao.isMember(createOrganization().guid, user) must be(false)
+  }
+
+  "isMember by key" in {
+    membership // Create the membership record
+
+    MembershipsDao.isMember(org.key, user) must be(true)
+    MembershipsDao.isMember(org.key, createUser()) must be(false)
+    MembershipsDao.isMember(createOrganization().key, user) must be(false)
   }
 
   "findByOrganizationGuidAndUserGuid" in {

@@ -125,7 +125,7 @@ class ProjectsController @javax.inject.Inject() (
             case Some(repo) => {
               dependencyClient(request).projects.post(
                 ProjectForm(
-                  organizationGuid = org.guid,
+                  organization = org.key,
                   name = repo.name,
                   scms = Scms.Github,
                   visibility = repo.visibility,
@@ -176,7 +176,7 @@ class ProjectsController @javax.inject.Inject() (
         uiForm => {
           dependencyClient(request).projects.post(
             projectForm = ProjectForm(
-              organizationGuid = UUID.fromString(uiForm.organizationGuid),
+              organization = uiForm.organization,
               name = uiForm.name,
               scms = Scms(uiForm.scms),
               visibility = Visibility(uiForm.visibility),
@@ -203,7 +203,7 @@ class ProjectsController @javax.inject.Inject() (
             project,
             ProjectsController.uiForm.fill(
               ProjectsController.UiForm(
-                organizationGuid = project.organization.guid.toString,
+                organization = project.organization.key,
                 name = project.name,
                 scms = project.scms.toString,
                 visibility = project.visibility.toString,
@@ -231,7 +231,7 @@ class ProjectsController @javax.inject.Inject() (
               dependencyClient(request).projects.putByGuid(
                 project.guid,
                 ProjectForm(
-                  organizationGuid = project.organization.guid,
+                  organization = project.organization.key,
                   name = uiForm.name,
                   scms = Scms(uiForm.scms),
                   visibility = Visibility(uiForm.visibility),
@@ -354,7 +354,7 @@ class ProjectsController @javax.inject.Inject() (
 object ProjectsController {
 
   case class UiForm(
-    organizationGuid: String,
+    organization: String,
     name: String,
     scms: String,
     visibility: String,
@@ -363,7 +363,7 @@ object ProjectsController {
 
   private val uiForm = Form(
     mapping(
-      "organization_guid" -> nonEmptyText,
+      "organization" -> nonEmptyText,
       "name" -> nonEmptyText,
       "scms" -> nonEmptyText,
       "visibility" -> nonEmptyText,

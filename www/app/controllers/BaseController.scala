@@ -45,6 +45,26 @@ abstract class BaseController(
     Redirect(routes.LoginController.index(return_url = Some(request.path))).flashing("warning" -> "Please login")
   }
 
+  def withOrganization[T](
+    request: IdentifiedRequest[T],
+    key: String
+  ) (
+    f: Organization => Future[Result]
+  ) (
+    implicit ec: scala.concurrent.ExecutionContext
+  ) = {
+    dependencyClient(request).organizations.get(key = Some(key), limit = 1).flatMap { organizations =>
+      organizations.headOption match {
+        case None => Future {
+          Redirect(routes.ApplicationController.index()).flashing("warning" -> s"Organization not found")
+        }
+        case Some(org) => {
+          f(org)
+        }
+      }
+    }
+  }
+
   def organizations[T](
     request: IdentifiedRequest[T]
   ) (

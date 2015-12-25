@@ -85,7 +85,7 @@ object ResolversDao {
         findAll(
           Authorization.All,
           visibility = Some(Visibility.Private),
-          organizationGuid = Some(form.organizationGuid),
+          organization = Some(form.organization),
           uri = Some(form.uri),
           limit = 1
         ).headOption match {
@@ -95,7 +95,7 @@ object ResolversDao {
       }
     }
 
-    val organizationErrors = MembershipsDao.isMember(form.organizationGuid, user) match  {
+    val organizationErrors = MembershipsDao.isMember(form.organization, user) match  {
       case false => Seq("You do not have access to this organization")
       case true => Nil
     }
@@ -104,7 +104,7 @@ object ResolversDao {
   }
 
   def upsert(createdBy: User, form: ResolverForm): Either[Seq[String], Resolver] = {
-    findByOrganizationGuidAndUri(Authorization.All, form.organizationGuid, form.uri) match {
+    findByOrganizationAndUri(Authorization.All, form.organization, form.uri) match {
       case Some(resolver) => Right(resolver)
       case None => create(createdBy, form)
     }
@@ -113,15 +113,19 @@ object ResolversDao {
   def create(createdBy: User, form: ResolverForm): Either[Seq[String], Resolver] = {
     validate(createdBy, form) match {
       case Nil => {
+        val org = OrganizationsDao.findByKey(Authorization.All, form.organization).getOrElse {
+          sys.error("Could not find organization with key[${form.organization}]")
+        }
+
         val guid = UUID.randomUUID
 
         DB.withConnection { implicit c =>
           SQL(InsertQuery).on(
             'guid -> guid,
-            'organization_guid -> form.organizationGuid,
+            'organization_guid -> org.guid,
             'visibility -> form.visibility.toString,
             'credentials -> form.credentials.map { cred => Json.stringify(Json.toJson(cred)) },
-            'position -> nextPosition(form.organizationGuid, form.visibility),
+            'position -> nextPosition(org.guid, form.visibility),
             'uri -> form.uri.trim,
             'created_by_guid -> createdBy.guid
           ).execute()
@@ -154,14 +158,14 @@ object ResolversDao {
     SoftDelete.delete("resolvers", deletedBy.guid, resolver.guid)
   }
 
-  def findByOrganizationGuidAndUri(
+  def findByOrganizationAndUri(
     auth: Authorization,
-    organizationGuid: UUID,
+    organization: String,
     uri: String
   ): Option[Resolver] = {
     findAll(
       auth,
-      organizationGuid = Some(organizationGuid),
+      organization = Some(organization),
       uri = Some(uri),
       limit = 1
     ).headOption
@@ -176,7 +180,7 @@ object ResolversDao {
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
     visibility: Option[Visibility] = None,
-    org: Option[String] = None,
+    organization: Option[String] = None,
     organizationGuid: Option[UUID] = None,
     uri: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -201,11 +205,7 @@ object ResolversDao {
         offset = offset
       ).
         text("resolvers.visibility", visibility).
-        text(
-          "organizations.key",
-          org,
-          valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
-        ).
+        text("organizations.key", organization.map(_.toLowerCase)).
         uuid("organizations.guid", organizationGuid).
         text("resolvers.uri", uri).
         as(

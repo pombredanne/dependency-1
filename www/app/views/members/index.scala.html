@@ -1,0 +1,49 @@
+@(
+  data: com.bryzek.dependency.www.lib.UiData,
+  org: com.bryzek.dependency.v0.models.Organization,
+  memberships: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Membership]
+)(implicit flash: Flash, messages: Messages)
+
+@main(data.copy(title = Some(s"${org.key}: Members"))) {
+
+  @if(memberships.isEmpty) {
+
+    <p><em>This organization currently does not have any members.</em></p>
+
+  } else {
+    <div class="table-responsive">
+      <table class="table">
+	<thead>
+	  <tr>
+	    <th>Joined</th>
+	    <th>Email</th>
+	    <th>Name</th>
+	    <th>Role</th>
+	    <th></th>
+	  </tr>
+	</thead>
+        @memberships.items.map { membership =>
+          <tr>
+            <td>@io.flow.play.util.DateHelper.shortDate(membership.audit.createdAt)</td>
+            <td>@membership.user.email.getOrElse("N/A")</td>
+            <td>@membership.user.name</td>
+            <td>@membership.role</td>
+            <td></td>
+          </tr>
+        }
+      </table>
+    </div>
+
+    @if(memberships.hasPrevious || memberships.hasNext) {
+      <ul class="pager">
+        @if(memberships.hasPrevious) {
+          <li><a href="@routes.MembersController.index(org = org.key, page = memberships.page - 1)">Previous</a></li>
+       }
+        @if(memberships.hasNext) {
+         <li><a href="@routes.MembersController.index(org = org.key, page = memberships.page + 1)">Next</a></li>
+        }
+      </ul>
+    }
+  }
+
+}

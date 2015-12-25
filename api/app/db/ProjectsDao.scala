@@ -87,7 +87,7 @@ object ProjectsDao {
       Seq("Name cannot be empty")
 
     } else {
-      ProjectsDao.findByOrganizationGuidAndName(Authorization.All, form.organizationGuid, form.name) match {
+      ProjectsDao.findByOrganizationAndName(Authorization.All, form.organization, form.name) match {
         case None => Seq.empty
         case Some(p) => {
           Some(p.guid) == existing.map(_.guid) match {
@@ -98,7 +98,7 @@ object ProjectsDao {
       }
     }
 
-    val organizationErrors = MembershipsDao.isMember(form.organizationGuid, user) match  {
+    val organizationErrors = MembershipsDao.isMember(form.organization, user) match  {
       case false => Seq("You do not have access to this organization")
       case true => Nil
     }
@@ -109,12 +109,17 @@ object ProjectsDao {
   def create(createdBy: User, form: ProjectForm): Either[Seq[String], Project] = {
     validate(createdBy, form) match {
       case Nil => {
+
+        val org = OrganizationsDao.findByKey(Authorization.All, form.organization).getOrElse {
+          sys.error("Could not find organization with key[${form.organization}]")
+        }
+        
         val guid = UUID.randomUUID
 
         DB.withConnection { implicit c =>
           SQL(InsertQuery).on(
             'guid -> guid,
-            'organization_guid -> form.organizationGuid,
+            'organization_guid -> org.guid,
             'visibility -> form.visibility.toString,
             'scms -> form.scms.toString,
             'name -> form.name.trim,
@@ -141,7 +146,7 @@ object ProjectsDao {
         // To support org change - need to record the change as its
         // own record to be able to track changes.
         assert(
-          project.organization.guid == form.organizationGuid,
+          project.organization.key == form.organization,
           "Changing organization not currently supported"
         )
 
@@ -173,8 +178,13 @@ object ProjectsDao {
     MainActor.ref ! MainActor.Messages.ProjectDeleted(project.guid)
   }
 
+/*
   def findByOrganizationGuidAndName(auth: Authorization, organizationGuid: UUID, name: String): Option[Project] = {
     findAll(auth, organizationGuid = Some(organizationGuid), name = Some(name), limit = 1).headOption
+  }
+ */
+  def findByOrganizationAndName(auth: Authorization, organization: String, name: String): Option[Project] = {
+    findAll(auth, organization = Some(organization), name = Some(name), limit = 1).headOption
   }
 
   def findByGuid(auth: Authorization, guid: UUID): Option[Project] = {
@@ -185,7 +195,7 @@ object ProjectsDao {
     auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    org: Option[String] = None,
+    organization: Option[String] = None,
     organizationGuid: Option[UUID] = None,
     name: Option[String] = None,
     groupId: Option[String] = None,
@@ -214,7 +224,7 @@ object ProjectsDao {
       ).
         text(
           "organizations.key",
-          org,
+          organization,
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
         uuid("organizations.guid", organizationGuid).

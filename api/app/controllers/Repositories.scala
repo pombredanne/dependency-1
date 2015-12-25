@@ -1,6 +1,6 @@
 package controllers
 
-import db.{Authorization, ProjectsDao}
+import db.{Authorization, OrganizationsDao, ProjectsDao}
 import com.bryzek.dependency.api.lib.Github
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
@@ -39,12 +39,12 @@ class Repositories @javax.inject.Inject() (
             repos.
               filter { r => name.isEmpty || name == Some(r.name) }.
               filter { r =>
-                organizationGuid match {
+                organizationGuid.flatMap { OrganizationsDao.findByGuid(auth, _) } match {
                   case None => true
-                  case Some(guid) => {
+                  case Some(org) => {
                     existingProject.isEmpty ||
-                    existingProject == Some(true) && !ProjectsDao.findByOrganizationGuidAndName(auth, guid, r.name).isEmpty ||
-                    existingProject == Some(false) && ProjectsDao.findByOrganizationGuidAndName(auth, guid, r.name).isEmpty
+                    existingProject == Some(true) && !ProjectsDao.findByOrganizationAndName(auth, org.key, r.name).isEmpty ||
+                    existingProject == Some(false) && ProjectsDao.findByOrganizationAndName(auth, org.key, r.name).isEmpty
                   }
                 }
               }.

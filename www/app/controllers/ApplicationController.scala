@@ -21,16 +21,17 @@ class ApplicationController @javax.inject.Inject() (
     Redirect(request.path + "/")
   }
 
-  def index(page: Int = 0) = Identified.async { implicit request =>
+  def index(organization: Option[String], page: Int = 0) = Identified.async { implicit request =>
     for {
       recommendations <- dependencyClient(request).recommendations.get(
+        organization = organization,
         limit = Pagination.DefaultLimit+1,
         offset = page * Pagination.DefaultLimit
       )
     } yield {
       Ok(
         views.html.index(
-          uiData(request),
+          uiData(request).copy(organization = organization),
           PaginatedCollection(page, recommendations)
         )
       )

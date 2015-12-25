@@ -1,5 +1,5 @@
 GET     /_internal_/healthcheck                 controllers.HealthchecksController.index()
-GET     /                                       controllers.ApplicationController.index(page: Int ?= 0)
+GET     /                                       controllers.ApplicationController.index(organization: Option[String] ?= None, page: Int ?= 0)
 
 GET     /libraries                              controllers.ApplicationController.redirect
 GET     /libraries/                             controllers.LibrariesController.index(page: Int ?= 0)
@@ -43,6 +43,14 @@ GET     /login/                                 controllers.LoginController.inde
 GET     /login/github                           controllers.LoginController.githubCallback(code: String, state: Option[String] ?= None, return_url: Option[String] ?= None)
 GET     /logout                                 controllers.LogoutController.index
 GET     /logged_out                             controllers.LogoutController.logged_out
+
+GET     /:org                                   controllers.OrganizationsController.index(org: String)
+GET     /:org/members                           controllers.MembersController.index(org: String, page: Int ?= 0)
+GET     /:org/members/create                    controllers.MembersController.create(org: String)
+POST    /:org/members/createPost                controllers.MembersController.postCreate(org: String)
+POST    /:org/members/postDelete                controllers.MembersController.postDelete(org: String, guid: java.util.UUID)
+# POST    /:org/members/postRevokeAdmin           controllers.MembersController.postRevokeAdmin(org: String, guid: java.util.UUID)
+# POST    /:org/members/postMakeAdmin             controllers.MembersController.postMakeAdmin(org: String, guid: java.util.UUID)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

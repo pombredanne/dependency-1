@@ -113,11 +113,11 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     }
 
     "org" in {
-      ProjectsDao.findAll(Authorization.All, guid = Some(project1.guid), org = Some(org.key)).map(_.guid) must be(
+      ProjectsDao.findAll(Authorization.All, guid = Some(project1.guid), organization = Some(org.key)).map(_.guid) must be(
         Seq(project1.guid)
       )
 
-      ProjectsDao.findAll(Authorization.All, guid = Some(project1.guid), org = Some(createOrganization().key)) must be(Nil)
+      ProjectsDao.findAll(Authorization.All, guid = Some(project1.guid), organization = Some(createOrganization().key)) must be(Nil)
     }
 
     "with library" must {

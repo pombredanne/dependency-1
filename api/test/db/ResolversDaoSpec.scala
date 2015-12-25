@@ -45,12 +45,12 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "findByOrganizationGuidAndUri" in {
     val resolver = createResolver(org)(createResolverForm(org))
-    ResolversDao.findByOrganizationGuidAndUri(Authorization.All, org.guid, resolver.uri).map(_.guid) must be(
+    ResolversDao.findByOrganizationAndUri(Authorization.All, org.key, resolver.uri).map(_.guid) must be(
       Some(resolver.guid)
     )
 
-    ResolversDao.findByOrganizationGuidAndUri(Authorization.All, UUID.randomUUID, resolver.uri).map(_.guid) must be(None)
-    ResolversDao.findByOrganizationGuidAndUri(Authorization.All, org.guid, UUID.randomUUID.toString).map(_.guid) must be(None)
+    ResolversDao.findByOrganizationAndUri(Authorization.All, createTestKey(), resolver.uri).map(_.guid) must be(None)
+    ResolversDao.findByOrganizationAndUri(Authorization.All, org.key, UUID.randomUUID.toString).map(_.guid) must be(None)
   }
 
   "findAll" must {
@@ -81,11 +81,11 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     "find by org" in {
       val resolver = createResolver(org)
 
-      ResolversDao.findAll(Authorization.All, guid = Some(resolver.guid), org = Some(org.key)).map(_.guid).sorted must be(
+      ResolversDao.findAll(Authorization.All, guid = Some(resolver.guid), organization = Some(org.key)).map(_.guid).sorted must be(
         Seq(resolver.guid)
       )
 
-      ResolversDao.findAll(Authorization.All, guid = Some(resolver.guid), org = Some(createOrganization().key)) must be(Nil)
+      ResolversDao.findAll(Authorization.All, guid = Some(resolver.guid), organization = Some(createOrganization().key)) must be(Nil)
     }
 
   }
@@ -196,7 +196,7 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       systemUser,
       createResolverForm(org).copy(
         visibility = Visibility.Private,
-        organizationGuid = org.guid,
+        organization = org.key,
         uri = resolver.uri
       )
     ) must be(Seq(s"Organization already has a resolver with uri[${resolver.uri}]"))

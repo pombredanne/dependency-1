@@ -92,11 +92,9 @@ object OrganizationsDao {
     MembershipsDao.create(
       c,
       createdBy,
-      MembershipForm(
-        userGuid = createdBy.guid,
-        organizationGuid = guid,
-        role = Role.Admin
-      )
+      guid,
+      createdBy.guid,
+      Role.Admin
     )
     
     guid

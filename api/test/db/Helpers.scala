@@ -315,7 +315,7 @@ trait Helpers {
   ) = {
     ResolverForm(
       visibility = visibility,
-      organizationGuid = org.guid,
+      organization = org.key,
       uri = uri
     )
   }
@@ -332,7 +332,7 @@ trait Helpers {
     role: Role = Role.Member
   ) = {
     MembershipForm(
-      organizationGuid = org.guid,
+      organization = org.key,
       userGuid = user.guid,
       role = role
     )

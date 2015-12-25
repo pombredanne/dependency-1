@@ -44,10 +44,10 @@
     @if(recommendations.hasPrevious || recommendations.hasNext) {
       <ul class="pager">
         @if(recommendations.hasPrevious) {
-          <li><a href="@routes.ApplicationController.index(recommendations.page - 1)">Previous</a></li>
+          <li><a href="@routes.ApplicationController.index(organization = data.organization, page = recommendations.page - 1)">Previous</a></li>
        }
         @if(recommendations.hasNext) {
-         <li><a href="@routes.ApplicationController.index(recommendations.page + 1)">Next</a></li>
+         <li><a href="@routes.ApplicationController.index(organization = data.organization, page = recommendations.page + 1)">Next</a></li>
         }
       </ul>
     }

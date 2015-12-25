@@ -5,7 +5,7 @@
 
 <fieldset>
 
-    @organizations.select(orgs, form("organization_guid"), form.error("organization_guid"))
+    @organizations.select(orgs, form("organization"), form.error("organization"))
 
     @helper.inputText(
         form("uri"),
