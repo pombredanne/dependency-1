@@ -52,14 +52,19 @@ object OrganizationsDao {
       Seq("Key cannot be empty")
 
     } else {
-      OrganizationsDao.findByKey(Authorization.All, form.key) match {
-        case None => Seq.empty
-        case Some(p) => {
-          Some(p.guid) == existing.map(_.guid) match {
-            case true => Nil
-            case false => Seq("Organization with this key already exists")
+      urlKey.validate(form.key.trim) match {
+        case Nil => {
+          OrganizationsDao.findByKey(Authorization.All, form.key) match {
+            case None => Seq.empty
+            case Some(p) => {
+              Some(p.guid) == existing.map(_.guid) match {
+                case true => Nil
+                case false => Seq("Organization with this key already exists")
+              }
+            }
           }
         }
+        case errors => errors
       }
     }
   }

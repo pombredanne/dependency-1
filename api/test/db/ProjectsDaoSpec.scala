@@ -16,12 +16,12 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   lazy val project2 = createProject(org)
 
   "findByOrganizationGuidAndName" in {
-    ProjectsDao.findByOrganizationGuidAndName(Authorization.All, org.guid, project1.name).map(_.guid) must be(
+    ProjectsDao.findByOrganizationAndName(Authorization.All, org.key, project1.name).map(_.guid) must be(
       Some(project1.guid)
     )
 
-    ProjectsDao.findByOrganizationGuidAndName(Authorization.All, UUID.randomUUID, project1.name) must be(None)
-    ProjectsDao.findByOrganizationGuidAndName(Authorization.All, org.guid, UUID.randomUUID.toString) must be(None)
+    ProjectsDao.findByOrganizationAndName(Authorization.All, createTestKey(), project1.name) must be(None)
+    ProjectsDao.findByOrganizationAndName(Authorization.All, org.key, createTestName()) must be(None)
   }
 
   "findByGuid" in {

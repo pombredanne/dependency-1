@@ -102,6 +102,16 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     OrganizationsDao.findAll(Authorization.All, guid = Some(org.guid), userGuid = Some(UUID.randomUUID)) must be(Nil)
   }
 
+  "validate" must {
+
+    "keep key url friendly" in {
+      OrganizationsDao.validate(createOrganizationForm().copy(key = "flow commerce")) must be(
+        Seq("Key must be in all lower case and contain alphanumerics only (-, _, and . are supported). A valid key would be: flow-commerce")
+      )
+    }
+
+  }
+
   "authorization for organizations" in {
     val user = createUser()
     val org = createOrganization(user = user)
