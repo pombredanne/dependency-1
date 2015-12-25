@@ -6,6 +6,10 @@
 
 @main(data.copy(title = Some(s"${org.key}: Members"))) {
 
+  <div class="pull-right">
+    <span class="glyphicon glyphicon-plus"></span> <a href="@routes.MembersController.create(org.key)">Add member</a>
+  </div>
+
   @if(memberships.isEmpty) {
 
     <p><em>This organization currently does not have any members.</em></p>
@@ -26,9 +30,27 @@
           <tr>
             <td>@io.flow.play.util.DateHelper.shortDate(membership.audit.createdAt)</td>
             <td>@membership.user.email.getOrElse("N/A")</td>
-            <td>@membership.user.name</td>
+            <td>@Seq(membership.user.name.first, membership.user.name.last).flatten.mkString(" ")</td>
             <td>@membership.role</td>
-            <td></td>
+            <td>
+	      @if(membership.role == com.bryzek.dependency.v0.models.Role.Admin) {
+	        @if(Some(membership.user.guid) == data.user.map(_.guid)) {
+  	          <a href="@routes.MembersController.postMakeMember(org.key, membership.guid)" class="delete" data-confirm="If you remove your admin privileges, you will no longer have full access to this org. Would you like to proceed?">Make member</a>
+                } else {
+    	          <a href="@routes.MembersController.postMakeMember(org.key, membership.guid)" class="delete" data-confirm="Are you sure?">Make member</a>
+	        }
+
+	      } else {
+  	        <a href="@routes.MembersController.postMakeAdmin(org.key, membership.guid)" class="delete" data-confirm="Are you sure?">Make admin</a>
+              }
+
+	      |
+	      @if(Some(membership.user.guid) == data.user.map(_.guid)) {
+  	        <a href="@routes.MembersController.postDelete(org.key, membership.guid)" class="delete" data-confirm="If you remove yourself, you will no longer have access to this org. Would you like to proceed?">Remove</a>
+              } else {
+    	        <a href="@routes.MembersController.postDelete(org.key, membership.guid)" class="delete" data-confirm="Are you sure?">Remove</a>
+	      }
+            </td>
           </tr>
         }
       </table>

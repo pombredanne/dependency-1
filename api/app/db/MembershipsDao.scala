@@ -59,11 +59,7 @@ object MembershipsDao {
         MembershipsDao.findByOrganizationAndUserGuid(Authorization.All, form.organization, form.userGuid) match {
           case None => Seq.empty
           case Some(membership) => {
-            if (membership.role == form.role) {
-              Seq("Membership already exists")
-            } else {
-              Nil
-            }
+            Seq("User is already a member")
           }
         }
       }

@@ -115,6 +115,54 @@ class MembersController @javax.inject.Inject() (
     }
   }
 
+  def postMakeMember(orgKey: String, guid: UUID) = Identified.async { implicit request =>
+    makeRole(request, orgKey, guid, Role.Member)
+  }
+
+  def postMakeAdmin(orgKey: String, guid: UUID) = Identified.async { implicit request =>
+    makeRole(request, orgKey, guid, Role.Admin)
+  }
+
+  def makeRole[T](
+    request: IdentifiedRequest[T],
+    orgKey: String,
+    guid: UUID,
+    role: Role
+  ): Future[Result] = {
+    withOrganization(request, orgKey) { org =>
+      withMembership(org.key, request, guid) { membership =>
+        dependencyClient(request).memberships.post(
+          MembershipForm(
+            organization = membership.organization.key,
+            userGuid = membership.user.guid,
+            role = role
+          )
+        ).map { membership =>
+          Redirect(routes.MembersController.index(membership.organization.key)).flashing("success" -> s"User added as ${membership.role}")
+        }.recover {
+          case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
+            Redirect(routes.MembersController.index(membership.organization.key)).flashing("warning" -> response.errors.map(_.message).mkString(", "))
+          }
+        }
+      }
+    }
+  }
+
+  def withMembership[T](
+    org: String,
+    request: IdentifiedRequest[T],
+    guid: UUID
+  )(
+    f: Membership => Future[Result]
+  ) = {
+    dependencyClient(request).memberships.getByGuid(guid).flatMap { membership =>
+      f(membership)
+    }.recover {
+      case UnitResponse(404) => {
+        Redirect(routes.MembersController.index(org)).flashing("warning" -> s"Membership not found")
+      }
+    }
+  }
 }
 
 object MembersController {
