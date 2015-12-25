@@ -1,7 +1,7 @@
 package controllers
 
 import com.bryzek.dependency.v0.errors.UnitResponse
-import com.bryzek.dependency.v0.models.Organization
+import com.bryzek.dependency.v0.models.{Organization, OrganizationForm}
 import com.bryzek.dependency.www.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
@@ -63,12 +63,33 @@ class OrganizationsController @javax.inject.Inject() (
     }
   }
 
-  def create() = Identified.async { implicit request =>
-    sys.error("TODO")
+  def create() = Identified { implicit request =>
+    Ok(
+      views.html.organizations.create(
+        uiData(request),
+        OrganizationsController.uiForm
+      )
+    )
   }
 
   def postCreate() = Identified.async { implicit request =>
-    sys.error("TODO")
+    val boundForm = OrganizationsController.uiForm.bindFromRequest
+    boundForm.fold (
+
+      formWithErrors => Future {
+        Ok(views.html.organizations.create(uiData(request), formWithErrors))
+      },
+
+      uiForm => {
+        dependencyClient(request).organizations.post(uiForm.organizationForm).map { organization =>
+          Redirect(routes.OrganizationsController.show(organization.key)).flashing("success" -> "Organization created")
+        }.recover {
+          case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
+            Ok(views.html.organizations.create(uiData(request), boundForm, response.errors.map(_.message)))
+          }
+        }
+      }
+    )
   }
 
   def edit(key: String) = Identified.async { implicit request =>
@@ -97,7 +118,13 @@ object OrganizationsController {
 
   case class UiForm(
     key: String
-  )
+  ) {
+
+    val organizationForm = OrganizationForm(
+      key = key
+    )
+
+  }
 
   private val uiForm = Form(
     mapping(
