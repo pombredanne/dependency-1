@@ -1,11 +1,17 @@
 package controllers
 
+import com.bryzek.dependency.v0.errors.UnitResponse
+import com.bryzek.dependency.v0.models.Organization
 import com.bryzek.dependency.www.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
+import scala.concurrent.Future
+
 import play.api._
 import play.api.i18n.MessagesApi
 import play.api.mvc._
+import play.api.data._
+import play.api.data.Forms._
 
 class OrganizationsController @javax.inject.Inject() (
   val messagesApi: MessagesApi,
@@ -15,14 +21,88 @@ class OrganizationsController @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
  
-  override def section = Some(com.bryzek.dependency.www.lib.Section.Dashboard)
+  override def section = None
 
-  def index() = Identified { implicit request =>
+  def redirectToDashboard(org: String) = Identified { implicit request =>
+    Redirect(routes.ApplicationController.index(organization = Some(org)))
+  }
+
+  def index(page: Int = 0) = Identified.async { implicit request =>
+    for {
+      organizations <- dependencyClient(request).organizations.get(
+        limit = Pagination.DefaultLimit+1,
+        offset = page * Pagination.DefaultLimit
+      )
+    } yield {
+      Ok(
+        views.html.organizations.index(
+          uiData(request),
+          PaginatedCollection(page, organizations)
+        )
+      )
+    }
+  }
+
+  def show(key: String, projectsPage: Int = 0) = Identified.async { implicit request =>
+    withOrganization(request, key) { org =>
+      for {
+        projects <- dependencyClient(request).projects.get(
+          organization = Some(key),
+          limit = Pagination.DefaultLimit+1,
+          offset = projectsPage * Pagination.DefaultLimit
+        )
+      } yield {
+        Ok(
+          views.html.organizations.show(
+            uiData(request),
+            org,
+            PaginatedCollection(projectsPage, projects)
+          )
+        )
+      }
+    }
+  }
+
+  def create() = Identified.async { implicit request =>
     sys.error("TODO")
   }
 
-  def show(org: String) = Identified { implicit request =>
-    Redirect(routes.ApplicationController.index(organization = Some(org)))
+  def postCreate() = Identified.async { implicit request =>
+    sys.error("TODO")
   }
+
+  def edit(key: String) = Identified.async { implicit request =>
+    sys.error("TODO")
+  }
+
+  def postEdit(key: String) = Identified.async { implicit request =>
+    sys.error("TODO")
+  }
+
+  def postDelete(key: String) = Identified.async { implicit request =>
+    withOrganization(request, key) { org =>
+      dependencyClient(request).organizations.deleteByGuid(org.guid).map { response =>
+        Redirect(routes.OrganizationsController.index()).flashing("success" -> s"Organization deleted")
+      }.recover {
+        case UnitResponse(404) => {
+          Redirect(routes.OrganizationsController.index()).flashing("warning" -> s"Organization not found")
+        }
+      }
+    }
+  }
+
+}
+
+object OrganizationsController {
+
+  case class UiForm(
+    key: String
+  )
+
+  private val uiForm = Form(
+    mapping(
+      "key" -> nonEmptyText
+    )(UiForm.apply)(UiForm.unapply)
+  )
 
 }

@@ -44,9 +44,15 @@ GET     /login/github                           controllers.LoginController.gith
 GET     /logout                                 controllers.LogoutController.index
 GET     /logged_out                             controllers.LogoutController.logged_out
 
-GET     /organizations                          controllers.OrganizationsController.index()
+GET     /organizations                          controllers.OrganizationsController.index(page: Int ?= 0)
+GET     /organizations/create                   controllers.OrganizationsController.create()
+POST    /organizations/postCreate               controllers.OrganizationsController.postCreate()
+GET     /organizations/:key                     controllers.OrganizationsController.show(key: String, projectsPage: Int ?= 0)
+GET     /organizations/:key/edit                controllers.OrganizationsController.edit(key: String)
+POST    /organizations/:key/postEdit            controllers.OrganizationsController.postEdit(key: String)
+POST    /organizations/:key/delete              controllers.OrganizationsController.postDelete(key: String)
 
-GET     /:org                                   controllers.OrganizationsController.show(org: String)
+GET     /:org                                   controllers.OrganizationsController.redirectToDashboard(org: String)
 GET     /:org/members                           controllers.MembersController.index(org: String, page: Int ?= 0)
 GET     /:org/members/create                    controllers.MembersController.create(org: String)
 POST    /:org/members/createPost                controllers.MembersController.postCreate(org: String)
