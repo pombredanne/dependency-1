@@ -39,6 +39,14 @@ class ResolverActor extends Actor with Util {
     }
 
     case m @ ResolverActor.Messages.Deleted => withVerboseErrorHandler(m.toString) {
+      dataResolver.foreach { resolver =>
+        Pager.create { offset =>
+          LibrariesDao.findAll(Authorization.All, resolverGuid = Some(resolver.guid), offset = offset)
+        }.foreach { library =>
+          LibrariesDao.softDelete(MainActor.SystemUser, library)
+        }
+      }
+
       context.stop(self)
     }
 
