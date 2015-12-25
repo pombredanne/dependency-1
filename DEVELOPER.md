@@ -19,8 +19,9 @@ apidoc. To regenerate code, clone github.com/gilt/apidoc-cli and
 Database
 ========
 
-    psql -c "create role api login createdb" postgres
-    psql -U api -c "CREATE DATABASE dependency" postgres
+    psql -h <host> dependency -c "create role api login password 'xxx'" root
+    psql -h <host> dependency -c "GRANT ALL ON DATABASE dependency TO api" root
+
 
 Database
 ========
@@ -43,11 +44,6 @@ Initial production setup:
 
     sudo yum install http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-ami201503-94-9.4-1.noarch.rpm
     sudo yum install postgresql94
-
-    psql -U root -h TODO.amazonaws.com postgres
-      psql> CREATE DATABASE dependency;
-      psql> CREATE ROLE api WITH LOGIN PASSWORD 'PASSWORD';
-      psql> GRANT ALL ON DATABASE dependency TO api;
 
     echo "dependency.crqe2ozpjr64.us-east-1.rds.amazonaws.com:5432:dependency:api:PASSWORD" > ~/.pgpass
     chmod 0600 ~/.pgpass
