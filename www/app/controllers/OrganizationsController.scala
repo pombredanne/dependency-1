@@ -93,11 +93,43 @@ class OrganizationsController @javax.inject.Inject() (
   }
 
   def edit(key: String) = Identified.async { implicit request =>
-    sys.error("TODO")
+    withOrganization(request, key) { organization =>
+      Future {
+        Ok(
+          views.html.organizations.edit(
+            uiData(request),
+            organization,
+            OrganizationsController.uiForm.fill(
+              OrganizationsController.UiForm(
+                key = organization.key
+              )
+            )
+          )
+        )
+      }
+    }
   }
 
   def postEdit(key: String) = Identified.async { implicit request =>
-    sys.error("TODO")
+    withOrganization(request, key) { organization =>
+      val boundForm = OrganizationsController.uiForm.bindFromRequest
+      boundForm.fold (
+
+        formWithErrors => Future {
+          Ok(views.html.organizations.edit(uiData(request), organization, formWithErrors))
+        },
+
+        uiForm => {
+          dependencyClient(request).organizations.putByGuid(organization.guid, uiForm.organizationForm).map { updated =>
+            Redirect(routes.OrganizationsController.show(updated.key)).flashing("success" -> "Organization updated")
+          }.recover {
+            case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
+              Ok(views.html.organizations.edit(uiData(request), organization, boundForm, response.errors.map(_.message)))
+            }
+          }
+        }
+      )
+    }
   }
 
   def postDelete(key: String) = Identified.async { implicit request =>
