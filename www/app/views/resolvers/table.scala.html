@@ -2,9 +2,20 @@
 
 <div class="table-responsive">
   <table class="table">
-    @resolvers.items.map { p =>
+    <tr>
+      <th>Owner</th>
+      <th>Resolver URI</th>
+    </tr>
+    @resolvers.items.map { r =>
       <tr>
-        <td><a href="@routes.ResolversController.show(p.guid)">@{p.uri}</a></td>
+        <td>
+	  @if(r.organization.isEmpty) {
+	    Public
+	  } else {
+	    <a href="@routes.OrganizationsController.show(r.organization.get.key)">@{r.organization.get.key}</a>
+	  }
+	</td>
+        <td><a href="@routes.ResolversController.show(r.guid)">@{r.uri}</a></td>
       </tr>
     }
   </table>
