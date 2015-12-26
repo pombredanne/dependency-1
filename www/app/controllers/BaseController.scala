@@ -107,15 +107,4 @@ abstract class BaseController(
     dependencyClientProvider.newClient(user = Some(request.user))
   }
 
-  /**
-    * Temporary until we expose orgs in the UI
-    */
-  def userOrg[T](
-    request: IdentifiedRequest[T]
-  ) (
-    implicit ec: ExecutionContext
-  ): Future[Organization] = {
-    dependencyClient(request).organizations.getUsersByUserGuid(request.user.guid)
-  }
-
 }

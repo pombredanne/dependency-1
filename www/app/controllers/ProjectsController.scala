@@ -79,71 +79,72 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def github(repositoriesPage: Int = 0) = Identified.async { implicit request =>
+  def github() = Identified.async { implicit request =>
     for {
-      org <- userOrg(request)
-      repositories <- dependencyClient(request).repositories.getGithub(
-        organizationGuid = Some(org.guid),
-        existingProject = Some(false),
-        limit = Pagination.DefaultLimit+1,
-        offset = repositoriesPage * Pagination.DefaultLimit
-      )
+      orgs <- organizations(request)
     } yield {
-      Ok(
-        views.html.projects.github(
-          uiData(request), PaginatedCollection(repositoriesPage, repositories)
-        )
-      )
+      orgs match {
+        case Nil => {
+          Redirect(routes.OrganizationsController.index()).flashing("warning" -> "Add a new org before adding a project")
+        }
+        case one :: Nil => {
+          Redirect(routes.ProjectsController.githubOrg(one.key))
+        }
+        case multiple => {
+          Ok(
+            views.html.projects.github(
+              uiData(request), multiple
+            )
+          )
+        }
+      }
     }
   }
 
-  def postGithub(
-    name: String,
-    repositoriesPage: Int = 0
-  ) = Identified.async { implicit request =>
-    userOrg(request).flatMap { org =>
-      dependencyClient(request).repositories.getGithub(
-        organizationGuid = Some(org.guid),
-        name = Some(name)
-      ).flatMap { selected =>
-        dependencyClient(request).repositories.getGithub(
+  def githubOrg(orgKey: String, repositoriesPage: Int = 0) = Identified.async { implicit request =>
+    withOrganization(request, orgKey) { org =>
+      for {
+        repositories <- dependencyClient(request).repositories.getGithub(
           organizationGuid = Some(org.guid),
           existingProject = Some(false),
           limit = Pagination.DefaultLimit+1,
           offset = repositoriesPage * Pagination.DefaultLimit
-        ).flatMap { repositories =>
-          selected.headOption match {
-            case None => Future {
-              Ok(
-                views.html.projects.github(
-                  uiData(request),
-                  PaginatedCollection(repositoriesPage, repositories),
-                  Seq("Repository with selected name was not found")
-                )
+        )
+      } yield {
+        Ok(
+          views.html.projects.githubOrg(
+            uiData(request), org, PaginatedCollection(repositoriesPage, repositories)
+          )
+        )
+      }
+    }
+  }
+
+  def postGithubOrg(
+    orgKey: String,
+    name: String,
+    repositoriesPage: Int = 0
+  ) = Identified.async { implicit request =>
+    withOrganization(request, orgKey) { org =>
+      dependencyClient(request).repositories.getGithub(
+        organizationGuid = Some(org.guid),
+        name = Some(name)
+      ).flatMap { selected =>
+        selected.headOption match {
+          case None => Future {
+            Redirect(routes.ProjectsController.github()).flashing("warning" -> "Project not found")
+          }
+          case Some(repo) => {
+            dependencyClient(request).projects.post(
+              ProjectForm(
+                organization = org.key,
+                name = repo.name,
+                scms = Scms.Github,
+                visibility = repo.visibility,
+                uri = repo.uri
               )
-            }
-            case Some(repo) => {
-              dependencyClient(request).projects.post(
-                ProjectForm(
-                  organization = org.key,
-                  name = repo.name,
-                  scms = Scms.Github,
-                  visibility = repo.visibility,
-                  uri = repo.uri
-                )
-              ).map { project =>
-                Redirect(routes.ProjectsController.sync(project.guid)).flashing("success" -> "Project added")
-              }.recover {
-                case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
-                  Ok(
-                    views.html.projects.github(
-                      uiData(request),
-                      PaginatedCollection(repositoriesPage, repositories),
-                      response.errors.map(_.message)
-                    )
-                  )
-                }
-              }
+            ).map { project =>
+              Redirect(routes.ProjectsController.sync(project.guid)).flashing("success" -> "Project added")
             }
           }
         }

@@ -11,8 +11,9 @@ GET     /binaries/:guid                        controllers.BinariesController.sh
 
 GET     /projects                               controllers.ApplicationController.redirect
 GET     /projects/                              controllers.ProjectsController.index(page: Int ?= 0)
-GET     /projects/github                        controllers.ProjectsController.github(repositoriesPage: Int ?= 0)
-POST    /projects/postGithub                    controllers.ProjectsController.postGithub(name: String, repositoriesPage: Int ?= 0)
+GET     /projects/github                        controllers.ProjectsController.github()
+GET     /projects/github/:org                   controllers.ProjectsController.githubOrg(org: String, repositoriesPage: Int ?= 0)
+POST    /projects/github/:org/post              controllers.ProjectsController.postGithubOrg(org: String, name: String, repositoriesPage: Int ?= 0)
 GET     /projects/create                        controllers.ProjectsController.create()
 POST    /projects/postCreate                    controllers.ProjectsController.postCreate()
 GET     /projects/:guid                         controllers.ProjectsController.show(guid: java.util.UUID, recommendationsPage: Int ?= 0, binariesPage: Int ?= 0, librariesPage: Int ?= 0)
