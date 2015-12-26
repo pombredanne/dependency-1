@@ -11,6 +11,7 @@ import io.flow.github.v0.errors.UnitResponse
 import io.flow.github.v0.models.{User => GithubUser}
 import scala.concurrent.{ExecutionContext, Future}
 import java.util.UUID
+import play.api.Logger
 
 case class GithubUserWithToken(
   user: GithubUser,
@@ -46,6 +47,7 @@ trait Github {
       case Right(githubUserWithToken) => {
         githubUserWithToken.user.email match {
           case None => {
+            Logger.warn("githubUserWithToken missing email: " + githubUserWithToken)
             Left(Seq("Github account does not have an email address that we can read"))
           }
           case Some(email) => {
