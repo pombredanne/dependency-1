@@ -10,7 +10,7 @@ trait Factories {
   }
 
   def makeKey(): String = {
-    "z-test-${UUID.randomUUID.toString.toLowerCase}"
+    s"z-test-${UUID.randomUUID.toString.toLowerCase}"
   }
 
   def makeOrganizationSummary(
