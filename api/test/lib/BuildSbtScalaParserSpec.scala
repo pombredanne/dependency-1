@@ -18,7 +18,7 @@ lazy val root = project
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser(projectSummary, "test", contents)
+      val result = BuildSbtScalaParser(projectSummary, "test.sbt", contents)
       result.binaries must beEqualTo(Nil)
       result.libraries must beEqualTo(Nil)
     }
@@ -75,7 +75,7 @@ lazy val root = project
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser(projectSummary, "test", contents)
+      val result = BuildSbtScalaParser(projectSummary, "test.sbt", contents)
       result.binaries must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
@@ -110,7 +110,7 @@ lazy val www = project
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser(projectSummary, "test", contents)
+      val result = BuildSbtScalaParser(projectSummary, "test.sbt", contents)
       result.binaries must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
@@ -137,7 +137,7 @@ lazy val avro = project
     )
   )
 """
-    val result = BuildSbtScalaParser(projectSummary, "test", contents)
+    val result = BuildSbtScalaParser(projectSummary, "test.sbt", contents)
     result.binaries must beEqualTo(Nil)
     result.libraries must beEqualTo(
       Seq(
@@ -156,7 +156,7 @@ lazy val avro = project
   )
 """
 
-    val result = BuildSbtScalaParser(projectSummary, "test", contents)
+    val result = BuildSbtScalaParser(projectSummary, "test.sbt", contents)
     result.binaries must beEqualTo(Nil)
     result.libraries must beEqualTo(
       Seq(
@@ -184,7 +184,7 @@ lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser(projectSummary, "test", contents)
+      val result = BuildSbtScalaParser(projectSummary, "test.sbt", contents)
       result.binaries must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
@@ -206,7 +206,7 @@ lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
 """
 
     "parse dependencies" in {
-      val result = BuildSbtScalaParser(projectSummary, "test", contents)
+      val result = BuildSbtScalaParser(projectSummary, "test.sbt", contents)
       result.binaries must beEqualTo(Nil)
       result.libraries must beEqualTo(
         Seq(
@@ -216,4 +216,5 @@ lazy val commonSettings: Seq[Def.Setting[_]] = Seq(
       result.resolverUris must beEqualTo(Nil)
     }
   }
+
 }
