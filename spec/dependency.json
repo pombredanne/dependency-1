@@ -1028,7 +1028,8 @@
                     ],
                     "responses": {
 			"200": { "type": "[repository]" },
-			"401": { "type": "unit" }
+			"401": { "type": "unit" },
+                        "422": { "type": "[io.flow.common.v0.models.error]" }
                     }
 		}
 	    ]
