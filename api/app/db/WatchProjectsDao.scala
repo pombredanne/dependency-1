@@ -115,7 +115,7 @@ object WatchProjectsDao {
     userGuid: Option[UUID] = None,
     projectGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.parseOrError("watch_projects.created_at"),
+    orderBy: OrderBy = OrderBy("watch_projects.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[WatchProject] = {

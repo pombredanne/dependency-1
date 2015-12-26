@@ -201,7 +201,7 @@ object ItemsDao {
     q: Option[String] = None,
     objectGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.parseOrError("-lower(items.label), items.created_at"),
+    orderBy: OrderBy = OrderBy("-lower(items.label), items.created_at"),
     limit: Option[Long] = Some(25),
     offset: Long = 0
   ): Seq[Item] = {

@@ -95,7 +95,7 @@ object SyncsDao {
     guids: Option[Seq[UUID]] = None,
     objectGuid: Option[UUID] = None,
     event: Option[SyncEvent] = None,
-    orderBy: OrderBy = OrderBy.parseOrError("-syncs.created_at"),
+    orderBy: OrderBy = OrderBy("-syncs.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Sync] = {

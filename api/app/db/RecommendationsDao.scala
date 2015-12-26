@@ -185,7 +185,7 @@ object RecommendationsDao {
     name: Option[String] = None,
     fromVersion: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.parseOrError("-recommendations.created_at, lower(projects.name), lower(recommendations.name)"),
+    orderBy: OrderBy = OrderBy("-recommendations.created_at, lower(projects.name), lower(recommendations.name)"),
     limit: Option[Long] = Some(25),
     offset: Long = 0
   ): Seq[Recommendation] = {

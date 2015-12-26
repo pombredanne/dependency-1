@@ -151,7 +151,7 @@ object LibrariesDao {
     artifactId: Option[String] = None,
     resolverGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.parseOrError("lower(libraries.group_id), lower(libraries.artifact_id), libraries.created_at"),
+    orderBy: OrderBy = OrderBy("lower(libraries.group_id), lower(libraries.artifact_id), libraries.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Library] = {

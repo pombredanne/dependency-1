@@ -164,7 +164,7 @@ object MembershipsDao {
     userGuid: Option[UUID] = None,
     role: Option[Role] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.parseOrError("memberships.created_at"),
+    orderBy: OrderBy = OrderBy("memberships.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Membership] = {

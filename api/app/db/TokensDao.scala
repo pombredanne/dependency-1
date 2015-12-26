@@ -117,7 +117,7 @@ object TokensDao {
     userGuid: Option[UUID] = None,
     tag: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.parseOrError("tokens.created_at"),
+    orderBy: OrderBy = OrderBy("tokens.created_at"),
     limit: Long = 25,
     offset: Long = 0
   )(implicit c: java.sql.Connection): Seq[Token] = {

@@ -184,7 +184,7 @@ object LibraryVersionsDao {
     crossBuildVersion: Option[Option[String]] = None,
     greaterThanVersion: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.parseOrError("-library_versions.sort_key, library_versions.created_at"),
+    orderBy: OrderBy = OrderBy("-library_versions.sort_key, library_versions.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ) (

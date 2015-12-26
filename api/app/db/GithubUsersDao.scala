@@ -74,7 +74,7 @@ object GithubUsersDao {
     login: Option[String] = None,
     id: Option[Long] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.parseOrError("github_users.created_at"),
+    orderBy: OrderBy = OrderBy("github_users.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[GithubUser] = {

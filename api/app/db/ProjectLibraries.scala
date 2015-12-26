@@ -224,7 +224,7 @@ object ProjectLibrariesDao {
     isSynced: Option[Boolean] = None,
     hasLibrary: Option[Boolean] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.parseOrError("lower(project_libraries.group_id), lower(project_libraries.artifact_id), project_libraries.created_at"),
+    orderBy: OrderBy = OrderBy("lower(project_libraries.group_id), lower(project_libraries.artifact_id), project_libraries.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[ProjectLibrary] = {

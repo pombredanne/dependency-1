@@ -191,7 +191,7 @@ object OrganizationsDao {
     key: Option[String] = None,
     forUserGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.parseOrError("organizations.key, -organizations.created_at"),
+    orderBy: OrderBy = OrderBy("organizations.key, -organizations.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Organization] = {

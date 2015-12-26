@@ -112,7 +112,7 @@ object UsersDao {
     email: Option[String] = None,
     identifier: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.parseOrError("users.created_at"),
+    orderBy: OrderBy = OrderBy("users.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[User] = {

@@ -102,7 +102,7 @@ object BinariesDao {
     name: Option[String] = None,
     isSynced: Option[Boolean] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.parseOrError(s"-lower(binaries.name),binaries.created_at"),
+    orderBy: OrderBy = OrderBy(s"-lower(binaries.name),binaries.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Binary] = {

@@ -122,7 +122,7 @@ object UserIdentifiersDao {
     userGuid: Option[UUID] = None,
     value: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.parseOrError("-user_identifiers.created_at"),
+    orderBy: OrderBy = OrderBy("-user_identifiers.created_at"),
     limit: Long = 25,
     offset: Long = 0
   )(implicit c: java.sql.Connection): Seq[UserIdentifier] = {

@@ -35,7 +35,7 @@ lazy val api = project
     routesImport += "com.bryzek.dependency.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
-      "io.flow" %% "lib-play-postgresql" % "0.0.4",
+      "io.flow" %% "lib-play-postgresql" % "0.0.7",
       "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.16",
       "org.postgresql" % "postgresql" % "9.4-1206-jdbc42",
       "com.sendgrid"   %  "sendgrid-java" % "2.2.2",

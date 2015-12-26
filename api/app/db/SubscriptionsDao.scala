@@ -107,7 +107,7 @@ object SubscriptionsDao {
     minHoursSinceLastEmail: Option[Int] = None,
     minHoursSinceRegistration: Option[Int] = None,
     isDeleted: Option[Boolean] = Some(false),
-    orderBy: OrderBy = OrderBy.parseOrError("subscriptions.created_at"),
+    orderBy: OrderBy = OrderBy("subscriptions.created_at"),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Subscription] = {
