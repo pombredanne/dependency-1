@@ -15,7 +15,7 @@ logLevel := Level.Warn
 """
 
     "parse dependencies" in {
-      val result = ProjectPluginsSbtScalaParser(projectSummary, "test", contents)
+      val result = ProjectPluginsSbtScalaParser(projectSummary, "test.sbt", contents)
       result.resolverUris must beEqualTo(Nil)
       result.plugins must beEqualTo(Nil)
     }
@@ -29,7 +29,7 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 """
 
     "parse dependencies" in {
-      val result = ProjectPluginsSbtScalaParser(projectSummary, "test", contents)
+      val result = ProjectPluginsSbtScalaParser(projectSummary, "test.sbt", contents)
       result.resolverUris must beEqualTo(Seq("http://repo.typesafe.com/typesafe/releases/"))
       result.plugins must beEqualTo(Nil)
     }
@@ -47,7 +47,7 @@ addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.0.1")
 """
 
     "parse dependencies" in {
-      val result = ProjectPluginsSbtScalaParser(projectSummary, "test", contents)
+      val result = ProjectPluginsSbtScalaParser(projectSummary, "test.sbt", contents)
       result.resolverUris must beEqualTo(
         Seq("http://repo.typesafe.com/typesafe/releases/")
       )

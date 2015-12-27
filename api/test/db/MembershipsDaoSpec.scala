@@ -50,21 +50,6 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     MembershipsDao.findByGuid(Authorization.All, UUID.randomUUID) must be(None)
   }
 
-  "changes role" in {
-    val org = createOrganization()
-    val user = createUser()
-    val form = createMembershipForm(org = org, user = user, role = Role.Member)
-
-    createMembership(form.copy(role = Role.Member))
-    MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, org.guid, user.guid).get.role must be(Role.Member)
-
-    createMembership(form.copy(role = Role.Admin))
-    MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, org.guid, user.guid).get.role must be(Role.Admin)
-
-    createMembership(form.copy(role = Role.Member))
-    MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, org.guid, user.guid).get.role must be(Role.Member)
-  }
-
   "soft delete" in {
     val membership = createMembership()
     MembershipsDao.softDelete(systemUser, membership)
@@ -82,8 +67,8 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val form = createMembershipForm(org = org, user = user, role = Role.Member)
     val membership = createMembership(form)
 
-    MembershipsDao.validate(systemUser, form) must be(Seq("Membership already exists"))
-    MembershipsDao.validate(systemUser, form.copy(role = Role.Admin)) must be(Nil)
+    MembershipsDao.validate(systemUser, form) must be(Seq("User is already a member"))
+    MembershipsDao.validate(systemUser, form.copy(role = Role.Admin)) must be(Seq("User is already a member"))
   }
 
   "validates access to org" in {
