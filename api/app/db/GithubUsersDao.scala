@@ -79,7 +79,7 @@ object GithubUsersDao {
     offset: Long = 0
   ): Seq[GithubUser] = {
     DB.withConnection { implicit c =>
-      val q = BaseQuery.
+      BaseQuery.
         uuid("github_users.guid", guid).
         multi("github_users.guid", guids).
         text("github_users.login", login).
@@ -87,12 +87,8 @@ object GithubUsersDao {
         nullBoolean("github_users.deleted_at", isDeleted).
         orderBy(orderBy.sql).
         limit(Some(limit)).
-        offset(Some(offset))
-
-      println(q.sql)
-      println(q.interpolate)
-
-      q.as(
+        offset(Some(offset)).
+        as(
           com.bryzek.dependency.v0.anorm.parsers.GithubUser.table("github_users").*
         )
     }

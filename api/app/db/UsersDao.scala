@@ -143,7 +143,7 @@ object UsersDao {
           s"select user_guid from user_identifiers where deleted_at is null and value = trim({$bindVar})"
         }).
         subquery("users.guid", "github_user_id", githubUserId, { bindVar =>
-          s"select user_guid from github_users where deleted_at is null and id = {$bindVar}"
+          s"select user_guid from github_users where deleted_at is null and id = {$bindVar}::bigint"
         }).
         as(
           io.flow.user.v0.anorm.parsers.User.table("users").*
