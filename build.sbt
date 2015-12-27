@@ -1,5 +1,4 @@
 import play.PlayImport.PlayKeys._
-import scoverage.ScoverageSbtPlugin.ScoverageKeys._
 
 name := "dependency"
 
