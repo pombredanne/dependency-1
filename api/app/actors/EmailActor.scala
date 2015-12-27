@@ -53,7 +53,6 @@ class EmailActor extends Actor with Util {
         case EmailActor.PreferredHourToSendEst => hoursForPreferredTime
         case _ => 24 + hoursForPreferredTime
       }
-      Logger.info(s"EmailActor.Messages.ProcessDailySummary currentHourEst[$currentHourEst] hours[$hours]")
 
       BatchEmailProcessor(
         Publication.DailySummary,
