@@ -28,7 +28,7 @@ object EmailActor {
 
 class EmailActor extends Actor with Util {
 
-  private[this] val currentHourEst: Int = {
+  private[this] def currentHourEst(): Int = {
     (new DateTime()).toDateTime(DateTimeZone.forID("America/New_York")).getHourOfDay
   }
 
@@ -53,6 +53,7 @@ class EmailActor extends Actor with Util {
         case EmailActor.PreferredHourToSendEst => hoursForPreferredTime
         case _ => 24 + hoursForPreferredTime
       }
+      Logger.info("EmailActor.Messages.ProcessDailySummary currentHourEst[$currentHourEst] hours[$hours]")
 
       BatchEmailProcessor(
         Publication.DailySummary,
