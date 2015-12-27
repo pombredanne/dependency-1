@@ -169,7 +169,7 @@ object LibrariesDao {
       ).
         uuid("libraries.organization_guid", organizationGuid).
         subquery("libraries.guid", "project_guid", projectGuid, { bindVar =>
-          s"select library_guid from project_libraries where deleted_at is null and project_guid = {$bindVar}::uuid"
+          s"select library_guid from project_libraries where deleted_at is null and project_guid = ${bindVar.sql}"
         }).
         text(
           "libraries.group_id",

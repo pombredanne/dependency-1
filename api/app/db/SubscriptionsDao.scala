@@ -145,7 +145,7 @@ object SubscriptionsDao {
           """.trim }
         ).bind("min_hours_since_registration", minHoursSinceRegistration).
         subquery("subscriptions.user_guid", "identifier", identifier, { bindVar =>
-          s"select user_guid from user_identifiers where deleted_at is null and value = trim({$bindVar})"
+          s"select user_guid from user_identifiers where deleted_at is null and value = trim(${bindVar.sql})"
         }).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Subscription.table("subscriptions").*

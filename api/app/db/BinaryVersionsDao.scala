@@ -178,7 +178,7 @@ object BinaryVersionsDao {
       multi("binary_versions.guid", guids).
       uuid("binary_versions.binary_guid", binaryGuid).
       subquery("binary_versions.binary_guid", "project_guid", projectGuid, { bind =>
-        s"select binary_guid from project_binaries where deleted_at is null and binary_guid is not null and project_guid = {$bind}::uuid"
+        s"select binary_guid from project_binaries where deleted_at is null and binary_guid is not null and project_guid = ${bind.sql}"
       }).
       text(
         "binary_versions.version",

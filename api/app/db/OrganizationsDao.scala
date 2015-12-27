@@ -208,7 +208,7 @@ object OrganizationsDao {
         offset = offset
       ).
         subquery("organizations.guid", "user_guid", userGuid, { bindVar =>
-          s"select organization_guid from memberships where deleted_at is null and user_guid = {$bindVar}::uuid"
+          s"select organization_guid from memberships where deleted_at is null and user_guid = ${bindVar.sql}"
         }).
         text(
           "organizations.key",
@@ -217,7 +217,7 @@ object OrganizationsDao {
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
         subquery("organizations.guid", "for_user_guid", forUserGuid, { bindVar =>
-          s"select organization_guid from user_organizations where deleted_at is null and user_guid = {$bindVar}::uuid"
+          s"select organization_guid from user_organizations where deleted_at is null and user_guid = ${bindVar.sql}"
         }).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Organization.table("organizations").*
