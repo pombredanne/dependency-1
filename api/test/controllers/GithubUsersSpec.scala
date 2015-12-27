@@ -39,7 +39,7 @@ class GithubUsersSpec extends PlaySpecification with MockClient {
     val user = await(anonClient.githubUsers.postAuthenticationsAndGithub(GithubAuthenticationForm(code = code)))
     user.email must beEqualTo(githubUser.email)
 
-    GithubUsersDao.findByLogin(githubUser.login).map(_.user.guid) must beEqualTo(Some(user.guid))
+    GithubUsersDao.findById(githubUser.id).map(_.user.guid) must beEqualTo(Some(user.guid))
 
     // Test idempotence
     val user2 = await(anonClient.githubUsers.postAuthenticationsAndGithub(GithubAuthenticationForm(code = code)))

@@ -26,14 +26,14 @@ object GithubUsersDao {
     ({guid}::uuid, {user_guid}::uuid, {id}, {login}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
-  def upsertByLogin(createdBy: Option[User], form: GithubUserForm): GithubUser = {
+  def upsertById(createdBy: Option[User], form: GithubUserForm): GithubUser = {
     DB.withConnection { implicit c =>
-      upsertByLoginWithConnection(createdBy, form)
+      upsertByIdWithConnection(createdBy, form)
     }
   }
 
-  def upsertByLoginWithConnection(createdBy: Option[User], form: GithubUserForm)(implicit c: java.sql.Connection): GithubUser = {
-    findByLogin(form.login).getOrElse {
+  def upsertByIdWithConnection(createdBy: Option[User], form: GithubUserForm)(implicit c: java.sql.Connection): GithubUser = {
+    findById(form.id).getOrElse {
       createWithConnection(createdBy, form)
     }
   }
@@ -59,8 +59,8 @@ object GithubUsersDao {
     }
   }
 
-  def findByLogin(login: String): Option[GithubUser] = {
-    findAll(login = Some(login), limit = 1).headOption
+  def findById(id: Long): Option[GithubUser] = {
+    findAll(id = Some(id), limit = 1).headOption
   }
 
   def findByGuid(guid: UUID): Option[GithubUser] = {
@@ -79,16 +79,20 @@ object GithubUsersDao {
     offset: Long = 0
   ): Seq[GithubUser] = {
     DB.withConnection { implicit c =>
-      BaseQuery.
+      val q = BaseQuery.
         uuid("github_users.guid", guid).
         multi("github_users.guid", guids).
         text("github_users.login", login).
-        number("github_users.login", id).
+        number("github_users.id", id).
         nullBoolean("github_users.deleted_at", isDeleted).
         orderBy(orderBy.sql).
         limit(Some(limit)).
-        offset(Some(offset)).
-        as(
+        offset(Some(offset))
+
+      println(q.sql)
+      println(q.interpolate)
+
+      q.as(
           com.bryzek.dependency.v0.anorm.parsers.GithubUser.table("github_users").*
         )
     }

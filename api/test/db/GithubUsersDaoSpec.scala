@@ -11,14 +11,14 @@ class GithubUsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  "upsertByLogin" in {
+  "upsertById" in {
     val form = createGithubUserForm()
     val user1 = GithubUsersDao.create(None, form)
 
-    val user2 = GithubUsersDao.upsertByLogin(None, form)
+    val user2 = GithubUsersDao.upsertById(None, form)
     user1.guid must be(user2.guid)
 
-    val user3 = GithubUsersDao.upsertByLogin(Some(systemUser), createGithubUserForm())
+    val user3 = GithubUsersDao.upsertById(Some(systemUser), createGithubUserForm())
 
     user2.guid must not be(user3.guid)
     user2.guid must not be(user3.guid)
@@ -35,7 +35,6 @@ class GithubUsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     UsersDao.findByGuid(UUID.randomUUID) must be(None)
   }
-
 
   "findAll by guids" in {
     val user1 = createGithubUser()

@@ -45,10 +45,10 @@ object UsersDao {
   def validate(form: UserForm): Seq[String] = {
     form.email match {
       case None => {
-        Seq("Please provide an email address")
+        Nil
       }
       case Some(email) => {
-        if (email.trim == "") {
+        if (email.trim.isEmpty) {
           Seq("Email address cannot be empty")
 
         } else if (!isValidEmail(email)) {
@@ -76,7 +76,7 @@ object UsersDao {
         DB.withTransaction { implicit c =>
           SQL(InsertQuery).on(
             'guid -> guid,
-            'email -> form.email.getOrElse("").trim,
+            'email -> form.email.map(_.trim),
             'avatar_url -> Util.trimmedString(form.avatarUrl),
             'first_name -> Util.trimmedString(form.name.flatMap(_.first)),
             'last_name -> Util.trimmedString(form.name.flatMap(_.last)),
@@ -98,6 +98,10 @@ object UsersDao {
     }
   }
 
+  def findByGithubUserId(githubUserId: Long): Option[User] = {
+    findAll(githubUserId = Some(githubUserId), limit = 1).headOption
+  }
+
   def findByEmail(email: String): Option[User] = {
     findAll(email = Some(email), limit = 1).headOption
   }
@@ -111,6 +115,7 @@ object UsersDao {
     guids: Option[Seq[UUID]] = None,
     email: Option[String] = None,
     identifier: Option[String] = None,
+    githubUserId: Option[Long] = None,
     isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("users.created_at"),
     limit: Long = 25,
@@ -136,6 +141,9 @@ object UsersDao {
         ).
         subquery("users.guid", "identifier", identifier, { bindVar =>
           s"select user_guid from user_identifiers where deleted_at is null and value = trim({$bindVar})"
+        }).
+        subquery("users.guid", "github_user_id", githubUserId, { bindVar =>
+          s"select user_guid from github_users where deleted_at is null and id = {$bindVar}"
         }).
         as(
           io.flow.user.v0.anorm.parsers.User.table("users").*

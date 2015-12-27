@@ -45,19 +45,20 @@ trait Github {
     getGithubUserFromCode(code).map {
       case Left(errors) => Left(errors)
       case Right(githubUserWithToken) => {
-        githubUserWithToken.user.email match {
-          case None => {
-            Logger.warn("githubUserWithToken missing email: " + githubUserWithToken)
-            Left(Seq("Github account does not have an email address that we can read"))
+        val userResult = UsersDao.findByGithubUserId(githubUserWithToken.user.id) match {
+          case Some(user) => {
+            Right(user)
           }
-          case Some(email) => {
-            val userResult: Either[Seq[String], User] = UsersDao.findByEmail(email) match {
+          case None => {
+            githubUserWithToken.user.email.flatMap { email =>
+              UsersDao.findByEmail(email)
+            } match {
               case Some(user) => Right(user)
               case None => {
                 UsersDao.create(
                   createdBy = None,
                   form = UserForm(
-                    email = Some(email),
+                    email = githubUserWithToken.user.email,
                     name = Some(
                       NameForm(
                         first = githubUserWithToken.user.name
@@ -68,33 +69,33 @@ trait Github {
                 )
               }
             }
+          }
+        }
 
-            userResult match {
-              case Left(errors) => {
-                Left(errors)
-              }
-              case Right(user) => {
-                GithubUsersDao.upsertByLogin(
-                  createdBy = None,
-                  form = GithubUserForm(
-                    userGuid = user.guid,
-                    id = githubUserWithToken.user.id,
-                    login = githubUserWithToken.user.login
-                  )
-                )
+        userResult match {
+          case Left(errors) => {
+            Left(errors)
+          }
+          case Right(user) => {
+            GithubUsersDao.upsertById(
+              createdBy = None,
+              form = GithubUserForm(
+                userGuid = user.guid,
+                id = githubUserWithToken.user.id,
+                login = githubUserWithToken.user.login
+              )
+            )
 
-                TokensDao.upsert(
-                  createdBy = user,
-                  form = TokenForm(
-                    userGuid = user.guid,
-                    tag = TokensDao.GithubOauthTokenTag,
-                    token = githubUserWithToken.token
-                  )
-                )
+            TokensDao.upsert(
+              createdBy = user,
+              form = TokenForm(
+                userGuid = user.guid,
+                tag = TokensDao.GithubOauthTokenTag,
+                token = githubUserWithToken.token
+              )
+            )
 
-                Right(user)
-              }
-            }
+            Right(user)
           }
         }
       }
