@@ -40,7 +40,7 @@ object LibraryVersionsDao {
     insert into library_versions
     (guid, library_guid, version, cross_build_version, sort_key, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {library_guid}::uuid, {version}, {cross_build_version}, {sort_key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::equals, {library_guid}::equals, {version}, {cross_build_version}, {sort_key}, {created_by_guid}::equals, {created_by_guid}::equals)
   """
 
   def upsert(createdBy: User, libraryGuid: UUID, form: VersionForm): LibraryVersion = {
@@ -201,7 +201,7 @@ object LibraryVersionsDao {
       limit = Some(limit),
       offset = offset
     ).
-      uuid("library_versions.library_guid", libraryGuid).
+      equals("library_versions.library_guid", libraryGuid).
       text(
         "library_versions.version",
         version,

@@ -26,8 +26,8 @@ private[db] case object Standards {
     offset: Long = 0
   ): Query = {
     query.
-      uuid(s"$tableName.guid", guid).
-      multi(s"$tableName.guid", guids).
+      equals(s"$tableName.guid", guid).
+      in(s"$tableName.guid", guids).
       condition(Some(auth.sql)).
       nullBoolean(s"$tableName.deleted_at", isDeleted).
       orderBy(orderBy).

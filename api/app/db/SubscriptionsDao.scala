@@ -23,7 +23,7 @@ object SubscriptionsDao {
     insert into subscriptions
     (guid, user_guid, publication, updated_by_guid, created_by_guid)
     values
-    ({guid}::uuid, {user_guid}::uuid, {publication}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::equals, {user_guid}::equals, {publication}, {created_by_guid}::equals, {created_by_guid}::equals)
   """
 
   private[db] def validate(
@@ -123,7 +123,7 @@ object SubscriptionsDao {
         limit = Some(limit),
         offset = offset
       ).
-        uuid("subscriptions.user_guid", userGuid).
+        equals("subscriptions.user_guid", userGuid).
         text("subscriptions.publication", publication).
         condition(
           minHoursSinceLastEmail.map { v => """

@@ -26,7 +26,7 @@ object BinariesDao {
     insert into binaries
     (guid, organization_guid, name, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {name}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::equals, {organization_guid}::equals, {name}, {created_by_guid}::equals, {created_by_guid}::equals)
   """
 
   private[db] def validate(
@@ -108,12 +108,12 @@ object BinariesDao {
   ): Seq[Binary] = {
     DB.withConnection { implicit c =>
       BaseQuery.
-        uuid("binaries.guid", guid).
-        multi("binaries.guid", guids).
+        equals("binaries.guid", guid).
+        in("binaries.guid", guids).
         subquery("binaries.guid", "project_guid", projectGuid, { bindVar =>
           s"select binary_guid from project_binaries where deleted_at is null and binary_guid is not null and project_guid = ${bindVar.sql}"
         }).
-        uuid("binaries.organization_guid", organizationGuid).
+        equals("binaries.organization_guid", organizationGuid).
         text(
           "binaries.name",
           name,

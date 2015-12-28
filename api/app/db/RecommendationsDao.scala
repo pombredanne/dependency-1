@@ -46,7 +46,7 @@ object RecommendationsDao {
     insert into recommendations
     (guid, project_guid, type, object_guid, name, from_version, to_version, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {project_guid}::uuid, {type}, {object_guid}::uuid, {name}, {from_version}, {to_version}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::equals, {project_guid}::equals, {type}, {object_guid}::equals, {name}, {from_version}, {to_version}, {created_by_guid}::equals, {created_by_guid}::equals)
   """
 
   def sync(user: User, project: Project) {
@@ -207,7 +207,7 @@ object RecommendationsDao {
         subquery("recommendations.project_guid", "user_guid", userGuid, { bind =>
           s"select project_guid from watch_projects where deleted_at is null and user_guid = ${bind.sql}"
         }).
-        uuid("recommendations.project_guid", projectGuid).
+        equals("recommendations.project_guid", projectGuid).
         text(
           "recommendations.type",
           `type`,
@@ -215,7 +215,7 @@ object RecommendationsDao {
         ).
         text("recommendations.name", name).
         text("recommendations.from_version", fromVersion).
-        uuid("recommendations.object_guid", objectGuid).
+        equals("recommendations.object_guid", objectGuid).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Recommendation.table("recommendations").*
         )

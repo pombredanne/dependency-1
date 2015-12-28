@@ -26,7 +26,7 @@ object TokensDao {
     insert into tokens
     (guid, user_guid, tag, token, updated_by_guid, created_by_guid)
     values
-    ({guid}::uuid, {user_guid}::uuid, {tag}, {token}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::equals, {user_guid}::equals, {tag}, {token}, {created_by_guid}::equals, {created_by_guid}::equals)
   """
 
   def upsert(createdBy: User, form: TokenForm): Token = {
@@ -132,7 +132,7 @@ object TokensDao {
       limit = Some(limit),
       offset = offset
     ).
-      uuid("tokens.user_guid", userGuid).
+      equals("tokens.user_guid", userGuid).
       text("tokens.tag", tag, valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)).
       as(
         com.bryzek.dependency.v0.anorm.parsers.Token.table("tokens").*

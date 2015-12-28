@@ -51,11 +51,11 @@ object RemoteVersions {
     StringUtils.stripEnd(text, "/").split("_").toList match {
       case Nil => None
       case one :: Nil => None
-      case multiple => {
+      case inple => {
         // Check if we can successfully parse the version tag for a
         // major version. If so, we assume we have found a cross build
         // version.
-        val tag = Version(multiple.last)
+        val tag = Version(inple.last)
         tag.major match {
           case None => None
           case Some(_) => Some(tag)

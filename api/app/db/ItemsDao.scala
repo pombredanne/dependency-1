@@ -42,7 +42,7 @@ object ItemsDao {
     insert into items
     (guid, organization_guid, visibility, object_guid, label, description, contents, summary, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {visibility}, {object_guid}::uuid, {label}, {description}, {contents}, {summary}::json, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::equals, {organization_guid}::equals, {visibility}, {object_guid}::equals, {label}, {description}, {contents}, {summary}::json, {created_by_guid}::equals, {created_by_guid}::equals)
   """
 
   private[this] def objectGuid(summary: ItemSummary): UUID = {
@@ -208,11 +208,11 @@ object ItemsDao {
     DB.withConnection { implicit c =>
       BaseQuery.
         condition(Some(auth.organizations("items.organization_guid", Some("items.visibility")).sql)).
-        uuid("items.guid", guid).
-        multi("items.guid", guids).
+        equals("items.guid", guid).
+        in("items.guid", guids).
         condition(q.map { v => "items.contents like '%' || lower(trim({q})) || '%' " }).
         bind("q", q).
-        uuid("items.object_guid", objectGuid).
+        equals("items.object_guid", objectGuid).
         nullBoolean("items.deleted_at", isDeleted).
         orderBy(orderBy.sql).
         limit(limit).

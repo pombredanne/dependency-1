@@ -23,7 +23,7 @@ object GithubUsersDao {
     insert into github_users
     (guid, user_guid, id, login, updated_by_guid, created_by_guid)
     values
-    ({guid}::uuid, {user_guid}::uuid, {id}, {login}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::equals, {user_guid}::equals, {id}, {login}, {created_by_guid}::equals, {created_by_guid}::equals)
   """
 
   def upsertById(createdBy: Option[User], form: GithubUserForm): GithubUser = {
@@ -80,10 +80,10 @@ object GithubUsersDao {
   ): Seq[GithubUser] = {
     DB.withConnection { implicit c =>
       BaseQuery.
-        uuid("github_users.guid", guid).
-        multi("github_users.guid", guids).
+        equals("github_users.guid", guid).
+        in("github_users.guid", guids).
         text("github_users.login", login).
-        number("github_users.id", id).
+        equals("github_users.id", id).
         nullBoolean("github_users.deleted_at", isDeleted).
         orderBy(orderBy.sql).
         limit(Some(limit)).

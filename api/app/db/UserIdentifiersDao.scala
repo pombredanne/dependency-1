@@ -26,7 +26,7 @@ object UserIdentifiersDao {
     insert into user_identifiers
     (guid, user_guid, value, updated_by_guid, created_by_guid)
     values
-    ({guid}::uuid, {user_guid}::uuid, {value}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::equals, {user_guid}::equals, {value}, {created_by_guid}::equals, {created_by_guid}::equals)
   """
 
   /**
@@ -137,7 +137,7 @@ object UserIdentifiersDao {
       limit = Some(limit),
       offset = offset
     ).
-      uuid("user_identifiers.user_guid", userGuid).
+      equals("user_identifiers.user_guid", userGuid).
       text("user_identifiers.value", value).
       as(
         com.bryzek.dependency.v0.anorm.parsers.UserIdentifier.table("user_identifiers").*

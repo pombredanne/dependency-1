@@ -32,7 +32,7 @@ object Clause {
     override val sql: String = conditions match {
       case Nil => "false"
       case one :: Nil => one
-      case multiple => "(" + multiple.mkString(" or ") + ")"
+      case inple => "(" + inple.mkString(" or ") + ")"
     }
 
   }

@@ -35,7 +35,7 @@ object LibrariesDao {
     insert into libraries
     (guid, organization_guid, group_id, artifact_id, resolver_guid, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {group_id}, {artifact_id}, {resolver_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::equals, {organization_guid}::equals, {group_id}, {artifact_id}, {resolver_guid}::equals, {created_by_guid}::equals, {created_by_guid}::equals)
   """
 
   private[db] def validate(
@@ -167,7 +167,7 @@ object LibrariesDao {
         limit = Some(limit),
         offset = offset
       ).
-        uuid("libraries.organization_guid", organizationGuid).
+        equals("libraries.organization_guid", organizationGuid).
         subquery("libraries.guid", "project_guid", projectGuid, { bindVar =>
           s"select library_guid from project_libraries where deleted_at is null and project_guid = ${bindVar.sql}"
         }).
@@ -183,7 +183,7 @@ object LibrariesDao {
           columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
-        uuid("libraries.resolver_guid", resolverGuid).
+        equals("libraries.resolver_guid", resolverGuid).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Library.table("libraries").*
         )

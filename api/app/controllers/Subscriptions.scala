@@ -40,8 +40,8 @@ class Subscriptions @javax.inject.Inject() (
           UsersDao.findAll(identifier = Some(id), limit = 1).headOption
         }
       }
-      case multiple => {
-        Logger.warn(s"Multiple identifiers[${multiple.size}] found in request - assuming no User")
+      case inple => {
+        Logger.warn(s"Multiple identifiers[${inple.size}] found in request - assuming no User")
         Future { None }
       }
     }

@@ -25,21 +25,21 @@ object OrganizationsDao {
     insert into organizations
     (guid, key, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::equals, {key}, {created_by_guid}::equals, {created_by_guid}::equals)
   """
 
   private[this] val UpdateQuery = """
     update organizations
        set key = {key},
-           updated_by_guid = {updated_by_guid}::uuid
-     where guid = {guid}::uuid
+           updated_by_guid = {updated_by_guid}::equals
+     where guid = {guid}::equals
   """
 
   private[this] val InsertUserOrganizationQuery = """
     insert into user_organizations
     (guid, user_guid, organization_guid, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {user_guid}::uuid, {organization_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::equals, {user_guid}::equals, {organization_guid}::equals, {created_by_guid}::equals, {created_by_guid}::equals)
   """
 
   private[this] val urlKey = UrlKey(minKeyLength = 3)

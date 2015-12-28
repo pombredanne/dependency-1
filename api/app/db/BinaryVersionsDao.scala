@@ -31,7 +31,7 @@ object BinaryVersionsDao {
     insert into binary_versions
     (guid, binary_guid, version, sort_key, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {binary_guid}::uuid, {version}, {sort_key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::equals, {binary_guid}::equals, {version}, {sort_key}, {created_by_guid}::equals, {created_by_guid}::equals)
   """
 
   def upsert(createdBy: User, binaryGuid: UUID, version: String): BinaryVersion = {
@@ -174,9 +174,9 @@ object BinaryVersionsDao {
     // consistency and to explicitly declare we are respecting it.
 
     BaseQuery.
-      uuid("binary_versions.guid", guid).
-      multi("binary_versions.guid", guids).
-      uuid("binary_versions.binary_guid", binaryGuid).
+      equals("binary_versions.guid", guid).
+      in("binary_versions.guid", guids).
+      equals("binary_versions.binary_guid", binaryGuid).
       subquery("binary_versions.binary_guid", "project_guid", projectGuid, { bind =>
         s"select binary_guid from project_binaries where deleted_at is null and binary_guid is not null and project_guid = ${bind.sql}"
       }).

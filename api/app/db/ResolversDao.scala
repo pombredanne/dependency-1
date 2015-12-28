@@ -31,14 +31,14 @@ object ResolversDao {
   """)
 
   private[this] val SelectCredentialsQuery = s"""
-    select credentials from resolvers where guid = {guid}::uuid
+    select credentials from resolvers where guid = {guid}::equals
   """
 
   private[this] val InsertQuery = """
     insert into resolvers
     (guid, visibility, credentials, position, organization_guid, uri, updated_by_guid, created_by_guid)
     values
-    ({guid}::uuid, {visibility}, {credentials}::json, {position}, {organization_guid}::uuid, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::equals, {visibility}, {credentials}::json, {position}, {organization_guid}::equals, {uri}, {created_by_guid}::equals, {created_by_guid}::equals)
   """
 
   def credentials(resolver: Resolver): Option[Credentials] = {
@@ -206,7 +206,7 @@ object ResolversDao {
       ).
         text("resolvers.visibility", visibility).
         text("organizations.key", organization.map(_.toLowerCase)).
-        uuid("organizations.guid", organizationGuid).
+        equals("organizations.guid", organizationGuid).
         text("resolvers.uri", uri).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Resolver.table("resolvers").*
@@ -242,7 +242,7 @@ object ResolversDao {
     select coalesce(max(position) + 1, 0) as position
       from resolvers
      where visibility = 'private'
-       and organization_guid = {organization_guid}::uuid
+       and organization_guid = {organization_guid}::equals
        and deleted_at is null
   """
 

@@ -32,7 +32,7 @@ object MembershipsDao {
     insert into memberships
     (guid, role, user_guid, organization_guid, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {role}, {user_guid}::uuid, {organization_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::equals, {role}, {user_guid}::equals, {organization_guid}::equals, {created_by_guid}::equals, {created_by_guid}::equals)
   """
 
   def isMember(orgGuid: UUID, user: User): Boolean = {
@@ -180,9 +180,9 @@ object MembershipsDao {
       limit = Some(limit),
       offset = offset
     ).
-      uuid("memberships.organization_guid", organizationGuid).
+      equals("memberships.organization_guid", organizationGuid).
       text("organizations.key", organization, valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)).
-      uuid("memberships.user_guid", userGuid).
+      equals("memberships.user_guid", userGuid).
       text("memberships.role", role.map(_.toString.toLowerCase)).
       as(
         com.bryzek.dependency.v0.anorm.parsers.Membership.table("memberships").*

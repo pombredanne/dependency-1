@@ -34,7 +34,7 @@ object LastEmailsDao {
     insert into last_emails
     (guid, user_guid, publication, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {user_guid}::uuid, {publication}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::equals, {user_guid}::equals, {publication}, {created_by_guid}::equals, {created_by_guid}::equals)
   """
 
   def record(
@@ -93,9 +93,9 @@ object LastEmailsDao {
 
     DB.withConnection { implicit c =>
       BaseQuery.
-        uuid("last_emails.guid", guid).
-        multi("last_emails.guid", guids).
-        uuid("last_emails.user_guid", userGuid).
+        equals("last_emails.guid", guid).
+        in("last_emails.guid", guids).
+        equals("last_emails.user_guid", userGuid).
         text("last_emails.publication", publication).
         nullBoolean("last_emails.deleted_at", isDeleted).
         orderBy(orderBy.sql).

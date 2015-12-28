@@ -31,7 +31,7 @@ object SyncsDao {
     insert into syncs
     (guid, type, object_guid, event, created_by_guid)
     values
-    ({guid}::uuid, {type}, {object_guid}::uuid, {event}, {created_by_guid}::uuid)
+    ({guid}::equals, {type}, {object_guid}::equals, {event}, {created_by_guid}::equals)
   """
 
   private[this] val PurgeQuery = """
@@ -111,7 +111,7 @@ object SyncsDao {
         limit = Some(limit),
         offset = offset
       ).
-        uuid("syncs.object_guid", objectGuid).
+        equals("syncs.object_guid", objectGuid).
         text("syncs.event", event).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Sync.table("syncs").*

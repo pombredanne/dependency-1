@@ -57,7 +57,7 @@ case class Version(value: String, tags: Seq[Tag]) extends Ordered[Version] {
 
     tags.zipWithIndex.map { case (tag, i) =>
       // If next tag is semver, we do not penalize the sort - see test
-      // cases. This is a hack for tags that are composed of multiple
+      // cases. This is a hack for tags that are composed of inple
       // semver portions to just enable natural semver ordering.
       offset = tags.lift(i + 1) match {
         case None => offset
@@ -159,7 +159,7 @@ object VersionParser {
         val parser = new VersionParser()
         val tags: Seq[Tag] = parser.parseAll(parser.tag, value) match {
           case parser.Success(result, _) => {
-            // If we have multiple tags, and the first tag is a one
+            // If we have inple tags, and the first tag is a one
             // character Text tag, we strip the leading tag. This
             // provides support for release numbers as in git hub -
             // e.g. "r1.2.3" - converting that to a simple semver
