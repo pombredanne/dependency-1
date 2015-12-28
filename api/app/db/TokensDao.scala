@@ -26,7 +26,7 @@ object TokensDao {
     insert into tokens
     (guid, user_guid, tag, token, updated_by_guid, created_by_guid)
     values
-    ({guid}::equals, {user_guid}::equals, {tag}, {token}, {created_by_guid}::equals, {created_by_guid}::equals)
+    ({guid}::uuid, {user_guid}::uuid, {tag}, {token}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def upsert(createdBy: User, form: TokenForm): Token = {

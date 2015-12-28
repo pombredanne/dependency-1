@@ -39,7 +39,7 @@ object UsersDao {
     insert into users
     (guid, email, first_name, last_name, avatar_url, updated_by_guid, created_by_guid)
     values
-    ({guid}::equals, {email}, {first_name}, {last_name}, {avatar_url}, {created_by_guid}::equals, {created_by_guid}::equals)
+    ({guid}::uuid, {email}, {first_name}, {last_name}, {avatar_url}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def validate(form: UserForm): Seq[String] = {

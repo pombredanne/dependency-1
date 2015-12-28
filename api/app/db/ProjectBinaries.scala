@@ -40,21 +40,21 @@ object ProjectBinariesDao {
     insert into project_binaries
     (guid, project_guid, name, version, path, created_by_guid, updated_by_guid)
     values
-    ({guid}::equals, {project_guid}::equals, {name}, {version}, {path}, {created_by_guid}::equals, {created_by_guid}::equals)
+    ({guid}::uuid, {project_guid}::uuid, {name}, {version}, {path}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[this] val RemoveBinaryQuery = """
     update project_binaries
        set binary_guid = null,
-           updated_by_guid = {updated_by_guid}::equals
-     where guid = {guid}::equals
+           updated_by_guid = {updated_by_guid}::uuid
+     where guid = {guid}::uuid
   """
 
   private[this] val SetBinaryQuery = """
     update project_binaries
-       set binary_guid = {binary_guid}::equals,
-           updated_by_guid = {updated_by_guid}::equals
-     where guid = {guid}::equals
+       set binary_guid = {binary_guid}::uuid,
+           updated_by_guid = {updated_by_guid}::uuid
+     where guid = {guid}::uuid
   """
 
   private[db] def validate(

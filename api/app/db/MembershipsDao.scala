@@ -32,7 +32,7 @@ object MembershipsDao {
     insert into memberships
     (guid, role, user_guid, organization_guid, created_by_guid, updated_by_guid)
     values
-    ({guid}::equals, {role}, {user_guid}::equals, {organization_guid}::equals, {created_by_guid}::equals, {created_by_guid}::equals)
+    ({guid}::uuid, {role}, {user_guid}::uuid, {organization_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def isMember(orgGuid: UUID, user: User): Boolean = {

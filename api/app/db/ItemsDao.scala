@@ -42,7 +42,7 @@ object ItemsDao {
     insert into items
     (guid, organization_guid, visibility, object_guid, label, description, contents, summary, created_by_guid, updated_by_guid)
     values
-    ({guid}::equals, {organization_guid}::equals, {visibility}, {object_guid}::equals, {label}, {description}, {contents}, {summary}::json, {created_by_guid}::equals, {created_by_guid}::equals)
+    ({guid}::uuid, {organization_guid}::uuid, {visibility}, {object_guid}::uuid, {label}, {description}, {contents}, {summary}::json, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[this] def objectGuid(summary: ItemSummary): UUID = {

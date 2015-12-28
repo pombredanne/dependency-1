@@ -43,21 +43,21 @@ object ProjectLibrariesDao {
     insert into project_libraries
     (guid, project_guid, group_id, artifact_id, version, cross_build_version, path, created_by_guid, updated_by_guid)
     values
-    ({guid}::equals, {project_guid}::equals, {group_id}, {artifact_id}, {version}, {cross_build_version}, {path}, {created_by_guid}::equals, {created_by_guid}::equals)
+    ({guid}::uuid, {project_guid}::uuid, {group_id}, {artifact_id}, {version}, {cross_build_version}, {path}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[this] val SetLibraryQuery = """
     update project_libraries
-       set library_guid = {library_guid}::equals,
-           updated_by_guid = {updated_by_guid}::equals
-     where guid = {guid}::equals
+       set library_guid = {library_guid}::uuid,
+           updated_by_guid = {updated_by_guid}::uuid
+     where guid = {guid}::uuid
   """
 
   private[this] val RemoveLibraryQuery = """
     update project_libraries
        set library_guid = null,
-           updated_by_guid = {updated_by_guid}::equals
-     where guid = {guid}::equals
+           updated_by_guid = {updated_by_guid}::uuid
+     where guid = {guid}::uuid
   """
 
   private[db] def validate(

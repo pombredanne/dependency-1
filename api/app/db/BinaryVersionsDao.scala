@@ -31,7 +31,7 @@ object BinaryVersionsDao {
     insert into binary_versions
     (guid, binary_guid, version, sort_key, created_by_guid, updated_by_guid)
     values
-    ({guid}::equals, {binary_guid}::equals, {version}, {sort_key}, {created_by_guid}::equals, {created_by_guid}::equals)
+    ({guid}::uuid, {binary_guid}::uuid, {version}, {sort_key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def upsert(createdBy: User, binaryGuid: UUID, version: String): BinaryVersion = {

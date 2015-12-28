@@ -31,7 +31,7 @@ object SyncsDao {
     insert into syncs
     (guid, type, object_guid, event, created_by_guid)
     values
-    ({guid}::equals, {type}, {object_guid}::equals, {event}, {created_by_guid}::equals)
+    ({guid}::uuid, {type}, {object_guid}::uuid, {event}, {created_by_guid}::uuid)
   """
 
   private[this] val PurgeQuery = """

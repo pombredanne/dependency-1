@@ -34,7 +34,7 @@ object LastEmailsDao {
     insert into last_emails
     (guid, user_guid, publication, created_by_guid, updated_by_guid)
     values
-    ({guid}::equals, {user_guid}::equals, {publication}, {created_by_guid}::equals, {created_by_guid}::equals)
+    ({guid}::uuid, {user_guid}::uuid, {publication}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def record(

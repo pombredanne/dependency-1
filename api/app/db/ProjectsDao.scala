@@ -38,7 +38,7 @@ object ProjectsDao {
     insert into projects
     (guid, organization_guid, visibility, scms, name, uri, created_by_guid, updated_by_guid)
     values
-    ({guid}::equals, {organization_guid}::equals, {visibility}, {scms}, {name}, {uri}, {created_by_guid}::equals, {created_by_guid}::equals)
+    ({guid}::uuid, {organization_guid}::uuid, {visibility}, {scms}, {name}, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[this] val UpdateQuery = """
@@ -47,8 +47,8 @@ object ProjectsDao {
            scms = {scms},
            name = {name},
            uri = {uri},
-           updated_by_guid = {updated_by_guid}::equals
-     where guid = {guid}::equals
+           updated_by_guid = {updated_by_guid}::uuid
+     where guid = {guid}::uuid
   """
 
   def toSummary(project: Project): ProjectSummary = {
@@ -244,13 +244,13 @@ object ProjectsDao {
           version.map { v => FilterProjectLibraries.format("project_libraries.version = trim({version})") }
         ).bind("version", version).
         condition(
-          libraryGuid.map { v => FilterProjectLibraries.format("project_libraries.library_guid = {library_guid}::equals") }
+          libraryGuid.map { v => FilterProjectLibraries.format("project_libraries.library_guid = {library_guid}::uuid") }
         ).bind("library_guid", libraryGuid).
         condition(
           binary.map { v => FilterProjectBinaries.format("project_binaries.name = trim({binary})") }
         ).bind("binary", binary).
         condition(
-          binaryGuid.map { v => FilterProjectBinaries.format("project_binaries.binary_guid = {binary_guid}::equals") }
+          binaryGuid.map { v => FilterProjectBinaries.format("project_binaries.binary_guid = {binary_guid}::uuid") }
         ).bind("binary_guid", binaryGuid).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Project.table("projects").*

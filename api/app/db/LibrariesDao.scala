@@ -35,7 +35,7 @@ object LibrariesDao {
     insert into libraries
     (guid, organization_guid, group_id, artifact_id, resolver_guid, created_by_guid, updated_by_guid)
     values
-    ({guid}::equals, {organization_guid}::equals, {group_id}, {artifact_id}, {resolver_guid}::equals, {created_by_guid}::equals, {created_by_guid}::equals)
+    ({guid}::uuid, {organization_guid}::uuid, {group_id}, {artifact_id}, {resolver_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[db] def validate(

@@ -46,7 +46,7 @@ object RecommendationsDao {
     insert into recommendations
     (guid, project_guid, type, object_guid, name, from_version, to_version, created_by_guid, updated_by_guid)
     values
-    ({guid}::equals, {project_guid}::equals, {type}, {object_guid}::equals, {name}, {from_version}, {to_version}, {created_by_guid}::equals, {created_by_guid}::equals)
+    ({guid}::uuid, {project_guid}::uuid, {type}, {object_guid}::uuid, {name}, {from_version}, {to_version}, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   def sync(user: User, project: Project) {

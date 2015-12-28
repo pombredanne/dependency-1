@@ -32,7 +32,7 @@ object WatchProjectsDao {
     insert into watch_projects
     (guid, user_guid, project_guid, updated_by_guid, created_by_guid)
     values
-    ({guid}::equals, {user_guid}::equals, {project_guid}::equals, {created_by_guid}::equals, {created_by_guid}::equals)
+    ({guid}::uuid, {user_guid}::uuid, {project_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
   """
 
   private[db] def validate(
