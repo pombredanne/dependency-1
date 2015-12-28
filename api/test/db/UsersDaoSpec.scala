@@ -52,7 +52,7 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     UsersDao.findByGuid(UUID.randomUUID) must be(None)
   }
 
-  "findByGuid" in {
+  "findByGithubUserId" in {
     val user = createUser()
     val githubUser = createGithubUser(createGithubUserForm(user = user))
 
