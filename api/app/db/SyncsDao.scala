@@ -7,30 +7,29 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-import java.util.UUID
 import scala.util.{Failure, Success, Try}
 
 case class SyncForm(
   `type`: String,
-  objectGuid: UUID,
+  objectId: String,
   event: SyncEvent
 )
 
 object SyncsDao {
 
   private[this] val BaseQuery = Query(s"""
-    select syncs.guid,
+    select syncs.id,
            syncs.type,
-           syncs.object_guid,
+           syncs.object_id,
            syncs.event
       from syncs
   """)
 
   private[this] val InsertQuery = """
     insert into syncs
-    (guid, type, object_guid, event, created_by_guid)
+    (id, type, object_id, event, created_by_id)
     values
-    ({guid}::uuid, {type}, {object_guid}::uuid, {event}, {created_by_guid}::uuid)
+    ({id}, {type}, {object_id}, {event}, {created_by_id})
   """
 
   private[this] val PurgeQuery = """
@@ -38,45 +37,45 @@ object SyncsDao {
   """
 
   def withStartedAndCompleted[T](
-    createdBy: User, `type`: String, guid: UUID
+    createdBy: User, `type`: String, id: String
   ) (
     f: => T
   ): T = {
-    recordStarted(createdBy, `type`, guid)
+    recordStarted(createdBy, `type`, id)
     val result = f
-    recordCompleted(createdBy, `type`, guid)
+    recordCompleted(createdBy, `type`, id)
     result
   }
 
-  def recordStarted(createdBy: User, `type`: String, guid: UUID) {
-    createInternal(createdBy, SyncForm(`type`, guid, SyncEvent.Started))
+  def recordStarted(createdBy: User, `type`: String, id: String) {
+    createInternal(createdBy, SyncForm(`type`, id, SyncEvent.Started))
   }
 
-  def recordCompleted(createdBy: User, `type`: String, guid: UUID) {
-    createInternal(createdBy, SyncForm(`type`, guid, SyncEvent.Completed))
+  def recordCompleted(createdBy: User, `type`: String, id: String) {
+    createInternal(createdBy, SyncForm(`type`, id, SyncEvent.Completed))
   }
 
   def create(createdBy: User, form: SyncForm): Sync = {
-    val guid = createInternal(createdBy, form)
-    findByGuid(guid).getOrElse {
+    val id = createInternal(createdBy, form)
+    findById(id).getOrElse {
       sys.error("Failed to create sync")
     }
   }
 
-  private[this] def createInternal(createdBy: User, form: SyncForm): UUID = {
-    val guid = UUID.randomUUID
+  private[this] def createInternal(createdBy: User, form: SyncForm): String = {
+    val id = io.flow.play.util.IdGenerator("syn").randomId()
 
     DB.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        'guid -> guid,
+        'id -> id,
         'type -> form.`type`,
-        'object_guid -> form.objectGuid,
+        'object_id -> form.objectId,
         'event -> form.event.toString,
         'updated_by_user_id -> createdBy.id
       ).execute()
     }
 
-    guid
+    id
   }
 
   def purgeOld() {
@@ -85,14 +84,14 @@ object SyncsDao {
     }
   }
 
-  def findByGuid(guid: UUID): Option[Sync] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+  def findById(id: String): Option[Sync] = {
+    findAll(id = Some(id), limit = 1).headOption
   }
 
   def findAll(
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
-    objectGuid: Option[UUID] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
+    objectId: Option[String] = None,
     event: Option[SyncEvent] = None,
     orderBy: OrderBy = OrderBy("-syncs.created_at"),
     limit: Long = 25,
@@ -103,14 +102,14 @@ object SyncsDao {
         BaseQuery,
         tableName = "syncs",
         auth = Clause.True, // TODO
-        guid = guid,
-        guids = guids,
+        id = id,
+        ids = ids,
         orderBy = orderBy.sql,
         isDeleted = None,
         limit = Some(limit),
         offset = offset
       ).
-        equals("syncs.object_guid", objectGuid).
+        equals("syncs.object_id", objectId).
         text("syncs.event", event).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Sync.table("syncs").*

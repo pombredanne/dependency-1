@@ -9,7 +9,6 @@ import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 
 @javax.inject.Singleton
 class Resolvers @javax.inject.Inject() (
@@ -17,8 +16,8 @@ class Resolvers @javax.inject.Inject() (
 ) extends Controller with IdentifiedRestController with Helpers {
 
   def get(
-    guid: Option[UUID],
-    guids: Option[Seq[UUID]],
+    id: Option[String],
+    ids: Option[Seq[String]],
     organization: Option[String],
     visibility: Option[Visibility],
     limit: Long = 25,
@@ -28,8 +27,8 @@ class Resolvers @javax.inject.Inject() (
       Json.toJson(
         ResolversDao.findAll(
           Authorization.User(request.user.id),
-          guid = guid,
-          guids = optionals(guids),
+          id = id,
+          ids = optionals(ids),
           visibility = visibility,
           organization = organization,
           limit = limit,
@@ -39,8 +38,8 @@ class Resolvers @javax.inject.Inject() (
     )
   }
 
-  def getByGuid(guid: UUID) = Identified { request =>
-    withResolver(request.user, guid) { resolver =>
+  def getById(id: String) = Identified { request =>
+    withResolver(request.user, id) { resolver =>
       Ok(Json.toJson(resolver))
     }
   }
@@ -59,8 +58,8 @@ class Resolvers @javax.inject.Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Identified { request =>
-    withResolver(request.user, guid) { resolver =>
+  def deleteById(id: String) = Identified { request =>
+    withResolver(request.user, id) { resolver =>
       ResolversDao.softDelete(request.user, resolver)
       NoContent
     }

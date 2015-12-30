@@ -21,22 +21,22 @@ class UsersSpec extends PlaySpecification with MockClient {
     }
   }
 
-  "GET /users/:guid" in new WithServer(port=port) {
+  "GET /users/:id" in new WithServer(port=port) {
     expectNotAuthorized {
-      anonClient.users.getByGuid(UUID.randomUUID)
+      anonClient.users.getById(UUID.randomUUID)
     }
   }
 
-  "GET /users by guid" in new WithServer(port=port) {
+  "GET /users by id" in new WithServer(port=port) {
     await(
-      client.users.get(guid = Some(user1.guid))
-    ).map(_.guid) must beEqualTo(
-      Seq(user1.guid)
+      client.users.get(id = Some(user1.id))
+    ).map(_.id) must beEqualTo(
+      Seq(user1.id)
     )
 
     await(
-      client.users.get(guid = Some(UUID.randomUUID))
-    ).map(_.guid) must be(
+      client.users.get(id = Some(UUID.randomUUID))
+    ).map(_.id) must be(
       Nil
     )
   }
@@ -55,12 +55,12 @@ class UsersSpec extends PlaySpecification with MockClient {
     )
   }
 
-  "GET /users/:guid" in new WithServer(port=port) {
-    await(client.users.getByGuid(user1.guid)).guid must beEqualTo(user1.guid)
-    await(client.users.getByGuid(user2.guid)).guid must beEqualTo(user2.guid)
+  "GET /users/:id" in new WithServer(port=port) {
+    await(client.users.getById(user1.id)).id must beEqualTo(user1.id)
+    await(client.users.getById(user2.id)).id must beEqualTo(user2.id)
 
     expectNotFound {
-      client.users.getByGuid(UUID.randomUUID)
+      client.users.getById(UUID.randomUUID)
     }
   }
 

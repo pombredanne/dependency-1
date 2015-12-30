@@ -11,7 +11,6 @@ import io.flow.user.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import scala.concurrent.Future
-import java.util.UUID
 
 class Repositories @javax.inject.Inject() (
   val userTokensClient: UserTokensClient,
@@ -22,14 +21,14 @@ class Repositories @javax.inject.Inject() (
 
   def getGithub(
     name: Option[String] = None,
-    organizationGuid: Option[UUID] = None,
+    organizationId: Option[String] = None,
     existingProject: Option[Boolean] = None,
     limit: Long = 25,
     offset: Long = 0
   ) = Identified.async { request =>
-    if (!existingProject.isEmpty && organizationGuid.isEmpty) {
+    if (!existingProject.isEmpty && organizationId.isEmpty) {
       Future {
-        UnprocessableEntity(Json.toJson(Validation.error("When filtering by existing projects, you must also provide the organization_guid")))
+        UnprocessableEntity(Json.toJson(Validation.error("When filtering by existing projects, you must also provide the organization_id")))
       }
     } else {
       val auth = Authorization.User(request.user.id)
@@ -39,7 +38,7 @@ class Repositories @javax.inject.Inject() (
             repos.
               filter { r => name.isEmpty || name == Some(r.name) }.
               filter { r =>
-                organizationGuid.flatMap { OrganizationsDao.findByGuid(auth, _) } match {
+                organizationId.flatMap { OrganizationsDao.findById(auth, _) } match {
                   case None => true
                   case Some(org) => {
                     existingProject.isEmpty ||

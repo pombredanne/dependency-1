@@ -1,8 +1,8 @@
 drop table if exists subscriptions;
 
 create table subscriptions (
-  guid                       uuid primary key,
-  user_guid                  uuid not null references users,
+  id                       text primary key,
+  user_id                  text not null references users,
   publication                text not null check(util.lower_non_empty_trimmed_string(publication))
 );
 
@@ -11,8 +11,8 @@ comment on table subscriptions is '
 ';
 
 select audit.setup('public', 'subscriptions');
-create index on subscriptions(user_guid);
+create index on subscriptions(user_id);
 
-create unique index subscriptions_user_guid_publication_not_deleted_un_idx
-    on subscriptions(user_guid, publication)
+create unique index subscriptions_user_id_publication_not_deleted_un_idx
+    on subscriptions(user_id, publication)
  where deleted_at is null;

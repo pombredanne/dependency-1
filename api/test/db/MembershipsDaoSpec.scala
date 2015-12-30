@@ -15,12 +15,12 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   lazy val user = createUser()
   lazy val membership = createMembership(createMembershipForm(org = org, user = user))
 
-  "isMember by guid" in {
+  "isMember by id" in {
     membership // Create the membership record
 
-    MembershipsDao.isMember(org.guid, user) must be(true)
-    MembershipsDao.isMember(org.guid, createUser()) must be(false)
-    MembershipsDao.isMember(createOrganization().guid, user) must be(false)
+    MembershipsDao.isMember(org.id, user) must be(true)
+    MembershipsDao.isMember(org.id, createUser()) must be(false)
+    MembershipsDao.isMember(createOrganization().id, user) must be(false)
   }
 
   "isMember by key" in {
@@ -31,29 +31,29 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     MembershipsDao.isMember(createOrganization().key, user) must be(false)
   }
 
-  "findByOrganizationGuidAndUserId" in {
+  "findByOrganizationIdAndUserId" in {
     membership // Create the membership record
 
-    MembershipsDao.findByOrganizationGuidAndUserId(Authorization.All, org.guid, user.id).map(_.guid) must be(
-      Some(membership.guid)
+    MembershipsDao.findByOrganizationIdAndUserId(Authorization.All, org.id, user.id).map(_.id) must be(
+      Some(membership.id)
     )
 
-    MembershipsDao.findByOrganizationGuidAndUserId(Authorization.All, UUID.randomUUID, user.id) must be(None)
-    MembershipsDao.findByOrganizationGuidAndUserId(Authorization.All, org.guid, UUID.randomUUID) must be(None)
+    MembershipsDao.findByOrganizationIdAndUserId(Authorization.All, UUID.randomUUID, user.id) must be(None)
+    MembershipsDao.findByOrganizationIdAndUserId(Authorization.All, org.id, UUID.randomUUID) must be(None)
   }
 
-  "findByGuid" in {
-    MembershipsDao.findByGuid(Authorization.All, membership.guid).map(_.guid) must be(
-      Some(membership.guid)
+  "findById" in {
+    MembershipsDao.findById(Authorization.All, membership.id).map(_.id) must be(
+      Some(membership.id)
     )
 
-    MembershipsDao.findByGuid(Authorization.All, UUID.randomUUID) must be(None)
+    MembershipsDao.findById(Authorization.All, UUID.randomUUID) must be(None)
   }
 
   "soft delete" in {
     val membership = createMembership()
     MembershipsDao.softDelete(systemUser, membership)
-    MembershipsDao.findByGuid(Authorization.All, membership.guid) must be(None)
+    MembershipsDao.findById(Authorization.All, membership.id) must be(None)
   }
 
   "validates role" in {
@@ -79,32 +79,32 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "findAll" must {
 
-    "guids" in {
+    "ids" in {
       val membership2 = createMembership()
 
-      MembershipsDao.findAll(Authorization.All, guids = Some(Seq(membership.guid, membership2.guid))).map(_.guid) must be(
-        Seq(membership.guid, membership2.guid)
+      MembershipsDao.findAll(Authorization.All, ids = Some(Seq(membership.id, membership2.id))).map(_.id) must be(
+        Seq(membership.id, membership2.id)
       )
 
-      MembershipsDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
-      MembershipsDao.findAll(Authorization.All, guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-      MembershipsDao.findAll(Authorization.All, guids = Some(Seq(membership.guid, UUID.randomUUID))).map(_.guid) must be(Seq(membership.guid))
+      MembershipsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
+      MembershipsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID))) must be(Nil)
+      MembershipsDao.findAll(Authorization.All, ids = Some(Seq(membership.id, UUID.randomUUID))).map(_.id) must be(Seq(membership.id))
     }
 
-    "userGuid" in {
-      MembershipsDao.findAll(Authorization.All, guid = Some(membership.guid), userGuid = Some(user.id)).map(_.guid) must be(
-        Seq(membership.guid)
+    "userId" in {
+      MembershipsDao.findAll(Authorization.All, id = Some(membership.id), userId = Some(user.id)).map(_.id) must be(
+        Seq(membership.id)
       )
 
-      MembershipsDao.findAll(Authorization.All, guid = Some(membership.guid), userGuid = Some(UUID.randomUUID)) must be(Nil)
+      MembershipsDao.findAll(Authorization.All, id = Some(membership.id), userId = Some(UUID.randomUUID)) must be(Nil)
     }
 
-    "organizationGuid" in {
-      MembershipsDao.findAll(Authorization.All, guid = Some(membership.guid), organizationGuid = Some(membership.organization.guid)).map(_.guid) must be(
-        Seq(membership.guid)
+    "organizationId" in {
+      MembershipsDao.findAll(Authorization.All, id = Some(membership.id), organizationId = Some(membership.organization.id)).map(_.id) must be(
+        Seq(membership.id)
       )
 
-      MembershipsDao.findAll(Authorization.All, guid = Some(membership.guid), organizationGuid = Some(UUID.randomUUID)) must be(Nil)
+      MembershipsDao.findAll(Authorization.All, id = Some(membership.id), organizationId = Some(UUID.randomUUID)) must be(Nil)
     }
   }
 }

@@ -14,29 +14,29 @@ trait Factories {
   }
 
   def makeOrganizationSummary(
-    guid: UUID = UUID.randomUUID,
+    id: String = UUID.randomUUID,
     key: String = makeKey()
   ) = OrganizationSummary(
-    guid = guid,
+    id = id,
     key = key
   )
 
   def makeProjectSummary(
-    guid: UUID = UUID.randomUUID,
+    id: String = UUID.randomUUID,
     org: OrganizationSummary = makeOrganizationSummary(),
     name: String = makeName
   ) = ProjectSummary(
-    guid = guid,
+    id = id,
     organization = org,
     name = name
   )
 
   def makeResolverSummary(
-    guid: UUID = UUID.randomUUID,
+    id: String = UUID.randomUUID,
     org: OrganizationSummary = makeOrganizationSummary(),
     name: String = makeName
   ) = ResolverSummary(
-    guid = guid,
+    id = id,
     organization = Some(org),
     visibility = Visibility.Private,
     uri = "http://" + makeKey() + ".test.flow.io"

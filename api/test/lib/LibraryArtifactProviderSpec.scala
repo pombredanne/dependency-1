@@ -19,7 +19,7 @@ class LibraryArtifactProviderSpec extends PlaySpec with OneAppPerSuite with Fact
     artifactId: String = UUID.randomUUID.toString
   ): Library = {
     Library(
-      guid = UUID.randomUUID,
+      id = UUID.randomUUID,
       organization = orgSummary,
       groupId = groupId,
       artifactId = artifactId,
@@ -30,7 +30,7 @@ class LibraryArtifactProviderSpec extends PlaySpec with OneAppPerSuite with Fact
 
   lazy val provider = DefaultLibraryArtifactProvider()
   lazy val orgSummary = OrganizationSummary(
-    guid = UUID.randomUUID,
+    id = UUID.randomUUID,
     key = s"z-test-${UUID.randomUUID.toString.toLowerCase}"
   )
 

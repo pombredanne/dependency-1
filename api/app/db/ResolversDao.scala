@@ -11,40 +11,39 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-import java.util.UUID
 
 object ResolversDao {
 
   val GithubOauthResolverTag = "github_oauth"
 
   private[this] val BaseQuery = Query(s"""
-    select resolvers.guid,
+    select resolvers.id,
            resolvers.visibility,
            resolvers.credentials,
            resolvers.uri,
            resolvers.position,
-           organizations.guid as resolvers_organization_guid,
+           organizations.id as resolvers_organization_id,
            organizations.key as resolvers_organization_key
       from resolvers
-      left join organizations on organizations.deleted_at is null and organizations.guid = resolvers.organization_guid
+      left join organizations on organizations.deleted_at is null and organizations.id = resolvers.organization_id
   """)
 
   private[this] val SelectCredentialsQuery = s"""
-    select credentials from resolvers where guid = {guid}::uuid
+    select credentials from resolvers where id = {id}
   """
 
   private[this] val InsertQuery = """
     insert into resolvers
-    (guid, visibility, credentials, position, organization_guid, uri, updated_by_user_id
+    (id, visibility, credentials, position, organization_id, uri, updated_by_user_id
     values
-    ({guid}::uuid, {visibility}, {credentials}::json, {position}, {organization_guid}::uuid, {uri}, {updated_by_user_id})
+    ({id}, {visibility}, {credentials}::json, {position}, {organization_id}, {uri}, {updated_by_user_id})
   """
 
   def credentials(resolver: Resolver): Option[Credentials] = {
     resolver.credentials.flatMap { _ =>
       import com.bryzek.dependency.v0.anorm.conversions.Json._
       DB.withConnection { implicit c =>
-        SQL(SelectCredentialsQuery).on('guid -> resolver.guid.toString).as(
+        SQL(SelectCredentialsQuery).on('id -> resolver.id.toString).as(
           SqlParser.get[Credentials]("credentials").*
         ).headOption
       }
@@ -53,9 +52,9 @@ object ResolversDao {
 
   def toSummary(resolver: Resolver): ResolverSummary = {
     ResolverSummary(
-      guid = resolver.guid,
+      id = resolver.id,
       organization = resolver.organization.map { org =>
-        OrganizationSummary(org.guid, org.key)
+        OrganizationSummary(org.id, org.key)
       },
       visibility = resolver.visibility,
       uri = resolver.uri
@@ -94,7 +93,7 @@ object ResolversDao {
       }
     }
 
-    val organizationErrors = MembershipsDao.isMember(form.organization, user) match  {
+    val organizationErrors = MembershipsDao.isMemberByOrgKey(form.organization, user) match  {
       case false => Seq("You do not have access to this organization")
       case true => Nil
     }
@@ -116,24 +115,24 @@ object ResolversDao {
           sys.error("Could not find organization with key[${form.organization}]")
         }
 
-        val guid = UUID.randomUUID
+        val id = io.flow.play.util.IdGenerator("res").randomId()
 
         DB.withConnection { implicit c =>
           SQL(InsertQuery).on(
-            'guid -> guid,
-            'organization_guid -> org.guid,
+            'id -> id,
+            'organization_id -> org.id,
             'visibility -> form.visibility.toString,
             'credentials -> form.credentials.map { cred => Json.stringify(Json.toJson(cred)) },
-            'position -> nextPosition(org.guid, form.visibility),
+            'position -> nextPosition(org.id, form.visibility),
             'uri -> form.uri.trim,
             'updated_by_user_id -> createdBy.id
           ).execute()
         }
 
-        MainActor.ref ! MainActor.Messages.ResolverCreated(guid)
+        MainActor.ref ! MainActor.Messages.ResolverCreated(id)
 
         Right(
-          findByGuid(Authorization.All, guid).getOrElse {
+          findById(Authorization.All, id).getOrElse {
             sys.error("Failed to create resolver")
           }
         )
@@ -146,15 +145,15 @@ object ResolversDao {
     Pager.create { offset =>
       LibrariesDao.findAll(
         Authorization.All,
-        resolverGuid = Some(resolver.guid),
+        resolverId = Some(resolver.id),
         offset = offset
       )
     }.foreach { library =>
       LibrariesDao.softDelete(MainActor.SystemUser, library)
     }
 
-    MainActor.ref ! MainActor.Messages.ResolverDeleted(resolver.guid)
-    SoftDelete.delete("resolvers", deletedBy.id, resolver.guid)
+    MainActor.ref ! MainActor.Messages.ResolverDeleted(resolver.id)
+    SoftDelete.delete("resolvers", deletedBy.id, resolver.id)
   }
 
   def findByOrganizationAndUri(
@@ -170,17 +169,17 @@ object ResolversDao {
     ).headOption
   }
 
-  def findByGuid(auth: Authorization, guid: UUID): Option[Resolver] = {
-    findAll(auth, guid = Some(guid), limit = 1).headOption
+  def findById(auth: Authorization, id: String): Option[Resolver] = {
+    findAll(auth, id = Some(id), limit = 1).headOption
   }
 
   def findAll(
     auth: Authorization,
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
     visibility: Option[Visibility] = None,
     organization: Option[String] = None,
-    organizationGuid: Option[UUID] = None,
+    organizationId: Option[String] = None,
     uri: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
@@ -190,9 +189,9 @@ object ResolversDao {
       Standards.query(
         BaseQuery,
         tableName = "resolvers",
-        auth = auth.organizations("resolvers.organization_guid", Some("resolvers.visibility")),
-        guid = guid,
-        guids = guids,
+        auth = auth.organizations("resolvers.organization_id", Some("resolvers.visibility")),
+        id = id,
+        ids = ids,
         orderBy = Some(s"""
           case when visibility = '${Visibility.Public}' then 0
                when visibility = '${Visibility.Private}' then 1
@@ -205,7 +204,7 @@ object ResolversDao {
       ).
         text("resolvers.visibility", visibility).
         text("organizations.key", organization.map(_.toLowerCase)).
-        equals("organizations.guid", organizationGuid).
+        equals("organizations.id", organizationId).
         text("resolvers.uri", uri).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Resolver.table("resolvers").*
@@ -241,7 +240,7 @@ object ResolversDao {
     select coalesce(max(position) + 1, 0) as position
       from resolvers
      where visibility = 'private'
-       and organization_guid = {organization_guid}::uuid
+       and organization_id = {organization_id}
        and deleted_at is null
   """
 
@@ -249,7 +248,7 @@ object ResolversDao {
     * Returns the next free position
     */
   def nextPosition(
-    organizationGuid: UUID,
+    organizationId: String,
     visibility: Visibility
   ): Int = {
     DB.withConnection { implicit c =>    
@@ -258,7 +257,7 @@ object ResolversDao {
           SQL(NextPublicPositionQuery).as(SqlParser.int("position").single)
         }
         case  Visibility.Private | Visibility.UNDEFINED(_) => {
-          SQL(NextPrivatePositionQuery).on("organization_guid" -> organizationGuid.toString).as(SqlParser.int("position").single)
+          SQL(NextPrivatePositionQuery).on("organization_id" -> organizationId.toString).as(SqlParser.int("position").single)
         }
       }
     }

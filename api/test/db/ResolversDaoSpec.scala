@@ -27,65 +27,65 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val resolver1 = ResolversDao.create(systemUser, form).right.get
 
     val resolver2 = ResolversDao.upsert(systemUser, form).right.get
-    resolver1.guid must be(resolver2.guid)
+    resolver1.id must be(resolver2.id)
 
     val resolver3 = createResolver(org)
 
-    resolver2.guid must not be(resolver3.guid)
+    resolver2.id must not be(resolver3.id)
   }
 
-  "findByGuid" in {
+  "findById" in {
     val resolver = createResolver(org)
-    ResolversDao.findByGuid(Authorization.All, resolver.guid).map(_.guid) must be(
-      Some(resolver.guid)
+    ResolversDao.findById(Authorization.All, resolver.id).map(_.id) must be(
+      Some(resolver.id)
     )
 
-    ResolversDao.findByGuid(Authorization.All, UUID.randomUUID) must be(None)
+    ResolversDao.findById(Authorization.All, UUID.randomUUID) must be(None)
   }
 
-  "findByOrganizationGuidAndUri" in {
+  "findByOrganizationIdAndUri" in {
     val resolver = createResolver(org)(createResolverForm(org))
-    ResolversDao.findByOrganizationAndUri(Authorization.All, org.key, resolver.uri).map(_.guid) must be(
-      Some(resolver.guid)
+    ResolversDao.findByOrganizationAndUri(Authorization.All, org.key, resolver.uri).map(_.id) must be(
+      Some(resolver.id)
     )
 
-    ResolversDao.findByOrganizationAndUri(Authorization.All, createTestKey(), resolver.uri).map(_.guid) must be(None)
-    ResolversDao.findByOrganizationAndUri(Authorization.All, org.key, UUID.randomUUID.toString).map(_.guid) must be(None)
+    ResolversDao.findByOrganizationAndUri(Authorization.All, createTestKey(), resolver.uri).map(_.id) must be(None)
+    ResolversDao.findByOrganizationAndUri(Authorization.All, org.key, UUID.randomUUID.toString).map(_.id) must be(None)
   }
 
   "findAll" must {
 
-    "find by guids" in {
+    "find by ids" in {
       val resolver1 = createResolver(org)
       val resolver2 = createResolver(org)
 
-      ResolversDao.findAll(Authorization.All, guids = Some(Seq(resolver1.guid, resolver2.guid))).map(_.guid).sorted must be(
-        Seq(resolver1.guid, resolver2.guid).sorted
+      ResolversDao.findAll(Authorization.All, ids = Some(Seq(resolver1.id, resolver2.id))).map(_.id).sorted must be(
+        Seq(resolver1.id, resolver2.id).sorted
       )
 
-      ResolversDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
-      ResolversDao.findAll(Authorization.All, guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-      ResolversDao.findAll(Authorization.All, guids = Some(Seq(resolver1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(resolver1.guid))
+      ResolversDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
+      ResolversDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID))) must be(Nil)
+      ResolversDao.findAll(Authorization.All, ids = Some(Seq(resolver1.id, UUID.randomUUID))).map(_.id) must be(Seq(resolver1.id))
     }
 
-    "find by organizationGuid" in {
+    "find by organizationId" in {
       val resolver = createResolver(org)
 
-      ResolversDao.findAll(Authorization.All, guid = Some(resolver.guid), organizationGuid = Some(org.guid)).map(_.guid).sorted must be(
-        Seq(resolver.guid)
+      ResolversDao.findAll(Authorization.All, id = Some(resolver.id), organizationId = Some(org.id)).map(_.id).sorted must be(
+        Seq(resolver.id)
       )
 
-      ResolversDao.findAll(Authorization.All, guid = Some(resolver.guid), organizationGuid = Some(createOrganization().guid)) must be(Nil)
+      ResolversDao.findAll(Authorization.All, id = Some(resolver.id), organizationId = Some(createOrganization().id)) must be(Nil)
     }
 
     "find by org" in {
       val resolver = createResolver(org)
 
-      ResolversDao.findAll(Authorization.All, guid = Some(resolver.guid), organization = Some(org.key)).map(_.guid).sorted must be(
-        Seq(resolver.guid)
+      ResolversDao.findAll(Authorization.All, id = Some(resolver.id), organization = Some(org.key)).map(_.id).sorted must be(
+        Seq(resolver.id)
       )
 
-      ResolversDao.findAll(Authorization.All, guid = Some(resolver.guid), organization = Some(createOrganization().key)) must be(Nil)
+      ResolversDao.findAll(Authorization.All, id = Some(resolver.id), organization = Some(createOrganization().key)) must be(Nil)
     }
 
   }
@@ -98,7 +98,7 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     "be set for private resolvers" in {
       val resolver = createResolver(org)(createResolverForm(org = org, visibility = Visibility.Private))
-      resolver.organization.map(_.guid) must be(Some(org.guid))
+      resolver.organization.map(_.id) must be(Some(org.id))
     }
 
   }
@@ -108,8 +108,8 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     ResolversDao.findAll(
       Authorization.All,
-      guids = Some(Seq(publicResolver.guid, resolver.guid))
-    ).map(_.guid) must be(Seq(publicResolver.guid, resolver.guid))
+      ids = Some(Seq(publicResolver.id, resolver.id))
+    ).map(_.id) must be(Seq(publicResolver.id, resolver.id))
   }
 
   "private resolvers require authorization" in {
@@ -121,17 +121,17 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     ResolversDao.findAll(
       Authorization.All,
-      guid = Some(resolver.guid)
-    ).map(_.guid) must be(Seq(resolver.guid))
+      id = Some(resolver.id)
+    ).map(_.id) must be(Seq(resolver.id))
 
     ResolversDao.findAll(
-      Authorization.Organization(organization.guid),
-      guid = Some(resolver.guid)
-    ).map(_.guid) must be(Seq(resolver.guid))
+      Authorization.Organization(organization.id),
+      id = Some(resolver.id)
+    ).map(_.id) must be(Seq(resolver.id))
 
     ResolversDao.findAll(
       Authorization.PublicOnly,
-      guid = Some(resolver.guid)
+      id = Some(resolver.id)
     ) must be(Nil)
   }
 

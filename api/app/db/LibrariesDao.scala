@@ -9,32 +9,31 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-import java.util.UUID
 
 object LibrariesDao {
 
   private[this] val BaseQuery = Query(s"""
-    select libraries.guid,
+    select libraries.id,
            libraries.group_id,
            libraries.artifact_id,
-           organizations.guid as libraries_organization_guid,
+           organizations.id as libraries_organization_id,
            organizations.key as libraries_organization_key,
-           resolvers.guid as libraries_resolver_guid,
+           resolvers.id as libraries_resolver_id,
            resolvers.visibility as libraries_resolver_visibility,
            resolvers.uri as libraries_resolver_uri,
-           resolver_orgs.guid as libraries_resolver_organization_guid,
+           resolver_orgs.id as libraries_resolver_organization_id,
            resolver_orgs.key as libraries_resolver_organization_key
       from libraries
-      join organizations on organizations.deleted_at is null and organizations.guid = libraries.organization_guid
-      join resolvers on resolvers.deleted_at is null and resolvers.guid = libraries.resolver_guid
-      left join organizations resolver_orgs on resolver_orgs.deleted_at is null and resolver_orgs.guid = resolvers.organization_guid
+      join organizations on organizations.deleted_at is null and organizations.id = libraries.organization_id
+      join resolvers on resolvers.deleted_at is null and resolvers.id = libraries.resolver_id
+      left join organizations resolver_orgs on resolver_orgs.deleted_at is null and resolver_orgs.id = resolvers.organization_id
   """)
 
   private[this] val InsertQuery = """
     insert into libraries
-    (guid, organization_guid, group_id, artifact_id, resolver_guid, created_by_guid, updated_by_guid)
+    (id, organization_id, group_id, artifact_id, resolver_id, created_by_id, updated_by_id)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {group_id}, {artifact_id}, {resolver_guid}::uuid, {updated_by_user_id})
+    ({id}, {organization_id}, {group_id}, {artifact_id}, {resolver_id}, {updated_by_user_id})
   """
 
   private[db] def validate(
@@ -57,7 +56,7 @@ object LibrariesDao {
       LibrariesDao.findByGroupIdAndArtifactId(Authorization.All, form.groupId, form.artifactId) match {
         case None => Nil
         case Some(lib) => {
-          if (Some(lib.guid) == existing.map(_.guid)) {
+          if (Some(lib.id) == existing.map(_.id)) {
             Nil
           } else {
             Seq("Library with this group id and artifact id already exists")
@@ -79,7 +78,7 @@ object LibrariesDao {
       case Some(lib) => {
         DB.withConnection { implicit c =>
           form.version.foreach { version =>
-            LibraryVersionsDao.upsertWithConnection(createdBy, lib.guid, version)
+            LibraryVersionsDao.upsertWithConnection(createdBy, lib.id, version)
           }
         }
         Right(lib)
@@ -90,26 +89,26 @@ object LibrariesDao {
   def create(createdBy: User, form: LibraryForm): Either[Seq[String], Library] = {
     validate(form) match {
       case Nil => {
-        val guid = UUID.randomUUID
+        val id = io.flow.play.util.IdGenerator("lib").randomId()
 
         DB.withTransaction { implicit c =>
           SQL(InsertQuery).on(
-            'guid -> guid,
-            'organization_guid -> form.organizationGuid,
+            'id -> id,
+            'organization_id -> form.organizationId,
             'group_id -> form.groupId.trim,
             'artifact_id -> form.artifactId.trim,
-            'resolver_guid -> form.resolverGuid,
+            'resolver_id -> form.resolverId,
             'updated_by_user_id -> createdBy.id
           ).execute()
           form.version.foreach { version =>
-            LibraryVersionsDao.upsertWithConnection(createdBy, guid, version)
+            LibraryVersionsDao.upsertWithConnection(createdBy, id, version)
           }
         }
 
-        MainActor.ref ! MainActor.Messages.LibraryCreated(guid)
+        MainActor.ref ! MainActor.Messages.LibraryCreated(id)
 
         Right(
-          findByGuid(Authorization.All, guid).getOrElse {
+          findById(Authorization.All, id).getOrElse {
             sys.error("Failed to create library")
           }
         )
@@ -119,8 +118,8 @@ object LibrariesDao {
   }
 
   def softDelete(deletedBy: User, library: Library) {
-    SoftDelete.delete("libraries", deletedBy.id, library.guid)
-    MainActor.ref ! MainActor.Messages.LibraryDeleted(library.guid)
+    SoftDelete.delete("libraries", deletedBy.id, library.id)
+    MainActor.ref ! MainActor.Messages.LibraryDeleted(library.id)
   }
 
   def findByGroupIdAndArtifactId(
@@ -136,19 +135,19 @@ object LibrariesDao {
     ).headOption
   }
 
-  def findByGuid(auth: Authorization, guid: UUID): Option[Library] = {
-    findAll(auth, guid = Some(guid), limit = 1).headOption
+  def findById(auth: Authorization, id: String): Option[Library] = {
+    findAll(auth, id = Some(id), limit = 1).headOption
   }
 
   def findAll(
     auth: Authorization,
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
-    organizationGuid: Option[UUID] = None,
-    projectGuid: Option[UUID] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
+    organizationId: Option[String] = None,
+    projectId: Option[String] = None,
     groupId: Option[String] = None,
     artifactId: Option[String] = None,
-    resolverGuid: Option[UUID] = None,
+    resolverId: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("lower(libraries.group_id), lower(libraries.artifact_id), libraries.created_at"),
     limit: Long = 25,
@@ -158,17 +157,17 @@ object LibrariesDao {
       Standards.query(
         BaseQuery,
         tableName = "libraries",
-        auth = auth.organizations("organizations.guid", Some("resolvers.visibility")),
-        guid = guid,
-        guids = guids,
+        auth = auth.organizations("organizations.id", Some("resolvers.visibility")),
+        id = id,
+        ids = ids,
         isDeleted = isDeleted,
         orderBy = orderBy.sql,
         limit = Some(limit),
         offset = offset
       ).
-        equals("libraries.organization_guid", organizationGuid).
-        subquery("libraries.guid", "project_guid", projectGuid, { bindVar =>
-          s"select library_guid from project_libraries where deleted_at is null and project_guid = ${bindVar.sql}"
+        equals("libraries.organization_id", organizationId).
+        subquery("libraries.id", "project_id", projectId, { bindVar =>
+          s"select library_id from project_libraries where deleted_at is null and project_id = ${bindVar.sql}"
         }).
         text(
           "libraries.group_id",
@@ -182,7 +181,7 @@ object LibrariesDao {
           columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
-        equals("libraries.resolver_guid", resolverGuid).
+        equals("libraries.resolver_id", resolverId).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Library.table("libraries").*
         )

@@ -30,36 +30,36 @@ class UserIdentifiersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     identifier1.value.length must be(60)
   }
 
-  "findByGuid" in {
+  "findById" in {
     val (user, identifier) = createUserIdentifier()
 
-    UserIdentifiersDao.findByGuid(Authorization.All, identifier.guid).map(_.guid) must be(
-      Some(identifier.guid)
+    UserIdentifiersDao.findById(Authorization.All, identifier.id).map(_.id) must be(
+      Some(identifier.id)
     )
 
-    UserIdentifiersDao.findByGuid(Authorization.All, UUID.randomUUID) must be(None)
+    UserIdentifiersDao.findById(Authorization.All, UUID.randomUUID) must be(None)
   }
 
   "findAll" must {
-    "filter by guids" in {
+    "filter by ids" in {
       val (user1, identifier1) = createUserIdentifier()
       val (user2, identifier2) = createUserIdentifier()
 
-      UserIdentifiersDao.findAll(Authorization.All, guids = Some(Seq(identifier1.guid, identifier2.guid))).map(_.guid).sorted must be(
-        Seq(identifier1.guid, identifier2.guid).sorted
+      UserIdentifiersDao.findAll(Authorization.All, ids = Some(Seq(identifier1.id, identifier2.id))).map(_.id).sorted must be(
+        Seq(identifier1.id, identifier2.id).sorted
       )
 
-      UserIdentifiersDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
-      UserIdentifiersDao.findAll(Authorization.All, guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-      UserIdentifiersDao.findAll(Authorization.All, guids = Some(Seq(identifier1.guid, UUID.randomUUID))).map(_.guid) must be(
-        Seq(identifier1.guid)
+      UserIdentifiersDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
+      UserIdentifiersDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID))) must be(Nil)
+      UserIdentifiersDao.findAll(Authorization.All, ids = Some(Seq(identifier1.id, UUID.randomUUID))).map(_.id) must be(
+        Seq(identifier1.id)
       )
     }
 
     "filter by identifier" in {
       val (user, identifier) = createUserIdentifier()
 
-      UserIdentifiersDao.findAll(Authorization.All, value = Some(identifier.value)).map(_.guid) must be(Seq(identifier.guid))
+      UserIdentifiersDao.findAll(Authorization.All, value = Some(identifier.value)).map(_.id) must be(Seq(identifier.id))
       UserIdentifiersDao.findAll(Authorization.All, value = Some(createTestKey())) must be(Nil)
     }
   }

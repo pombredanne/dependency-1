@@ -8,7 +8,6 @@ import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 
 @javax.inject.Singleton
 class Recommendations @javax.inject.Inject() (
@@ -17,7 +16,7 @@ class Recommendations @javax.inject.Inject() (
 
   def get(
     organization: Option[String],
-    projectGuid: Option[UUID],
+    projectId: Option[String],
     `type`: Option[RecommendationType],
     limit: Long = 25,
     offset: Long = 0
@@ -27,7 +26,7 @@ class Recommendations @javax.inject.Inject() (
         RecommendationsDao.findAll(
           Authorization.User(request.user.id),
           organization = organization,
-          projectGuid = projectGuid,
+          projectId = projectId,
           `type` = `type`,
           limit = Some(limit),
           offset = offset

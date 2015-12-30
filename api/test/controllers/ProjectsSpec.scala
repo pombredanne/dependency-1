@@ -15,16 +15,16 @@ class ProjectsSpec extends PlaySpecification with MockClient {
   lazy val project1 = createProject(org)()
   lazy val project2 = createProject(org)()
 
-  "GET /projects by guid" in new WithServer(port=port) {
+  "GET /projects by id" in new WithServer(port=port) {
     await(
-      client.projects.get(guid = Some(project1.guid))
-    ).map(_.guid) must beEqualTo(
-      Seq(project1.guid)
+      client.projects.get(id = Some(project1.id))
+    ).map(_.id) must beEqualTo(
+      Seq(project1.id)
     )
 
     await(
-      client.projects.get(guid = Some(UUID.randomUUID))
-    ).map(_.guid) must be(
+      client.projects.get(id = Some(UUID.randomUUID))
+    ).map(_.id) must be(
       Nil
     )
   }
@@ -49,12 +49,12 @@ class ProjectsSpec extends PlaySpecification with MockClient {
     )
   }
 
-  "GET /projects/:guid" in new WithServer(port=port) {
-    await(client.projects.getByGuid(project1.guid)).guid must beEqualTo(project1.guid)
-    await(client.projects.getByGuid(project2.guid)).guid must beEqualTo(project2.guid)
+  "GET /projects/:id" in new WithServer(port=port) {
+    await(client.projects.getById(project1.id)).id must beEqualTo(project1.id)
+    await(client.projects.getById(project2.id)).id must beEqualTo(project2.id)
 
     expectNotFound {
-      client.projects.getByGuid(UUID.randomUUID)
+      client.projects.getById(UUID.randomUUID)
     }
   }
 
@@ -74,42 +74,42 @@ class ProjectsSpec extends PlaySpecification with MockClient {
     )
   }
 
-  "PUT /projects/:guid" in new WithServer(port=port) {
+  "PUT /projects/:id" in new WithServer(port=port) {
     val form = createProjectForm(org)
     val project = createProject(org)(form)
     val newUri = "http://github.com/mbryzek/test"
-    await(client.projects.putByGuid(project.guid, form.copy(uri = newUri)))
-    await(client.projects.getByGuid(project.guid)).uri must beEqualTo(newUri)
+    await(client.projects.putById(project.id, form.copy(uri = newUri)))
+    await(client.projects.getById(project.id)).uri must beEqualTo(newUri)
   }
 
-  "PATCH /projects/:guid w/ no data leaves project unchanged" in new WithServer(port=port) {
+  "PATCH /projects/:id w/ no data leaves project unchanged" in new WithServer(port=port) {
     val project = createProject(org)()
-    await(client.projects.patchByGuid(project.guid, ProjectPatchForm()))
-    val updated = await(client.projects.getByGuid(project.guid))
+    await(client.projects.patchById(project.id, ProjectPatchForm()))
+    val updated = await(client.projects.getById(project.id))
     updated.name must beEqualTo(project.name)
     updated.scms must beEqualTo(project.scms)
     updated.uri must beEqualTo(project.uri)
   }
 
-  "PATCH /projects/:guid w/ name" in new WithServer(port=port) {
+  "PATCH /projects/:id w/ name" in new WithServer(port=port) {
     val project = createProject(org)()
     val newName = project.name + "2"
-    await(client.projects.patchByGuid(project.guid, ProjectPatchForm(name = Some(newName))))
-    await(client.projects.getByGuid(project.guid)).name must beEqualTo(newName)
+    await(client.projects.patchById(project.id, ProjectPatchForm(name = Some(newName))))
+    await(client.projects.getById(project.id)).name must beEqualTo(newName)
   }
 
   "DELETE /projects" in new WithServer(port=port) {
     val project = createProject(org)()
     await(
-      client.projects.deleteByGuid(project.guid)
+      client.projects.deleteById(project.id)
     ) must beEqualTo(())
 
     expectNotFound(
-      client.projects.getByGuid(project.guid)
+      client.projects.getById(project.id)
     )
 
     expectNotFound(
-      client.projects.deleteByGuid(project.guid)
+      client.projects.deleteById(project.id)
     )
   }
 

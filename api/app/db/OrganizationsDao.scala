@@ -2,43 +2,42 @@ package db
 
 import com.bryzek.dependency.v0.models.{MembershipForm, Organization, OrganizationForm, Role}
 import io.flow.postgresql.{Query, OrderBy}
-import io.flow.play.util.{Random, UrlKey}
+import io.flow.play.util.{IdGenerator, Random, UrlKey}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-import java.util.UUID
 
 object OrganizationsDao {
 
   val DefaultUserNameLength = 8
 
   private[this] val BaseQuery = Query(s"""
-    select organizations.guid,
+    select organizations.id,
            organizations.key
       from organizations
   """)
 
   private[this] val InsertQuery = """
     insert into organizations
-    (guid, key, created_by_guid, updated_by_guid)
+    (id, key, created_by_id, updated_by_id)
     values
-    ({guid}::uuid, {key}, {updated_by_user_id})
+    ({id}, {key}, {updated_by_user_id})
   """
 
   private[this] val UpdateQuery = """
     update organizations
        set key = {key},
-           updated_by_guid = {updated_by_guid}::uuid
-     where guid = {guid}::uuid
+           updated_by_id = {updated_by_id}
+     where id = {id}
   """
 
   private[this] val InsertUserOrganizationQuery = """
     insert into user_organizations
-    (guid, user_guid, organization_guid, created_by_guid, updated_by_guid)
+    (id, user_id, organization_id, created_by_id, updated_by_id)
     values
-    ({guid}::uuid, {user_guid}::uuid, {organization_guid}::uuid, {updated_by_user_id})
+    ({id}, {user_id}, {organization_id}, {updated_by_user_id})
   """
 
   private[this] val random = Random()
@@ -57,7 +56,7 @@ object OrganizationsDao {
           OrganizationsDao.findByKey(Authorization.All, form.key) match {
             case None => Seq.empty
             case Some(p) => {
-              Some(p.guid) == existing.map(_.guid) match {
+              Some(p.id) == existing.map(_.id) match {
                 case true => Nil
                 case false => Seq("Organization with this key already exists")
               }
@@ -72,11 +71,11 @@ object OrganizationsDao {
   def create(createdBy: User, form: OrganizationForm): Either[Seq[String], Organization] = {
     validate(form) match {
       case Nil => {
-        val guid = DB.withTransaction { implicit c =>
+        val id = DB.withTransaction { implicit c =>
           create(c, createdBy, form)
         }
         Right(
-          findByGuid(Authorization.All, guid).getOrElse {
+          findById(Authorization.All, id).getOrElse {
             sys.error("Failed to create organization")
           }
         )
@@ -85,11 +84,11 @@ object OrganizationsDao {
     }
   }
 
-  private[this] def create(implicit c: java.sql.Connection, createdBy: User, form: OrganizationForm): UUID = {
-    val guid = UUID.randomUUID
+  private[this] def create(implicit c: java.sql.Connection, createdBy: User, form: OrganizationForm): String = {
+    val id = IdGenerator("org").randomId()
 
     SQL(InsertQuery).on(
-      'guid -> guid,
+      'id -> id,
       'key -> form.key.trim,
       'updated_by_user_id -> createdBy.id
     ).execute()
@@ -97,12 +96,12 @@ object OrganizationsDao {
     MembershipsDao.create(
       c,
       createdBy,
-      guid,
+      id,
       createdBy.id,
       Role.Admin
     )
     
-    guid
+    id
   }
 
   def update(createdBy: User, organization: Organization, form: OrganizationForm): Either[Seq[String], Organization] = {
@@ -110,14 +109,14 @@ object OrganizationsDao {
       case Nil => {
         DB.withConnection { implicit c =>
           SQL(UpdateQuery).on(
-            'guid -> organization.guid,
+            'id -> organization.id,
             'key -> form.key.trim,
-            'updated_by_guid -> createdBy.id
+            'updated_by_id -> createdBy.id
           ).execute()
         }
 
         Right(
-          findByGuid(Authorization.All, organization.guid).getOrElse {
+          findById(Authorization.All, organization.id).getOrElse {
             sys.error("Failed to create organization")
           }
         )
@@ -127,27 +126,27 @@ object OrganizationsDao {
   }
 
   def softDelete(deletedBy: User, organization: Organization) {
-    SoftDelete.delete("organizations", deletedBy.id, organization.guid)
+    SoftDelete.delete("organizations", deletedBy.id, organization.id)
   }
 
   def upsertForUser(user: User): Organization = {
-    findAll(Authorization.All, forUserGuid = Some(user.id), limit = 1).headOption.getOrElse {
+    findAll(Authorization.All, forUserId = Some(user.id), limit = 1).headOption.getOrElse {
       val key = urlKey.generate(defaultUserName(user))
-      val orgGuid = DB.withTransaction { implicit c =>
-        val orgGuid = create(c, user, OrganizationForm(
+      val orgId = DB.withTransaction { implicit c =>
+        val orgId = create(c, user, OrganizationForm(
           key = key
         ))
 
         SQL(InsertUserOrganizationQuery).on(
-          'guid -> UUID.randomUUID,
-          'user_guid -> user.id,
-          'organization_guid -> orgGuid,
-          'created_by_guid -> user.id
+          'id -> IdGenerator("uso").randomId(),
+          'user_id -> user.id,
+          'organization_id -> orgId,
+          'created_by_id -> user.id
         ).execute()
 
-        orgGuid
+        orgId
       }
-      findByGuid(Authorization.All, orgGuid).getOrElse {
+      findById(Authorization.All, orgId).getOrElse {
         sys.error(s"Failed to create an organization for the user[$user]")
       }
     }
@@ -165,7 +164,7 @@ object OrganizationsDao {
         }
         case None => {
           (user.name.first, user.name.last) match {
-            case (None, None) => random.alphanumeric(DefaultUserNameLength)
+            case (None, None) => random.alphaNumeric(DefaultUserNameLength)
             case (Some(first), None) => first
             case (None, Some(last)) => last
             case (Some(first), Some(last)) => first(0) + last
@@ -179,17 +178,17 @@ object OrganizationsDao {
     findAll(auth, key = Some(key), limit = 1).headOption
   }
 
-  def findByGuid(auth: Authorization, guid: UUID): Option[Organization] = {
-    findAll(auth, guid = Some(guid), limit = 1).headOption
+  def findById(auth: Authorization, id: String): Option[Organization] = {
+    findAll(auth, id = Some(id), limit = 1).headOption
   }
 
   def findAll(
     auth: Authorization,
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
     userId: Option[String] = None,
     key: Option[String] = None,
-    forUserGuid: Option[UUID] = None,
+    forUserId: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("organizations.key, -organizations.created_at"),
     limit: Long = 25,
@@ -199,16 +198,16 @@ object OrganizationsDao {
       Standards.query(
         BaseQuery,
         tableName = "organizations",
-        auth = auth.organizations("organizations.guid"),
-        guid = guid,
-        guids = guids,
+        auth = auth.organizations("organizations.id"),
+        id = id,
+        ids = ids,
         orderBy = orderBy.sql,
         isDeleted = isDeleted,
         limit = Some(limit),
         offset = offset
       ).
-        subquery("organizations.guid", "user_guid", userGuid, { bindVar =>
-          s"select organization_guid from memberships where deleted_at is null and user_guid = ${bindVar.sql}"
+        subquery("organizations.id", "user_id", userId, { bindVar =>
+          s"select organization_id from memberships where deleted_at is null and user_id = ${bindVar.sql}"
         }).
         text(
           "organizations.key",
@@ -216,8 +215,8 @@ object OrganizationsDao {
           columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
-        subquery("organizations.guid", "for_user_guid", forUserGuid, { bindVar =>
-          s"select organization_guid from user_organizations where deleted_at is null and user_guid = ${bindVar.sql}"
+        subquery("organizations.id", "for_user_id", forUserId, { bindVar =>
+          s"select organization_id from user_organizations where deleted_at is null and user_id = ${bindVar.sql}"
         }).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Organization.table("organizations").*

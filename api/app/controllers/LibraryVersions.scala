@@ -10,7 +10,6 @@ import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 
 @javax.inject.Singleton
 class LibraryVersions @javax.inject.Inject() (
@@ -18,9 +17,9 @@ class LibraryVersions @javax.inject.Inject() (
 ) extends Controller with IdentifiedRestController {
 
   def get(
-    guid: Option[UUID],
-    guids: Option[Seq[UUID]],
-    libraryGuid: Option[UUID],
+    id: Option[String],
+    ids: Option[Seq[String]],
+    libraryId: Option[String],
     limit: Long = 25,
     offset: Long = 0
   ) = Identified { request =>
@@ -28,9 +27,9 @@ class LibraryVersions @javax.inject.Inject() (
       Json.toJson(
         LibraryVersionsDao.findAll(
           Authorization.User(request.user.id),
-          guid = guid,
-          guids = optionals(guids),
-          libraryGuid = libraryGuid,
+          id = id,
+          ids = optionals(ids),
+          libraryId = libraryId,
           limit = limit,
           offset = offset
         )
@@ -38,18 +37,18 @@ class LibraryVersions @javax.inject.Inject() (
     )
   }
 
-  def getByGuid(guid: UUID) = Identified { request =>
-    withLibraryVersion(request.user, guid) { library =>
+  def getById(id: String) = Identified { request =>
+    withLibraryVersion(request.user, id) { library =>
       Ok(Json.toJson(library))
     }
   }
 
-  def withLibraryVersion(user: User, guid: UUID) (
+  def withLibraryVersion(user: User, id: String) (
     f: LibraryVersion => Result
   ): Result = {
-    LibraryVersionsDao.findByGuid(
+    LibraryVersionsDao.findById(
       Authorization.User(user.id),
-      guid
+      id
     ) match {
       case None => {
         NotFound

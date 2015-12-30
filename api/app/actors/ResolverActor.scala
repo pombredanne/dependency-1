@@ -4,7 +4,6 @@ import com.bryzek.dependency.v0.models.{Resolver, Visibility}
 import io.flow.postgresql.Pager
 import db.{Authorization, LibrariesDao, ProjectLibrariesDao, OrganizationsDao, SubscriptionsDao, ResolversDao}
 import akka.actor.Actor
-import java.util.UUID
 import scala.concurrent.ExecutionContext
 
 object ResolverActor {
@@ -12,7 +11,7 @@ object ResolverActor {
   trait Message
 
   object Messages {
-    case class Data(guid: UUID) extends Message
+    case class Data(id: String) extends Message
     case object Created extends Message
     case object Sync extends Message
     case object Deleted extends Message
@@ -26,8 +25,8 @@ class ResolverActor extends Actor with Util {
 
   def receive = {
 
-    case m @ ResolverActor.Messages.Data(guid) => withVerboseErrorHandler(m.toString) {
-      dataResolver = ResolversDao.findByGuid(Authorization.All, guid)
+    case m @ ResolverActor.Messages.Data(id) => withVerboseErrorHandler(m.toString) {
+      dataResolver = ResolversDao.findById(Authorization.All, id)
     }
 
     case m @ ResolverActor.Messages.Created => withVerboseErrorHandler(m.toString) {
@@ -41,7 +40,7 @@ class ResolverActor extends Actor with Util {
     case m @ ResolverActor.Messages.Deleted => withVerboseErrorHandler(m.toString) {
       dataResolver.foreach { resolver =>
         Pager.create { offset =>
-          LibrariesDao.findAll(Authorization.All, resolverGuid = Some(resolver.guid), offset = offset)
+          LibrariesDao.findAll(Authorization.All, resolverId = Some(resolver.id), offset = offset)
         }.foreach { library =>
           LibrariesDao.softDelete(MainActor.SystemUser, library)
         }
@@ -62,14 +61,14 @@ class ResolverActor extends Actor with Util {
           Authorization.All
         }
         case (Some(org), Visibility.Private) => {
-          Authorization.Organization(org.guid)
+          Authorization.Organization(org.id)
         }
       }
 
       Pager.create { offset =>
         ProjectLibrariesDao.findAll(auth, hasLibrary = Some(false), offset = offset)
       }.foreach { projectLibrary =>
-        sender ! MainActor.Messages.ProjectLibrarySync(projectLibrary.project.guid, projectLibrary.guid)
+        sender ! MainActor.Messages.ProjectLibrarySync(projectLibrary.project.id, projectLibrary.id)
       }
     }
   }

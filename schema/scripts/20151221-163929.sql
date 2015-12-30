@@ -1,8 +1,8 @@
  drop table if exists user_identifiers;
  
  create table user_identifiers (
-  guid                    uuid primary key,
-  user_guid               uuid not null references users,
+  id                      text primary key,
+  user_id                 text not null references users,
   value                   text not null check(util.non_empty_trimmed_string(value)) check(length(value) >= 40)
 );
 
@@ -14,6 +14,6 @@ comment on table user_identifiers is '
 ';
 
 select audit.setup('public', 'user_identifiers');
-create index on user_identifiers(user_guid);
+create index on user_identifiers(user_id);
 create unique index on user_identifiers(value);
 

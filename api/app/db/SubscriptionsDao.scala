@@ -7,28 +7,27 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-import java.util.UUID
 
 object SubscriptionsDao {
 
   private[this] val BaseQuery = Query(s"""
-    select subscriptions.guid,
-           subscriptions.user_guid as subscriptions_user_guid,
+    select subscriptions.id,
+           subscriptions.user_id as subscriptions_user_id,
            subscriptions.publication
       from subscriptions
   """)
 
   private[this] val InsertQuery = """
     insert into subscriptions
-    (guid, user_guid, publication, updated_by_user_id
+    (id, user_id, publication, updated_by_user_id
     values
-    ({guid}::uuid, {user_guid}::uuid, {publication}, {updated_by_user_id})
+    ({id}, {user_id}, {publication}, {updated_by_user_id})
   """
 
   private[db] def validate(
     form: SubscriptionForm
   ): Seq[String] = {
-    val userErrors = UsersDao.findById(form.userGuid) match {
+    val userErrors = UsersDao.findById(form.userId) match {
       case None => Seq("User not found")
       case Some(_) => Nil
     }
@@ -42,10 +41,10 @@ object SubscriptionsDao {
   }
 
   def upsert(createdBy: User, form: SubscriptionForm): Subscription = {
-    findByUserGuidAndPublication(form.userGuid, form.publication).getOrElse {
+    findByUserIdAndPublication(form.userId, form.publication).getOrElse {
       create(createdBy, form) match {
         case Left(errors) => {
-          findByUserGuidAndPublication(form.userGuid, form.publication).getOrElse {
+          findByUserIdAndPublication(form.userId, form.publication).getOrElse {
             sys.error(errors.mkString(", "))
           }
         }
@@ -57,19 +56,19 @@ object SubscriptionsDao {
   def create(createdBy: User, form: SubscriptionForm): Either[Seq[String], Subscription] = {
     validate(form) match {
       case Nil => {
-        val guid = UUID.randomUUID
+        val id = io.flow.play.util.IdGenerator("sub").randomId()
 
         DB.withConnection { implicit c =>
           SQL(InsertQuery).on(
-            'guid -> guid,
-            'user_guid -> form.userGuid,
+            'id -> id,
+            'user_id -> form.userId,
             'publication -> form.publication.toString,
             'updated_by_user_id -> createdBy.id
           ).execute()
         }
 
         Right(
-          findByGuid(guid).getOrElse {
+          findById(id).getOrElse {
             sys.error("Failed to create subscription")
           }
         )
@@ -79,27 +78,27 @@ object SubscriptionsDao {
   }
 
   def softDelete(deletedBy: User, subscription: Subscription) {
-    SoftDelete.delete("subscriptions", deletedBy.id, subscription.guid)
+    SoftDelete.delete("subscriptions", deletedBy.id, subscription.id)
   }
 
-  def findByUserGuidAndPublication(
+  def findByUserIdAndPublication(
     userId: String,
     publication: Publication
   ): Option[Subscription] = {
     findAll(
-      userGuid = Some(userGuid),
+      userId = Some(userId),
       publication = Some(publication),
       limit = 1
     ).headOption
   }
 
-  def findByGuid(guid: UUID): Option[Subscription] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+  def findById(id: String): Option[Subscription] = {
+    findAll(id = Some(id), limit = 1).headOption
   }
 
   def findAll(
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
     userId: Option[String] = None,
     identifier: Option[String] = None,
     publication: Option[Publication] = None,
@@ -115,21 +114,21 @@ object SubscriptionsDao {
         BaseQuery,
         tableName = "subscriptions",
         auth = Clause.True, // TODO
-        guid = guid,
-        guids = guids,
+        id = id,
+        ids = ids,
         orderBy = orderBy.sql,
         isDeleted = isDeleted,
         limit = Some(limit),
         offset = offset
       ).
-        equals("subscriptions.user_guid", userId).
+        equals("subscriptions.user_id", userId).
         text("subscriptions.publication", publication).
         condition(
           minHoursSinceLastEmail.map { v => """
             not exists (select 1
                           from last_emails
                          where last_emails.deleted_at is null
-                           and last_emails.user_guid = subscriptions.user_guid
+                           and last_emails.user_id = subscriptions.user_id
                            and last_emails.publication = subscriptions.publication
                            and last_emails.created_at > now() - interval '1 hour' * {min_hours}::int)
           """.trim }
@@ -139,12 +138,12 @@ object SubscriptionsDao {
             exists (select 1
                       from users
                      where users.deleted_at is null
-                       and users.guid = subscriptions.user_guid
+                       and users.id = subscriptions.user_id
                        and users.created_at <= now() - interval '1 hour' * {min_hours_since_registration}::int)
           """.trim }
         ).bind("min_hours_since_registration", minHoursSinceRegistration).
-        subquery("subscriptions.user_guid", "identifier", identifier, { bindVar =>
-          s"select user_guid from user_identifiers where deleted_at is null and value = trim(${bindVar.sql})"
+        subquery("subscriptions.user_id", "identifier", identifier, { bindVar =>
+          s"select user_id from user_identifiers where deleted_at is null and value = trim(${bindVar.sql})"
         }).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Subscription.table("subscriptions").*

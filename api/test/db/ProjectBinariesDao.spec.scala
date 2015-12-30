@@ -34,7 +34,7 @@ class ProjectBinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     "catch invalid project" in {
       ProjectBinariesDao.validate(
         systemUser,
-        createProjectBinaryForm(project).copy(projectGuid = UUID.randomUUID())
+        createProjectBinaryForm(project).copy(projectId = UUID.randomUUID())
       ) must be(Seq("Project not found"))
     }
 
@@ -51,11 +51,11 @@ class ProjectBinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val form = createProjectBinaryForm(project)
     val projectBinary = createProjectBinary(project)(form)
 
-    val one = ProjectBinariesDao.findByGuid(Authorization.All, projectBinary.guid).getOrElse {
+    val one = ProjectBinariesDao.findById(Authorization.All, projectBinary.id).getOrElse {
       sys.error("Failed to create project binary")
     }
 
-    one.project.guid must be(project.guid)
+    one.project.id must be(project.id)
     one.name must be(projectBinary.name)
     one.version must be(projectBinary.version)
     one.path must be(projectBinary.path)
@@ -65,114 +65,114 @@ class ProjectBinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val form = createProjectBinaryForm(project)
 
     val one = create(ProjectBinariesDao.upsert(systemUser, form))
-    create(ProjectBinariesDao.upsert(systemUser, form)).guid must be(one.guid)
-    create(ProjectBinariesDao.upsert(systemUser, form)).guid must be(one.guid)
+    create(ProjectBinariesDao.upsert(systemUser, form)).id must be(one.id)
+    create(ProjectBinariesDao.upsert(systemUser, form)).id must be(one.id)
   }
 
   "setBinary" in {
     val projectBinary = createProjectBinary(project)
     val binary = createBinary(org)
     ProjectBinariesDao.setBinary(systemUser, projectBinary, binary)
-    ProjectBinariesDao.findByGuid(Authorization.All, projectBinary.guid).flatMap(_.binary.map(_.guid)) must be(Some(binary.guid))
+    ProjectBinariesDao.findById(Authorization.All, projectBinary.id).flatMap(_.binary.map(_.id)) must be(Some(binary.id))
 
     ProjectBinariesDao.removeBinary(systemUser, projectBinary)
-    ProjectBinariesDao.findByGuid(Authorization.All, projectBinary.guid).flatMap(_.binary) must be(None)
+    ProjectBinariesDao.findById(Authorization.All, projectBinary.id).flatMap(_.binary) must be(None)
   }
 
-  "setGuids" in {
+  "setIds" in {
     val projectBinary = createProjectBinary(project)
 
-    ProjectBinariesDao.setGuids(systemUser, projectBinary.project.guid, Seq(projectBinary))
-    ProjectBinariesDao.findByGuid(Authorization.All, projectBinary.guid).map(_.guid) must be(Some(projectBinary.guid))
+    ProjectBinariesDao.setIds(systemUser, projectBinary.project.id, Seq(projectBinary))
+    ProjectBinariesDao.findById(Authorization.All, projectBinary.id).map(_.id) must be(Some(projectBinary.id))
 
-    ProjectBinariesDao.setGuids(systemUser, projectBinary.project.guid, Nil)
-    ProjectBinariesDao.findByGuid(Authorization.All, projectBinary.guid).flatMap(_.binary) must be(None)
+    ProjectBinariesDao.setIds(systemUser, projectBinary.project.id, Nil)
+    ProjectBinariesDao.findById(Authorization.All, projectBinary.id).flatMap(_.binary) must be(None)
 }
 
   "softDelete" in {
     val projectBinary = createProjectBinary(project)
     ProjectBinariesDao.softDelete(systemUser, projectBinary)
-    ProjectBinariesDao.findByGuid(Authorization.All, projectBinary.guid) must be(None)
+    ProjectBinariesDao.findById(Authorization.All, projectBinary.id) must be(None)
   }
 
   "findAll" must {
 
-    "filter by guid" in {
-      ProjectBinariesDao.findAll(Authorization.All, guid = Some(projectBinary.guid)).map(_.guid) must be(
-        Seq(projectBinary.guid)
+    "filter by id" in {
+      ProjectBinariesDao.findAll(Authorization.All, id = Some(projectBinary.id)).map(_.id) must be(
+        Seq(projectBinary.id)
       )
-      ProjectBinariesDao.findAll(Authorization.All, projectGuid = Some(UUID.randomUUID)) must be(Nil)
+      ProjectBinariesDao.findAll(Authorization.All, projectId = Some(UUID.randomUUID)) must be(Nil)
     }
 
-    "filter by guids" in {
+    "filter by ids" in {
       val other = createProjectBinary(project)
 
-      ProjectBinariesDao.findAll(Authorization.All, guids = Some(Seq(projectBinary.guid, other.guid))).map(_.guid).sorted must be(
-        Seq(projectBinary.guid, other.guid).sorted
+      ProjectBinariesDao.findAll(Authorization.All, ids = Some(Seq(projectBinary.id, other.id))).map(_.id).sorted must be(
+        Seq(projectBinary.id, other.id).sorted
       )
 
-      ProjectBinariesDao.findAll(Authorization.All, guids = Some(Seq(projectBinary.guid, UUID.randomUUID))).map(_.guid).sorted must be(
-        Seq(projectBinary.guid).sorted
+      ProjectBinariesDao.findAll(Authorization.All, ids = Some(Seq(projectBinary.id, UUID.randomUUID))).map(_.id).sorted must be(
+        Seq(projectBinary.id).sorted
       )
 
-      ProjectBinariesDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
+      ProjectBinariesDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
     }
 
-    "filter by projectGuid" in {
-      ProjectBinariesDao.findAll(Authorization.All, guid = Some(projectBinary.guid), projectGuid = Some(project.guid)).map(_.guid) must be(
-        Seq(projectBinary.guid)
+    "filter by projectId" in {
+      ProjectBinariesDao.findAll(Authorization.All, id = Some(projectBinary.id), projectId = Some(project.id)).map(_.id) must be(
+        Seq(projectBinary.id)
       )
-      ProjectBinariesDao.findAll(Authorization.All, projectGuid = Some(UUID.randomUUID)) must be(Nil)
+      ProjectBinariesDao.findAll(Authorization.All, projectId = Some(UUID.randomUUID)) must be(Nil)
     }
 
-    "filter by binaryGuid" in {
+    "filter by binaryId" in {
       val binary = createBinary(org)
       val projectBinary = createProjectBinary(project)
       ProjectBinariesDao.setBinary(systemUser, projectBinary, binary)
 
-      ProjectBinariesDao.findAll(Authorization.All, guid = Some(projectBinary.guid), binaryGuid = Some(binary.guid)).map(_.guid) must be(
-        Seq(projectBinary.guid)
+      ProjectBinariesDao.findAll(Authorization.All, id = Some(projectBinary.id), binaryId = Some(binary.id)).map(_.id) must be(
+        Seq(projectBinary.id)
       )
-      ProjectBinariesDao.findAll(Authorization.All, binaryGuid = Some(UUID.randomUUID)) must be(Nil)
+      ProjectBinariesDao.findAll(Authorization.All, binaryId = Some(UUID.randomUUID)) must be(Nil)
     }
 
     "filter by name" in {
-      ProjectBinariesDao.findAll(Authorization.All, guid = Some(projectBinary.guid), name = Some(projectBinary.name)).map(_.guid) must be(
-        Seq(projectBinary.guid)
+      ProjectBinariesDao.findAll(Authorization.All, id = Some(projectBinary.id), name = Some(projectBinary.name)).map(_.id) must be(
+        Seq(projectBinary.id)
       )
       ProjectBinariesDao.findAll(Authorization.All, name = Some(UUID.randomUUID.toString)) must be(Nil)
     }
 
     "filter by version" in {
-      ProjectBinariesDao.findAll(Authorization.All, guid = Some(projectBinary.guid), version = Some(projectBinary.version)).map(_.guid) must be(
-        Seq(projectBinary.guid)
+      ProjectBinariesDao.findAll(Authorization.All, id = Some(projectBinary.id), version = Some(projectBinary.version)).map(_.id) must be(
+        Seq(projectBinary.id)
       )
       ProjectBinariesDao.findAll(Authorization.All, version = Some(UUID.randomUUID.toString)) must be(Nil)
     }
 
     "filter by isSynced" in {
-      createSync(createSyncForm(objectGuid = projectBinary.guid, event = SyncEvent.Completed))
+      createSync(createSyncForm(objectId = projectBinary.id, event = SyncEvent.Completed))
 
-      ProjectBinariesDao.findAll(Authorization.All, guid = Some(projectBinary.guid), isSynced = Some(true)).map(_.guid) must be(
-        Seq(projectBinary.guid)
+      ProjectBinariesDao.findAll(Authorization.All, id = Some(projectBinary.id), isSynced = Some(true)).map(_.id) must be(
+        Seq(projectBinary.id)
       )
-      ProjectBinariesDao.findAll(Authorization.All, guid = Some(projectBinary.guid), isSynced = Some(false)) must be(Nil)
+      ProjectBinariesDao.findAll(Authorization.All, id = Some(projectBinary.id), isSynced = Some(false)) must be(Nil)
     }
 
     "filter by hasBinary" in {
       val projectBinary = createProjectBinary(project)
 
-      ProjectBinariesDao.findAll(Authorization.All, guid = Some(projectBinary.guid), hasBinary = Some(true)) must be(Nil)
-      ProjectBinariesDao.findAll(Authorization.All, guid = Some(projectBinary.guid), hasBinary = Some(false)).map(_.guid) must be(
-        Seq(projectBinary.guid)
+      ProjectBinariesDao.findAll(Authorization.All, id = Some(projectBinary.id), hasBinary = Some(true)) must be(Nil)
+      ProjectBinariesDao.findAll(Authorization.All, id = Some(projectBinary.id), hasBinary = Some(false)).map(_.id) must be(
+        Seq(projectBinary.id)
       )
 
       ProjectBinariesDao.setBinary(systemUser, projectBinary, createBinary(org))
 
-      ProjectBinariesDao.findAll(Authorization.All, guid = Some(projectBinary.guid), hasBinary = Some(true)).map(_.guid) must be(
-        Seq(projectBinary.guid)
+      ProjectBinariesDao.findAll(Authorization.All, id = Some(projectBinary.id), hasBinary = Some(true)).map(_.id) must be(
+        Seq(projectBinary.id)
       )
-      ProjectBinariesDao.findAll(Authorization.All, guid = Some(projectBinary.guid), hasBinary = Some(false)) must be(Nil)
+      ProjectBinariesDao.findAll(Authorization.All, id = Some(projectBinary.id), hasBinary = Some(false)) must be(Nil)
     }
   }
 

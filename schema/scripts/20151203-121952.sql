@@ -1,10 +1,10 @@
 drop table if exists items;
 
 create table items (
-  guid                       uuid primary key,
-  organization_guid          uuid not null references organizations,
+  id                       text primary key,
+  organization_id          text not null references organizations,
   visibility                 text not null check(util.lower_non_empty_trimmed_string(visibility)),
-  object_guid                uuid not null,
+  object_id                text not null,
   label                      text not null check(util.non_empty_trimmed_string(label)),
   description                text check(trim(description) = description),
   summary                    json,
@@ -28,5 +28,5 @@ comment on column items.contents is '
 ';
 
 select audit.setup('public', 'items');
-create unique index items_organization_guid_object_guid_not_deleted_un_idx on items(organization_guid, object_guid) where deleted_at is null;
-create index on items(organization_guid);
+create unique index items_organization_id_object_id_not_deleted_un_idx on items(organization_id, object_id) where deleted_at is null;
+create index on items(organization_id);

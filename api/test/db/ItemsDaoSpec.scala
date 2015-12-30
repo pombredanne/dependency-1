@@ -18,64 +18,64 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val item1 = ItemsDao.create(systemUser, form)
 
     val item2 = ItemsDao.upsert(systemUser, form)
-    item1.guid must be(item2.guid)
+    item1.id must be(item2.id)
 
     val item3 = upsertItem(org)()
 
-    item1.guid must be(item2.guid)
-    item2.guid must not be(item3.guid)
+    item1.id must be(item2.id)
+    item2.id must not be(item3.id)
     item2.label must be(form.label)
   }
 
-  "findByGuid" in {
+  "findById" in {
     val item = upsertItem(org)()
-    ItemsDao.findByGuid(Authorization.All, item.guid).map(_.guid) must be(
-      Some(item.guid)
+    ItemsDao.findById(Authorization.All, item.id).map(_.id) must be(
+      Some(item.id)
     )
 
-    ItemsDao.findByGuid(Authorization.All, UUID.randomUUID) must be(None)
+    ItemsDao.findById(Authorization.All, UUID.randomUUID) must be(None)
   }
 
-  "findByObjectGuid" in {
+  "findByObjectId" in {
     val binary = createBinary(org)()
     val item = ItemsDao.upsertBinary(systemUser, binary)
-    ItemsDao.findByObjectGuid(Authorization.All, binary.guid).map(_.guid) must be(
-      Some(item.guid)
+    ItemsDao.findByObjectId(Authorization.All, binary.id).map(_.id) must be(
+      Some(item.id)
     )
 
-    ItemsDao.findByObjectGuid(Authorization.All, UUID.randomUUID) must be(None)
+    ItemsDao.findByObjectId(Authorization.All, UUID.randomUUID) must be(None)
   }
 
-  "findAll by guids" in {
+  "findAll by ids" in {
     val item1 = upsertItem(org)()
     val item2 = upsertItem(org)()
 
-    ItemsDao.findAll(Authorization.All, guids = Some(Seq(item1.guid, item2.guid))).map(_.guid).sorted must be(
-      Seq(item1.guid, item2.guid).sorted
+    ItemsDao.findAll(Authorization.All, ids = Some(Seq(item1.id, item2.id))).map(_.id).sorted must be(
+      Seq(item1.id, item2.id).sorted
     )
 
-    ItemsDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
-    ItemsDao.findAll(Authorization.All, guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    ItemsDao.findAll(Authorization.All, guids = Some(Seq(item1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(item1.guid))
+    ItemsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
+    ItemsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID))) must be(Nil)
+    ItemsDao.findAll(Authorization.All, ids = Some(Seq(item1.id, UUID.randomUUID))).map(_.id) must be(Seq(item1.id))
   }
 
   "supports binaries" in {
     val binary = createBinary(org)()
     val itemBinary = ItemsDao.upsertBinary(systemUser, binary)
 
-    val actual = ItemsDao.findByObjectGuid(Authorization.All, binary.guid).getOrElse {
+    val actual = ItemsDao.findByObjectId(Authorization.All, binary.id).getOrElse {
       sys.error("Failed to create binary")
     }
     actual.label must be(binary.name.toString)
     actual.summary must be(
       BinarySummary(
-        guid = binary.guid,
-        organization = OrganizationSummary(org.guid, org.key),
+        id = binary.id,
+        organization = OrganizationSummary(org.id, org.key),
         name = binary.name
       )
     )
 
-    ItemsDao.findAll(Authorization.All, q = Some(binary.guid.toString)).headOption.map(_.guid) must be(Some(actual.guid))
+    ItemsDao.findAll(Authorization.All, q = Some(binary.id.toString)).headOption.map(_.id) must be(Some(actual.id))
     ItemsDao.findAll(Authorization.All, q = Some(UUID.randomUUID.toString)) must be(Nil)
   }
 
@@ -83,20 +83,20 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val library = createLibrary(org)()
 
     val itemLibrary = ItemsDao.upsertLibrary(systemUser, library)
-    val actual = ItemsDao.findByObjectGuid(Authorization.All, library.guid).getOrElse {
+    val actual = ItemsDao.findByObjectId(Authorization.All, library.id).getOrElse {
       sys.error("Failed to create library")
     }
     actual.label must be(Seq(library.groupId, library.artifactId).mkString("."))
     actual.summary must be(
       LibrarySummary(
-        guid = library.guid,
-        organization = OrganizationSummary(org.guid, org.key),
+        id = library.id,
+        organization = OrganizationSummary(org.id, org.key),
         groupId = library.groupId,
         artifactId = library.artifactId
       )
     )
 
-    ItemsDao.findAll(Authorization.All, q = Some(library.guid.toString)).headOption.map(_.guid) must be(Some(actual.guid))
+    ItemsDao.findAll(Authorization.All, q = Some(library.id.toString)).headOption.map(_.id) must be(Some(actual.id))
     ItemsDao.findAll(Authorization.All, q = Some(UUID.randomUUID.toString)) must be(Nil)
   }
 
@@ -104,19 +104,19 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val project = createProject(org)
 
     val itemProject = ItemsDao.upsertProject(systemUser, project)
-    val actual = ItemsDao.findByObjectGuid(Authorization.All, project.guid).getOrElse {
+    val actual = ItemsDao.findByObjectId(Authorization.All, project.id).getOrElse {
       sys.error("Failed to create project")
     }
     actual.label must be(project.name)
     actual.summary must be(
       ProjectSummary(
-        guid = project.guid,
-        organization = OrganizationSummary(org.guid, org.key),
+        id = project.id,
+        organization = OrganizationSummary(org.id, org.key),
         name = project.name
       )
     )
 
-    ItemsDao.findAll(Authorization.All, q = Some(project.guid.toString)).headOption.map(_.guid) must be(Some(actual.guid))
+    ItemsDao.findAll(Authorization.All, q = Some(project.id.toString)).headOption.map(_.id) must be(Some(actual.id))
     ItemsDao.findAll(Authorization.All, q = Some(UUID.randomUUID.toString)) must be(Nil)
   }
 
@@ -126,11 +126,11 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val project = createProject(org)(createProjectForm(org).copy(visibility = Visibility.Public))
     val item = ItemsDao.upsertProject(systemUser, project)
 
-    ItemsDao.findAll(Authorization.PublicOnly, objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
-    ItemsDao.findAll(Authorization.All, objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
-    ItemsDao.findAll(Authorization.Organization(org.guid), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
-    ItemsDao.findAll(Authorization.Organization(createOrganization().guid), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
-    ItemsDao.findAll(Authorization.User(user.id), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
+    ItemsDao.findAll(Authorization.PublicOnly, objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
+    ItemsDao.findAll(Authorization.All, objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
+    ItemsDao.findAll(Authorization.Organization(org.id), objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
+    ItemsDao.findAll(Authorization.Organization(createOrganization().id), objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
+    ItemsDao.findAll(Authorization.User(user.id), objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
   }
 
   "authorization for private projects" in {
@@ -139,12 +139,12 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val project = createProject(org)(createProjectForm(org).copy(visibility = Visibility.Private))
     val item = ItemsDao.upsertProject(systemUser, project)
 
-    ItemsDao.findAll(Authorization.PublicOnly, objectGuid = Some(project.guid)) must be(Nil)
-    ItemsDao.findAll(Authorization.All, objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
-    ItemsDao.findAll(Authorization.Organization(org.guid), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
-    ItemsDao.findAll(Authorization.Organization(createOrganization().guid), objectGuid = Some(project.guid)) must be(Nil)
-    ItemsDao.findAll(Authorization.User(user.id), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
-    ItemsDao.findAll(Authorization.User(createUser().guid), objectGuid = Some(project.guid)) must be(Nil)
+    ItemsDao.findAll(Authorization.PublicOnly, objectId = Some(project.id)) must be(Nil)
+    ItemsDao.findAll(Authorization.All, objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
+    ItemsDao.findAll(Authorization.Organization(org.id), objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
+    ItemsDao.findAll(Authorization.Organization(createOrganization().id), objectId = Some(project.id)) must be(Nil)
+    ItemsDao.findAll(Authorization.User(user.id), objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
+    ItemsDao.findAll(Authorization.User(createUser().id), objectId = Some(project.id)) must be(Nil)
   }
 
 }

@@ -88,7 +88,7 @@ trait Helpers {
   def createBinaryForm(
     org: Organization = createOrganization()
   ) = BinaryForm(
-    organizationGuid = org.guid,
+    organizationId = org.id,
     name = BinaryType.UNDEFINED(s"z-test-binary-${UUID.randomUUID}".toLowerCase)
   )
 
@@ -98,7 +98,7 @@ trait Helpers {
     implicit binary: Binary = createBinary(org),
              version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
   ): BinaryVersion = {
-    BinaryVersionsDao.create(systemUser, binary.guid, version)
+    BinaryVersionsDao.create(systemUser, binary.id, version)
   }
 
   def createLibrary(
@@ -119,11 +119,11 @@ trait Helpers {
     implicit versionForm: VersionForm = VersionForm("0.0.1"),
              resolver: Resolver = createResolver(org, user)
   ) = LibraryForm(
-    organizationGuid = org.guid,
+    organizationId = org.id,
     groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
     artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
     version = Some(versionForm),
-    resolverGuid = resolver.guid
+    resolverId = resolver.id
   )
 
   def createLibraryVersion(
@@ -133,7 +133,7 @@ trait Helpers {
     implicit library: Library = createLibrary(org, user),
              version: VersionForm = createVersionForm()
   ): LibraryVersion = {
-    LibraryVersionsDao.create(user, library.guid, version)
+    LibraryVersionsDao.create(user, library.id, version)
   }
 
   def createVersionForm(
@@ -191,7 +191,7 @@ trait Helpers {
       )
     )
 
-    val libraryVersion = LibraryVersionsDao.upsert(systemUser, library.guid, version)
+    val libraryVersion = LibraryVersionsDao.upsert(systemUser, library.id, version)
 
     ProjectLibrariesDao.setLibrary(systemUser, projectLibrary, library)
 
@@ -257,7 +257,7 @@ trait Helpers {
     login: String = createTestEmail()
   ) = {
     GithubUserForm(
-      userGuid = user.id,
+      userId = user.id,
       id = id,
       login = login
     )
@@ -275,7 +275,7 @@ trait Helpers {
     token: String = UUID.randomUUID().toString.toLowerCase
   ) = {
     TokenForm(
-      userGuid = user.id,
+      userId = user.id,
       tag = tag,
       token = token
     )
@@ -289,12 +289,12 @@ trait Helpers {
 
   def createSyncForm(
     `type`: String = "test",
-    objectGuid: UUID = UUID.randomUUID,
+    objectId: String = UUID.randomUUID,
     event: SyncEvent = SyncEvent.Started
   ) = {
     SyncForm(
       `type` = `type`,
-      objectGuid = objectGuid,
+      objectId = objectId,
       event = event
     )
   }
@@ -333,7 +333,7 @@ trait Helpers {
   ) = {
     MembershipForm(
       organization = org.key,
-      userGuid = user.id,
+      userId = user.id,
       role = role
     )
   }
@@ -353,8 +353,8 @@ trait Helpers {
              project: Project = createProject(org)
   ) = {
     WatchProjectForm(
-      userGuid = user.id,
-      projectGuid = project.guid
+      userId = user.id,
+      projectId = project.id
     )
   }
 
@@ -382,7 +382,7 @@ trait Helpers {
       ProjectLibrariesDao.upsert(
         systemUser,
         ProjectLibraryForm(
-          projectGuid = project.guid,
+          projectId = project.id,
           groupId = libraryVersion.library.groupId,
           artifactId = libraryVersion.library.artifactId,
           path = "test.sbt",
@@ -408,8 +408,8 @@ trait Helpers {
     implicit binary: Binary = createBinary(org)
   ): ItemSummary = {
     BinarySummary(
-      guid = binary.guid,
-      organization = OrganizationSummary(org.guid, org.key),
+      id = binary.id,
+      organization = OrganizationSummary(org.id, org.key),
       name = binary.name
     )
   }
@@ -420,9 +420,9 @@ trait Helpers {
     implicit summary: ItemSummary = createItemSummary(org)
   ): ItemForm = {
     val label = summary match {
-      case BinarySummary(guid, org, name) => name.toString
-      case LibrarySummary(guid, org, groupId, artifactId) => Seq(groupId, artifactId).mkString(".")
-      case ProjectSummary(guid, org, name) => name
+      case BinarySummary(id, org, name) => name.toString
+      case LibrarySummary(id, org, groupId, artifactId) => Seq(groupId, artifactId).mkString(".")
+      case ProjectSummary(id, org, name) => name
       case ItemSummaryUndefinedType(name) => name
     }
     ItemForm(
@@ -444,7 +444,7 @@ trait Helpers {
     publication: Publication = Publication.DailySummary
   ) = {
     SubscriptionForm(
-      userGuid = user.id,
+      userId = user.id,
       publication = publication
     )
   }
@@ -459,7 +459,7 @@ trait Helpers {
     user: User = createUser(),
     publication: Publication = Publication.DailySummary
   ) = LastEmailForm(
-    userGuid = user.id,
+    userId = user.id,
     publication = publication
   )
 
@@ -480,7 +480,7 @@ trait Helpers {
     crossBuildVersion: Option[String] = None
   ) = {
     ProjectLibraryForm(
-      projectGuid = project.guid,
+      projectId = project.id,
       groupId = groupId,
       artifactId = artifactId,
       path = path,
@@ -503,7 +503,7 @@ trait Helpers {
     version: String = "0.0.1"
   ) = {
     ProjectBinaryForm(
-      projectGuid = project.guid,
+      projectId = project.id,
       name = name,
       path = path,
       version = version

@@ -8,7 +8,6 @@ import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 
 class Organizations @javax.inject.Inject() (
   val userTokensClient: UserTokensClient
@@ -17,8 +16,8 @@ class Organizations @javax.inject.Inject() (
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def get(
-    guid: Option[UUID],
-    guids: Option[Seq[UUID]],
+    id: Option[String],
+    ids: Option[Seq[String]],
     userId: Option[String],
     key: Option[String],
     limit: Long = 25,
@@ -28,8 +27,8 @@ class Organizations @javax.inject.Inject() (
       Json.toJson(
         OrganizationsDao.findAll(
           authorization(request),
-          guid = guid,
-          guids = optionals(guids),
+          id = id,
+          ids = optionals(ids),
           userId = userId,
           key = key,
           limit = limit,
@@ -39,8 +38,8 @@ class Organizations @javax.inject.Inject() (
     )
   }
 
-  def getByGuid(guid: UUID) = Identified { request =>
-    withOrganization(request.user, guid) { organization =>
+  def getById(id: String) = Identified { request =>
+    withOrganization(request.user, id) { organization =>
       Ok(Json.toJson(organization))
     }
   }
@@ -65,8 +64,8 @@ class Organizations @javax.inject.Inject() (
     }
   }
 
-  def putByGuid(guid: UUID) = Identified(parse.json) { request =>
-    withOrganization(request.user, guid) { organization =>
+  def putById(id: String) = Identified(parse.json) { request =>
+    withOrganization(request.user, id) { organization =>
       request.body.validate[OrganizationForm] match {
         case e: JsError => {
           UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
@@ -81,8 +80,8 @@ class Organizations @javax.inject.Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Identified { request =>
-    withOrganization(request.user, guid) { organization =>
+  def deleteById(id: String) = Identified { request =>
+    withOrganization(request.user, id) { organization =>
       OrganizationsDao.softDelete(request.user, organization)
       NoContent
     }

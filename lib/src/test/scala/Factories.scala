@@ -4,7 +4,6 @@ import com.bryzek.dependency.v0.models.{BinarySummary, BinaryType, ItemSummary, 
 import com.bryzek.dependency.v0.models.{ProjectDetail, Recommendation, RecommendationType}
 import io.flow.common.v0.models.Reference
 import io.flow.play.clients.MockUserClient
-import java.util.UUID
 
 trait Factories {
 
@@ -19,9 +18,9 @@ trait Factories {
   def makeRecommendation(
     `type`: RecommendationType = RecommendationType.Library
   ) = Recommendation(
-    guid = UUID.randomUUID,
+    id = UUID.randomUUID,
     project = ProjectDetail(
-      guid = UUID.randomUUID,
+      id = UUID.randomUUID,
       organization = makeOrganizationSummary(),
       name = makeName()
     ),
@@ -34,39 +33,39 @@ trait Factories {
   )
 
   def makeBinarySummary(
-    guid: UUID = UUID.randomUUID,
+    id: String = UUID.randomUUID,
     `type`: BinaryType = BinaryType.Scala
   ) = BinarySummary(
-    guid = guid,
+    id = id,
     organization = makeOrganizationSummary(),
     name = `type`
   )
 
   def makeLibrarySummary(
-    guid: UUID = UUID.randomUUID,
+    id: String = UUID.randomUUID,
     groupId: String = "io.flow",
     artifactId: String = "lib-play"
   ) = LibrarySummary(
-    guid = guid,
+    id = id,
     organization = makeOrganizationSummary(),
     groupId = groupId,
     artifactId = artifactId
   )
 
   def makeProjectSummary(
-    guid: UUID = UUID.randomUUID,
+    id: String = UUID.randomUUID,
     name: String = makeName()
   ) = ProjectSummary(
-    guid = guid,
+    id = id,
     organization = makeOrganizationSummary(),
     name = name
   )
 
   def makeOrganizationSummary(
-    guid: UUID = UUID.randomUUID,
+    id: String = UUID.randomUUID,
     key: String = makeKey()
   ) = OrganizationSummary(
-    guid = guid,
+    id = id,
     key = key
   )
 

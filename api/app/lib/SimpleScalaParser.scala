@@ -107,7 +107,7 @@ trait SimpleScalaParser {
   }
 
   private[this] def warn(message: String) {
-    Logger.warn(s"project[${project.guid}] name[${project.name}] path[$path]: $message")
+    Logger.warn(s"project[${project.id}] name[${project.name}] path[$path]: $message")
   }
 
 }

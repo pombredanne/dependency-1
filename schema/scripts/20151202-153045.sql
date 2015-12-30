@@ -1,10 +1,10 @@
 drop table if exists recommendations;
 
 create table recommendations (
-  guid                       uuid primary key,
-  project_guid               uuid not null references projects,
+  id                       text primary key,
+  project_id               text not null references projects,
   type                       text not null check(util.lower_non_empty_trimmed_string(type)),
-  object_guid                uuid not null,
+  object_id                text not null,
   name                       text not null check(util.non_empty_trimmed_string(name)),
   from_version               text not null check(util.non_empty_trimmed_string(from_version)),
   to_version                 text not null check(util.non_empty_trimmed_string(to_version))
@@ -20,9 +20,9 @@ comment on table recommendations is '
 ';
 
 select audit.setup('public', 'recommendations');
-create index on recommendations(project_guid);
-create index on recommendations(object_guid);
+create index on recommendations(project_id);
+create index on recommendations(object_id);
 
 create unique index recommendations_not_deleted_un_idx
-    on recommendations(project_guid, type, object_guid, name, from_version)
+    on recommendations(project_id, type, object_id, name, from_version)
  where deleted_at is null;

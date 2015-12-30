@@ -10,24 +10,24 @@ package com.bryzek.dependency.v0.models {
   sealed trait ItemSummary
 
   case class Binary(
-    guid: _root_.java.util.UUID,
+    id: String,
     organization: com.bryzek.dependency.v0.models.OrganizationSummary,
     name: com.bryzek.dependency.v0.models.BinaryType
   )
 
   case class BinaryForm(
-    organizationGuid: _root_.java.util.UUID,
+    organizationId: String,
     name: com.bryzek.dependency.v0.models.BinaryType
   )
 
   case class BinarySummary(
-    guid: _root_.java.util.UUID,
+    id: String,
     organization: com.bryzek.dependency.v0.models.OrganizationSummary,
     name: com.bryzek.dependency.v0.models.BinaryType
   ) extends ItemSummary
 
   case class BinaryVersion(
-    guid: _root_.java.util.UUID,
+    id: String,
     binary: com.bryzek.dependency.v0.models.Binary,
     version: String
   )
@@ -40,15 +40,15 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class GithubUser(
-    guid: _root_.java.util.UUID,
-    user: com.bryzek.dependency.v0.models.UserReference,
-    id: Long,
+    id: String,
+    user: com.bryzek.dependency.v0.models.Reference,
+    githubUserId: Long,
     login: String
   )
 
   case class GithubUserForm(
     userId: String,
-    id: Long,
+    githubUserId: Long,
     login: String
   )
 
@@ -56,7 +56,7 @@ package com.bryzek.dependency.v0.models {
    * A denormalization of item content for search
    */
   case class Item(
-    guid: _root_.java.util.UUID,
+    id: String,
     organization: com.bryzek.dependency.v0.models.OrganizationSummary,
     visibility: com.bryzek.dependency.v0.models.Visibility,
     summary: com.bryzek.dependency.v0.models.ItemSummary,
@@ -65,7 +65,7 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class Library(
-    guid: _root_.java.util.UUID,
+    id: String,
     organization: com.bryzek.dependency.v0.models.OrganizationSummary,
     groupId: String,
     artifactId: String,
@@ -73,22 +73,22 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class LibraryForm(
-    organizationGuid: _root_.java.util.UUID,
+    organizationId: String,
     groupId: String,
     artifactId: String,
-    resolverGuid: _root_.java.util.UUID,
+    resolverId: String,
     version: _root_.scala.Option[com.bryzek.dependency.v0.models.VersionForm] = None
   )
 
   case class LibrarySummary(
-    guid: _root_.java.util.UUID,
+    id: String,
     organization: com.bryzek.dependency.v0.models.OrganizationSummary,
     groupId: String,
     artifactId: String
   ) extends ItemSummary
 
   case class LibraryVersion(
-    guid: _root_.java.util.UUID,
+    id: String,
     library: com.bryzek.dependency.v0.models.Library,
     version: String,
     crossBuildVersion: _root_.scala.Option[String] = None
@@ -98,7 +98,7 @@ package com.bryzek.dependency.v0.models {
    * A user can belong to one or more organizations via memberships.
    */
   case class Membership(
-    guid: _root_.java.util.UUID,
+    id: String,
     user: com.bryzek.dependency.v0.models.UserSummary,
     organization: com.bryzek.dependency.v0.models.OrganizationSummary,
     role: com.bryzek.dependency.v0.models.Role
@@ -111,7 +111,7 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class Organization(
-    guid: _root_.java.util.UUID,
+    id: String,
     key: String
   )
 
@@ -120,14 +120,14 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class OrganizationSummary(
-    guid: _root_.java.util.UUID,
+    id: String,
     key: String
   )
 
   case class Project(
-    guid: _root_.java.util.UUID,
+    id: String,
     organization: com.bryzek.dependency.v0.models.OrganizationSummary,
-    user: com.bryzek.dependency.v0.models.UserReference,
+    user: com.bryzek.dependency.v0.models.Reference,
     visibility: com.bryzek.dependency.v0.models.Visibility,
     scms: com.bryzek.dependency.v0.models.Scms,
     name: String,
@@ -135,7 +135,7 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class ProjectBinary(
-    guid: _root_.java.util.UUID,
+    id: String,
     project: com.bryzek.dependency.v0.models.ProjectDetail,
     name: String,
     version: String,
@@ -144,7 +144,7 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class ProjectDetail(
-    guid: _root_.java.util.UUID,
+    id: String,
     organization: com.bryzek.dependency.v0.models.OrganizationSummary,
     name: String
   )
@@ -158,7 +158,7 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class ProjectLibrary(
-    guid: _root_.java.util.UUID,
+    id: String,
     project: com.bryzek.dependency.v0.models.ProjectDetail,
     groupId: String,
     artifactId: String,
@@ -176,7 +176,7 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class ProjectSummary(
-    guid: _root_.java.util.UUID,
+    id: String,
     organization: com.bryzek.dependency.v0.models.OrganizationSummary,
     name: String
   ) extends ItemSummary
@@ -186,7 +186,7 @@ package com.bryzek.dependency.v0.models {
    * project dashboard
    */
   case class Recommendation(
-    guid: _root_.java.util.UUID,
+    id: String,
     project: com.bryzek.dependency.v0.models.ProjectDetail,
     `type`: com.bryzek.dependency.v0.models.RecommendationType,
     `object`: com.bryzek.dependency.v0.models.Reference,
@@ -197,7 +197,7 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class Reference(
-    guid: _root_.java.util.UUID
+    id: String
   )
 
   case class Repository(
@@ -207,7 +207,7 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class Resolver(
-    guid: _root_.java.util.UUID,
+    id: String,
     visibility: com.bryzek.dependency.v0.models.Visibility,
     organization: _root_.scala.Option[com.bryzek.dependency.v0.models.OrganizationSummary] = None,
     uri: String,
@@ -222,7 +222,7 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class ResolverSummary(
-    guid: _root_.java.util.UUID,
+    id: String,
     organization: _root_.scala.Option[com.bryzek.dependency.v0.models.OrganizationSummary] = None,
     visibility: com.bryzek.dependency.v0.models.Visibility,
     uri: String
@@ -232,8 +232,8 @@ package com.bryzek.dependency.v0.models {
    * Represents a user that is currently subscribed to a publication
    */
   case class Subscription(
-    guid: _root_.java.util.UUID,
-    user: com.bryzek.dependency.v0.models.UserReference,
+    id: String,
+    user: com.bryzek.dependency.v0.models.Reference,
     publication: com.bryzek.dependency.v0.models.Publication
   )
 
@@ -246,13 +246,13 @@ package com.bryzek.dependency.v0.models {
    * Records when we start and complete each sync of a module (e.g. project)
    */
   case class Sync(
-    guid: _root_.java.util.UUID,
+    id: String,
     event: com.bryzek.dependency.v0.models.SyncEvent
   )
 
   case class Token(
-    guid: _root_.java.util.UUID,
-    user: com.bryzek.dependency.v0.models.UserReference,
+    id: String,
+    user: com.bryzek.dependency.v0.models.Reference,
     tag: String,
     token: String
   )
@@ -264,17 +264,13 @@ package com.bryzek.dependency.v0.models {
   )
 
   case class UserIdentifier(
-    guid: _root_.java.util.UUID,
-    user: com.bryzek.dependency.v0.models.UserReference,
+    id: String,
+    user: com.bryzek.dependency.v0.models.Reference,
     value: String
   )
 
-  case class UserReference(
-    id: String
-  )
-
   case class UserSummary(
-    guid: _root_.java.util.UUID,
+    id: String,
     email: _root_.scala.Option[String] = None,
     name: io.flow.user.v0.models.Name
   )
@@ -624,7 +620,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyBinary: play.api.libs.json.Reads[Binary] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "name").read[com.bryzek.dependency.v0.models.BinaryType]
       )(Binary.apply _)
@@ -632,7 +628,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyBinary: play.api.libs.json.Writes[Binary] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "name").write[com.bryzek.dependency.v0.models.BinaryType]
       )(unlift(Binary.unapply _))
@@ -640,21 +636,21 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyBinaryForm: play.api.libs.json.Reads[BinaryForm] = {
       (
-        (__ \ "organization_guid").read[_root_.java.util.UUID] and
+        (__ \ "organization_id").read[String] and
         (__ \ "name").read[com.bryzek.dependency.v0.models.BinaryType]
       )(BinaryForm.apply _)
     }
 
     implicit def jsonWritesDependencyBinaryForm: play.api.libs.json.Writes[BinaryForm] = {
       (
-        (__ \ "organization_guid").write[_root_.java.util.UUID] and
+        (__ \ "organization_id").write[String] and
         (__ \ "name").write[com.bryzek.dependency.v0.models.BinaryType]
       )(unlift(BinaryForm.unapply _))
     }
 
     implicit def jsonReadsDependencyBinarySummary: play.api.libs.json.Reads[BinarySummary] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "name").read[com.bryzek.dependency.v0.models.BinaryType]
       )(BinarySummary.apply _)
@@ -662,7 +658,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyBinarySummary: play.api.libs.json.Writes[BinarySummary] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "name").write[com.bryzek.dependency.v0.models.BinaryType]
       )(unlift(BinarySummary.unapply _))
@@ -670,7 +666,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyBinaryVersion: play.api.libs.json.Reads[BinaryVersion] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "binary").read[com.bryzek.dependency.v0.models.Binary] and
         (__ \ "version").read[String]
       )(BinaryVersion.apply _)
@@ -678,7 +674,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyBinaryVersion: play.api.libs.json.Writes[BinaryVersion] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "binary").write[com.bryzek.dependency.v0.models.Binary] and
         (__ \ "version").write[String]
       )(unlift(BinaryVersion.unapply _))
@@ -696,18 +692,18 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyGithubUser: play.api.libs.json.Reads[GithubUser] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "user").read[com.bryzek.dependency.v0.models.UserReference] and
-        (__ \ "id").read[Long] and
+        (__ \ "id").read[String] and
+        (__ \ "user").read[com.bryzek.dependency.v0.models.Reference] and
+        (__ \ "github_user_id").read[Long] and
         (__ \ "login").read[String]
       )(GithubUser.apply _)
     }
 
     implicit def jsonWritesDependencyGithubUser: play.api.libs.json.Writes[GithubUser] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "user").write[com.bryzek.dependency.v0.models.UserReference] and
-        (__ \ "id").write[Long] and
+        (__ \ "id").write[String] and
+        (__ \ "user").write[com.bryzek.dependency.v0.models.Reference] and
+        (__ \ "github_user_id").write[Long] and
         (__ \ "login").write[String]
       )(unlift(GithubUser.unapply _))
     }
@@ -715,7 +711,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyGithubUserForm: play.api.libs.json.Reads[GithubUserForm] = {
       (
         (__ \ "user_id").read[String] and
-        (__ \ "id").read[Long] and
+        (__ \ "github_user_id").read[Long] and
         (__ \ "login").read[String]
       )(GithubUserForm.apply _)
     }
@@ -723,14 +719,14 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyGithubUserForm: play.api.libs.json.Writes[GithubUserForm] = {
       (
         (__ \ "user_id").write[String] and
-        (__ \ "id").write[Long] and
+        (__ \ "github_user_id").write[Long] and
         (__ \ "login").write[String]
       )(unlift(GithubUserForm.unapply _))
     }
 
     implicit def jsonReadsDependencyItem: play.api.libs.json.Reads[Item] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "summary").read[com.bryzek.dependency.v0.models.ItemSummary] and
@@ -741,7 +737,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyItem: play.api.libs.json.Writes[Item] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "summary").write[com.bryzek.dependency.v0.models.ItemSummary] and
@@ -752,7 +748,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyLibrary: play.api.libs.json.Reads[Library] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "group_id").read[String] and
         (__ \ "artifact_id").read[String] and
@@ -762,7 +758,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyLibrary: play.api.libs.json.Writes[Library] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "group_id").write[String] and
         (__ \ "artifact_id").write[String] and
@@ -772,27 +768,27 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyLibraryForm: play.api.libs.json.Reads[LibraryForm] = {
       (
-        (__ \ "organization_guid").read[_root_.java.util.UUID] and
+        (__ \ "organization_id").read[String] and
         (__ \ "group_id").read[String] and
         (__ \ "artifact_id").read[String] and
-        (__ \ "resolver_guid").read[_root_.java.util.UUID] and
+        (__ \ "resolver_id").read[String] and
         (__ \ "version").readNullable[com.bryzek.dependency.v0.models.VersionForm]
       )(LibraryForm.apply _)
     }
 
     implicit def jsonWritesDependencyLibraryForm: play.api.libs.json.Writes[LibraryForm] = {
       (
-        (__ \ "organization_guid").write[_root_.java.util.UUID] and
+        (__ \ "organization_id").write[String] and
         (__ \ "group_id").write[String] and
         (__ \ "artifact_id").write[String] and
-        (__ \ "resolver_guid").write[_root_.java.util.UUID] and
+        (__ \ "resolver_id").write[String] and
         (__ \ "version").writeNullable[com.bryzek.dependency.v0.models.VersionForm]
       )(unlift(LibraryForm.unapply _))
     }
 
     implicit def jsonReadsDependencyLibrarySummary: play.api.libs.json.Reads[LibrarySummary] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "group_id").read[String] and
         (__ \ "artifact_id").read[String]
@@ -801,7 +797,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyLibrarySummary: play.api.libs.json.Writes[LibrarySummary] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "group_id").write[String] and
         (__ \ "artifact_id").write[String]
@@ -810,7 +806,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyLibraryVersion: play.api.libs.json.Reads[LibraryVersion] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "library").read[com.bryzek.dependency.v0.models.Library] and
         (__ \ "version").read[String] and
         (__ \ "cross_build_version").readNullable[String]
@@ -819,7 +815,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyLibraryVersion: play.api.libs.json.Writes[LibraryVersion] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "library").write[com.bryzek.dependency.v0.models.Library] and
         (__ \ "version").write[String] and
         (__ \ "cross_build_version").writeNullable[String]
@@ -828,7 +824,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyMembership: play.api.libs.json.Reads[Membership] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "user").read[com.bryzek.dependency.v0.models.UserSummary] and
         (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "role").read[com.bryzek.dependency.v0.models.Role]
@@ -837,7 +833,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyMembership: play.api.libs.json.Writes[Membership] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "user").write[com.bryzek.dependency.v0.models.UserSummary] and
         (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "role").write[com.bryzek.dependency.v0.models.Role]
@@ -862,14 +858,14 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyOrganization: play.api.libs.json.Reads[Organization] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "key").read[String]
       )(Organization.apply _)
     }
 
     implicit def jsonWritesDependencyOrganization: play.api.libs.json.Writes[Organization] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "key").write[String]
       )(unlift(Organization.unapply _))
     }
@@ -886,23 +882,23 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyOrganizationSummary: play.api.libs.json.Reads[OrganizationSummary] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "key").read[String]
       )(OrganizationSummary.apply _)
     }
 
     implicit def jsonWritesDependencyOrganizationSummary: play.api.libs.json.Writes[OrganizationSummary] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "key").write[String]
       )(unlift(OrganizationSummary.unapply _))
     }
 
     implicit def jsonReadsDependencyProject: play.api.libs.json.Reads[Project] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
-        (__ \ "user").read[com.bryzek.dependency.v0.models.UserReference] and
+        (__ \ "user").read[com.bryzek.dependency.v0.models.Reference] and
         (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "scms").read[com.bryzek.dependency.v0.models.Scms] and
         (__ \ "name").read[String] and
@@ -912,9 +908,9 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyProject: play.api.libs.json.Writes[Project] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
-        (__ \ "user").write[com.bryzek.dependency.v0.models.UserReference] and
+        (__ \ "user").write[com.bryzek.dependency.v0.models.Reference] and
         (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "scms").write[com.bryzek.dependency.v0.models.Scms] and
         (__ \ "name").write[String] and
@@ -924,7 +920,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyProjectBinary: play.api.libs.json.Reads[ProjectBinary] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "project").read[com.bryzek.dependency.v0.models.ProjectDetail] and
         (__ \ "name").read[String] and
         (__ \ "version").read[String] and
@@ -935,7 +931,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyProjectBinary: play.api.libs.json.Writes[ProjectBinary] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "project").write[com.bryzek.dependency.v0.models.ProjectDetail] and
         (__ \ "name").write[String] and
         (__ \ "version").write[String] and
@@ -946,7 +942,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyProjectDetail: play.api.libs.json.Reads[ProjectDetail] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "name").read[String]
       )(ProjectDetail.apply _)
@@ -954,7 +950,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyProjectDetail: play.api.libs.json.Writes[ProjectDetail] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "name").write[String]
       )(unlift(ProjectDetail.unapply _))
@@ -982,7 +978,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyProjectLibrary: play.api.libs.json.Reads[ProjectLibrary] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "project").read[com.bryzek.dependency.v0.models.ProjectDetail] and
         (__ \ "group_id").read[String] and
         (__ \ "artifact_id").read[String] and
@@ -995,7 +991,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyProjectLibrary: play.api.libs.json.Writes[ProjectLibrary] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "project").write[com.bryzek.dependency.v0.models.ProjectDetail] and
         (__ \ "group_id").write[String] and
         (__ \ "artifact_id").write[String] and
@@ -1026,7 +1022,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyProjectSummary: play.api.libs.json.Reads[ProjectSummary] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "organization").read[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "name").read[String]
       )(ProjectSummary.apply _)
@@ -1034,7 +1030,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyProjectSummary: play.api.libs.json.Writes[ProjectSummary] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "organization").write[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "name").write[String]
       )(unlift(ProjectSummary.unapply _))
@@ -1042,7 +1038,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyRecommendation: play.api.libs.json.Reads[Recommendation] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "project").read[com.bryzek.dependency.v0.models.ProjectDetail] and
         (__ \ "type").read[com.bryzek.dependency.v0.models.RecommendationType] and
         (__ \ "object").read[com.bryzek.dependency.v0.models.Reference] and
@@ -1055,7 +1051,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyRecommendation: play.api.libs.json.Writes[Recommendation] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "project").write[com.bryzek.dependency.v0.models.ProjectDetail] and
         (__ \ "type").write[com.bryzek.dependency.v0.models.RecommendationType] and
         (__ \ "object").write[com.bryzek.dependency.v0.models.Reference] and
@@ -1067,12 +1063,12 @@ package com.bryzek.dependency.v0.models {
     }
 
     implicit def jsonReadsDependencyReference: play.api.libs.json.Reads[Reference] = {
-      (__ \ "guid").read[_root_.java.util.UUID].map { x => new Reference(guid = x) }
+      (__ \ "id").read[String].map { x => new Reference(id = x) }
     }
 
     implicit def jsonWritesDependencyReference: play.api.libs.json.Writes[Reference] = new play.api.libs.json.Writes[Reference] {
       def writes(x: Reference) = play.api.libs.json.Json.obj(
-        "guid" -> play.api.libs.json.Json.toJson(x.guid)
+        "id" -> play.api.libs.json.Json.toJson(x.id)
       )
     }
 
@@ -1094,7 +1090,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyResolver: play.api.libs.json.Reads[Resolver] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "organization").readNullable[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "uri").read[String] and
@@ -1104,7 +1100,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyResolver: play.api.libs.json.Writes[Resolver] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "organization").writeNullable[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "uri").write[String] and
@@ -1132,7 +1128,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyResolverSummary: play.api.libs.json.Reads[ResolverSummary] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "organization").readNullable[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "visibility").read[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "uri").read[String]
@@ -1141,7 +1137,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyResolverSummary: play.api.libs.json.Writes[ResolverSummary] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "organization").writeNullable[com.bryzek.dependency.v0.models.OrganizationSummary] and
         (__ \ "visibility").write[com.bryzek.dependency.v0.models.Visibility] and
         (__ \ "uri").write[String]
@@ -1150,16 +1146,16 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencySubscription: play.api.libs.json.Reads[Subscription] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "user").read[com.bryzek.dependency.v0.models.UserReference] and
+        (__ \ "id").read[String] and
+        (__ \ "user").read[com.bryzek.dependency.v0.models.Reference] and
         (__ \ "publication").read[com.bryzek.dependency.v0.models.Publication]
       )(Subscription.apply _)
     }
 
     implicit def jsonWritesDependencySubscription: play.api.libs.json.Writes[Subscription] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "user").write[com.bryzek.dependency.v0.models.UserReference] and
+        (__ \ "id").write[String] and
+        (__ \ "user").write[com.bryzek.dependency.v0.models.Reference] and
         (__ \ "publication").write[com.bryzek.dependency.v0.models.Publication]
       )(unlift(Subscription.unapply _))
     }
@@ -1180,22 +1176,22 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencySync: play.api.libs.json.Reads[Sync] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "event").read[com.bryzek.dependency.v0.models.SyncEvent]
       )(Sync.apply _)
     }
 
     implicit def jsonWritesDependencySync: play.api.libs.json.Writes[Sync] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "event").write[com.bryzek.dependency.v0.models.SyncEvent]
       )(unlift(Sync.unapply _))
     }
 
     implicit def jsonReadsDependencyToken: play.api.libs.json.Reads[Token] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "user").read[com.bryzek.dependency.v0.models.UserReference] and
+        (__ \ "id").read[String] and
+        (__ \ "user").read[com.bryzek.dependency.v0.models.Reference] and
         (__ \ "tag").read[String] and
         (__ \ "token").read[String]
       )(Token.apply _)
@@ -1203,8 +1199,8 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyToken: play.api.libs.json.Writes[Token] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "user").write[com.bryzek.dependency.v0.models.UserReference] and
+        (__ \ "id").write[String] and
+        (__ \ "user").write[com.bryzek.dependency.v0.models.Reference] and
         (__ \ "tag").write[String] and
         (__ \ "token").write[String]
       )(unlift(Token.unapply _))
@@ -1228,33 +1224,23 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonReadsDependencyUserIdentifier: play.api.libs.json.Reads[UserIdentifier] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
-        (__ \ "user").read[com.bryzek.dependency.v0.models.UserReference] and
+        (__ \ "id").read[String] and
+        (__ \ "user").read[com.bryzek.dependency.v0.models.Reference] and
         (__ \ "value").read[String]
       )(UserIdentifier.apply _)
     }
 
     implicit def jsonWritesDependencyUserIdentifier: play.api.libs.json.Writes[UserIdentifier] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
-        (__ \ "user").write[com.bryzek.dependency.v0.models.UserReference] and
+        (__ \ "id").write[String] and
+        (__ \ "user").write[com.bryzek.dependency.v0.models.Reference] and
         (__ \ "value").write[String]
       )(unlift(UserIdentifier.unapply _))
     }
 
-    implicit def jsonReadsDependencyUserReference: play.api.libs.json.Reads[UserReference] = {
-      (__ \ "id").read[String].map { x => new UserReference(id = x) }
-    }
-
-    implicit def jsonWritesDependencyUserReference: play.api.libs.json.Writes[UserReference] = new play.api.libs.json.Writes[UserReference] {
-      def writes(x: UserReference) = play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(x.id)
-      )
-    }
-
     implicit def jsonReadsDependencyUserSummary: play.api.libs.json.Reads[UserSummary] = {
       (
-        (__ \ "guid").read[_root_.java.util.UUID] and
+        (__ \ "id").read[String] and
         (__ \ "email").readNullable[String] and
         (__ \ "name").read[io.flow.user.v0.models.Name]
       )(UserSummary.apply _)
@@ -1262,7 +1248,7 @@ package com.bryzek.dependency.v0.models {
 
     implicit def jsonWritesDependencyUserSummary: play.api.libs.json.Writes[UserSummary] = {
       (
-        (__ \ "guid").write[_root_.java.util.UUID] and
+        (__ \ "id").write[String] and
         (__ \ "email").writeNullable[String] and
         (__ \ "name").write[io.flow.user.v0.models.Name]
       )(unlift(UserSummary.unapply _))
@@ -1504,21 +1490,21 @@ package com.bryzek.dependency.v0 {
 
     object Binaries extends Binaries {
       override def get(
-        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-        projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        id: _root_.scala.Option[String] = None,
+        ids: _root_.scala.Option[Seq[String]] = None,
+        projectId: _root_.scala.Option[String] = None,
         name: _root_.scala.Option[String] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Binary]] = {
         val queryParameters = Seq(
-          guid.map("guid" -> _.toString),
-          projectGuid.map("project_guid" -> _.toString),
+          id.map("id" -> _),
+          projectId.map("project_id" -> _),
           name.map("name" -> _),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
-          guids.getOrElse(Nil).map("guids" -> _.toString)
+          ids.getOrElse(Nil).map("ids" -> _)
 
         _executeRequest("GET", s"/binaries", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Binary]", r, _.validate[Seq[com.bryzek.dependency.v0.models.Binary]])
@@ -1527,10 +1513,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def getByGuid(
-        guid: _root_.java.util.UUID
+      override def getById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Binary] = {
-        _executeRequest("GET", s"/binaries/${guid}").map {
+        _executeRequest("GET", s"/binaries/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Binary", r, _.validate[com.bryzek.dependency.v0.models.Binary])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -1551,10 +1537,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def deleteByGuid(
-        guid: _root_.java.util.UUID
+      override def deleteById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/binaries/${guid}").map {
+        _executeRequest("DELETE", s"/binaries/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 204 => ()
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -1565,21 +1551,21 @@ package com.bryzek.dependency.v0 {
 
     object BinaryVersions extends BinaryVersions {
       override def get(
-        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-        binaryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        id: _root_.scala.Option[String] = None,
+        ids: _root_.scala.Option[Seq[String]] = None,
+        binaryId: _root_.scala.Option[String] = None,
+        projectId: _root_.scala.Option[String] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.BinaryVersion]] = {
         val queryParameters = Seq(
-          guid.map("guid" -> _.toString),
-          binaryGuid.map("binary_guid" -> _.toString),
-          projectGuid.map("project_guid" -> _.toString),
+          id.map("id" -> _),
+          binaryId.map("binary_id" -> _),
+          projectId.map("project_id" -> _),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
-          guids.getOrElse(Nil).map("guids" -> _.toString)
+          ids.getOrElse(Nil).map("ids" -> _)
 
         _executeRequest("GET", s"/binary_versions", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.BinaryVersion]", r, _.validate[Seq[com.bryzek.dependency.v0.models.BinaryVersion]])
@@ -1588,10 +1574,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def getByGuid(
-        guid: _root_.java.util.UUID
+      override def getById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.BinaryVersion] = {
-        _executeRequest("GET", s"/binary_versions/${guid}").map {
+        _executeRequest("GET", s"/binary_versions/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.BinaryVersion", r, _.validate[com.bryzek.dependency.v0.models.BinaryVersion])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -1645,25 +1631,25 @@ package com.bryzek.dependency.v0 {
 
     object Libraries extends Libraries {
       override def get(
-        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-        projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        id: _root_.scala.Option[String] = None,
+        ids: _root_.scala.Option[Seq[String]] = None,
+        projectId: _root_.scala.Option[String] = None,
         groupId: _root_.scala.Option[String] = None,
         artifactId: _root_.scala.Option[String] = None,
-        resolverGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        resolverId: _root_.scala.Option[String] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Library]] = {
         val queryParameters = Seq(
-          guid.map("guid" -> _.toString),
-          projectGuid.map("project_guid" -> _.toString),
+          id.map("id" -> _),
+          projectId.map("project_id" -> _),
           groupId.map("group_id" -> _),
           artifactId.map("artifact_id" -> _),
-          resolverGuid.map("resolver_guid" -> _.toString),
+          resolverId.map("resolver_id" -> _),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
-          guids.getOrElse(Nil).map("guids" -> _.toString)
+          ids.getOrElse(Nil).map("ids" -> _)
 
         _executeRequest("GET", s"/libraries", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Library]", r, _.validate[Seq[com.bryzek.dependency.v0.models.Library]])
@@ -1672,10 +1658,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def getByGuid(
-        guid: _root_.java.util.UUID
+      override def getById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Library] = {
-        _executeRequest("GET", s"/libraries/${guid}").map {
+        _executeRequest("GET", s"/libraries/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Library", r, _.validate[com.bryzek.dependency.v0.models.Library])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -1696,10 +1682,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def deleteByGuid(
-        guid: _root_.java.util.UUID
+      override def deleteById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/libraries/${guid}").map {
+        _executeRequest("DELETE", s"/libraries/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 204 => ()
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -1710,19 +1696,19 @@ package com.bryzek.dependency.v0 {
 
     object LibraryVersions extends LibraryVersions {
       override def get(
-        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-        libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        id: _root_.scala.Option[String] = None,
+        ids: _root_.scala.Option[Seq[String]] = None,
+        libraryId: _root_.scala.Option[String] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.LibraryVersion]] = {
         val queryParameters = Seq(
-          guid.map("guid" -> _.toString),
-          libraryGuid.map("library_guid" -> _.toString),
+          id.map("id" -> _),
+          libraryId.map("library_id" -> _),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
-          guids.getOrElse(Nil).map("guids" -> _.toString)
+          ids.getOrElse(Nil).map("ids" -> _)
 
         _executeRequest("GET", s"/library_versions", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.LibraryVersion]", r, _.validate[Seq[com.bryzek.dependency.v0.models.LibraryVersion]])
@@ -1731,10 +1717,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def getByGuid(
-        guid: _root_.java.util.UUID
+      override def getById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.LibraryVersion] = {
-        _executeRequest("GET", s"/library_versions/${guid}").map {
+        _executeRequest("GET", s"/library_versions/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.LibraryVersion", r, _.validate[com.bryzek.dependency.v0.models.LibraryVersion])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -1745,8 +1731,8 @@ package com.bryzek.dependency.v0 {
 
     object Memberships extends Memberships {
       override def get(
-        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+        id: _root_.scala.Option[String] = None,
+        ids: _root_.scala.Option[Seq[String]] = None,
         organization: _root_.scala.Option[String] = None,
         userId: _root_.scala.Option[String] = None,
         role: _root_.scala.Option[com.bryzek.dependency.v0.models.Role] = None,
@@ -1754,14 +1740,14 @@ package com.bryzek.dependency.v0 {
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Membership]] = {
         val queryParameters = Seq(
-          guid.map("guid" -> _.toString),
+          id.map("id" -> _),
           organization.map("organization" -> _),
           userId.map("user_id" -> _),
           role.map("role" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
-          guids.getOrElse(Nil).map("guids" -> _.toString)
+          ids.getOrElse(Nil).map("ids" -> _)
 
         _executeRequest("GET", s"/memberships", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Membership]", r, _.validate[Seq[com.bryzek.dependency.v0.models.Membership]])
@@ -1770,10 +1756,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def getByGuid(
-        guid: _root_.java.util.UUID
+      override def getById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Membership] = {
-        _executeRequest("GET", s"/memberships/${guid}").map {
+        _executeRequest("GET", s"/memberships/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Membership", r, _.validate[com.bryzek.dependency.v0.models.Membership])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -1795,10 +1781,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def deleteByGuid(
-        guid: _root_.java.util.UUID
+      override def deleteById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/memberships/${guid}").map {
+        _executeRequest("DELETE", s"/memberships/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 204 => ()
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -1809,21 +1795,21 @@ package com.bryzek.dependency.v0 {
 
     object Organizations extends Organizations {
       override def get(
-        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+        id: _root_.scala.Option[String] = None,
+        ids: _root_.scala.Option[Seq[String]] = None,
         userId: _root_.scala.Option[String] = None,
         key: _root_.scala.Option[String] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Organization]] = {
         val queryParameters = Seq(
-          guid.map("guid" -> _.toString),
+          id.map("id" -> _),
           userId.map("user_id" -> _),
           key.map("key" -> _),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
-          guids.getOrElse(Nil).map("guids" -> _.toString)
+          ids.getOrElse(Nil).map("ids" -> _)
 
         _executeRequest("GET", s"/organizations", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Organization]", r, _.validate[Seq[com.bryzek.dependency.v0.models.Organization]])
@@ -1843,10 +1829,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def getByGuid(
-        guid: _root_.java.util.UUID
+      override def getById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Organization] = {
-        _executeRequest("GET", s"/organizations/${guid}").map {
+        _executeRequest("GET", s"/organizations/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Organization", r, _.validate[com.bryzek.dependency.v0.models.Organization])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -1867,13 +1853,13 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def putByGuid(
-        guid: _root_.java.util.UUID,
+      override def putById(
+        id: String,
         organizationForm: com.bryzek.dependency.v0.models.OrganizationForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Organization] = {
         val payload = play.api.libs.json.Json.toJson(organizationForm)
 
-        _executeRequest("PUT", s"/organizations/${guid}", body = Some(payload)).map {
+        _executeRequest("PUT", s"/organizations/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", body = Some(payload)).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Organization", r, _.validate[com.bryzek.dependency.v0.models.Organization])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
@@ -1881,10 +1867,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def deleteByGuid(
-        guid: _root_.java.util.UUID
+      override def deleteById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/organizations/${guid}").map {
+        _executeRequest("DELETE", s"/organizations/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 204 => ()
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -1895,23 +1881,23 @@ package com.bryzek.dependency.v0 {
 
     object ProjectBinaries extends ProjectBinaries {
       override def get(
-        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-        projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        binaryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        id: _root_.scala.Option[String] = None,
+        ids: _root_.scala.Option[Seq[String]] = None,
+        projectId: _root_.scala.Option[String] = None,
+        binaryId: _root_.scala.Option[String] = None,
         isSynced: _root_.scala.Option[Boolean] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.ProjectBinary]] = {
         val queryParameters = Seq(
-          guid.map("guid" -> _.toString),
-          projectGuid.map("project_guid" -> _.toString),
-          binaryGuid.map("binary_guid" -> _.toString),
+          id.map("id" -> _),
+          projectId.map("project_id" -> _),
+          binaryId.map("binary_id" -> _),
           isSynced.map("is_synced" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
-          guids.getOrElse(Nil).map("guids" -> _.toString)
+          ids.getOrElse(Nil).map("ids" -> _)
 
         _executeRequest("GET", s"/project_binaries", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.ProjectBinary]", r, _.validate[Seq[com.bryzek.dependency.v0.models.ProjectBinary]])
@@ -1923,23 +1909,23 @@ package com.bryzek.dependency.v0 {
 
     object ProjectLibraries extends ProjectLibraries {
       override def get(
-        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-        projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        id: _root_.scala.Option[String] = None,
+        ids: _root_.scala.Option[Seq[String]] = None,
+        projectId: _root_.scala.Option[String] = None,
+        libraryId: _root_.scala.Option[String] = None,
         isSynced: _root_.scala.Option[Boolean] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.ProjectLibrary]] = {
         val queryParameters = Seq(
-          guid.map("guid" -> _.toString),
-          projectGuid.map("project_guid" -> _.toString),
-          libraryGuid.map("library_guid" -> _.toString),
+          id.map("id" -> _),
+          projectId.map("project_id" -> _),
+          libraryId.map("library_id" -> _),
           isSynced.map("is_synced" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
-          guids.getOrElse(Nil).map("guids" -> _.toString)
+          ids.getOrElse(Nil).map("ids" -> _)
 
         _executeRequest("GET", s"/project_libraries", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.ProjectLibrary]", r, _.validate[Seq[com.bryzek.dependency.v0.models.ProjectLibrary]])
@@ -1951,33 +1937,33 @@ package com.bryzek.dependency.v0 {
 
     object Projects extends Projects {
       override def get(
-        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+        id: _root_.scala.Option[String] = None,
+        ids: _root_.scala.Option[Seq[String]] = None,
         organization: _root_.scala.Option[String] = None,
         name: _root_.scala.Option[String] = None,
         groupId: _root_.scala.Option[String] = None,
         artifactId: _root_.scala.Option[String] = None,
         version: _root_.scala.Option[String] = None,
-        libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        libraryId: _root_.scala.Option[String] = None,
         binary: _root_.scala.Option[String] = None,
-        binaryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        binaryId: _root_.scala.Option[String] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Project]] = {
         val queryParameters = Seq(
-          guid.map("guid" -> _.toString),
+          id.map("id" -> _),
           organization.map("organization" -> _),
           name.map("name" -> _),
           groupId.map("group_id" -> _),
           artifactId.map("artifact_id" -> _),
           version.map("version" -> _),
-          libraryGuid.map("library_guid" -> _.toString),
+          libraryId.map("library_id" -> _),
           binary.map("binary" -> _),
-          binaryGuid.map("binary_guid" -> _.toString),
+          binaryId.map("binary_id" -> _),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
-          guids.getOrElse(Nil).map("guids" -> _.toString)
+          ids.getOrElse(Nil).map("ids" -> _)
 
         _executeRequest("GET", s"/projects", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Project]", r, _.validate[Seq[com.bryzek.dependency.v0.models.Project]])
@@ -1986,10 +1972,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def getByGuid(
-        guid: _root_.java.util.UUID
+      override def getById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Project] = {
-        _executeRequest("GET", s"/projects/${guid}").map {
+        _executeRequest("GET", s"/projects/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Project", r, _.validate[com.bryzek.dependency.v0.models.Project])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -2010,13 +1996,13 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def putByGuid(
-        guid: _root_.java.util.UUID,
+      override def putById(
+        id: String,
         projectForm: com.bryzek.dependency.v0.models.ProjectForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Project] = {
         val payload = play.api.libs.json.Json.toJson(projectForm)
 
-        _executeRequest("PUT", s"/projects/${guid}", body = Some(payload)).map {
+        _executeRequest("PUT", s"/projects/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", body = Some(payload)).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Project", r, _.validate[com.bryzek.dependency.v0.models.Project])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
@@ -2024,13 +2010,13 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def patchByGuid(
-        guid: _root_.java.util.UUID,
+      override def patchById(
+        id: String,
         projectPatchForm: com.bryzek.dependency.v0.models.ProjectPatchForm
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Project] = {
         val payload = play.api.libs.json.Json.toJson(projectPatchForm)
 
-        _executeRequest("PATCH", s"/projects/${guid}", body = Some(payload)).map {
+        _executeRequest("PATCH", s"/projects/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", body = Some(payload)).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Project", r, _.validate[com.bryzek.dependency.v0.models.Project])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
@@ -2038,10 +2024,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def deleteByGuid(
-        guid: _root_.java.util.UUID
+      override def deleteById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/projects/${guid}").map {
+        _executeRequest("DELETE", s"/projects/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 204 => ()
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -2053,14 +2039,14 @@ package com.bryzek.dependency.v0 {
     object Recommendations extends Recommendations {
       override def get(
         organization: _root_.scala.Option[String] = None,
-        projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        projectId: _root_.scala.Option[String] = None,
         `type`: _root_.scala.Option[com.bryzek.dependency.v0.models.RecommendationType] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Recommendation]] = {
         val queryParameters = Seq(
           organization.map("organization" -> _),
-          projectGuid.map("project_guid" -> _.toString),
+          projectId.map("project_id" -> _),
           `type`.map("type" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
@@ -2077,14 +2063,14 @@ package com.bryzek.dependency.v0 {
     object Repositories extends Repositories {
       override def getGithub(
         name: _root_.scala.Option[String] = None,
-        organizationGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        organizationId: _root_.scala.Option[String] = None,
         existingProject: _root_.scala.Option[Boolean] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Repository]] = {
         val queryParameters = Seq(
           name.map("name" -> _),
-          organizationGuid.map("organization_guid" -> _.toString),
+          organizationId.map("organization_id" -> _),
           existingProject.map("existing_project" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
@@ -2101,21 +2087,21 @@ package com.bryzek.dependency.v0 {
 
     object Resolvers extends Resolvers {
       override def get(
-        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+        id: _root_.scala.Option[String] = None,
+        ids: _root_.scala.Option[Seq[String]] = None,
         organization: _root_.scala.Option[String] = None,
         visibility: _root_.scala.Option[com.bryzek.dependency.v0.models.Visibility] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Resolver]] = {
         val queryParameters = Seq(
-          guid.map("guid" -> _.toString),
+          id.map("id" -> _),
           organization.map("organization" -> _),
           visibility.map("visibility" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
-          guids.getOrElse(Nil).map("guids" -> _.toString)
+          ids.getOrElse(Nil).map("ids" -> _)
 
         _executeRequest("GET", s"/resolvers", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Resolver]", r, _.validate[Seq[com.bryzek.dependency.v0.models.Resolver]])
@@ -2124,10 +2110,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def getByGuid(
-        guid: _root_.java.util.UUID
+      override def getById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Resolver] = {
-        _executeRequest("GET", s"/resolvers/${guid}").map {
+        _executeRequest("GET", s"/resolvers/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Resolver", r, _.validate[com.bryzek.dependency.v0.models.Resolver])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -2148,10 +2134,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def deleteByGuid(
-        guid: _root_.java.util.UUID
+      override def deleteById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
-        _executeRequest("DELETE", s"/resolvers/${guid}").map {
+        _executeRequest("DELETE", s"/resolvers/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 204 => ()
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -2162,8 +2148,8 @@ package com.bryzek.dependency.v0 {
 
     object Subscriptions extends Subscriptions {
       override def get(
-        guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-        guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+        id: _root_.scala.Option[String] = None,
+        ids: _root_.scala.Option[Seq[String]] = None,
         userId: _root_.scala.Option[String] = None,
         identifier: _root_.scala.Option[String] = None,
         publication: _root_.scala.Option[com.bryzek.dependency.v0.models.Publication] = None,
@@ -2171,14 +2157,14 @@ package com.bryzek.dependency.v0 {
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Subscription]] = {
         val queryParameters = Seq(
-          guid.map("guid" -> _.toString),
+          id.map("id" -> _),
           userId.map("user_id" -> _),
           identifier.map("identifier" -> _),
           publication.map("publication" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten ++
-          guids.getOrElse(Nil).map("guids" -> _.toString)
+          ids.getOrElse(Nil).map("ids" -> _)
 
         _executeRequest("GET", s"/subscriptions", queryParameters = queryParameters).map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Subscription]", r, _.validate[Seq[com.bryzek.dependency.v0.models.Subscription]])
@@ -2187,10 +2173,10 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def getByGuid(
-        guid: _root_.java.util.UUID
+      override def getById(
+        id: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Subscription] = {
-        _executeRequest("GET", s"/subscriptions/${guid}").map {
+        _executeRequest("GET", s"/subscriptions/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
           case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Subscription", r, _.validate[com.bryzek.dependency.v0.models.Subscription])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -2216,15 +2202,15 @@ package com.bryzek.dependency.v0 {
         }
       }
 
-      override def deleteByGuid(
-        guid: _root_.java.util.UUID,
+      override def deleteById(
+        id: String,
         identifier: _root_.scala.Option[String] = None
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         val queryParameters = Seq(
           identifier.map("identifier" -> _)
         ).flatten
 
-        _executeRequest("DELETE", s"/subscriptions/${guid}", queryParameters = queryParameters).map {
+        _executeRequest("DELETE", s"/subscriptions/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", queryParameters = queryParameters).map {
           case r if r.status == 204 => ()
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
@@ -2235,13 +2221,13 @@ package com.bryzek.dependency.v0 {
 
     object Syncs extends Syncs {
       override def get(
-        objectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+        objectId: _root_.scala.Option[String] = None,
         event: _root_.scala.Option[com.bryzek.dependency.v0.models.SyncEvent] = None,
         limit: Long = 25,
         offset: Long = 0
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Sync]] = {
         val queryParameters = Seq(
-          objectGuid.map("object_guid" -> _.toString),
+          objectId.map("object_id" -> _),
           event.map("event" -> _.toString),
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
@@ -2401,19 +2387,19 @@ package com.bryzek.dependency.v0 {
      * Search binaries. Results are paginated
      */
     def get(
-      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-      projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      id: _root_.scala.Option[String] = None,
+      ids: _root_.scala.Option[Seq[String]] = None,
+      projectId: _root_.scala.Option[String] = None,
       name: _root_.scala.Option[String] = None,
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Binary]]
 
     /**
-     * Returns information about the binary with this guid.
+     * Returns information about the binary with this id.
      */
-    def getByGuid(
-      guid: _root_.java.util.UUID
+    def getById(
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Binary]
 
     /**
@@ -2423,8 +2409,8 @@ package com.bryzek.dependency.v0 {
       binaryForm: com.bryzek.dependency.v0.models.BinaryForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Binary]
 
-    def deleteByGuid(
-      guid: _root_.java.util.UUID
+    def deleteById(
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
@@ -2433,19 +2419,19 @@ package com.bryzek.dependency.v0 {
      * Search binary versions. Results are paginated
      */
     def get(
-      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-      binaryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      id: _root_.scala.Option[String] = None,
+      ids: _root_.scala.Option[Seq[String]] = None,
+      binaryId: _root_.scala.Option[String] = None,
+      projectId: _root_.scala.Option[String] = None,
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.BinaryVersion]]
 
     /**
-     * Returns information about the binary version with this guid.
+     * Returns information about the binary version with this id.
      */
-    def getByGuid(
-      guid: _root_.java.util.UUID
+    def getById(
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.BinaryVersion]
   }
 
@@ -2478,21 +2464,21 @@ package com.bryzek.dependency.v0 {
      * Search libraries. Results are paginated
      */
     def get(
-      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-      projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      id: _root_.scala.Option[String] = None,
+      ids: _root_.scala.Option[Seq[String]] = None,
+      projectId: _root_.scala.Option[String] = None,
       groupId: _root_.scala.Option[String] = None,
       artifactId: _root_.scala.Option[String] = None,
-      resolverGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      resolverId: _root_.scala.Option[String] = None,
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Library]]
 
     /**
-     * Returns information about the library with this guid.
+     * Returns information about the library with this id.
      */
-    def getByGuid(
-      guid: _root_.java.util.UUID
+    def getById(
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Library]
 
     /**
@@ -2502,8 +2488,8 @@ package com.bryzek.dependency.v0 {
       libraryForm: com.bryzek.dependency.v0.models.LibraryForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Library]
 
-    def deleteByGuid(
-      guid: _root_.java.util.UUID
+    def deleteById(
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
@@ -2512,18 +2498,18 @@ package com.bryzek.dependency.v0 {
      * Search library versions. Results are paginated
      */
     def get(
-      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-      libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      id: _root_.scala.Option[String] = None,
+      ids: _root_.scala.Option[Seq[String]] = None,
+      libraryId: _root_.scala.Option[String] = None,
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.LibraryVersion]]
 
     /**
-     * Returns information about the library version with this guid.
+     * Returns information about the library version with this id.
      */
-    def getByGuid(
-      guid: _root_.java.util.UUID
+    def getById(
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.LibraryVersion]
   }
 
@@ -2532,8 +2518,8 @@ package com.bryzek.dependency.v0 {
      * Search all memberships. Results are always paginated.
      */
     def get(
-      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+      id: _root_.scala.Option[String] = None,
+      ids: _root_.scala.Option[Seq[String]] = None,
       organization: _root_.scala.Option[String] = None,
       userId: _root_.scala.Option[String] = None,
       role: _root_.scala.Option[com.bryzek.dependency.v0.models.Role] = None,
@@ -2541,16 +2527,16 @@ package com.bryzek.dependency.v0 {
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Membership]]
 
-    def getByGuid(
-      guid: _root_.java.util.UUID
+    def getById(
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Membership]
 
     def post(
       membershipForm: com.bryzek.dependency.v0.models.MembershipForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Membership]
 
-    def deleteByGuid(
-      guid: _root_.java.util.UUID
+    def deleteById(
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
@@ -2559,8 +2545,8 @@ package com.bryzek.dependency.v0 {
      * Search organizations. Results are paginated
      */
     def get(
-      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+      id: _root_.scala.Option[String] = None,
+      ids: _root_.scala.Option[Seq[String]] = None,
       userId: _root_.scala.Option[String] = None,
       key: _root_.scala.Option[String] = None,
       limit: Long = 25,
@@ -2575,10 +2561,10 @@ package com.bryzek.dependency.v0 {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Organization]
 
     /**
-     * Returns information about the organization with this guid.
+     * Returns information about the organization with this id.
      */
-    def getByGuid(
-      guid: _root_.java.util.UUID
+    def getById(
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Organization]
 
     /**
@@ -2591,13 +2577,13 @@ package com.bryzek.dependency.v0 {
     /**
      * Update an existing organization.
      */
-    def putByGuid(
-      guid: _root_.java.util.UUID,
+    def putById(
+      id: String,
       organizationForm: com.bryzek.dependency.v0.models.OrganizationForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Organization]
 
-    def deleteByGuid(
-      guid: _root_.java.util.UUID
+    def deleteById(
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
@@ -2606,10 +2592,10 @@ package com.bryzek.dependency.v0 {
      * Search project binaries. Results are paginated
      */
     def get(
-      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-      projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      binaryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      id: _root_.scala.Option[String] = None,
+      ids: _root_.scala.Option[Seq[String]] = None,
+      projectId: _root_.scala.Option[String] = None,
+      binaryId: _root_.scala.Option[String] = None,
       isSynced: _root_.scala.Option[Boolean] = None,
       limit: Long = 25,
       offset: Long = 0
@@ -2621,10 +2607,10 @@ package com.bryzek.dependency.v0 {
      * Search project libraries. Results are paginated
      */
     def get(
-      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
-      projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      id: _root_.scala.Option[String] = None,
+      ids: _root_.scala.Option[Seq[String]] = None,
+      projectId: _root_.scala.Option[String] = None,
+      libraryId: _root_.scala.Option[String] = None,
       isSynced: _root_.scala.Option[Boolean] = None,
       limit: Long = 25,
       offset: Long = 0
@@ -2636,25 +2622,25 @@ package com.bryzek.dependency.v0 {
      * Search projects. Results are paginated
      */
     def get(
-      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+      id: _root_.scala.Option[String] = None,
+      ids: _root_.scala.Option[Seq[String]] = None,
       organization: _root_.scala.Option[String] = None,
       name: _root_.scala.Option[String] = None,
       groupId: _root_.scala.Option[String] = None,
       artifactId: _root_.scala.Option[String] = None,
       version: _root_.scala.Option[String] = None,
-      libraryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      libraryId: _root_.scala.Option[String] = None,
       binary: _root_.scala.Option[String] = None,
-      binaryGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      binaryId: _root_.scala.Option[String] = None,
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Project]]
 
     /**
-     * Returns information about the project with this guid.
+     * Returns information about the project with this id.
      */
-    def getByGuid(
-      guid: _root_.java.util.UUID
+    def getById(
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Project]
 
     /**
@@ -2667,21 +2653,21 @@ package com.bryzek.dependency.v0 {
     /**
      * Update an existing project.
      */
-    def putByGuid(
-      guid: _root_.java.util.UUID,
+    def putById(
+      id: String,
       projectForm: com.bryzek.dependency.v0.models.ProjectForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Project]
 
     /**
      * Patch an existing project
      */
-    def patchByGuid(
-      guid: _root_.java.util.UUID,
+    def patchById(
+      id: String,
       projectPatchForm: com.bryzek.dependency.v0.models.ProjectPatchForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Project]
 
-    def deleteByGuid(
-      guid: _root_.java.util.UUID
+    def deleteById(
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
@@ -2691,7 +2677,7 @@ package com.bryzek.dependency.v0 {
      */
     def get(
       organization: _root_.scala.Option[String] = None,
-      projectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      projectId: _root_.scala.Option[String] = None,
       `type`: _root_.scala.Option[com.bryzek.dependency.v0.models.RecommendationType] = None,
       limit: Long = 25,
       offset: Long = 0
@@ -2704,7 +2690,7 @@ package com.bryzek.dependency.v0 {
      */
     def getGithub(
       name: _root_.scala.Option[String] = None,
-      organizationGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      organizationId: _root_.scala.Option[String] = None,
       existingProject: _root_.scala.Option[Boolean] = None,
       limit: Long = 25,
       offset: Long = 0
@@ -2716,8 +2702,8 @@ package com.bryzek.dependency.v0 {
      * Search resolvers. Results are paginated
      */
     def get(
-      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+      id: _root_.scala.Option[String] = None,
+      ids: _root_.scala.Option[Seq[String]] = None,
       organization: _root_.scala.Option[String] = None,
       visibility: _root_.scala.Option[com.bryzek.dependency.v0.models.Visibility] = None,
       limit: Long = 25,
@@ -2725,10 +2711,10 @@ package com.bryzek.dependency.v0 {
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Resolver]]
 
     /**
-     * Returns information about the resolver with this guid.
+     * Returns information about the resolver with this id.
      */
-    def getByGuid(
-      guid: _root_.java.util.UUID
+    def getById(
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Resolver]
 
     /**
@@ -2738,8 +2724,8 @@ package com.bryzek.dependency.v0 {
       resolverForm: com.bryzek.dependency.v0.models.ResolverForm
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Resolver]
 
-    def deleteByGuid(
-      guid: _root_.java.util.UUID
+    def deleteById(
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
@@ -2748,8 +2734,8 @@ package com.bryzek.dependency.v0 {
      * Search subscriptions. Always paginated.
      */
     def get(
-      guid: _root_.scala.Option[_root_.java.util.UUID] = None,
-      guids: _root_.scala.Option[Seq[_root_.java.util.UUID]] = None,
+      id: _root_.scala.Option[String] = None,
+      ids: _root_.scala.Option[Seq[String]] = None,
       userId: _root_.scala.Option[String] = None,
       identifier: _root_.scala.Option[String] = None,
       publication: _root_.scala.Option[com.bryzek.dependency.v0.models.Publication] = None,
@@ -2760,8 +2746,8 @@ package com.bryzek.dependency.v0 {
     /**
      * Returns information about a specific subscription.
      */
-    def getByGuid(
-      guid: _root_.java.util.UUID
+    def getById(
+      id: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Subscription]
 
     /**
@@ -2772,15 +2758,15 @@ package com.bryzek.dependency.v0 {
       identifier: _root_.scala.Option[String] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Subscription]
 
-    def deleteByGuid(
-      guid: _root_.java.util.UUID,
+    def deleteById(
+      id: String,
       identifier: _root_.scala.Option[String] = None
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
   trait Syncs {
     def get(
-      objectGuid: _root_.scala.Option[_root_.java.util.UUID] = None,
+      objectId: _root_.scala.Option[String] = None,
       event: _root_.scala.Option[com.bryzek.dependency.v0.models.SyncEvent] = None,
       limit: Long = 25,
       offset: Long = 0

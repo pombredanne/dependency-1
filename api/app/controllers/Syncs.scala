@@ -8,7 +8,6 @@ import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 
 @javax.inject.Singleton
 class Syncs @javax.inject.Inject() (
@@ -16,7 +15,7 @@ class Syncs @javax.inject.Inject() (
 ) extends Controller with IdentifiedRestController with Helpers {
 
   def get(
-    objectGuid: Option[UUID],
+    objectId: Option[String],
     event: Option[SyncEvent],
     limit: Long = 25,
     offset: Long = 0
@@ -24,7 +23,7 @@ class Syncs @javax.inject.Inject() (
     Ok(
       Json.toJson(
         SyncsDao.findAll(
-          objectGuid = objectGuid,
+          objectId = objectId,
           event = event,
           limit = limit,
           offset = offset

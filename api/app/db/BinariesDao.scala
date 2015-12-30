@@ -8,24 +8,23 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-import java.util.UUID
 
 object BinariesDao {
 
   private[this] val BaseQuery = Query(s"""
-    select binaries.guid,
+    select binaries.id,
            binaries.name,
-           organizations.guid as binaries_organization_guid,
+           organizations.id as binaries_organization_id,
            organizations.key as binaries_organization_key
       from binaries
-      left join organizations on organizations.deleted_at is null and organizations.guid = binaries.organization_guid
+      left join organizations on organizations.deleted_at is null and organizations.id = binaries.organization_id
   """)
 
   private[this] val InsertQuery = """
     insert into binaries
-    (guid, organization_guid, name, created_by_guid, updated_by_guid)
+    (id, organization_id, name, created_by_id, updated_by_id)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {name}, {updated_by_user_id})
+    ({id}, {organization_id}, {name}, {updated_by_user_id})
   """
 
   private[db] def validate(
@@ -52,21 +51,21 @@ object BinariesDao {
   def create(createdBy: User, form: BinaryForm): Either[Seq[String], Binary] = {
     validate(form) match {
       case Nil => {
-        val guid = UUID.randomUUID
+        val id = io.flow.play.util.IdGenerator("bin").randomId()
 
         DB.withConnection { implicit c =>
           SQL(InsertQuery).on(
-            'guid -> guid,
-            'organization_guid -> form.organizationGuid,
+            'id -> id,
+            'organization_id -> form.organizationId,
             'name -> form.name.toString.toLowerCase,
             'updated_by_user_id -> createdBy.id
           ).execute()
         }
 
-        MainActor.ref ! MainActor.Messages.BinaryCreated(guid)
+        MainActor.ref ! MainActor.Messages.BinaryCreated(id)
 
         Right(
-          findByGuid(Authorization.All, guid).getOrElse {
+          findById(Authorization.All, id).getOrElse {
             sys.error("Failed to create binary")
           }
         )
@@ -76,16 +75,16 @@ object BinariesDao {
   }
 
   def softDelete(deletedBy: User, binary: Binary) {
-    SoftDelete.delete("binaries", deletedBy.id, binary.guid)
-    MainActor.ref ! MainActor.Messages.BinaryDeleted(binary.guid)
+    SoftDelete.delete("binaries", deletedBy.id, binary.id)
+    MainActor.ref ! MainActor.Messages.BinaryDeleted(binary.id)
   }
 
   def findByName(auth: Authorization, name: String): Option[Binary] = {
     findAll(auth, name = Some(name), limit = 1).headOption
   }
 
-  def findByGuid(auth: Authorization, guid: UUID): Option[Binary] = {
-    findAll(auth, guid = Some(guid), limit = 1).headOption
+  def findById(auth: Authorization, id: String): Option[Binary] = {
+    findAll(auth, id = Some(id), limit = 1).headOption
   }
 
   /**
@@ -94,10 +93,10 @@ object BinariesDao {
     */
   def findAll(
     auth: Authorization,
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
-    projectGuid: Option[UUID] = None,
-    organizationGuid: Option[UUID] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
+    projectId: Option[String] = None,
+    organizationId: Option[String] = None,
     name: Option[String] = None,
     isSynced: Option[Boolean] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -107,12 +106,12 @@ object BinariesDao {
   ): Seq[Binary] = {
     DB.withConnection { implicit c =>
       BaseQuery.
-        equals("binaries.guid", guid).
-        in("binaries.guid", guids).
-        subquery("binaries.guid", "project_guid", projectGuid, { bindVar =>
-          s"select binary_guid from project_binaries where deleted_at is null and binary_guid is not null and project_guid = ${bindVar.sql}"
+        equals("binaries.id", id).
+        in("binaries.id", ids).
+        subquery("binaries.id", "project_id", projectId, { bindVar =>
+          s"select binary_id from project_binaries where deleted_at is null and binary_id is not null and project_id = ${bindVar.sql}"
         }).
-        equals("binaries.organization_guid", organizationGuid).
+        equals("binaries.organization_id", organizationId).
         text(
           "binaries.name",
           name,
@@ -121,7 +120,7 @@ object BinariesDao {
         ).
         condition(
           isSynced.map { value =>
-            val clause = "select 1 from syncs where object_guid = binaries.guid and event = {sync_event_completed}"
+            val clause = "select 1 from syncs where object_id = binaries.id and event = {sync_event_completed}"
             value match {
               case true => s"exists ($clause)"
               case false => s"not exists ($clause)"

@@ -55,7 +55,7 @@ class GithubUsersSpec extends PlaySpecification with MockClient {
       anonClient.githubUsers.postAuthenticationsAndGithub(GithubAuthenticationForm(code = code))
     )
     user.email should be(None)
-    db.UsersDao.findByGithubUserId(githubUser.id).map(_.guid) must beEqualTo(Some(user.id))
+    db.UsersDao.findByGithubUserId(githubUser.id).map(_.id) must beEqualTo(Some(user.id))
   }
 
 }

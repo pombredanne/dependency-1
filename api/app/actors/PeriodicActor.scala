@@ -4,7 +4,6 @@ import io.flow.postgresql.Pager
 import db.{Authorization, BinariesDao, LibrariesDao, ProjectsDao, SyncsDao}
 import play.api.Logger
 import akka.actor.Actor
-import java.util.UUID
 
 object PeriodicActor {
 
@@ -31,7 +30,7 @@ class PeriodicActor extends Actor with Util {
       Pager.create { offset =>
         ProjectsDao.findAll(Authorization.All, offset = offset)
       }.foreach { project =>
-        sender ! MainActor.Messages.ProjectSync(project.guid)
+        sender ! MainActor.Messages.ProjectSync(project.id)
       }
     }
 
@@ -39,7 +38,7 @@ class PeriodicActor extends Actor with Util {
       Pager.create { offset =>
         BinariesDao.findAll(Authorization.All, offset = offset)
       }.foreach { bin =>
-        sender ! MainActor.Messages.BinarySync(bin.guid)
+        sender ! MainActor.Messages.BinarySync(bin.id)
       }
     }
 
@@ -47,7 +46,7 @@ class PeriodicActor extends Actor with Util {
       Pager.create { offset =>
         LibrariesDao.findAll(Authorization.All, offset = offset)
       }.foreach { library =>
-        sender ! MainActor.Messages.LibrarySync(library.guid)
+        sender ! MainActor.Messages.LibrarySync(library.id)
       }
     }
 

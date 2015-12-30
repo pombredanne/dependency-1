@@ -7,53 +7,52 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-import java.util.UUID
 import scala.util.{Failure, Success, Try}
 
 object RecommendationsDao {
 
   private[this] case class RecommendationForm(
-    projectGuid: UUID,
+    projectId: String,
     `type`: RecommendationType,
-    objectGuid: UUID,
+    objectId: String,
     name: String,
     from: String,
     to: String
   )
 
   private[this] val BaseQuery = Query(s"""
-    select recommendations.guid,
+    select recommendations.id,
            recommendations.type,
-           recommendations.object_guid as recommendations_object_guid,
+           recommendations.object_id as recommendations_object_id,
            recommendations.name,
            recommendations.from_version as "recommendations.from",
            recommendations.to_version as "recommendations.to",
-           projects.guid as recommendations_project_guid,
+           projects.id as recommendations_project_id,
            projects.name as recommendations_project_name,
-           organizations.guid as recommendations_project_organization_guid,
+           organizations.id as recommendations_project_organization_id,
            organizations.key as recommendations_project_organization_key
       from recommendations
       join projects on
              projects.deleted_at is null and
-             projects.guid = recommendations.project_guid
+             projects.id = recommendations.project_id
       join organizations on
              organizations.deleted_at is null and
-             organizations.guid = projects.organization_guid
+             organizations.id = projects.organization_id
   """)
 
   private[this] val InsertQuery = """
     insert into recommendations
-    (guid, project_guid, type, object_guid, name, from_version, to_version, created_by_guid, updated_by_guid)
+    (id, project_id, type, object_id, name, from_version, to_version, created_by_id, updated_by_id)
     values
-    ({guid}::uuid, {project_guid}::uuid, {type}, {object_guid}::uuid, {name}, {from_version}, {to_version}, {updated_by_user_id})
+    ({id}, {project_id}, {type}, {object_id}, {name}, {from_version}, {to_version}, {updated_by_user_id})
   """
 
   def sync(user: User, project: Project) {
     val libraries = LibraryRecommendationsDao.forProject(project).map { rec =>
       RecommendationForm(
-        projectGuid = project.guid,
+        projectId = project.id,
         `type` = RecommendationType.Library,
-        objectGuid = rec.library.guid,
+        objectId = rec.library.id,
         name = Seq(rec.library.groupId, rec.library.artifactId).mkString("."),
         from = rec.from,
         to = rec.to.version
@@ -62,9 +61,9 @@ object RecommendationsDao {
 
     val binaries = BinaryRecommendationsDao.forProject(project).map { rec =>
       RecommendationForm(
-        projectGuid = project.guid,
+        projectId = project.id,
         `type` = RecommendationType.Binary,
-        objectGuid = rec.binary.guid,
+        objectId = rec.binary.id,
         name = rec.binary.name.toString,
         from = rec.from,
         to = rec.to.version
@@ -73,7 +72,7 @@ object RecommendationsDao {
 
     val newRecords = libraries ++ binaries
 
-    val existing = RecommendationsDao.findAll(Authorization.All, projectGuid = Some(project.guid), limit = None)
+    val existing = RecommendationsDao.findAll(Authorization.All, projectId = Some(project.id), limit = None)
 
     val toAdd = newRecords.filter { rec => !existing.map(toForm(_)).contains(rec) }
     val toRemove = existing.filter { rec => !newRecords.contains(toForm(rec)) }
@@ -81,7 +80,7 @@ object RecommendationsDao {
     DB.withTransaction { implicit c =>
       toAdd.foreach { upsert(user, _) }
       toRemove.foreach { rec =>
-        SoftDelete.delete(c, "recommendations", user.id, rec.guid)
+        SoftDelete.delete(c, "recommendations", user.id, rec.id)
       }
     }
 
@@ -92,7 +91,7 @@ object RecommendationsDao {
   }
 
   def softDelete(deletedBy: User, rec: Recommendation) {
-    SoftDelete.delete("recommendations", deletedBy.id, rec.guid)
+    SoftDelete.delete("recommendations", deletedBy.id, rec.id)
   }
 
   private[this] def upsert(
@@ -101,11 +100,11 @@ object RecommendationsDao {
   ) (
     implicit c: java.sql.Connection
   ) {
-    findByProjectGuidAndTypeAndObjectGuidAndNameAndFromVersion(
+    findByProjectIdAndTypeAndObjectIdAndNameAndFromVersion(
       Authorization.All,
-      form.projectGuid,
+      form.projectId,
       form.`type`,
-      form.objectGuid,
+      form.objectId,
       form.name,
       form.from
     ) match {
@@ -123,7 +122,7 @@ object RecommendationsDao {
             // No-op
           }
           case false => {
-            SoftDelete.delete(c, "recommendations", createdBy.id, rec.guid)
+            SoftDelete.delete(c, "recommendations", createdBy.id, rec.id)
             create(createdBy, form)
           }
         }
@@ -137,12 +136,12 @@ object RecommendationsDao {
   ) (
     implicit c: java.sql.Connection
   ) {
-    val guid = UUID.randomUUID
+    val id = io.flow.play.util.IdGenerator("rec").randomId()
     SQL(InsertQuery).on(
-      'guid -> guid,
-      'project_guid -> form.projectGuid,
+      'id -> id,
+      'project_id -> form.projectId,
       'type -> form.`type`.toString,
-      'object_guid -> form.objectGuid,
+      'object_id -> form.objectId,
       'name -> form.name,
       'from_version -> form.from,
       'to_version -> form.to,
@@ -150,36 +149,36 @@ object RecommendationsDao {
     ).execute()
   }
 
-  def findByProjectGuidAndTypeAndObjectGuidAndNameAndFromVersion(
+  def findByProjectIdAndTypeAndObjectIdAndNameAndFromVersion(
     auth: Authorization,
-    projectGuid: UUID,
+    projectId: String,
     `type`: RecommendationType,
-    objectGuid: UUID,
+    objectId: String,
     name: String,
     fromVersion: String
   ): Option[Recommendation] = {
     findAll(
       auth,
-      projectGuid = Some(projectGuid),
+      projectId = Some(projectId),
       `type` = Some(`type`),
-      objectGuid = Some(objectGuid),
+      objectId = Some(objectId),
       name = Some(name),
       fromVersion = Some(fromVersion)
     ).headOption
   }
 
-  def findByGuid(auth: Authorization, guid: UUID): Option[Recommendation] = {
-    findAll(auth, guid = Some(guid), limit = Some(1)).headOption
+  def findById(auth: Authorization, id: String): Option[Recommendation] = {
+    findAll(auth, id = Some(id), limit = Some(1)).headOption
   }
 
   def findAll(
     auth: Authorization,
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
     organization: Option[String] = None,
-    projectGuid: Option[UUID] = None,
+    projectId: Option[String] = None,
     `type`: Option[RecommendationType] = None,
-    objectGuid: Option[UUID] = None,
+    objectId: Option[String] = None,
     name: Option[String] = None,
     fromVersion: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -191,18 +190,18 @@ object RecommendationsDao {
       Standards.query(
         BaseQuery,
         tableName = "recommendations",
-        auth = auth.organizations("projects.organization_guid", Some("projects.visibility")),
-        guid = guid,
-        guids = guids,
+        auth = auth.organizations("projects.organization_id", Some("projects.visibility")),
+        id = id,
+        ids = ids,
         orderBy = orderBy.sql,
         isDeleted = isDeleted,
         limit = limit,
         offset = offset
       ).
-        subquery("organizations.guid", "organization", organization, { bind =>
-          s"select guid from organizations where deleted_at is null and key = lower(trim(${bind.sql}))"
+        subquery("organizations.id", "organization", organization, { bind =>
+          s"select id from organizations where deleted_at is null and key = lower(trim(${bind.sql}))"
         }).
-        equals("recommendations.project_guid", projectGuid).
+        equals("recommendations.project_id", projectId).
         text(
           "recommendations.type",
           `type`,
@@ -210,7 +209,7 @@ object RecommendationsDao {
         ).
         text("recommendations.name", name).
         text("recommendations.from_version", fromVersion).
-        equals("recommendations.object_guid", objectGuid).
+        equals("recommendations.object_id", objectId).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Recommendation.table("recommendations").*
         )
@@ -218,9 +217,9 @@ object RecommendationsDao {
   }
 
   private[this] def toForm(rec: Recommendation): RecommendationForm = RecommendationForm(
-    projectGuid = rec.project.guid,
+    projectId = rec.project.id,
     `type` = rec.`type`,
-    objectGuid = rec.`object`.guid,
+    objectId = rec.`object`.id,
     name = rec.name,
     from = rec.from,
     to = rec.to

@@ -15,28 +15,28 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   lazy val project1 = createProject(org)
   lazy val project2 = createProject(org)
 
-  "findByOrganizationGuidAndName" in {
-    ProjectsDao.findByOrganizationAndName(Authorization.All, org.key, project1.name).map(_.guid) must be(
-      Some(project1.guid)
+  "findByOrganizationIdAndName" in {
+    ProjectsDao.findByOrganizationAndName(Authorization.All, org.key, project1.name).map(_.id) must be(
+      Some(project1.id)
     )
 
     ProjectsDao.findByOrganizationAndName(Authorization.All, createTestKey(), project1.name) must be(None)
     ProjectsDao.findByOrganizationAndName(Authorization.All, org.key, createTestName()) must be(None)
   }
 
-  "findByGuid" in {
-    ProjectsDao.findByGuid(Authorization.All, project1.guid).map(_.guid) must be(
-      Some(project1.guid)
+  "findById" in {
+    ProjectsDao.findById(Authorization.All, project1.id).map(_.id) must be(
+      Some(project1.id)
     )
 
-    ProjectsDao.findByGuid(Authorization.All, UUID.randomUUID) must be(None)
+    ProjectsDao.findById(Authorization.All, UUID.randomUUID) must be(None)
   }
 
   "update" in {
     val form = createProjectForm(org)
     val project = createProject(org)(form)
     ProjectsDao.update(systemUser, project, form.copy(uri = "http://github.com/mbryzek/test"))
-    ProjectsDao.findByGuid(Authorization.All, project.guid).map(_.uri) must be(Some("http://github.com/mbryzek/test"))
+    ProjectsDao.findById(Authorization.All, project.id).map(_.uri) must be(Some("http://github.com/mbryzek/test"))
   }
 
   "update allows name change" in {
@@ -44,7 +44,7 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val project = createProject(org)(form)
     val newName = project.name + "2"
     val updated = ProjectsDao.update(systemUser, project, form.copy(name = newName)).right.get
-    updated.guid must be(project.guid)
+    updated.id must be(project.id)
     updated.name must be(newName)
   }
 
@@ -86,38 +86,38 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "findAll" must {
 
-    "guids" in {
-      ProjectsDao.findAll(Authorization.All, guids = Some(Seq(project1.guid, project2.guid))).map(_.guid).sorted must be(
-        Seq(project1.guid, project2.guid).sorted
+    "ids" in {
+      ProjectsDao.findAll(Authorization.All, ids = Some(Seq(project1.id, project2.id))).map(_.id).sorted must be(
+        Seq(project1.id, project2.id).sorted
       )
 
-      ProjectsDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
-      ProjectsDao.findAll(Authorization.All, guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-      ProjectsDao.findAll(Authorization.All, guids = Some(Seq(project1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(project1.guid))
+      ProjectsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
+      ProjectsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID))) must be(Nil)
+      ProjectsDao.findAll(Authorization.All, ids = Some(Seq(project1.id, UUID.randomUUID))).map(_.id) must be(Seq(project1.id))
     }
 
     "name" in {
-      ProjectsDao.findAll(Authorization.All, name = Some(project1.name.toUpperCase)).map(_.guid) must be(
-        Seq(project1.guid)
+      ProjectsDao.findAll(Authorization.All, name = Some(project1.name.toUpperCase)).map(_.id) must be(
+        Seq(project1.id)
       )
 
-      ProjectsDao.findAll(Authorization.All, name = Some(UUID.randomUUID.toString)).map(_.guid) must be(Nil)
+      ProjectsDao.findAll(Authorization.All, name = Some(UUID.randomUUID.toString)).map(_.id) must be(Nil)
     }
 
-    "organizationGuid" in {
-      ProjectsDao.findAll(Authorization.All, guid = Some(project1.guid), organizationGuid = Some(org.guid)).map(_.guid) must be(
-        Seq(project1.guid)
+    "organizationId" in {
+      ProjectsDao.findAll(Authorization.All, id = Some(project1.id), organizationId = Some(org.id)).map(_.id) must be(
+        Seq(project1.id)
       )
 
-      ProjectsDao.findAll(Authorization.All, guid = Some(project1.guid), organizationGuid = Some(createOrganization().guid)) must be(Nil)
+      ProjectsDao.findAll(Authorization.All, id = Some(project1.id), organizationId = Some(createOrganization().id)) must be(Nil)
     }
 
     "org" in {
-      ProjectsDao.findAll(Authorization.All, guid = Some(project1.guid), organization = Some(org.key)).map(_.guid) must be(
-        Seq(project1.guid)
+      ProjectsDao.findAll(Authorization.All, id = Some(project1.id), organization = Some(org.key)).map(_.id) must be(
+        Seq(project1.id)
       )
 
-      ProjectsDao.findAll(Authorization.All, guid = Some(project1.guid), organization = Some(createOrganization().key)) must be(Nil)
+      ProjectsDao.findAll(Authorization.All, id = Some(project1.id), organization = Some(createOrganization().key)) must be(Nil)
     }
 
     "with library" must {
@@ -125,41 +125,41 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       "groupId" in {
         val (project, version) = createProjectWithLibrary(org)
 
-        ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), groupId = Some(version.library.groupId)).map(_.guid) must be(
-          Seq(project.guid)
+        ProjectsDao.findAll(Authorization.All, id = Some(project.id), groupId = Some(version.library.groupId)).map(_.id) must be(
+          Seq(project.id)
         )
 
-        ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), groupId = Some(UUID.randomUUID.toString)).map(_.guid) must be(Nil)
+        ProjectsDao.findAll(Authorization.All, id = Some(project.id), groupId = Some(UUID.randomUUID.toString)).map(_.id) must be(Nil)
       }
 
       "artifactId" in {
         val (project, version) = createProjectWithLibrary(org)
 
-        ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), artifactId = Some(version.library.artifactId)).map(_.guid) must be(
-          Seq(project.guid)
+        ProjectsDao.findAll(Authorization.All, id = Some(project.id), artifactId = Some(version.library.artifactId)).map(_.id) must be(
+          Seq(project.id)
         )
 
-        ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), artifactId = Some(UUID.randomUUID.toString)).map(_.guid) must be(Nil)
+        ProjectsDao.findAll(Authorization.All, id = Some(project.id), artifactId = Some(UUID.randomUUID.toString)).map(_.id) must be(Nil)
       }
 
       "version" in {
         val (project, version) = createProjectWithLibrary(org)
 
-        ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), version = Some(version.version)).map(_.guid) must be(
-          Seq(project.guid)
+        ProjectsDao.findAll(Authorization.All, id = Some(project.id), version = Some(version.version)).map(_.id) must be(
+          Seq(project.id)
         )
 
-        ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), version = Some(UUID.randomUUID.toString)).map(_.guid) must be(Nil)
+        ProjectsDao.findAll(Authorization.All, id = Some(project.id), version = Some(UUID.randomUUID.toString)).map(_.id) must be(Nil)
       }
 
-      "libraryGuid" in {
+      "libraryId" in {
         val (project, version) = createProjectWithLibrary(org)
 
-        ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), libraryGuid = Some(version.library.guid)).map(_.guid) must be(
-          Seq(project.guid)
+        ProjectsDao.findAll(Authorization.All, id = Some(project.id), libraryId = Some(version.library.id)).map(_.id) must be(
+          Seq(project.id)
         )
 
-        ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), libraryGuid = Some(UUID.randomUUID)).map(_.guid) must be(Nil)
+        ProjectsDao.findAll(Authorization.All, id = Some(project.id), libraryId = Some(UUID.randomUUID)).map(_.id) must be(Nil)
       }
     }
 
@@ -168,21 +168,21 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       "binary name" in {
         val (project, version) = createProjectWithBinary(org)
 
-        ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), binary = Some(version.binary.name.toString)).map(_.guid) must be(
-          Seq(project.guid)
+        ProjectsDao.findAll(Authorization.All, id = Some(project.id), binary = Some(version.binary.name.toString)).map(_.id) must be(
+          Seq(project.id)
         )
 
-        ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), binary = Some(UUID.randomUUID.toString)) must be(Nil)
+        ProjectsDao.findAll(Authorization.All, id = Some(project.id), binary = Some(UUID.randomUUID.toString)) must be(Nil)
       }
 
-      "binary guid" in {
+      "binary id" in {
         val (project, version) = createProjectWithBinary(org)
 
-        ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), binaryGuid = Some(version.binary.guid)).map(_.guid) must be(
-          Seq(project.guid)
+        ProjectsDao.findAll(Authorization.All, id = Some(project.id), binaryId = Some(version.binary.id)).map(_.id) must be(
+          Seq(project.id)
         )
 
-        ProjectsDao.findAll(Authorization.All, guid = Some(project.guid), binaryGuid = Some(UUID.randomUUID)) must be(Nil)
+        ProjectsDao.findAll(Authorization.All, id = Some(project.id), binaryId = Some(UUID.randomUUID)) must be(Nil)
       }
 
     }
@@ -192,11 +192,11 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       val org = createOrganization(user = user)
       val project = createProject(org)(createProjectForm(org).copy(visibility = Visibility.Public))
 
-      ProjectsDao.findAll(Authorization.PublicOnly, guid = Some(project.guid)).map(_.guid) must be(Seq(project.guid))
-      ProjectsDao.findAll(Authorization.All, guid = Some(project.guid)).map(_.guid) must be(Seq(project.guid))
-      ProjectsDao.findAll(Authorization.Organization(org.guid), guid = Some(project.guid)).map(_.guid) must be(Seq(project.guid))
-      ProjectsDao.findAll(Authorization.Organization(createOrganization().guid), guid = Some(project.guid)).map(_.guid) must be(Seq(project.guid))
-      ProjectsDao.findAll(Authorization.User(user.id), guid = Some(project.guid)).map(_.guid) must be(Seq(project.guid))
+      ProjectsDao.findAll(Authorization.PublicOnly, id = Some(project.id)).map(_.id) must be(Seq(project.id))
+      ProjectsDao.findAll(Authorization.All, id = Some(project.id)).map(_.id) must be(Seq(project.id))
+      ProjectsDao.findAll(Authorization.Organization(org.id), id = Some(project.id)).map(_.id) must be(Seq(project.id))
+      ProjectsDao.findAll(Authorization.Organization(createOrganization().id), id = Some(project.id)).map(_.id) must be(Seq(project.id))
+      ProjectsDao.findAll(Authorization.User(user.id), id = Some(project.id)).map(_.id) must be(Seq(project.id))
     }
 
     "authorization for private projects" in {
@@ -204,12 +204,12 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       val org = createOrganization(user = user)
       val project = createProject(org)(createProjectForm(org).copy(visibility = Visibility.Private))
 
-      ProjectsDao.findAll(Authorization.PublicOnly, guid = Some(project.guid)) must be(Nil)
-      ProjectsDao.findAll(Authorization.All, guid = Some(project.guid)).map(_.guid) must be(Seq(project.guid))
-      ProjectsDao.findAll(Authorization.Organization(org.guid), guid = Some(project.guid)).map(_.guid) must be(Seq(project.guid))
-      ProjectsDao.findAll(Authorization.Organization(createOrganization().guid), guid = Some(project.guid)) must be(Nil)
-      ProjectsDao.findAll(Authorization.User(user.id), guid = Some(project.guid)).map(_.guid) must be(Seq(project.guid))
-      ProjectsDao.findAll(Authorization.User(createUser().guid), guid = Some(project.guid)) must be(Nil)
+      ProjectsDao.findAll(Authorization.PublicOnly, id = Some(project.id)) must be(Nil)
+      ProjectsDao.findAll(Authorization.All, id = Some(project.id)).map(_.id) must be(Seq(project.id))
+      ProjectsDao.findAll(Authorization.Organization(org.id), id = Some(project.id)).map(_.id) must be(Seq(project.id))
+      ProjectsDao.findAll(Authorization.Organization(createOrganization().id), id = Some(project.id)) must be(Nil)
+      ProjectsDao.findAll(Authorization.User(user.id), id = Some(project.id)).map(_.id) must be(Seq(project.id))
+      ProjectsDao.findAll(Authorization.User(createUser().id), id = Some(project.id)) must be(Nil)
     }
 
   }

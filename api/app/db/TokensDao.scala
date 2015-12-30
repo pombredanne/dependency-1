@@ -7,15 +7,14 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-import java.util.UUID
 
 object TokensDao {
 
   val GithubOauthTokenTag = "github_oauth"
 
   private[this] val BaseQuery = Query(s"""
-    select tokens.guid,
-           tokens.user_guid as tokens_user_guid,
+    select tokens.id,
+           tokens.user_id as tokens_user_id,
            tokens.tag,
            tokens.token
       from tokens
@@ -23,13 +22,13 @@ object TokensDao {
 
   private[this] val InsertQuery = """
     insert into tokens
-    (guid, user_guid, tag, token, updated_by_user_id
+    (id, user_id, tag, token, updated_by_user_id
     values
-    ({guid}::uuid, {user_guid}::uuid, {tag}, {token}, {updated_by_user_id})
+    ({id}, {user_id}, {tag}, {token}, {updated_by_user_id})
   """
 
   def upsert(createdBy: User, form: TokenForm): Token = {
-    findByUserGuidAndTag(form.userGuid, form.tag) match {
+    findByUserIdAndTag(form.userId, form.tag) match {
       case None => {
         create(createdBy, form)
       }
@@ -38,7 +37,7 @@ object TokensDao {
           case true => existing
           case false => {
             DB.withTransaction { implicit c =>
-              SoftDelete.delete(c, "tokens", createdBy.id, existing.guid)
+              SoftDelete.delete(c, "tokens", createdBy.id, existing.id)
               createWithConnection(createdBy, form)
             }
           }
@@ -54,43 +53,43 @@ object TokensDao {
   }
 
   private[this] def createWithConnection(createdBy: User, form: TokenForm)(implicit c: java.sql.Connection): Token = {
-    val guid = UUID.randomUUID
+    val id = io.flow.play.util.IdGenerator("tok").randomId()
 
     SQL(InsertQuery).on(
-      'guid -> guid,
-      'user_guid -> form.userGuid,
+      'id -> id,
+      'user_id -> form.userId,
       'tag -> form.tag.trim,
       'token -> form.token.trim,
       'updated_by_user_id -> createdBy.id
     ).execute()
 
-    findAllWithConnection(guid = Some(guid), limit = 1).headOption.getOrElse {
+    findAllWithConnection(id = Some(id), limit = 1).headOption.getOrElse {
       sys.error("Failed to create token")
     }
   }
 
   def softDelete(deletedBy: User, token: Token) {
-    SoftDelete.delete("tokens", deletedBy.id, token.guid)
+    SoftDelete.delete("tokens", deletedBy.id, token.id)
   }
 
-  def findByUserGuidAndTag(
+  def findByUserIdAndTag(
     userId: String,
     tag: String
   ): Option[Token] = {
     findAll(
-      userGuid = Some(userGuid),
+      userId = Some(userId),
       tag = Some(tag),
       limit = 1
     ).headOption
   }
 
-  def findByGuid(guid: UUID): Option[Token] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+  def findById(id: String): Option[Token] = {
+    findAll(id = Some(id), limit = 1).headOption
   }
 
   def findAll(
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
     userId: Option[String] = None,
     tag: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -99,9 +98,9 @@ object TokensDao {
   ): Seq[Token] = {
     DB.withConnection { implicit c =>
       findAllWithConnection(
-        guid = guid,
-        guids = guids,
-        userGuid = userGuid,
+        id = id,
+        ids = ids,
+        userId = userId,
         tag = tag,
         isDeleted = isDeleted,
         limit = limit,
@@ -111,8 +110,8 @@ object TokensDao {
   }
 
   private[this] def findAllWithConnection(
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
     userId: Option[String] = None,
     tag: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -124,14 +123,14 @@ object TokensDao {
       BaseQuery,
       tableName = "tokens",
       auth = Clause.True, // TODO
-      guid = guid,
-      guids = guids,
+      id = id,
+      ids = ids,
       orderBy = orderBy.sql,
       isDeleted = isDeleted,
       limit = Some(limit),
       offset = offset
     ).
-      equals("tokens.user_guid", userId).
+      equals("tokens.user_id", userId).
       text("tokens.tag", tag, valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)).
       as(
         com.bryzek.dependency.v0.anorm.parsers.Token.table("tokens").*

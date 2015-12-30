@@ -1,6 +1,5 @@
 package db
 
-import java.util.UUID
 import io.flow.postgresql.Query
 
 /**
@@ -18,16 +17,16 @@ private[db] case object Standards {
     query: Query,
     tableName: String,
     auth: Clause,
-    guid: Option[UUID],
-    guids: Option[Seq[UUID]],
+    id: Option[String],
+    ids: Option[Seq[String]],
     isDeleted: Option[Boolean],
     orderBy: Option[String],
     limit: Option[Long] = Some(25),
     offset: Long = 0
   ): Query = {
     query.
-      equals(s"$tableName.guid", guid).
-      in(s"$tableName.guid", guids).
+      equals(s"$tableName.id", id).
+      in(s"$tableName.id", ids).
       condition(Some(auth.sql)).
       nullBoolean(s"$tableName.deleted_at", isDeleted).
       orderBy(orderBy).

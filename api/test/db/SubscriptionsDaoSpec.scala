@@ -16,44 +16,44 @@ class SubscriptionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val subscription1 = SubscriptionsDao.create(systemUser, form).right.get
 
     val subscription2 = SubscriptionsDao.upsert(systemUser, form)
-    subscription1.guid must be(subscription2.guid)
+    subscription1.id must be(subscription2.id)
 
     val newSubscription = UUID.randomUUID.toString
     val subscription3 = createSubscription()
 
-    subscription2.guid must not be(subscription3.guid)
+    subscription2.id must not be(subscription3.id)
   }
 
-  "findByGuid" in {
+  "findById" in {
     val subscription = createSubscription()
-    SubscriptionsDao.findByGuid(subscription.guid).map(_.guid) must be(
-      Some(subscription.guid)
+    SubscriptionsDao.findById(subscription.id).map(_.id) must be(
+      Some(subscription.id)
     )
 
-    SubscriptionsDao.findByGuid(UUID.randomUUID) must be(None)
+    SubscriptionsDao.findById(UUID.randomUUID) must be(None)
   }
 
-  "findByUserGuidAndPublication" in {
+  "findByUserIdAndPublication" in {
     val subscription = createSubscription()
-    SubscriptionsDao.findByUserGuidAndPublication(subscription.user.id, subscription.publication).map(_.guid) must be(
-      Some(subscription.guid)
+    SubscriptionsDao.findByUserIdAndPublication(subscription.user.id, subscription.publication).map(_.id) must be(
+      Some(subscription.id)
     )
 
-    SubscriptionsDao.findByUserGuidAndPublication(UUID.randomUUID, subscription.publication).map(_.guid) must be(None)
-    SubscriptionsDao.findByUserGuidAndPublication(subscription.user.id, Publication.UNDEFINED("other")).map(_.guid) must be(None)
+    SubscriptionsDao.findByUserIdAndPublication(UUID.randomUUID, subscription.publication).map(_.id) must be(None)
+    SubscriptionsDao.findByUserIdAndPublication(subscription.user.id, Publication.UNDEFINED("other")).map(_.id) must be(None)
   }
 
-  "findAll by guids" in {
+  "findAll by ids" in {
     val subscription1 = createSubscription()
     val subscription2 = createSubscription()
 
-    SubscriptionsDao.findAll(guids = Some(Seq(subscription1.guid, subscription2.guid))).map(_.guid) must be(
-      Seq(subscription1.guid, subscription2.guid)
+    SubscriptionsDao.findAll(ids = Some(Seq(subscription1.id, subscription2.id))).map(_.id) must be(
+      Seq(subscription1.id, subscription2.id)
     )
 
-    SubscriptionsDao.findAll(guids = Some(Nil)) must be(Nil)
-    SubscriptionsDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    SubscriptionsDao.findAll(guids = Some(Seq(subscription1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(subscription1.guid))
+    SubscriptionsDao.findAll(ids = Some(Nil)) must be(Nil)
+    SubscriptionsDao.findAll(ids = Some(Seq(UUID.randomUUID))) must be(Nil)
+    SubscriptionsDao.findAll(ids = Some(Seq(subscription1.id, UUID.randomUUID))).map(_.id) must be(Seq(subscription1.id))
   }
 
   "findAll by identifier" in {
@@ -61,7 +61,7 @@ class SubscriptionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val identifier = UserIdentifiersDao.latestForUser(systemUser, user).value
     val subscription = createSubscription(createSubscriptionForm(user = user))
 
-    SubscriptionsDao.findAll(identifier = Some(identifier)).map(_.guid) must be(Seq(subscription.guid))
+    SubscriptionsDao.findAll(identifier = Some(identifier)).map(_.id) must be(Seq(subscription.id))
     SubscriptionsDao.findAll(identifier = Some(createTestKey())) must be(Nil)
   }
 
@@ -72,14 +72,14 @@ class SubscriptionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     )
 
     SubscriptionsDao.findAll(
-      guid = Some(subscription.guid),
+      id = Some(subscription.id),
       minHoursSinceLastEmail = Some(1)
-    ).map(_.guid) must be(Seq(subscription.guid))
+    ).map(_.id) must be(Seq(subscription.id))
 
     createLastEmail(createLastEmailForm(user = user, publication = Publication.DailySummary))
     
     SubscriptionsDao.findAll(
-      guid = Some(subscription.guid),
+      id = Some(subscription.id),
       minHoursSinceLastEmail = Some(1)
     ) must be(Nil)
   }

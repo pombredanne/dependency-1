@@ -9,7 +9,6 @@ import io.flow.play.controllers.AnonymousController
 import io.flow.play.util.DefaultConfig
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 
 @javax.inject.Singleton
 class Emails @javax.inject.Inject() (

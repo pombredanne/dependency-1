@@ -10,7 +10,6 @@ import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 
 @javax.inject.Singleton
 class Binaries @javax.inject.Inject() (
@@ -18,9 +17,9 @@ class Binaries @javax.inject.Inject() (
 ) extends Controller with IdentifiedRestController {
 
   def get(
-    guid: Option[UUID],
-    guids: Option[Seq[UUID]],
-    projectGuid: Option[UUID],
+    id: Option[String],
+    ids: Option[Seq[String]],
+    projectId: Option[String],
     name: Option[String],
     limit: Long = 25,
     offset: Long = 0
@@ -29,9 +28,9 @@ class Binaries @javax.inject.Inject() (
       Json.toJson(
         BinariesDao.findAll(
           Authorization.User(request.user.id),
-          guid = guid,
-          guids = optionals(guids),
-          projectGuid = projectGuid,
+          id = id,
+          ids = optionals(ids),
+          projectId = projectId,
           name = name,
           limit = limit,
           offset = offset
@@ -40,8 +39,8 @@ class Binaries @javax.inject.Inject() (
     )
   }
 
-  def getByGuid(guid: UUID) = Identified { request =>
-    withBinary(request.user, guid) { binary =>
+  def getById(id: String) = Identified { request =>
+    withBinary(request.user, id) { binary =>
       Ok(Json.toJson(binary))
     }
   }
@@ -61,17 +60,17 @@ class Binaries @javax.inject.Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Identified { request =>
-    withBinary(request.user, guid) { binary =>
+  def deleteById(id: String) = Identified { request =>
+    withBinary(request.user, id) { binary =>
       BinariesDao.softDelete(request.user, binary)
       NoContent
     }
   }
 
-  def withBinary(user: User, guid: UUID)(
+  def withBinary(user: User, id: String)(
     f: Binary => Result
   ): Result = {
-    BinariesDao.findByGuid(Authorization.User(user.id), guid) match {
+    BinariesDao.findById(Authorization.User(user.id), id) match {
       case None => {
         NotFound
       }

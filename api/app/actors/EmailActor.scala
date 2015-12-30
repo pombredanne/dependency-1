@@ -10,7 +10,6 @@ import com.bryzek.dependency.api.lib.{Email, Recipient}
 import org.joda.time.{DateTime, DateTimeZone}
 import play.api.Logger
 import akka.actor.Actor
-import java.util.UUID
 
 object EmailActor {
 
@@ -120,7 +119,7 @@ case class DailySummaryEmailMessage(recipient: Recipient) extends EmailMessageGe
 
   private val MaxRecommendations = 250
 
-  private val lastEmail = LastEmailsDao.findByUserGuidAndPublication(recipient.userId, Publication.DailySummary)
+  private val lastEmail = LastEmailsDao.findByUserIdAndPublication(recipient.userId, Publication.DailySummary)
 
   override def subject() = "Daily Summary"
 

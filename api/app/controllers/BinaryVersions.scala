@@ -10,7 +10,6 @@ import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 
 @javax.inject.Singleton
 class BinaryVersions @javax.inject.Inject() (
@@ -18,10 +17,10 @@ class BinaryVersions @javax.inject.Inject() (
 ) extends Controller with IdentifiedRestController {
 
   def get(
-    guid: Option[UUID],
-    guids: Option[Seq[UUID]],
-    binaryGuid: Option[UUID],
-    projectGuid: Option[UUID],
+    id: Option[String],
+    ids: Option[Seq[String]],
+    binaryId: Option[String],
+    projectId: Option[String],
     limit: Long = 25,
     offset: Long = 0
   ) = Identified { request =>
@@ -29,10 +28,10 @@ class BinaryVersions @javax.inject.Inject() (
       Json.toJson(
         BinaryVersionsDao.findAll(
           Authorization.User(request.user.id),
-          guid = guid,
-          guids = optionals(guids),
-          binaryGuid = binaryGuid,
-          projectGuid = projectGuid,
+          id = id,
+          ids = optionals(ids),
+          binaryId = binaryId,
+          projectId = projectId,
           limit = limit,
           offset = offset
         )
@@ -40,16 +39,16 @@ class BinaryVersions @javax.inject.Inject() (
     )
   }
 
-  def getByGuid(guid: UUID) = Identified { request =>
-    withBinaryVersion(request.user, guid) { binary =>
+  def getById(id: String) = Identified { request =>
+    withBinaryVersion(request.user, id) { binary =>
       Ok(Json.toJson(binary))
     }
   }
 
-  def withBinaryVersion(user: User, guid: UUID)(
+  def withBinaryVersion(user: User, id: String)(
     f: BinaryVersion => Result
   ): Result = {
-    BinaryVersionsDao.findByGuid(Authorization.User(user.id), guid) match {
+    BinaryVersionsDao.findById(Authorization.User(user.id), id) match {
       case None => {
         NotFound
       }
