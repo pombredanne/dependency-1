@@ -113,7 +113,7 @@ object OrganizationsDao {
           SQL(UpdateQuery).on(
             'id -> organization.id,
             'key -> form.key.trim,
-            'updated_by_id -> createdBy.id
+            'updated_by_user_id -> createdBy.id
           ).execute()
         }
 

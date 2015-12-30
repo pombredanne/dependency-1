@@ -35,7 +35,7 @@ object ProjectsDao {
 
   private[this] val InsertQuery = """
     insert into projects
-    (id, organization_id, visibility, scms, name, uri, updated_by_user_id)
+    (id, user_id, organization_id, visibility, scms, name, uri, updated_by_user_id)
     values
     ({id}, {user_id}, {organization_id}, {visibility}, {scms}, {name}, {uri}, {updated_by_user_id})
   """
@@ -46,7 +46,7 @@ object ProjectsDao {
            scms = {scms},
            name = {name},
            uri = {uri},
-           updated_by_id = {updated_by_id}
+           updated_by_user_id = {updated_by_user_id}
      where id = {id}
   """
 
@@ -157,7 +157,7 @@ object ProjectsDao {
             'scms -> form.scms.toString,
             'name -> form.name.trim,
             'uri -> form.uri.trim,
-            'updated_by_id -> createdBy.id
+            'updated_by_user_id -> createdBy.id
           ).execute()
         }
 

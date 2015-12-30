@@ -44,14 +44,14 @@ object ProjectBinariesDao {
   private[this] val RemoveBinaryQuery = """
     update project_binaries
        set binary_id = null,
-           updated_by_id = {updated_by_id}
+           updated_by_user_id = {updated_by_user_id}
      where id = {id}
   """
 
   private[this] val SetBinaryQuery = """
     update project_binaries
        set binary_id = {binary_id},
-           updated_by_id = {updated_by_id}
+           updated_by_user_id = {updated_by_user_id}
      where id = {id}
   """
 
@@ -141,7 +141,7 @@ object ProjectBinariesDao {
     DB.withConnection { implicit c =>
       SQL(RemoveBinaryQuery).on(
         'id -> projectBinary.id,
-        'updated_by_id -> user.id
+        'updated_by_user_id -> user.id
       ).execute()
     }
   }
@@ -166,7 +166,7 @@ object ProjectBinariesDao {
       SQL(SetBinaryQuery).on(
         'id -> projectBinary.id,
         'binary_id -> binary.id,
-        'updated_by_id -> user.id
+        'updated_by_user_id -> user.id
       ).execute()
     }
   }

@@ -47,14 +47,14 @@ object ProjectLibrariesDao {
   private[this] val SetLibraryQuery = """
     update project_libraries
        set library_id = {library_id},
-           updated_by_id = {updated_by_id}
+           updated_by_user_id = {updated_by_user_id}
      where id = {id}
   """
 
   private[this] val RemoveLibraryQuery = """
     update project_libraries
        set library_id = null,
-           updated_by_id = {updated_by_id}
+           updated_by_user_id = {updated_by_user_id}
      where id = {id}
   """
 
@@ -152,7 +152,7 @@ object ProjectLibrariesDao {
     DB.withConnection { implicit c =>
       SQL(RemoveLibraryQuery).on(
         'id -> projectLibrary.id,
-        'updated_by_id -> user.id
+        'updated_by_user_id -> user.id
       ).execute()
     }
   }
@@ -177,7 +177,7 @@ object ProjectLibrariesDao {
       SQL(SetLibraryQuery).on(
         'id -> projectLibrary.id,
         'library_id -> library.id,
-        'updated_by_id -> user.id
+        'updated_by_user_id -> user.id
       ).execute()
     }
   }
