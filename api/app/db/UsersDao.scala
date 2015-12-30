@@ -35,7 +35,7 @@ object UsersDao {
 
   private[this] val InsertQuery = """
     insert into users
-    (id, email, first_name, last_name, avatar_url, updated_by_user_id
+    (id, email, first_name, last_name, avatar_url, updated_by_user_id)
     values
     ({id}, {email}, {first_name}, {last_name}, {avatar_url}, {updated_by_user_id})
   """
@@ -78,7 +78,7 @@ object UsersDao {
             'avatar_url -> Util.trimmedString(form.avatarUrl),
             'first_name -> Util.trimmedString(form.name.flatMap(_.first)),
             'last_name -> Util.trimmedString(form.name.flatMap(_.last)),
-            'created_by_id -> createdBy.getOrElse(UsersDao.anonymousUser).id
+            'updated_by_user_id -> createdBy.getOrElse(UsersDao.anonymousUser).id
           ).execute()
         }
 

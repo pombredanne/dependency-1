@@ -36,7 +36,7 @@ object ProjectBinariesDao {
 
   private[this] val InsertQuery = """
     insert into project_binaries
-    (id, project_id, name, version, path, created_by_id, updated_by_id)
+    (id, project_id, name, version, path, updated_by_user_id)
     values
     ({id}, {project_id}, {name}, {version}, {path}, {updated_by_user_id})
   """

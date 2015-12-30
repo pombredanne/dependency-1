@@ -42,7 +42,7 @@ object RecommendationsDao {
 
   private[this] val InsertQuery = """
     insert into recommendations
-    (id, project_id, type, object_id, name, from_version, to_version, created_by_id, updated_by_id)
+    (id, project_id, type, object_id, name, from_version, to_version, updated_by_user_id)
     values
     ({id}, {project_id}, {type}, {object_id}, {name}, {from_version}, {to_version}, {updated_by_user_id})
   """

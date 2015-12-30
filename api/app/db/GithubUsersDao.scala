@@ -19,7 +19,7 @@ object GithubUsersDao {
 
   private[this] val InsertQuery = """
     insert into github_users
-    (id, user_id, id, login, updated_by_user_id
+    (id, user_id, id, login, updated_by_user_id)
     values
     ({id}, {user_id}, {github_user_id}, {login}, {updated_by_user_id})
   """
@@ -49,7 +49,7 @@ object GithubUsersDao {
       'user_id -> form.userId,
       'github_user_id -> form.githubUserId,
       'login -> form.login.trim,
-      'created_by_id -> createdBy.getOrElse(UsersDao.anonymousUser).id
+      'updated_by_user_id -> createdBy.getOrElse(UsersDao.anonymousUser).id
     ).execute()
 
     findById(id).getOrElse {

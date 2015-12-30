@@ -34,7 +34,7 @@ object ResolversDao {
 
   private[this] val InsertQuery = """
     insert into resolvers
-    (id, visibility, credentials, position, organization_id, uri, updated_by_user_id
+    (id, visibility, credentials, position, organization_id, uri, updated_by_user_id)
     values
     ({id}, {visibility}, {credentials}::json, {position}, {organization_id}, {uri}, {updated_by_user_id})
   """

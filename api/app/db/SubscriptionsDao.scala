@@ -19,7 +19,7 @@ object SubscriptionsDao {
 
   private[this] val InsertQuery = """
     insert into subscriptions
-    (id, user_id, publication, updated_by_user_id
+    (id, user_id, publication, updated_by_user_id)
     values
     ({id}, {user_id}, {publication}, {updated_by_user_id})
   """

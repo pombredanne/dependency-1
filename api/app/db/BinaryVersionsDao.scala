@@ -26,7 +26,7 @@ object BinaryVersionsDao {
 
   private[this] val InsertQuery = s"""
     insert into binary_versions
-    (id, binary_id, version, sort_key, created_by_id, updated_by_id)
+    (id, binary_id, version, sort_key, updated_by_user_id)
     values
     ({id}, {binary_id}, {version}, {sort_key}, {updated_by_user_id})
   """

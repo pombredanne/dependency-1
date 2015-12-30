@@ -22,7 +22,7 @@ object OrganizationsDao {
 
   private[this] val InsertQuery = """
     insert into organizations
-    (id, user_id, key, created_by_id, updated_by_id)
+    (id, user_id, key, updated_by_user_id)
     values
     ({id}, {user_id}, {key}, {updated_by_user_id})
   """
@@ -30,13 +30,13 @@ object OrganizationsDao {
   private[this] val UpdateQuery = """
     update organizations
        set key = {key},
-           updated_by_id = {updated_by_id}
+           updated_by_user_id = {updated_by_user_id}
      where id = {id}
   """
 
   private[this] val InsertUserOrganizationQuery = """
     insert into user_organizations
-    (id, user_id, organization_id, created_by_id, updated_by_id)
+    (id, user_id, organization_id, updated_by_user_id)
     values
     ({id}, {user_id}, {organization_id}, {updated_by_user_id})
   """
@@ -102,7 +102,7 @@ object OrganizationsDao {
       createdBy.id,
       Role.Admin
     )
-    
+
     id
   }
 
@@ -134,6 +134,7 @@ object OrganizationsDao {
   def upsertForUser(user: User): Organization = {
     findAll(Authorization.All, forUserId = Some(user.id), limit = 1).headOption.getOrElse {
       val key = urlKey.generate(defaultUserName(user))
+
       val orgId = DB.withTransaction { implicit c =>
         val orgId = create(c, user, OrganizationForm(
           key = key
@@ -143,7 +144,7 @@ object OrganizationsDao {
           'id -> IdGenerator("uso").randomId(),
           'user_id -> user.id,
           'organization_id -> orgId,
-          'created_by_id -> user.id
+          'updated_by_user_id -> user.id
         ).execute()
 
         orgId

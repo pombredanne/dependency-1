@@ -22,7 +22,7 @@ object UserIdentifiersDao {
 
   private[this] val InsertQuery = """
     insert into user_identifiers
-    (id, user_id, value, updated_by_user_id
+    (id, user_id, value, updated_by_user_id)
     values
     ({id}, {user_id}, {value}, {updated_by_user_id})
   """

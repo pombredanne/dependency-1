@@ -39,7 +39,7 @@ object ItemsDao {
 
   private[this] val InsertQuery = """
     insert into items
-    (id, organization_id, visibility, object_id, label, description, contents, summary, created_by_id, updated_by_id)
+    (id, organization_id, visibility, object_id, label, description, contents, summary, updated_by_user_id)
     values
     ({id}, {organization_id}, {visibility}, {object_id}, {label}, {description}, {contents}, {summary}::json, {updated_by_user_id})
   """

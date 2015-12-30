@@ -27,9 +27,9 @@ object SyncsDao {
 
   private[this] val InsertQuery = """
     insert into syncs
-    (id, type, object_id, event, created_by_id)
+    (id, type, object_id, event, updated_by_user_id)
     values
-    ({id}, {type}, {object_id}, {event}, {created_by_id})
+    ({id}, {type}, {object_id}, {event}, {updated_by_user_id})
   """
 
   private[this] val PurgeQuery = """

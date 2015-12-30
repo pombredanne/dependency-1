@@ -20,8 +20,7 @@ object ProjectsDao {
            projects.name,
            projects.uri,
            organizations.id as projects_organization_id,
-           organizations.key as projects_organization_key,
-           users.id as projects_user_id
+           organizations.key as projects_organization_key
       from projects
       left join organizations on organizations.deleted_at is null and organizations.id = projects.organization_id
   """)
@@ -36,7 +35,7 @@ object ProjectsDao {
 
   private[this] val InsertQuery = """
     insert into projects
-    (id, organization_id, visibility, scms, name, uri, created_by_id, updated_by_id)
+    (id, organization_id, visibility, scms, name, uri, updated_by_user_id)
     values
     ({id}, {user_id}, {organization_id}, {visibility}, {scms}, {name}, {uri}, {updated_by_user_id})
   """

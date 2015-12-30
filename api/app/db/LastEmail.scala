@@ -32,7 +32,7 @@ object LastEmailsDao {
 
   private[this] val InsertQuery = """
     insert into last_emails
-    (id, user_id, publication, created_by_id, updated_by_id)
+    (id, user_id, publication, updated_by_user_id)
     values
     ({id}, {user_id}, {publication}, {updated_by_user_id})
   """

@@ -31,7 +31,7 @@ object LibrariesDao {
 
   private[this] val InsertQuery = """
     insert into libraries
-    (id, organization_id, group_id, artifact_id, resolver_id, created_by_id, updated_by_id)
+    (id, organization_id, group_id, artifact_id, resolver_id, updated_by_user_id)
     values
     ({id}, {organization_id}, {group_id}, {artifact_id}, {resolver_id}, {updated_by_user_id})
   """

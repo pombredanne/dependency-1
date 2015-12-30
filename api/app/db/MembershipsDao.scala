@@ -28,7 +28,7 @@ object MembershipsDao {
 
   private[this] val InsertQuery = """
     insert into memberships
-    (id, role, user_id, organization_id, created_by_id, updated_by_id)
+    (id, role, user_id, organization_id, updated_by_user_id)
     values
     ({id}, {role}, {user_id}, {organization_id}, {updated_by_user_id})
   """

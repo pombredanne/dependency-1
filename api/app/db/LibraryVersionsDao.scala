@@ -35,7 +35,7 @@ object LibraryVersionsDao {
 
   private[this] val InsertQuery = s"""
     insert into library_versions
-    (id, library_id, version, cross_build_version, sort_key, created_by_id, updated_by_id)
+    (id, library_id, version, cross_build_version, sort_key, updated_by_user_id)
     values
     ({id}, {library_id}, {version}, {cross_build_version}, {sort_key}, {updated_by_user_id})
   """
