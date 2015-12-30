@@ -21,7 +21,8 @@ object SyncsDao {
     select syncs.id,
            syncs.type,
            syncs.object_id,
-           syncs.event
+           syncs.event,
+           syncs.created_at
       from syncs
   """)
 
