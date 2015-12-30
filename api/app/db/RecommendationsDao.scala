@@ -177,7 +177,6 @@ object RecommendationsDao {
     auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    userGuid: Option[UUID] = None,
     organization: Option[String] = None,
     projectGuid: Option[UUID] = None,
     `type`: Option[RecommendationType] = None,
@@ -203,9 +202,6 @@ object RecommendationsDao {
       ).
         subquery("organizations.guid", "organization", organization, { bind =>
           s"select guid from organizations where deleted_at is null and key = lower(trim(${bind.sql}))"
-        }).
-        subquery("recommendations.project_guid", "user_guid", userGuid, { bind =>
-          s"select project_guid from watch_projects where deleted_at is null and user_guid = ${bind.sql}"
         }).
         equals("recommendations.project_guid", projectGuid).
         text(

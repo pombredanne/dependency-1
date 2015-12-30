@@ -3,18 +3,12 @@
   project: com.bryzek.dependency.v0.models.Project,
   recommendations: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Recommendation],
   binaries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectBinary],
-  libraries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectLibrary],
-  isWatching: Boolean
+  libraries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectLibrary]
 )(implicit flash: Flash, messages: Messages)
 
 @main(data.copy(title = Some(project.name))) {
 
   <div class="pull-right">
-    @if(isWatching) {
-      <a href="@routes.WatchProjectsController.delete(project.guid)">Watching</a>
-    } else {
-      <a href="@routes.WatchProjectsController.create(project.guid)">Watch</a>
-    }
     @if(com.bryzek.dependency.www.lib.Permissions.Project.edit(project, data.user)) {
       | <a href="@routes.ProjectsController.edit(project.guid)">Edit</a>
     }

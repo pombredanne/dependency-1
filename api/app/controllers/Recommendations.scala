@@ -26,7 +26,6 @@ class Recommendations @javax.inject.Inject() (
       Json.toJson(
         RecommendationsDao.findAll(
           Authorization.User(request.user.guid),
-          userGuid = Some(request.user.guid),
           organization = organization,
           projectGuid = projectGuid,
           `type` = `type`,

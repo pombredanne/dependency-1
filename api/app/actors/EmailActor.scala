@@ -127,7 +127,6 @@ case class DailySummaryEmailMessage(recipient: Recipient) extends EmailMessageGe
   override def body() = {
     val recommendations = RecommendationsDao.findAll(
       Authorization.User(recipient.userGuid),
-      userGuid = Some(recipient.userGuid),
       limit = Some(MaxRecommendations)
     )
 
