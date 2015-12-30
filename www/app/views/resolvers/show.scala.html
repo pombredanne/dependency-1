@@ -8,7 +8,7 @@
 
   <div class="pull-right">
     @if(com.bryzek.dependency.www.lib.Permissions.Resolver.delete(resolver, data.user)) {
-      <a class="delete" data-confirm="Are you sure?" href="@routes.ResolversController.postDelete(resolver.guid)">Delete</a>
+      <a class="delete" data-confirm="Are you sure?" href="@routes.ResolversController.postDelete(resolver.id)">Delete</a>
     }
   </div>
 
@@ -31,7 +31,6 @@
         }}
       }
     </li>
-    <li>@audit(resolver.audit)</li>
   </ul>
 
   <h3>Libraries</h3>
@@ -42,10 +41,10 @@
     @if(libraries.hasPrevious || libraries.hasNext) {
       <ul class="pager">
         @if(libraries.hasPrevious) {
-          <li><a href="@routes.ResolversController.show(resolver.guid, librariesPage = libraries.page - 1)">Previous</a></li>
+          <li><a href="@routes.ResolversController.show(resolver.id, librariesPage = libraries.page - 1)">Previous</a></li>
         }
         @if(libraries.hasNext) {
-          <li><a href="@routes.ResolversController.show(resolver.guid, librariesPage = libraries.page + 1)">Next</a></li>
+          <li><a href="@routes.ResolversController.show(resolver.id, librariesPage = libraries.page + 1)">Next</a></li>
         }
       </ul>
     }

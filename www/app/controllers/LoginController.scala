@@ -38,7 +38,7 @@ class LoginController @javax.inject.Inject() (
           u
         }
       }
-      Redirect(url).withSession { "user_guid" -> user.guid.toString }
+      Redirect(url).withSession { "user_id" -> user.id.toString }
     }.recover {
       case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
         Ok(views.html.login.index(UiData(requestPath = request.path), returnUrl, response.errors.map(_.message)))

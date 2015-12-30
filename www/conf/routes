@@ -3,11 +3,11 @@ GET     /                                       controllers.ApplicationControlle
 
 GET     /libraries                              controllers.ApplicationController.redirect
 GET     /libraries/                             controllers.LibrariesController.index(page: Int ?= 0)
-GET     /libraries/:guid                        controllers.LibrariesController.show(guid: java.util.UUID, versionsPage: Int ?= 0, projectsPage: Int ?= 0)
+GET     /libraries/:guid                        controllers.LibrariesController.show(id: String, versionsPage: Int ?= 0, projectsPage: Int ?= 0)
 
 GET     /binaries                              controllers.ApplicationController.redirect
 GET     /binaries/                             controllers.BinariesController.index(page: Int ?= 0)
-GET     /binaries/:guid                        controllers.BinariesController.show(guid: java.util.UUID, versionsPage: Int ?= 0, projectsPage: Int ?= 0)
+GET     /binaries/:guid                        controllers.BinariesController.show(id: String, versionsPage: Int ?= 0, projectsPage: Int ?= 0)
 
 GET     /projects                               controllers.ApplicationController.redirect
 GET     /projects/                              controllers.ProjectsController.index(page: Int ?= 0)
@@ -16,21 +16,21 @@ GET     /projects/github/:org                   controllers.ProjectsController.g
 POST    /projects/github/:org/post              controllers.ProjectsController.postGithubOrg(org: String, name: String, repositoriesPage: Int ?= 0)
 GET     /projects/create                        controllers.ProjectsController.create()
 POST    /projects/postCreate                    controllers.ProjectsController.postCreate()
-GET     /projects/:guid                         controllers.ProjectsController.show(guid: java.util.UUID, recommendationsPage: Int ?= 0, binariesPage: Int ?= 0, librariesPage: Int ?= 0)
-GET     /projects/:guid/edit                    controllers.ProjectsController.edit(guid: java.util.UUID)
-POST    /projects/:guid/postEdit                controllers.ProjectsController.postEdit(guid: java.util.UUID)
-POST    /projects/:guid/delete                  controllers.ProjectsController.postDelete(guid: java.util.UUID)
-GET     /projects/:guid/sync                    controllers.ProjectsController.sync(guid: java.util.UUID, n: Int ?= 1, librariesPage: Int ?= 0)
+GET     /projects/:guid                         controllers.ProjectsController.show(id: String, recommendationsPage: Int ?= 0, binariesPage: Int ?= 0, librariesPage: Int ?= 0)
+GET     /projects/:guid/edit                    controllers.ProjectsController.edit(id: String)
+POST    /projects/:guid/postEdit                controllers.ProjectsController.postEdit(id: String)
+POST    /projects/:guid/delete                  controllers.ProjectsController.postDelete(id: String)
+GET     /projects/:guid/sync                    controllers.ProjectsController.sync(id: String, n: Int ?= 1, librariesPage: Int ?= 0)
 
 GET     /resolvers                              controllers.ApplicationController.redirect
 GET     /resolvers/                             controllers.ResolversController.index(page: Int ?= 0)
 GET     /resolvers/create                       controllers.ResolversController.create()
 POST    /resolvers/postCreate                   controllers.ResolversController.postCreate()
-GET     /resolvers/:guid                        controllers.ResolversController.show(guid: java.util.UUID, librariesPage: Int ?= 0)
-POST    /resolvers/:guid/delete                 controllers.ResolversController.postDelete(guid: java.util.UUID)
+GET     /resolvers/:guid                        controllers.ResolversController.show(id: String, librariesPage: Int ?= 0)
+POST    /resolvers/:guid/delete                 controllers.ResolversController.postDelete(id: String)
 
-GET     /watches/projects/create/:projectGuid   controllers.WatchProjectsController.create(projectGuid: java.util.UUID)
-GET     /watches/projects/delete/:projectGuid   controllers.WatchProjectsController.delete(projectGuid: java.util.UUID)
+GET     /watches/projects/create/:projectGuid   controllers.WatchProjectsController.create(projectGuid: java.util.String)
+GET     /watches/projects/delete/:projectGuid   controllers.WatchProjectsController.delete(projectGuid: java.util.String)
 
 GET     /search                                 controllers.SearchController.index(q: Option[String] ?= None, page: Int ?= 0)
 
@@ -57,9 +57,9 @@ GET     /:org                                   controllers.OrganizationsControl
 GET     /:org/members                           controllers.MembersController.index(org: String, page: Int ?= 0)
 GET     /:org/members/create                    controllers.MembersController.create(org: String)
 POST    /:org/members/createPost                controllers.MembersController.postCreate(org: String)
-POST    /:org/members/postDelete                controllers.MembersController.postDelete(org: String, guid: java.util.UUID)
-POST    /:org/members/postMakeMember            controllers.MembersController.postMakeMember(org: String, guid: java.util.UUID)
-POST    /:org/members/postMakeAdmin             controllers.MembersController.postMakeAdmin(org: String, guid: java.util.UUID)
+POST    /:org/members/postDelete                controllers.MembersController.postDelete(org: String, id: String)
+POST    /:org/members/postMakeMember            controllers.MembersController.postMakeMember(org: String, id: String)
+POST    /:org/members/postMakeAdmin             controllers.MembersController.postMakeAdmin(org: String, id: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

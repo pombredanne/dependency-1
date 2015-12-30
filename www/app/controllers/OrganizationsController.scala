@@ -120,7 +120,7 @@ class OrganizationsController @javax.inject.Inject() (
         },
 
         uiForm => {
-          dependencyClient(request).organizations.putByGuid(organization.guid, uiForm.organizationForm).map { updated =>
+          dependencyClient(request).organizations.putById(organization.id, uiForm.organizationForm).map { updated =>
             Redirect(routes.OrganizationsController.show(updated.key)).flashing("success" -> "Organization updated")
           }.recover {
             case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
@@ -134,7 +134,7 @@ class OrganizationsController @javax.inject.Inject() (
 
   def postDelete(key: String) = Identified.async { implicit request =>
     withOrganization(request, key) { org =>
-      dependencyClient(request).organizations.deleteByGuid(org.guid).map { response =>
+      dependencyClient(request).organizations.deleteById(org.id).map { response =>
         Redirect(routes.OrganizationsController.index()).flashing("success" -> s"Organization deleted")
       }.recover {
         case UnitResponse(404) => {

@@ -4,7 +4,7 @@ import com.bryzek.dependency.v0.models.{Publication, SubscriptionForm}
 import com.bryzek.dependency.www.lib.{DependencyClientProvider, UiData}
 import io.flow.play.clients.UserTokensClient
 import io.flow.user.v0.models.User
-import java.util.UUID
+import java.util.String
 import scala.concurrent.Future
 
 import play.api._
@@ -43,7 +43,7 @@ class SubscriptionsController @javax.inject.Inject() (
           Redirect(routes.LoginController.index(return_url = Some(request.path)))
         }
         case Some(user) => {
-          dependencyClientProvider.newClient(user = Some(user)).users.getIdentifierByGuid(user.guid).map { id =>
+          dependencyClientProvider.newClient(user = Some(user)).users.getIdentifierById(user.id).map { id =>
             Redirect(routes.SubscriptionsController.identifier(id.value))
           }
         }
@@ -86,7 +86,7 @@ class SubscriptionsController @javax.inject.Inject() (
               case None => {
                 client.subscriptions.post(
                   SubscriptionForm(
-                    userGuid = user.guid,
+                    userId = user.id,
                     publication = publication
                   ),
                   identifier = Some(identifier)
@@ -95,8 +95,8 @@ class SubscriptionsController @javax.inject.Inject() (
                 }
               }
               case Some(subscription) => {
-                client.subscriptions.deleteByGuid(
-                  subscription.guid,
+                client.subscriptions.deleteById(
+                  subscription.id,
                   identifier = Some(identifier)
                 ).map { _ =>
                   Redirect(routes.SubscriptionsController.identifier(identifier)).flashing("success" -> "Subscription removed")

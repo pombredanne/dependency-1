@@ -19,12 +19,12 @@ object Helpers {
   ) (
     implicit ec: scala.concurrent.ExecutionContext
   ): scala.concurrent.Future[Option[io.flow.user.v0.models.User]] = {
-    session.get("user_guid") match {
+    session.get("user_id") match {
       case None => {
         scala.concurrent.Future { None }
       }
-      case Some(userGuid) => {
-        userTokensClient.getUserByToken(userGuid)
+      case Some(userId) => {
+        userTokensClient.getUserByToken(userId)
       }
     }
   }
@@ -71,7 +71,7 @@ abstract class BaseController(
     implicit ec: scala.concurrent.ExecutionContext
   ): Future[Seq[Organization]] = {
     dependencyClient(request).organizations.get(
-      userGuid = Some(request.user.guid),
+      userId = Some(request.user.id),
       limit = 100
     )
   }
