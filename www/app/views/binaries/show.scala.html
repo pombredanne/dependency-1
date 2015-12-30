@@ -9,14 +9,6 @@
 
   <ul>
     <li>Name: @binary.name</li>
-    <li>Versions:
-      @versions.items.map { version =>
-        @version.version
-      }
-      @if(versions.hasNext) {
-        [<a href="#TODO">More</a>]
-      }
-    </li>
   </ul>
 
   @views.html.binaries.versions.table(versions)
