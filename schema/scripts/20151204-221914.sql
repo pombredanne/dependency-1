@@ -2,9 +2,9 @@ drop table if exists syncs;
 
 create table syncs (
   guid                       uuid primary key,
-  type                       text not null check(lower_non_empty_trimmed_string(type)),
+  type                       text not null check(util.lower_non_empty_trimmed_string(type)),
   object_guid                uuid not null,
-  event                      text not null check(lower_non_empty_trimmed_string(event))
+  event                      text not null check(util.lower_non_empty_trimmed_string(event))
 );
 
 comment on table syncs is '

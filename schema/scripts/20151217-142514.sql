@@ -4,13 +4,13 @@ drop table if exists project_binaries;
 create table project_binaries (
   guid                    uuid primary key,
   project_guid            uuid references projects,
-  name                    text not null check(non_empty_trimmed_string(name)),
-  version                 text not null check(non_empty_trimmed_string(version)),
-  path                    text not null check(non_empty_trimmed_string(path)),
+  name                    text not null check(util.non_empty_trimmed_string(name)),
+  version                 text not null check(util.non_empty_trimmed_string(version)),
+  path                    text not null check(util.non_empty_trimmed_string(path)),
   binary_guid             uuid references binaries
 );
 
-select schema_evolution_manager.create_basic_audit_data('public', 'project_binaries');
+select audit.setup('public', 'project_binaries');
 
 comment on table project_binaries is '
   Stores all of the binaries that this project depends on.
@@ -29,15 +29,15 @@ create unique index project_binaries_project_guid_lower_name_version_not_deleted
 create table project_libraries (
   guid                    uuid primary key,
   project_guid            uuid references projects,
-  group_id                text not null check(non_empty_trimmed_string(group_id)),
-  artifact_id             text not null check(non_empty_trimmed_string(artifact_id)),
-  version                 text not null check(non_empty_trimmed_string(version)),
+  group_id                text not null check(util.non_empty_trimmed_string(group_id)),
+  artifact_id             text not null check(util.non_empty_trimmed_string(artifact_id)),
+  version                 text not null check(util.non_empty_trimmed_string(version)),
   cross_build_version     text check(trim(cross_build_version) = cross_build_version),
-  path                    text not null check(non_empty_trimmed_string(path)),
+  path                    text not null check(util.non_empty_trimmed_string(path)),
   library_guid            uuid references libraries
 );
 
-select schema_evolution_manager.create_basic_audit_data('public', 'project_libraries');
+select audit.setup('public', 'project_libraries');
 
 comment on table project_libraries is '
   Stores all of the libraries that this project depends on.

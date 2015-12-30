@@ -11,7 +11,7 @@ comment on table user_organizations is '
   projects. This table records the org assigned to a user.
 ';
 
-select schema_evolution_manager.create_basic_audit_data('public', 'user_organizations');
+select audit.setup('public', 'user_organizations');
 create index on user_organizations(user_guid);
 create index on user_organizations(organization_guid);
 create unique index user_organizations_user_guid_not_del_idx on user_organizations(user_guid) where deleted_at is null;

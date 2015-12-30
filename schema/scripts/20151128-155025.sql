@@ -3,11 +3,11 @@ drop table if exists tokens;
 create table tokens (
   guid                    uuid primary key,
   user_guid               uuid not null references users,
-  tag                     text not null check(lower_non_empty_trimmed_string(tag)),
+  tag                     text not null check(util.lower_non_empty_trimmed_string(tag)),
   token                   text not null check (trim(token) = token)
 );
 
-select schema_evolution_manager.create_basic_audit_data('public', 'tokens');
+select audit.setup('public', 'tokens');
 
 comment on table tokens is '
   Stores oauth tokens for a given user.

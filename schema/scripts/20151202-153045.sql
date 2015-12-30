@@ -3,11 +3,11 @@ drop table if exists recommendations;
 create table recommendations (
   guid                       uuid primary key,
   project_guid               uuid not null references projects,
-  type                       text not null check(lower_non_empty_trimmed_string(type)),
+  type                       text not null check(util.lower_non_empty_trimmed_string(type)),
   object_guid                uuid not null,
-  name                       text not null check(non_empty_trimmed_string(name)),
-  from_version               text not null check(non_empty_trimmed_string(from_version)),
-  to_version                 text not null check(non_empty_trimmed_string(to_version))
+  name                       text not null check(util.non_empty_trimmed_string(name)),
+  from_version               text not null check(util.non_empty_trimmed_string(from_version)),
+  to_version                 text not null check(util.non_empty_trimmed_string(to_version))
 );
 
 comment on table recommendations is '
@@ -16,11 +16,10 @@ comment on table recommendations is '
   recommendations are created in the background by monitoring updates
   to both the project and its dependencies (for example, if a new
   version of a dependent library is released, we created a
-  recommendation). The main use case is to populate the dashboard with
-  recommendations for all projects that you are watching.
+  recommendation).
 ';
 
-select schema_evolution_manager.create_basic_audit_data('public', 'recommendations');
+select audit.setup('public', 'recommendations');
 create index on recommendations(project_guid);
 create index on recommendations(object_guid);
 
