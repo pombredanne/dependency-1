@@ -1572,7 +1572,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       id: String = "id",
-      event: String = "event"
+      event: String = "event",
+      createdAt: String = "created_at"
     )
 
     object Mappings {
@@ -1583,7 +1584,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         id = s"${prefix}${sep}id",
-        event = s"${prefix}${sep}event"
+        event = s"${prefix}${sep}event",
+        createdAt = s"${prefix}${sep}created_at"
       )
 
     }
@@ -1592,11 +1594,13 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Sync] = {
       SqlParser.str(mappings.id) ~
-      com.bryzek.dependency.v0.anorm.parsers.SyncEvent.parser(com.bryzek.dependency.v0.anorm.parsers.SyncEvent.Mappings(mappings.event)) map {
-        case id ~ event => {
+      com.bryzek.dependency.v0.anorm.parsers.SyncEvent.parser(com.bryzek.dependency.v0.anorm.parsers.SyncEvent.Mappings(mappings.event)) ~
+      SqlParser.get[_root_.org.joda.time.DateTime](mappings.createdAt) map {
+        case id ~ event ~ createdAt => {
           com.bryzek.dependency.v0.models.Sync(
             id = id,
-            event = event
+            event = event,
+            createdAt = createdAt
           )
         }
       }

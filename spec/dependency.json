@@ -388,7 +388,8 @@
             "description": "Records when we start and complete each sync of a module (e.g. project)",
             "fields": [
                 { "name": "id", "type": "string", "description": "Unique identifier for this item." },
-                { "name": "event", "type": "sync_event" }
+                { "name": "event", "type": "sync_event" },
+		{ "name": "created_at", "type": "date-time-iso8601" }
             ]
         },
 

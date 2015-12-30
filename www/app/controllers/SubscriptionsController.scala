@@ -4,7 +4,6 @@ import com.bryzek.dependency.v0.models.{Publication, SubscriptionForm}
 import com.bryzek.dependency.www.lib.{DependencyClientProvider, UiData}
 import io.flow.play.clients.UserTokensClient
 import io.flow.user.v0.models.User
-import java.util.String
 import scala.concurrent.Future
 
 import play.api._

@@ -248,7 +248,8 @@ package com.bryzek.dependency.v0.models {
    */
   case class Sync(
     id: String,
-    event: com.bryzek.dependency.v0.models.SyncEvent
+    event: com.bryzek.dependency.v0.models.SyncEvent,
+    createdAt: _root_.org.joda.time.DateTime
   )
 
   case class Token(
@@ -1180,14 +1181,16 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencySync: play.api.libs.json.Reads[Sync] = {
       (
         (__ \ "id").read[String] and
-        (__ \ "event").read[com.bryzek.dependency.v0.models.SyncEvent]
+        (__ \ "event").read[com.bryzek.dependency.v0.models.SyncEvent] and
+        (__ \ "created_at").read[_root_.org.joda.time.DateTime]
       )(Sync.apply _)
     }
 
     implicit def jsonWritesDependencySync: play.api.libs.json.Writes[Sync] = {
       (
         (__ \ "id").write[String] and
-        (__ \ "event").write[com.bryzek.dependency.v0.models.SyncEvent]
+        (__ \ "event").write[com.bryzek.dependency.v0.models.SyncEvent] and
+        (__ \ "created_at").write[_root_.org.joda.time.DateTime]
       )(unlift(Sync.unapply _))
     }
 

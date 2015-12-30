@@ -5,7 +5,6 @@ import com.bryzek.dependency.v0.models.{Organization, Resolver, ResolverForm, Us
 import com.bryzek.dependency.www.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
-import java.util.String
 import scala.concurrent.Future
 
 import play.api._
