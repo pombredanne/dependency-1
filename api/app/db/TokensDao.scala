@@ -232,7 +232,7 @@ object TokensDao {
     Standards.query(
       BaseQuery,
       tableName = "tokens",
-      auth = Clause.True, // TODO auth
+      auth = auth.users("tokens.user_id"),
       id = id,
       ids = ids,
       orderBy = orderBy.sql,

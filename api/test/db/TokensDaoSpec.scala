@@ -61,4 +61,17 @@ class TokensDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     TokensDao.findAll(Authorization.All, ids = Some(Seq(token1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(token1.id))
   }
 
+  "can only see own tokens" in {
+    val user1 = createUser()
+    val token1 = createToken(createTokenForm(user = user1))
+
+    val user2 = createUser()
+    val token2 = createToken(createTokenForm(user = user2))
+
+    TokensDao.findAll(Authorization.User(user1.id)).map(_.id) must be(Seq(token1.id))
+    TokensDao.findAll(Authorization.User(user2.id)).map(_.id) must be(Seq(token2.id))
+    TokensDao.findAll(Authorization.User(createUser().id)).map(_.id) must be(Nil)
+
+  }
+
 }

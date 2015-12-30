@@ -20,11 +20,6 @@ object Clause {
     override val sql: String = "false"
   }
 
-  case class Single(condition: String) extends Clause {
-    assert(!condition.trim.isEmpty, "condition cannot be empty")
-    override val sql: String = condition
-  }
-
   case class Or(conditions: Seq[String]) extends Clause {
     assert(!conditions.isEmpty, "Must have at least one condition")
 
@@ -36,22 +31,37 @@ object Clause {
 
   }
 
+  def single(condition: String): Clause = {
+    assert(!condition.trim.isEmpty, "condition cannot be empty")
+    Or(Seq(condition))
+  }
+
 }
 
 sealed trait Authorization {
+
+  private[this] val IdRegex = """^[\w\d\-\_]+$""".r
+
+  private[db] def assertValidId(id: String) {
+    id match {
+      case IdRegex() => {}
+      case _ => sys.error(s"Invalid id[$id]")
+    }
+  }
 
   def organizations(
     organizationIdColumn: String,
     visibilityColumnName: Option[String] = None
   ): Clause
 
+  def users(
+    userIdColumn: String
+  ): Clause
+
 }
 
 
 object Authorization {
-
-  private[this] val NoRecordsClause = Clause.False
-  private[this] val AllRecordsClause = Clause.True
 
   private[this] def publicVisibilityClause(column: String) = {
     s"$column = '${Visibility.Public}'"
@@ -64,10 +74,14 @@ object Authorization {
       visibilityColumnName: Option[String] = None
     ): Clause = {
       visibilityColumnName match {
-        case None => NoRecordsClause
-        case Some(col) => Clause.Single(publicVisibilityClause(col))
+        case None => Clause.False
+        case Some(col) => Clause.single(publicVisibilityClause(col))
       }
     }
+
+    override def users(
+      userIdColumn: String
+    ) = Clause.False
 
   }
 
@@ -76,11 +90,16 @@ object Authorization {
     override def organizations(
       organizationIdColumn: String,
       visibilityColumnName: Option[String] = None
-    ): Clause = AllRecordsClause
+    ): Clause = Clause.True
+
+    override def users(
+      userIdColumn: String
+    ) = Clause.True
 
   }
 
   case class User(id: String) extends Authorization {
+    assertValidId(id)
 
     override def organizations(
       organizationIdColumn: String,
@@ -89,14 +108,19 @@ object Authorization {
       // TODO: Bind
       val userClause = s"$organizationIdColumn in (select organization_id from memberships where deleted_at is null and user_id = '$id')"
       visibilityColumnName match {
-        case None => Clause.Single(userClause)
+        case None => Clause.single(userClause)
         case Some(col) => Clause.Or(Seq(userClause, publicVisibilityClause(col)))
       }
     }
 
+    override def users(
+      userIdColumn: String
+    ) = Clause.single(s"$userIdColumn = '$id'")
+
   }
 
   case class Organization(id: String) extends Authorization {
+    assertValidId(id)
 
     override def organizations(
       organizationIdColumn: String,
@@ -104,10 +128,14 @@ object Authorization {
     ): Clause = {
       val orgClause = s"$organizationIdColumn = '$id'"
       visibilityColumnName match {
-        case None => Clause.Single(orgClause)
+        case None => Clause.single(orgClause)
         case Some(col) => Clause.Or(Seq(orgClause, publicVisibilityClause(col)))
       }
     }
+
+    override def users(
+      userIdColumn: String
+    ) = Clause.single(s"$userIdColumn in (select user_id from memberships where deleted_at is null and organization_id = '$id')")
 
   }
 
