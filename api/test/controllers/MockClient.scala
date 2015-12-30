@@ -15,7 +15,7 @@ trait MockClient extends db.Helpers {
 
   lazy val client = new Client(
     s"http://localhost:$port",
-    auth = Some(Authorization.Basic(systemUser.guid.toString))
+    auth = Some(Authorization.Basic(systemUser.id.toString))
   )
 
   lazy val anonClient = new Client(s"http://localhost:$port")

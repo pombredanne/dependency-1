@@ -11,11 +11,11 @@ private[db] object LocalFilters {
   }
 
   def organizationSubueryByKey(
-    organizationGuidColumnName: String,
+    organizationIdColumnName: String,
     orgKeyBindVarName: String,
     orgKey: String
   ): String = {
-    s"and $organizationGuidColumnName = (select guid from organizations where deleted_at is null and key = lower(trim({$orgKeyBindVarName})))"
+    s"and $organizationIdColumnName = (select id from organizations where deleted_at is null and key = lower(trim({$orgKeyBindVarName})))"
   }
 
 }

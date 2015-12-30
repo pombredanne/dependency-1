@@ -2,16 +2,15 @@ package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.v0.models.{Binary, BinaryForm}
 import com.bryzek.dependency.api.lib.DefaultBinaryVersionProvider
-import io.flow.play.postgresql.Pager
+import io.flow.postgresql.Pager
 import db.{Authorization, BinariesDao, BinaryVersionsDao, ItemsDao, ProjectBinariesDao, SyncsDao, UsersDao}
 import play.api.Logger
 import akka.actor.Actor
-import java.util.UUID
 
 object BinaryActor {
 
   object Messages {
-    case class Data(guid: UUID)
+    case class Data(id: String)
     case object Sync
     case object Deleted
   }
@@ -24,31 +23,31 @@ class BinaryActor extends Actor with Util {
 
   def receive = {
 
-    case m @ BinaryActor.Messages.Data(guid: UUID) => withVerboseErrorHandler(m) {
-      dataBinary = BinariesDao.findByGuid(Authorization.All, guid)
+    case m @ BinaryActor.Messages.Data(id: String) => withVerboseErrorHandler(m) {
+      dataBinary = BinariesDao.findById(Authorization.All, id)
     }
 
     case m @ BinaryActor.Messages.Sync => withVerboseErrorHandler(m) {
       dataBinary.foreach { binary =>
-        SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "binary", binary.guid) {
+        SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "binary", binary.id) {
           DefaultBinaryVersionProvider.versions(binary.name).foreach { version =>
-            BinaryVersionsDao.upsert(UsersDao.systemUser, binary.guid, version.value)
+            BinaryVersionsDao.upsert(UsersDao.systemUser, binary.id, version.value)
           }
         }
 
-        sender ! MainActor.Messages.BinarySyncCompleted(binary.guid)
+        sender ! MainActor.Messages.BinarySyncCompleted(binary.id)
       }
     }
 
     case m @ BinaryActor.Messages.Deleted => withVerboseErrorHandler(m) {
       dataBinary.foreach { binary =>
-        ItemsDao.softDeleteByObjectGuid(Authorization.All, MainActor.SystemUser, binary.guid)
+        ItemsDao.softDeleteByObjectId(Authorization.All, MainActor.SystemUser, binary.id)
 
         Pager.create { offset =>
-          ProjectBinariesDao.findAll(Authorization.All, binaryGuid = Some(binary.guid), offset = offset)
+          ProjectBinariesDao.findAll(Authorization.All, binaryId = Some(binary.id), offset = offset)
         }.foreach { projectBinary =>
           ProjectBinariesDao.removeBinary(MainActor.SystemUser, projectBinary)
-          sender ! MainActor.Messages.ProjectBinarySync(projectBinary.project.guid, projectBinary.guid)
+          sender ! MainActor.Messages.ProjectBinarySync(projectBinary.project.id, projectBinary.id)
         }
       }
       context.stop(self)

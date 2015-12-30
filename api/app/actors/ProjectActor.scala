@@ -1,14 +1,13 @@
 package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.api.lib.{DefaultLibraryArtifactProvider, Dependencies, GithubDependencyProviderClient}
-import com.bryzek.dependency.v0.models.{Binary, BinaryForm, BinaryType, Library, LibraryForm, Project, ProjectBinary, ProjectLibrary, RecommendationType, VersionForm, WatchProjectForm}
-import io.flow.play.postgresql.Pager
+import com.bryzek.dependency.v0.models.{Binary, BinaryForm, BinaryType, Library, LibraryForm, Project, ProjectBinary, ProjectLibrary, RecommendationType, VersionForm}
+import io.flow.postgresql.Pager
 import db.{Authorization, BinariesDao, LibrariesDao, LibraryVersionsDao, ProjectBinariesDao, ProjectLibrariesDao}
-import db.{ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
+import db.{ProjectsDao, RecommendationsDao, SyncsDao, UsersDao}
 import play.api.Logger
 import play.libs.Akka
 import akka.actor.Actor
-import java.util.UUID
 import scala.concurrent.ExecutionContext
 
 object ProjectActor {
@@ -16,22 +15,21 @@ object ProjectActor {
   trait Message
 
   object Messages {
-    case class Data(guid: UUID) extends Message
+    case class Data(id: String) extends Message
     case object Deleted extends Message
     case object Sync extends Message
     case object SyncCompleted extends Message
-    case object Watch extends Message
 
-    case class ProjectLibraryCreated(guid: UUID) extends Message
-    case class ProjectLibrarySync(guid: UUID) extends Message
-    case class ProjectLibraryDeleted(guid: UUID) extends Message
+    case class ProjectLibraryCreated(id: String) extends Message
+    case class ProjectLibrarySync(id: String) extends Message
+    case class ProjectLibraryDeleted(id: String) extends Message
 
-    case class ProjectBinaryCreated(guid: UUID) extends Message
-    case class ProjectBinarySync(guid: UUID) extends Message
-    case class ProjectBinaryDeleted(guid: UUID) extends Message
+    case class ProjectBinaryCreated(id: String) extends Message
+    case class ProjectBinarySync(id: String) extends Message
+    case class ProjectBinaryDeleted(id: String) extends Message
 
-    case class LibrarySynced(guid: UUID) extends Message
-    case class BinarySynced(guid: UUID) extends Message
+    case class LibrarySynced(id: String) extends Message
+    case class BinarySynced(id: String) extends Message
   }
 
 }
@@ -44,47 +42,33 @@ class ProjectActor extends Actor with Util {
 
   def receive = {
 
-    case m @ ProjectActor.Messages.Data(guid) => withVerboseErrorHandler(m.toString) {
-      dataProject = ProjectsDao.findByGuid(Authorization.All, guid)
+    case m @ ProjectActor.Messages.Data(id) => withVerboseErrorHandler(m.toString) {
+      dataProject = ProjectsDao.findById(Authorization.All, id)
     }
 
-    case m @ ProjectActor.Messages.Watch => withVerboseErrorHandler(m.toString) {
-      dataProject.foreach { project =>
-        UsersDao.findByGuid(project.audit.createdBy.guid).map { createdBy =>
-          WatchProjectsDao.upsert(
-            createdBy,
-            WatchProjectForm(
-              userGuid = project.audit.createdBy.guid,
-              projectGuid = project.guid
-            )
-          )
-        }
-      }
+    case m @ ProjectActor.Messages.ProjectLibraryCreated(id) => withVerboseErrorHandler(m.toString) {
+      syncProjectLibrary(id)
     }
 
-    case m @ ProjectActor.Messages.ProjectLibraryCreated(guid) => withVerboseErrorHandler(m.toString) {
-      syncProjectLibrary(guid)
+    case m @ ProjectActor.Messages.ProjectLibrarySync(id) => withVerboseErrorHandler(m.toString) {
+      syncProjectLibrary(id)
     }
 
-    case m @ ProjectActor.Messages.ProjectLibrarySync(guid) => withVerboseErrorHandler(m.toString) {
-      syncProjectLibrary(guid)
+    case m @ ProjectActor.Messages.ProjectBinaryCreated(id) => withVerboseErrorHandler(m.toString) {
+      syncProjectBinary(id)
     }
 
-    case m @ ProjectActor.Messages.ProjectBinaryCreated(guid) => withVerboseErrorHandler(m.toString) {
-      syncProjectBinary(guid)
+    case m @ ProjectActor.Messages.ProjectBinarySync(id) => withVerboseErrorHandler(m.toString) {
+      syncProjectBinary(id)
     }
 
-    case m @ ProjectActor.Messages.ProjectBinarySync(guid) => withVerboseErrorHandler(m.toString) {
-      syncProjectBinary(guid)
-    }
-
-    case m @ ProjectActor.Messages.LibrarySynced(guid) => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.LibrarySynced(id) => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         processPendingSync(project)
       }
     }
 
-    case m @ ProjectActor.Messages.BinarySynced(guid) => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.BinarySynced(id) => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         processPendingSync(project)
       }
@@ -92,20 +76,20 @@ class ProjectActor extends Actor with Util {
 
     case m @ ProjectActor.Messages.Sync => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
-        SyncsDao.recordStarted(MainActor.SystemUser, "project", project.guid)
+        SyncsDao.recordStarted(MainActor.SystemUser, "project", project.id)
 
-        UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
+        UsersDao.findById(project.user.id).map { user =>
           val summary = ProjectsDao.toSummary(project)
 
           GithubDependencyProviderClient.instance(summary, user).dependencies(project).map { dependencies =>
-            println(s" - project[${project.guid}] name[${project.name}] dependencies: $dependencies")
+            println(s" - project[${project.id}] name[${project.name}] dependencies: $dependencies")
 
             dependencies.binaries.map { binaries =>
               val projectBinaries = binaries.map { form =>
-                println(s" -- project[${project.guid}] name[${project.name}] binaries dao upsert")
+                println(s" -- project[${project.id}] name[${project.name}] binaries dao upsert")
                 ProjectBinariesDao.upsert(user, form) match {
                   case Left(errors) => {
-                    Logger.error(s"Project[${project.name}] guid[${project.guid}] Error storing binary[$form]: " + errors.mkString(", "))
+                    Logger.error(s"Project[${project.name}] id[${project.id}] Error storing binary[$form]: " + errors.mkString(", "))
                     None
                   }
                   case Right(projectBinary) => {
@@ -113,13 +97,13 @@ class ProjectActor extends Actor with Util {
                   }
                 }
               }
-              ProjectBinariesDao.setGuids(user, project.guid, projectBinaries.flatten)
+              ProjectBinariesDao.setIds(user, project.id, projectBinaries.flatten)
             }
 
             dependencies.librariesAndPlugins.map { libraries =>
               val projectLibraries = libraries.map { artifact =>
-                println(s" -- project[${project.guid}] name[${project.name}] artifact upsert: " + artifact)
-                println(s" -- project[${project.guid}] name[${project.name}] crossBuildVersion: " + dependencies.crossBuildVersion() + " binaries: " + dependencies.binaries)
+                println(s" -- project[${project.id}] name[${project.name}] artifact upsert: " + artifact)
+                println(s" -- project[${project.id}] name[${project.name}] crossBuildVersion: " + dependencies.crossBuildVersion() + " binaries: " + dependencies.binaries)
                 ProjectLibrariesDao.upsert(
                   user,
                   artifact.toProjectLibraryForm(
@@ -127,7 +111,7 @@ class ProjectActor extends Actor with Util {
                   )
                 ) match {
                   case Left(errors) => {
-                    Logger.error(s"Project[${project.name}] guid[${project.guid}] Error storing artifact[$artifact]: " + errors.mkString(", "))
+                    Logger.error(s"Project[${project.name}] id[${project.id}] Error storing artifact[$artifact]: " + errors.mkString(", "))
                     None
                   }
                   case Right(library) => {
@@ -135,14 +119,14 @@ class ProjectActor extends Actor with Util {
                   }
                 }
               }
-              ProjectLibrariesDao.setGuids(user, project.guid, projectLibraries.flatten)
+              ProjectLibrariesDao.setIds(user, project.id, projectLibraries.flatten)
             }
 
             processPendingSync(project)
           }.recover {
             case e => {
               e.printStackTrace(                System.err)
-              Logger.error(s"Error fetching dependencies for project[${project.guid}] name[${project.name}]: $e")
+              Logger.error(s"Error fetching dependencies for project[${project.id}] name[${project.name}]: $e")
             }
           }
         }
@@ -152,7 +136,7 @@ class ProjectActor extends Actor with Util {
     case m @ ProjectActor.Messages.Deleted => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         Pager.create { offset =>
-          RecommendationsDao.findAll(Authorization.All, projectGuid = Some(project.guid), offset = offset)
+          RecommendationsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
         }.foreach { rec =>
           RecommendationsDao.softDelete(MainActor.SystemUser, rec)
         }
@@ -160,19 +144,19 @@ class ProjectActor extends Actor with Util {
       context.stop(self)
     }
 
-    case m @ ProjectActor.Messages.ProjectLibraryDeleted(guid) => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.ProjectLibraryDeleted(id) => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         ProjectLibrariesDao.findAll(
           Authorization.All,
-          guid = Some(guid),
+          id = Some(id),
           isDeleted = Some(true)
         ).map { projectLibrary =>
           projectLibrary.library.map { lib =>
             RecommendationsDao.findAll(
               Authorization.All,
-              projectGuid = Some(project.guid),
+              projectId = Some(project.id),
               `type` = Some(RecommendationType.Library),
-              objectGuid = Some(lib.guid),
+              objectId = Some(lib.id),
               fromVersion = Some(projectLibrary.version)
             ).foreach { rec =>
               RecommendationsDao.softDelete(MainActor.SystemUser, rec)
@@ -183,19 +167,19 @@ class ProjectActor extends Actor with Util {
       }
     }
 
-    case m @ ProjectActor.Messages.ProjectBinaryDeleted(guid) => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.ProjectBinaryDeleted(id) => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         ProjectBinariesDao.findAll(
           Authorization.All,
-          guid = Some(guid),
+          id = Some(id),
           isDeleted = Some(true)
         ).map { projectBinary =>
           projectBinary.binary.map { lib =>
             RecommendationsDao.findAll(
               Authorization.All,
-              projectGuid = Some(project.guid),
+              projectId = Some(project.id),
               `type` = Some(RecommendationType.Binary),
-              objectGuid = Some(lib.guid),
+              objectId = Some(lib.id),
               fromVersion = Some(projectBinary.version)
             ).foreach { rec =>
               RecommendationsDao.softDelete(MainActor.SystemUser, rec)
@@ -211,12 +195,12 @@ class ProjectActor extends Actor with Util {
 
   /**
     * Attempts to resolve the library. If successful, sets the
-    * project_libraries.library_guid
+    * project_libraries.library_id
     */
-  def syncProjectLibrary(guid: UUID) {
-    SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "project_library", guid) {
+  def syncProjectLibrary(id: String) {
+    SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "project_library", id) {
       dataProject.foreach { project =>
-        ProjectLibrariesDao.findByGuid(Authorization.All, guid).map { projectLibrary =>
+        ProjectLibrariesDao.findById(Authorization.All, id).map { projectLibrary =>
           resolveLibrary(projectLibrary).map { lib =>
             ProjectLibrariesDao.setLibrary(MainActor.SystemUser, projectLibrary, lib)
           }
@@ -226,10 +210,10 @@ class ProjectActor extends Actor with Util {
     }
   }
 
-  def syncProjectBinary(guid: UUID) {
-    SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "project_binary", guid) {
+  def syncProjectBinary(id: String) {
+    SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "project_binary", id) {
       dataProject.foreach { project =>
-        ProjectBinariesDao.findByGuid(Authorization.All, guid).map { projectBinary =>
+        ProjectBinariesDao.findById(Authorization.All, id).map { projectBinary =>
           resolveBinary(projectBinary).map { binary =>
             ProjectBinariesDao.setBinary(MainActor.SystemUser, projectBinary, binary)
           }
@@ -242,12 +226,12 @@ class ProjectActor extends Actor with Util {
   def processPendingSync(project: Project) {
     dependenciesPendingCompletion(project) match {
       case Nil => {
-        println(s" -- project[${project.name}] guid[${project.guid}] dependencies satisfied")
+        println(s" -- project[${project.name}] id[${project.id}] dependencies satisfied")
         RecommendationsDao.sync(MainActor.SystemUser, project)
-        SyncsDao.recordCompleted(MainActor.SystemUser, "project", project.guid)
+        SyncsDao.recordCompleted(MainActor.SystemUser, "project", project.id)
       }
       case deps => {
-        println(s" -- project[${project.name}] guid[${project.guid}] waiting on dependencies to sync: " + deps.mkString(", "))
+        println(s" -- project[${project.name}] id[${project.id}] waiting on dependencies to sync: " + deps.mkString(", "))
       }
     }
   }
@@ -256,12 +240,12 @@ class ProjectActor extends Actor with Util {
   private[this] def dependenciesPendingCompletion(project: Project): Seq[String] = {
     ProjectLibrariesDao.findAll(
       Authorization.All,
-      projectGuid = Some(project.guid),
+      projectId = Some(project.id),
       isSynced = Some(false)
     ).map( lib => s"Library ${lib.groupId}.${lib.artifactId}" ) ++ 
     ProjectBinariesDao.findAll(
       Authorization.All,
-      projectGuid = Some(project.guid),
+      projectId = Some(project.id),
       isSynced = Some(false)
     ).map( bin => s"Binary ${bin.name}" )
   }
@@ -284,14 +268,14 @@ class ProjectActor extends Actor with Util {
             LibrariesDao.upsert(
               MainActor.SystemUser,
               form = LibraryForm(
-                organizationGuid = projectLibrary.project.organization.guid,
+                organizationId = projectLibrary.project.organization.id,
                 groupId = projectLibrary.groupId,
                 artifactId = projectLibrary.artifactId,
-                resolverGuid = resolution.resolver.guid
+                resolverId = resolution.resolver.id
               )
             ) match {
               case Left(errors) => {
-                Logger.error(s"Project[${projectLibrary.project.guid}] name[${projectLibrary.project.name}] - error upserting library: " + errors.mkString(", "))
+                Logger.error(s"Project[${projectLibrary.project.id}] name[${projectLibrary.project.name}] - error upserting library: " + errors.mkString(", "))
                 None
               }
               case Right(library) => {
@@ -305,18 +289,18 @@ class ProjectActor extends Actor with Util {
   }
 
   private[this] def resolveBinary(projectBinary: ProjectBinary): Option[Binary] = {
-    println(s"project guid[${projectBinary.project.guid}] projectBinaryCreated[${projectBinary.guid}] name[${projectBinary.name}]")
+    println(s"project id[${projectBinary.project.id}] projectBinaryCreated[${projectBinary.id}] name[${projectBinary.name}]")
     BinaryType(projectBinary.name) match {
       case BinaryType.Scala | BinaryType.Sbt => {
         BinariesDao.upsert(
           MainActor.SystemUser,
           BinaryForm(
-            organizationGuid = projectBinary.project.organization.guid,
+            organizationId = projectBinary.project.organization.id,
             name = BinaryType(projectBinary.name)
           )
         ) match {
           case Left(errors) => {
-            Logger.error(s"Project[${projectBinary.project.guid}] name[${projectBinary.project.name}] - error upserting binary[$projectBinary]: " + errors.mkString(", "))
+            Logger.error(s"Project[${projectBinary.project.id}] name[${projectBinary.project.name}] - error upserting binary[$projectBinary]: " + errors.mkString(", "))
             None
           }
           case Right(binary) => {
@@ -325,7 +309,7 @@ class ProjectActor extends Actor with Util {
         }
       }
       case BinaryType.UNDEFINED(_) => {
-        Logger.warn(s"Project[${projectBinary.guid}] name[${projectBinary.name}] references an unknown binary[${projectBinary.name}]")
+        Logger.warn(s"Project[${projectBinary.id}] name[${projectBinary.name}] references an unknown binary[${projectBinary.name}]")
         None
       }
     }

@@ -22,7 +22,8 @@ object Permissions {
   object Resolver {
 
     def delete(resolver: Resolver, user: Option[User]): Boolean = {
-      user.map(_.guid) == Some(resolver.audit.createdBy.guid)
+      // TODO
+      true
     }
 
   }

@@ -25,8 +25,8 @@ class BinaryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Hel
     (
       binary,
       BinaryVersionsDao.findAll(
-        Authorization.Organization(org.guid),
-        binaryGuid = Some(binary.guid),
+        Authorization.Organization(org.id),
+        binaryId = Some(binary.id),
         limit = versions.size
       ).reverse
     )
@@ -37,7 +37,7 @@ class BinaryRecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Hel
       ProjectBinariesDao.upsert(
         systemUser,
         ProjectBinaryForm(
-          projectGuid = project.guid,
+          projectId = project.id,
           name = binaryVersion.binary.name,
           version = binaryVersion.version,
           path = "test.sbt"

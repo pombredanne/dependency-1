@@ -3,42 +3,41 @@ package db
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Scms, Binary, BinaryForm, Library, LibraryForm, Project, ProjectForm, ProjectSummary, OrganizationSummary, Visibility}
 import com.bryzek.dependency.api.lib.GithubUtil
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-import java.util.UUID
 
 object ProjectsDao {
 
   private[this] val BaseQuery = Query(s"""
-    select projects.guid,
+    select projects.id,
+           projects.user_id as projects_user_id,
            projects.visibility,
            projects.scms,
            projects.name,
            projects.uri,
-           ${AuditsDao.all("projects")},
-           organizations.guid as projects_organization_guid,
+           organizations.id as projects_organization_id,
            organizations.key as projects_organization_key
       from projects
-      left join organizations on organizations.deleted_at is null and organizations.guid = projects.organization_guid
+      left join organizations on organizations.deleted_at is null and organizations.id = projects.organization_id
   """)
 
   private[this] val FilterProjectLibraries = """
-    projects.guid in (select project_guid from project_libraries where deleted_at is null and %s)
+    projects.id in (select project_id from project_libraries where deleted_at is null and %s)
   """.trim
 
   private[this] val FilterProjectBinaries = """
-    projects.guid in (select project_guid from project_binaries where deleted_at is null and %s)
+    projects.id in (select project_id from project_binaries where deleted_at is null and %s)
   """.trim
 
   private[this] val InsertQuery = """
     insert into projects
-    (guid, organization_guid, visibility, scms, name, uri, created_by_guid, updated_by_guid)
+    (id, user_id, organization_id, visibility, scms, name, uri, updated_by_user_id)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {visibility}, {scms}, {name}, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({id}, {user_id}, {organization_id}, {visibility}, {scms}, {name}, {uri}, {updated_by_user_id})
   """
 
   private[this] val UpdateQuery = """
@@ -47,14 +46,14 @@ object ProjectsDao {
            scms = {scms},
            name = {name},
            uri = {uri},
-           updated_by_guid = {updated_by_guid}::uuid
-     where guid = {guid}::uuid
+           updated_by_user_id = {updated_by_user_id}
+     where id = {id}
   """
 
   def toSummary(project: Project): ProjectSummary = {
     ProjectSummary(
-      guid = project.guid,
-      organization = OrganizationSummary(project.organization.guid, project.organization.key),
+      id = project.id,
+      organization = OrganizationSummary(project.organization.id, project.organization.key),
       name = project.name
     )
   }
@@ -90,7 +89,7 @@ object ProjectsDao {
       ProjectsDao.findByOrganizationAndName(Authorization.All, form.organization, form.name) match {
         case None => Seq.empty
         case Some(p) => {
-          Some(p.guid) == existing.map(_.guid) match {
+          Some(p.id) == existing.map(_.id) match {
             case true => Nil
             case false => Seq("Project with this name already exists")
           }
@@ -98,7 +97,7 @@ object ProjectsDao {
       }
     }
 
-    val organizationErrors = MembershipsDao.isMember(form.organization, user) match  {
+    val organizationErrors = MembershipsDao.isMemberByOrgKey(form.organization, user) match  {
       case false => Seq("You do not have access to this organization")
       case true => Nil
     }
@@ -114,24 +113,25 @@ object ProjectsDao {
           sys.error("Could not find organization with key[${form.organization}]")
         }
         
-        val guid = UUID.randomUUID
+        val id = io.flow.play.util.IdGenerator("prj").randomId()
 
         DB.withConnection { implicit c =>
           SQL(InsertQuery).on(
-            'guid -> guid,
-            'organization_guid -> org.guid,
+            'id -> id,
+            'organization_id -> org.id,
+            'user_id -> createdBy.id,
             'visibility -> form.visibility.toString,
             'scms -> form.scms.toString,
             'name -> form.name.trim,
             'uri -> form.uri.trim,
-            'created_by_guid -> createdBy.guid
+            'updated_by_user_id -> createdBy.id
           ).execute()
         }
 
-        MainActor.ref ! MainActor.Messages.ProjectCreated(guid)
+        MainActor.ref ! MainActor.Messages.ProjectCreated(id)
 
         Right(
-          findByGuid(Authorization.All, guid).getOrElse {
+          findById(Authorization.All, id).getOrElse {
             sys.error("Failed to create project")
           }
         )
@@ -152,19 +152,19 @@ object ProjectsDao {
 
         DB.withConnection { implicit c =>
           SQL(UpdateQuery).on(
-            'guid -> project.guid,
+            'id -> project.id,
             'visibility -> form.visibility.toString,
             'scms -> form.scms.toString,
             'name -> form.name.trim,
             'uri -> form.uri.trim,
-            'updated_by_guid -> createdBy.guid
+            'updated_by_user_id -> createdBy.id
           ).execute()
         }
 
-        MainActor.ref ! MainActor.Messages.ProjectUpdated(project.guid)
+        MainActor.ref ! MainActor.Messages.ProjectUpdated(project.id)
 
         Right(
-          findByGuid(Authorization.All, project.guid).getOrElse {
+          findById(Authorization.All, project.id).getOrElse {
             sys.error("Failed to create project")
           }
         )
@@ -174,36 +174,36 @@ object ProjectsDao {
   }
 
   def softDelete(deletedBy: User, project: Project) {
-    SoftDelete.delete("projects", deletedBy.guid, project.guid)
-    MainActor.ref ! MainActor.Messages.ProjectDeleted(project.guid)
+    SoftDelete.delete("projects", deletedBy.id, project.id)
+    MainActor.ref ! MainActor.Messages.ProjectDeleted(project.id)
   }
 
 /*
-  def findByOrganizationGuidAndName(auth: Authorization, organizationGuid: UUID, name: String): Option[Project] = {
-    findAll(auth, organizationGuid = Some(organizationGuid), name = Some(name), limit = 1).headOption
+  def findByOrganizationIdAndName(auth: Authorization, organizationId: String, name: String): Option[Project] = {
+    findAll(auth, organizationId = Some(organizationId), name = Some(name), limit = 1).headOption
   }
  */
   def findByOrganizationAndName(auth: Authorization, organization: String, name: String): Option[Project] = {
     findAll(auth, organization = Some(organization), name = Some(name), limit = 1).headOption
   }
 
-  def findByGuid(auth: Authorization, guid: UUID): Option[Project] = {
-    findAll(auth, guid = Some(guid), limit = 1).headOption
+  def findById(auth: Authorization, id: String): Option[Project] = {
+    findAll(auth, id = Some(id), limit = 1).headOption
   }
 
   def findAll(
     auth: Authorization,
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
     organization: Option[String] = None,
-    organizationGuid: Option[UUID] = None,
+    organizationId: Option[String] = None,
     name: Option[String] = None,
     groupId: Option[String] = None,
     artifactId: Option[String] = None,
     version: Option[String] = None,
-    libraryGuid: Option[_root_.java.util.UUID] = None,
+    libraryId: Option[String] = None,
     binary: Option[String] = None,
-    binaryGuid: Option[_root_.java.util.UUID] = None,
+    binaryId: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("lower(projects.name), projects.created_at"),
     limit: Long = 25,
@@ -214,9 +214,9 @@ object ProjectsDao {
       Standards.query(
         BaseQuery,
         tableName = "projects",
-        auth = auth.organizations("projects.organization_guid", Some("projects.visibility")),
-        guid = guid,
-        guids = guids,
+        auth = auth.organizations("projects.organization_id", Some("projects.visibility")),
+        id = id,
+        ids = ids,
         orderBy = orderBy.sql,
         isDeleted = isDeleted,
         limit = Some(limit),
@@ -227,7 +227,7 @@ object ProjectsDao {
           organization,
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
-        equals("organizations.guid", organizationGuid).
+        equals("organizations.id", organizationId).
         text(
           "projects.name",
           name,
@@ -244,14 +244,14 @@ object ProjectsDao {
           version.map { v => FilterProjectLibraries.format("project_libraries.version = trim({version})") }
         ).bind("version", version).
         condition(
-          libraryGuid.map { v => FilterProjectLibraries.format("project_libraries.library_guid = {library_guid}::uuid") }
-        ).bind("library_guid", libraryGuid).
+          libraryId.map { v => FilterProjectLibraries.format("project_libraries.library_id = {library_id}") }
+        ).bind("library_id", libraryId).
         condition(
           binary.map { v => FilterProjectBinaries.format("project_binaries.name = trim({binary})") }
         ).bind("binary", binary).
         condition(
-          binaryGuid.map { v => FilterProjectBinaries.format("project_binaries.binary_guid = {binary_guid}::uuid") }
-        ).bind("binary_guid", binaryGuid).
+          binaryId.map { v => FilterProjectBinaries.format("project_binaries.binary_id = {binary_id}") }
+        ).bind("binary_id", binaryId).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Project.table("projects").*
         )

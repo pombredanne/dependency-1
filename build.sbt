@@ -34,9 +34,11 @@ lazy val api = project
     routesImport += "com.bryzek.dependency.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
-      "io.flow" %% "lib-play-postgresql" % "0.0.14",
+      jdbc,      
+      "io.flow" %% "lib-postgresql" % "0.0.16",
       "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.16",
       "org.postgresql" % "postgresql" % "9.4-1206-jdbc42",
+      "com.typesafe.play" %% "anorm" % "2.5.0",
       "com.sendgrid"   %  "sendgrid-java" % "2.2.2",
       "org.scalatestplus" %% "play" % "1.4.0-M4" % "test"
     )
@@ -68,7 +70,7 @@ val credsToUse = Option(System.getenv("ARTIFACTORY_USERNAME")) match {
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("dependency-" + _),
   libraryDependencies ++= Seq(
-    "io.flow" %% "lib-play" % "0.0.7",
+    "io.flow" %% "lib-play" % "0.0.13",
     specs2 % Test,
     "org.scalatest" %% "scalatest" % "2.2.5" % Test
   ),

@@ -5,7 +5,6 @@ import com.bryzek.dependency.v0.models.{Organization, Resolver, ResolverForm, Us
 import com.bryzek.dependency.www.lib.DependencyClientProvider
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
-import java.util.UUID
 import scala.concurrent.Future
 
 import play.api._
@@ -40,11 +39,11 @@ class ResolversController @javax.inject.Inject() (
     }
   }
 
-  def show(guid: UUID, librariesPage: Int = 0) = Identified.async { implicit request =>
-    withResolver(request, guid) { resolver =>
+  def show(id: String, librariesPage: Int = 0) = Identified.async { implicit request =>
+    withResolver(request, id) { resolver =>
       for {
         libraries <- dependencyClient(request).libraries.get(
-          resolverGuid = Some(guid),
+          resolverId = Some(id),
           limit = Pagination.DefaultLimit+1,
           offset = librariesPage * Pagination.DefaultLimit
         )
@@ -84,7 +83,7 @@ class ResolversController @javax.inject.Inject() (
           dependencyClient(request).resolvers.post(
             resolverForm = uiForm.resolverForm()
           ).map { resolver =>
-            Redirect(routes.ResolversController.show(resolver.guid)).flashing("success" -> "Resolver created")
+            Redirect(routes.ResolversController.show(resolver.id)).flashing("success" -> "Resolver created")
           }.recover {
             case response: com.bryzek.dependency.v0.errors.ErrorsResponse => {
               Ok(views.html.resolvers.create(uiData(request), boundForm, orgs, response.errors.map(_.message)))
@@ -97,11 +96,11 @@ class ResolversController @javax.inject.Inject() (
 
   def withResolver[T](
     request: IdentifiedRequest[T],
-    guid: UUID
+    id: String
   )(
     f: Resolver => Future[Result]
   ) = {
-    dependencyClient(request).resolvers.getByGuid(guid).flatMap { resolver =>
+    dependencyClient(request).resolvers.getById(id).flatMap { resolver =>
       f(resolver)
     }.recover {
       case UnitResponse(404) => {
@@ -110,8 +109,8 @@ class ResolversController @javax.inject.Inject() (
     }
   }
 
-  def postDelete(guid: UUID) = Identified.async { implicit request =>
-    dependencyClient(request).resolvers.deleteByGuid(guid).map { response =>
+  def postDelete(id: String) = Identified.async { implicit request =>
+    dependencyClient(request).resolvers.deleteById(id).map { response =>
       Redirect(routes.ResolversController.index()).flashing("success" -> s"Resolver deleted")
     }.recover {
       case UnitResponse(404) => {

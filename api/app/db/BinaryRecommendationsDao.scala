@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.api.lib.Recommendations
 import com.bryzek.dependency.v0.models.{Binary, BinaryVersion, Project, ProjectBinary, VersionForm}
-import io.flow.play.postgresql.Pager
+import io.flow.postgresql.Pager
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -19,17 +19,17 @@ object BinaryRecommendationsDao {
 
   def forProject(project: Project): Seq[BinaryRecommendation] = {
     var recommendations = scala.collection.mutable.ListBuffer[BinaryRecommendation]()
-    val auth = Authorization.Organization(project.organization.guid)
+    val auth = Authorization.Organization(project.organization.id)
 
     Pager.create { offset =>
       ProjectBinariesDao.findAll(
-        Authorization.Organization(project.organization.guid),
-        projectGuid = Some(project.guid),
+        Authorization.Organization(project.organization.id),
+        projectId = Some(project.id),
         hasBinary = Some(true),
         offset = offset
       )
     }.foreach { projectBinary =>
-      projectBinary.binary.flatMap { lib => BinariesDao.findByGuid(auth, lib.guid) }.map { binary =>
+      projectBinary.binary.flatMap { lib => BinariesDao.findById(auth, lib.id) }.map { binary =>
         val recentVersions = versionsGreaterThan(auth, binary, projectBinary.version)
         recommend(projectBinary, recentVersions).map { v =>
           recommendations ++= Seq(
@@ -66,7 +66,7 @@ object BinaryRecommendationsDao {
     Pager.create { offset =>
       BinaryVersionsDao.findAll(
         auth,
-        binaryGuid = Some(binary.guid),
+        binaryId = Some(binary.id),
         greaterThanVersion = Some(version),
         offset = offset
       )

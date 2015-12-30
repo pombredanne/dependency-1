@@ -8,7 +8,6 @@ import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 
 @javax.inject.Singleton
 class ProjectBinaries @javax.inject.Inject() (
@@ -16,10 +15,10 @@ class ProjectBinaries @javax.inject.Inject() (
 ) extends Controller with IdentifiedRestController with Helpers {
 
   def get(
-    guid: Option[UUID],
-    guids: Option[Seq[UUID]],
-    projectGuid: Option[_root_.java.util.UUID],
-    binaryGuid: Option[_root_.java.util.UUID],
+    id: Option[String],
+    ids: Option[Seq[String]],
+    projectId: Option[String],
+    binaryId: Option[String],
     isSynced: Option[Boolean],
     limit: Long = 25,
     offset: Long = 0
@@ -27,11 +26,11 @@ class ProjectBinaries @javax.inject.Inject() (
     Ok(
       Json.toJson(
         ProjectBinariesDao.findAll(
-          Authorization.User(request.user.guid),
-          guid = guid,
-          guids = optionals(guids),
-          projectGuid = projectGuid,
-          binaryGuid = binaryGuid,
+          Authorization.User(request.user.id),
+          id = id,
+          ids = optionals(ids),
+          projectId = projectId,
+          binaryId = binaryId,
           isSynced = isSynced,
           limit = limit,
           offset = offset

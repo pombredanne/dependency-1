@@ -2,62 +2,59 @@ package db
 
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Binary, BinaryType, BinaryVersion}
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-import java.util.UUID
 import scala.util.{Failure, Success, Try}
 
 object BinaryVersionsDao {
 
   private[this] val BaseQuery = Query(s"""
-    select binary_versions.guid,
+    select binary_versions.id,
            binary_versions.version,
-           ${AuditsDao.all("binary_versions")},
-           binaries.guid as binary_versions_binary_guid,
+           binaries.id as binary_versions_binary_id,
            binaries.name as binary_versions_binary_name,
-           ${AuditsDao.all("binaries", Some("binary_versions_binary"))},
-           organizations.guid as binary_versions_binary_organization_guid,
+           organizations.id as binary_versions_binary_organization_id,
            organizations.key as binary_versions_binary_organization_key
       from binary_versions
-      join binaries on binaries.deleted_at is null and binaries.guid = binary_versions.binary_guid
-      left join organizations on organizations.deleted_at is null and organizations.guid = binaries.organization_guid
+      join binaries on binaries.deleted_at is null and binaries.id = binary_versions.binary_id
+      left join organizations on organizations.deleted_at is null and organizations.id = binaries.organization_id
   """)
 
   private[this] val InsertQuery = s"""
     insert into binary_versions
-    (guid, binary_guid, version, sort_key, created_by_guid, updated_by_guid)
+    (id, binary_id, version, sort_key, updated_by_user_id)
     values
-    ({guid}::uuid, {binary_guid}::uuid, {version}, {sort_key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({id}, {binary_id}, {version}, {sort_key}, {updated_by_user_id})
   """
 
-  def upsert(createdBy: User, binaryGuid: UUID, version: String): BinaryVersion = {
+  def upsert(createdBy: User, binaryId: String, version: String): BinaryVersion = {
     DB.withConnection { implicit c =>
-      upsertWithConnection(createdBy, binaryGuid, version)
+      upsertWithConnection(createdBy, binaryId, version)
     }
   }
 
-  private[db] def upsertWithConnection(createdBy: User, binaryGuid: UUID, version: String)(
+  private[db] def upsertWithConnection(createdBy: User, binaryId: String, version: String)(
     implicit c: java.sql.Connection
   ): BinaryVersion = {
-    val auth = Authorization.User(createdBy.guid)
+    val auth = Authorization.User(createdBy.id)
     findAllWithConnection(
       auth,
-      binaryGuid = Some(binaryGuid),
+      binaryId = Some(binaryId),
       version = Some(version),
       limit = 1
     ).headOption.getOrElse {
       Try {
-        createWithConnection(createdBy, binaryGuid, version)
+        createWithConnection(createdBy, binaryId, version)
       } match {
         case Success(version) => version
         case Failure(ex) => {
           findAllWithConnection(
             auth,
-            binaryGuid = Some(binaryGuid),
+            binaryId = Some(binaryId),
             version = Some(version),
             limit = 1
           ).headOption.getOrElse {
@@ -69,31 +66,31 @@ object BinaryVersionsDao {
     }
   }
 
-  def create(createdBy: User, binaryGuid: UUID, version: String): BinaryVersion = {
+  def create(createdBy: User, binaryId: String, version: String): BinaryVersion = {
     DB.withConnection { implicit c =>
-      createWithConnection(createdBy, binaryGuid, version)
+      createWithConnection(createdBy, binaryId, version)
     }
   }
 
-  def createWithConnection(createdBy: User, binaryGuid: UUID, version: String)(implicit c: java.sql.Connection): BinaryVersion = {
+  def createWithConnection(createdBy: User, binaryId: String, version: String)(implicit c: java.sql.Connection): BinaryVersion = {
     assert(!version.trim.isEmpty, "Version must be non empty")
-    val guid = UUID.randomUUID
+    val id = io.flow.play.util.IdGenerator("biv").randomId()
 
     SQL(InsertQuery).on(
-      'guid -> guid,
-      'binary_guid -> binaryGuid,
+      'id -> id,
+      'binary_id -> binaryId,
       'version -> version.trim,
       'sort_key -> Version(version.trim).sortKey,
-      'created_by_guid -> createdBy.guid
+      'updated_by_user_id -> createdBy.id
     ).execute()
 
-    findByGuidWithConnection(Authorization.All, guid).getOrElse {
+    findByIdWithConnection(Authorization.All, id).getOrElse {
       sys.error("Failed to create version")
     }
   }
 
-  def softDelete(deletedBy: User, guid: UUID) {
-    SoftDelete.delete("binary_versions", deletedBy.guid, guid)
+  def softDelete(deletedBy: User, id: String) {
+    SoftDelete.delete("binary_versions", deletedBy.id, id)
   }
 
   def findByBinaryAndVersion(
@@ -102,36 +99,36 @@ object BinaryVersionsDao {
   ): Option[BinaryVersion] = {
     findAll(
       auth,
-      binaryGuid = Some(binary.guid),
+      binaryId = Some(binary.id),
       version = Some(version),
       limit = 1
     ).headOption
   }
 
-  def findByGuid(
+  def findById(
     auth: Authorization,
-    guid: UUID
+    id: String
   ): Option[BinaryVersion] = {
     DB.withConnection { implicit c =>
-      findByGuidWithConnection(auth, guid)
+      findByIdWithConnection(auth, id)
     }
   }
 
-  def findByGuidWithConnection(
+  def findByIdWithConnection(
     auth: Authorization,
-    guid: UUID
+    id: String
   ) (
     implicit c: java.sql.Connection
   ): Option[BinaryVersion] = {
-    findAllWithConnection(auth, guid = Some(guid), limit = 1).headOption
+    findAllWithConnection(auth, id = Some(id), limit = 1).headOption
   }
 
   def findAll(
     auth: Authorization,
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
-    binaryGuid: Option[UUID] = None,
-    projectGuid: Option[UUID] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
+    binaryId: Option[String] = None,
+    projectId: Option[String] = None,
     version: Option[String] = None,
     greaterThanVersion: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -141,10 +138,10 @@ object BinaryVersionsDao {
     DB.withConnection { implicit c =>
       findAllWithConnection(
         auth,
-        guid = guid,
-        guids = guids,
-        binaryGuid = binaryGuid,
-        projectGuid = projectGuid,
+        id = id,
+        ids = ids,
+        binaryId = binaryId,
+        projectId = projectId,
         version = version,
         greaterThanVersion = greaterThanVersion,
         isDeleted = isDeleted,
@@ -156,10 +153,10 @@ object BinaryVersionsDao {
 
   def findAllWithConnection(
     auth: Authorization,
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
-    binaryGuid: Option[UUID] = None,
-    projectGuid: Option[UUID] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
+    binaryId: Option[String] = None,
+    projectId: Option[String] = None,
     version: Option[String] = None,
     greaterThanVersion: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -174,11 +171,11 @@ object BinaryVersionsDao {
     // consistency and to explicitly declare we are respecting it.
 
     BaseQuery.
-      equals("binary_versions.guid", guid).
-      in("binary_versions.guid", guids).
-      equals("binary_versions.binary_guid", binaryGuid).
-      subquery("binary_versions.binary_guid", "project_guid", projectGuid, { bind =>
-        s"select binary_guid from project_binaries where deleted_at is null and binary_guid is not null and project_guid = ${bind.sql}"
+      equals("binary_versions.id", id).
+      in("binary_versions.id", ids).
+      equals("binary_versions.binary_id", binaryId).
+      subquery("binary_versions.binary_id", "project_id", projectId, { bind =>
+        s"select binary_id from project_binaries where deleted_at is null and binary_id is not null and project_id = ${bind.sql}"
       }).
       text(
         "binary_versions.version",

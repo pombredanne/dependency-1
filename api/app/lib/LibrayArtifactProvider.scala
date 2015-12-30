@@ -72,7 +72,7 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
     offset: Long
   ): Option[ArtifactResolution] = {
     ResolversDao.findAll(
-      Authorization.Organization(organization.guid),
+      Authorization.Organization(organization.id),
       limit = limit,
       offset = offset
     ) match {
@@ -92,7 +92,7 @@ case class DefaultLibraryArtifactProvider() extends LibraryArtifactProvider {
               return Some(
                 ArtifactResolution(
                   ResolverSummary(
-                    guid = resolver.guid,
+                    id = resolver.id,
                     organization = resolver.visibility match {
                       case Visibility.Public => None
                       case Visibility.Private | Visibility.UNDEFINED(_) => Some(organization)

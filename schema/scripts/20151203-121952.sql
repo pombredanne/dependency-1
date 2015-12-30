@@ -1,14 +1,14 @@
 drop table if exists items;
 
 create table items (
-  guid                       uuid primary key,
-  organization_guid          uuid not null references organizations,
-  visibility                 text not null check(lower_non_empty_trimmed_string(visibility)),
-  object_guid                uuid not null,
-  label                      text not null check(non_empty_trimmed_string(label)),
+  id                       text primary key,
+  organization_id          text not null references organizations,
+  visibility                 text not null check(util.lower_non_empty_trimmed_string(visibility)),
+  object_id                text not null,
+  label                      text not null check(util.non_empty_trimmed_string(label)),
   description                text check(trim(description) = description),
   summary                    json,
-  contents                   text not null check(non_empty_trimmed_string(contents)) check(lower(contents) = contents)
+  contents                   text not null check(util.non_empty_trimmed_string(contents)) check(lower(contents) = contents)
 );
 
 comment on table items is '
@@ -27,6 +27,6 @@ comment on column items.contents is '
   All of the actual textual contents we search.
 ';
 
-select schema_evolution_manager.create_basic_audit_data('public', 'items');
-create unique index items_organization_guid_object_guid_not_deleted_un_idx on items(organization_guid, object_guid) where deleted_at is null;
-create index on items(organization_guid);
+select audit.setup('public', 'items');
+create unique index items_organization_id_object_id_not_deleted_un_idx on items(organization_id, object_id) where deleted_at is null;
+create index on items(organization_id);

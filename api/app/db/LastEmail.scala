@@ -1,26 +1,26 @@
 package db
 
-import io.flow.common.v0.models.{Audit, Reference}
+import com.bryzek.dependency.v0.models.Reference
 import io.flow.user.v0.models.User
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import com.bryzek.dependency.v0.models.Publication
+import org.joda.time.DateTime
 
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-import java.util.UUID
 
 case class LastEmailForm(
-  userGuid: UUID,
+  userId: String,
   publication: Publication
 )
 
 case class LastEmail(
-  guid: UUID,
+  id: String,
   user: Reference,
   publication: Publication,
-  audit: Audit
+  createdAt: DateTime
 )
 
 object LastEmailsDao {
@@ -32,28 +32,28 @@ object LastEmailsDao {
 
   private[this] val InsertQuery = """
     insert into last_emails
-    (guid, user_guid, publication, created_by_guid, updated_by_guid)
+    (id, user_id, publication, updated_by_user_id)
     values
-    ({guid}::uuid, {user_guid}::uuid, {publication}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({id}, {user_id}, {publication}, {updated_by_user_id})
   """
 
   def record(
     createdBy: User,
     form: LastEmailForm
   ): LastEmail = {
-    val guid = DB.withTransaction { implicit c =>
-      findByUserGuidAndPublication(form.userGuid, form.publication).foreach { rec =>
-        SoftDelete.delete(c, "last_emails", createdBy.guid, rec.guid)
+    val id = DB.withTransaction { implicit c =>
+      findByUserIdAndPublication(form.userId, form.publication).foreach { rec =>
+        SoftDelete.delete(c, "last_emails", createdBy.id, rec.id)
       }
       create(createdBy, form)
     }
-    findByGuid(guid).getOrElse {
+    findById(id).getOrElse {
       sys.error("Failed to record last email")
     }
   }
 
   def softDelete(deletedBy: User, rec: LastEmail) {
-    SoftDelete.delete("last_emails", deletedBy.guid, rec.guid)
+    SoftDelete.delete("last_emails", deletedBy.id, rec.id)
   }
 
   private[this] def create(
@@ -61,29 +61,29 @@ object LastEmailsDao {
     form: LastEmailForm
   ) (
     implicit c: java.sql.Connection
-  ): UUID = {
-    val guid = UUID.randomUUID
+  ): String = {
+    val id = io.flow.play.util.IdGenerator("lse").randomId()
     SQL(InsertQuery).on(
-      'guid -> guid,
-      'user_guid -> form.userGuid,
+      'id -> id,
+      'user_id -> form.userId,
       'publication -> form.publication.toString,
-      'created_by_guid -> createdBy.guid
+      'updated_by_user_id -> createdBy.id
     ).execute()
-    guid
+    id
   }
 
-  def findByGuid(guid: UUID): Option[LastEmail] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+  def findById(id: String): Option[LastEmail] = {
+    findAll(id = Some(id), limit = 1).headOption
   }
 
-  def findByUserGuidAndPublication(userGuid: UUID, publication: Publication): Option[LastEmail] = {
-    findAll(userGuid = Some(userGuid), publication = Some(publication), limit = 1).headOption
+  def findByUserIdAndPublication(userId: String, publication: Publication): Option[LastEmail] = {
+    findAll(userId = Some(userId), publication = Some(publication), limit = 1).headOption
   }
 
   def findAll(
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
-    userGuid: Option[UUID] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
+    userId: Option[String] = None,
     publication: Option[Publication] = None,
     isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("-last_emails.publication, last_emails.created_at"),
@@ -93,9 +93,9 @@ object LastEmailsDao {
 
     DB.withConnection { implicit c =>
       BaseQuery.
-        equals("last_emails.guid", guid).
-        in("last_emails.guid", guids).
-        equals("last_emails.user_guid", userGuid).
+        equals("last_emails.id", id).
+        in("last_emails.id", ids).
+        equals("last_emails.user_id", userId).
         text("last_emails.publication", publication).
         nullBoolean("last_emails.deleted_at", isDeleted).
         orderBy(orderBy.sql).
@@ -106,24 +106,18 @@ object LastEmailsDao {
   }
 
   private[this] val parser: RowParser[LastEmail] = {
-    SqlParser.get[_root_.java.util.UUID]("guid") ~
-    io.flow.common.v0.anorm.parsers.Reference.parser(
-      io.flow.common.v0.anorm.parsers.Reference.Mappings(
-        guid = "user_guid"
-      )
-    ) ~
+    SqlParser.str("id") ~
+    SqlParser.str("user_id") ~
     com.bryzek.dependency.v0.anorm.parsers.Publication.parser(
       com.bryzek.dependency.v0.anorm.parsers.Publication.Mappings("publication")
     ) ~
-    io.flow.common.v0.anorm.parsers.Audit.parser(
-      io.flow.common.v0.anorm.parsers.Audit.Mappings.base
-    ) map {
-      case guid ~ user ~ publication ~ audit => {
+    SqlParser.get[DateTime]("created_at") map {
+      case id ~ userId ~ publication ~ createdAt => {
         LastEmail(
-          guid = guid,
-          user = user,
+          id = id,
+          user = Reference(id = userId),
           publication = publication,
-          audit = audit
+          createdAt = createdAt
         )
       }
     }

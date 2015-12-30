@@ -16,16 +16,16 @@ class LibrariesSpec extends PlaySpecification with MockClient {
   lazy val library1 = createLibrary(org)()
   lazy val library2 = createLibrary(org)()
 
-  "GET /libraries by guid" in new WithServer(port=port) {
+  "GET /libraries by id" in new WithServer(port=port) {
     await(
-      client.libraries.get(guid = Some(library1.guid))
-    ).map(_.guid) must beEqualTo(
-      Seq(library1.guid)
+      client.libraries.get(id = Some(library1.id))
+    ).map(_.id) must beEqualTo(
+      Seq(library1.id)
     )
 
     await(
-      client.libraries.get(guid = Some(UUID.randomUUID))
-    ).map(_.guid) must be(
+      client.libraries.get(id = Some(UUID.randomUUID.toString))
+    ).map(_.id) must be(
       Nil
     )
   }
@@ -58,12 +58,12 @@ class LibrariesSpec extends PlaySpecification with MockClient {
     )
   }
 
-  "GET /libraries/:guid" in new WithServer(port=port) {
-    await(client.libraries.getByGuid(library1.guid)).guid must beEqualTo(library1.guid)
-    await(client.libraries.getByGuid(library2.guid)).guid must beEqualTo(library2.guid)
+  "GET /libraries/:id" in new WithServer(port=port) {
+    await(client.libraries.getById(library1.id)).id must beEqualTo(library1.id)
+    await(client.libraries.getById(library2.id)).id must beEqualTo(library2.id)
 
     expectNotFound {
-      client.libraries.getByGuid(UUID.randomUUID)
+      client.libraries.getById(UUID.randomUUID.toString)
     }
   }
 
@@ -90,15 +90,15 @@ class LibrariesSpec extends PlaySpecification with MockClient {
   "DELETE /libraries" in new WithServer(port=port) {
     val library = createLibrary(org)()
     await(
-      client.libraries.deleteByGuid(library.guid)
+      client.libraries.deleteById(library.id)
     ) must beEqualTo(())
 
     expectNotFound(
-      client.libraries.getByGuid(library.guid)
+      client.libraries.getById(library.id)
     )
 
     expectNotFound(
-      client.libraries.deleteByGuid(library.guid)
+      client.libraries.deleteById(library.id)
     )
   }
 

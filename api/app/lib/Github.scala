@@ -3,14 +3,13 @@ package com.bryzek.dependency.api.lib
 import db.{GithubUsersDao, TokensDao, UsersDao}
 import com.bryzek.dependency.v0.models.{GithubUserForm, Repository, TokenForm, Visibility}
 import io.flow.user.v0.models.{NameForm, User, UserForm}
-import io.flow.play.util.DefaultConfig
+import io.flow.play.util.{DefaultConfig, IdGenerator}
 import io.flow.github.oauth.v0.{Client => GithubOauthClient}
 import io.flow.github.oauth.v0.models.AccessTokenForm
 import io.flow.github.v0.{Client => GithubClient}
 import io.flow.github.v0.errors.UnitResponse
 import io.flow.github.v0.models.{User => GithubUser}
 import scala.concurrent.{ExecutionContext, Future}
-import java.util.UUID
 import play.api.Logger
 
 case class GithubUserWithToken(
@@ -80,8 +79,8 @@ trait Github {
             GithubUsersDao.upsertById(
               createdBy = None,
               form = GithubUserForm(
-                userGuid = user.guid,
-                id = githubUserWithToken.user.id,
+                userId = user.id,
+                githubUserId = githubUserWithToken.user.id,
                 login = githubUserWithToken.user.login
               )
             )
@@ -89,7 +88,7 @@ trait Github {
             TokensDao.upsert(
               createdBy = user,
               form = TokenForm(
-                userGuid = user.guid,
+                userId = user.id,
                 tag = TokensDao.GithubOauthTokenTag,
                 token = githubUserWithToken.token
               )
@@ -173,7 +172,7 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
   }
 
   override def oauthToken(user: User): Option[String] = {
-    TokensDao.findByUserGuidAndTag(user.guid, TokensDao.GithubOauthTokenTag).map(_.token)
+    TokensDao.findByUserIdAndTag(user.id, TokensDao.GithubOauthTokenTag).map(_.token)
   }
 
   override def file(
@@ -250,15 +249,15 @@ class MockGithub() extends Github {
 object MockGithubData {
 
   private[this] var githubUserByCodes = scala.collection.mutable.Map[String, GithubUserWithToken]()
-  private[this] var userTokens = scala.collection.mutable.Map[UUID, String]()
-  private[this] var repositories = scala.collection.mutable.Map[UUID, Repository]()
+  private[this] var userTokens = scala.collection.mutable.Map[String, String]()
+  private[this] var repositories = scala.collection.mutable.Map[String, Repository]()
   private[this] var files = scala.collection.mutable.Map[String, String]()
 
   def addUser(user: GithubUser, code: String, token: Option[String] = None) {
     githubUserByCodes +== (
       code -> GithubUserWithToken(
         user = user,
-        token = token.getOrElse(UUID.randomUUID.toString)
+        token = token.getOrElse(IdGenerator("tok").randomId)
       )
     )
   }
@@ -268,19 +267,19 @@ object MockGithubData {
   }
 
   def addUserOauthToken(token: String, user: User) {
-    userTokens +== (user.guid -> token)
+    userTokens +== (user.id -> token)
   }
 
   def getToken(user: User): Option[String] = {
-    userTokens.lift(user.guid)
+    userTokens.lift(user.id)
   }
 
   def addRepository(user: User, repository: Repository) = {
-    repositories +== (user.guid -> repository)
+    repositories +== (user.id -> repository)
   }
 
   def repositories(user: User): Seq[Repository] = {
-    repositories.lift(user.guid) match {
+    repositories.lift(user.id) match {
       case None => Nil
       case Some(repo) => Seq(repo)
     }

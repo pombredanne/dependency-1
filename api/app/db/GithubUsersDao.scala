@@ -1,9 +1,8 @@
 package db
 
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy}
+import io.flow.postgresql.{Query, OrderBy}
 import com.bryzek.dependency.v0.models.{GithubUser, GithubUserForm}
 import io.flow.user.v0.models.User
-import java.util.UUID
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -11,19 +10,18 @@ import play.api.Play.current
 object GithubUsersDao {
 
   private[this] val BaseQuery = Query(s"""
-    select github_users.guid,
-           github_users.user_guid as github_users_user_guid,
-           github_users.id,
-           github_users.login,
-           ${AuditsDao.all("github_users")}
+    select github_users.id,
+           github_users.user_id as github_users_user_id,
+           github_users.github_user_id,
+           github_users.login
       from github_users
   """)
 
   private[this] val InsertQuery = """
     insert into github_users
-    (guid, user_guid, id, login, updated_by_guid, created_by_guid)
+    (id, user_id, github_user_id, login, updated_by_user_id)
     values
-    ({guid}::uuid, {user_guid}::uuid, {id}, {login}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({id}, {user_id}, {github_user_id}, {login}, {updated_by_user_id})
   """
 
   def upsertById(createdBy: Option[User], form: GithubUserForm): GithubUser = {
@@ -33,7 +31,7 @@ object GithubUsersDao {
   }
 
   def upsertByIdWithConnection(createdBy: Option[User], form: GithubUserForm)(implicit c: java.sql.Connection): GithubUser = {
-    findById(form.id).getOrElse {
+    findByGithubUserId(form.githubUserId).getOrElse {
       createWithConnection(createdBy, form)
     }
   }
@@ -45,34 +43,34 @@ object GithubUsersDao {
   }
 
   private[db] def createWithConnection(createdBy: Option[User], form: GithubUserForm)(implicit c: java.sql.Connection): GithubUser = {
-    val guid = UUID.randomUUID
+    val id = io.flow.play.util.IdGenerator("ghu").randomId()
     SQL(InsertQuery).on(
-      'guid -> guid,
-      'user_guid -> form.userGuid,
-      'id -> form.id,
+      'id -> id,
+      'user_id -> form.userId,
+      'github_user_id -> form.githubUserId,
       'login -> form.login.trim,
-      'created_by_guid -> createdBy.getOrElse(UsersDao.anonymousUser).guid
+      'updated_by_user_id -> createdBy.getOrElse(UsersDao.anonymousUser).id
     ).execute()
 
-    findByGuid(guid).getOrElse {
+    findById(id).getOrElse {
       sys.error("Failed to create github user")
     }
   }
 
-  def findById(id: Long): Option[GithubUser] = {
+  def findByGithubUserId(githubUserId: Long): Option[GithubUser] = {
+    findAll(githubUserId = Some(githubUserId), limit = 1).headOption
+  }
+
+  def findById(id: String): Option[GithubUser] = {
     findAll(id = Some(id), limit = 1).headOption
   }
 
-  def findByGuid(guid: UUID): Option[GithubUser] = {
-    findAll(guid = Some(guid), limit = 1).headOption
-  }
-
   def findAll(
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
-    userGuid: Option[UUID] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
+    userId: Option[String] = None,
     login: Option[String] = None,
-    id: Option[Long] = None,
+    githubUserId: Option[Long] = None,
     isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("github_users.created_at"),
     limit: Long = 25,
@@ -80,10 +78,10 @@ object GithubUsersDao {
   ): Seq[GithubUser] = {
     DB.withConnection { implicit c =>
       BaseQuery.
-        equals("github_users.guid", guid).
-        in("github_users.guid", guids).
-        text("github_users.login", login).
         equals("github_users.id", id).
+        in("github_users.id", ids).
+        text("github_users.login", login).
+        equals("github_users.github_user_id", githubUserId).
         nullBoolean("github_users.deleted_at", isDeleted).
         orderBy(orderBy.sql).
         limit(Some(limit)).

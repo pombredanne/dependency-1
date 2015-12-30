@@ -22,86 +22,86 @@ class SyncsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "withStartedAndCompleted" in {
     val project = createProject(org)
-    SyncsDao.withStartedAndCompleted(systemUser, "project", project.guid) {
+    SyncsDao.withStartedAndCompleted(systemUser, "project", project.id) {
       // NO-OP
     }
-    val events = SyncsDao.findAll(objectGuid = Some(project.guid)).map(_.event)
+    val events = SyncsDao.findAll(objectId = Some(project.id)).map(_.event)
     events.contains(SyncEvent.Started) must be(true)
     events.contains(SyncEvent.Completed) must be(true)
   }
 
   "recordStarted" in {
     val project = createProject(org)
-    SyncsDao.recordStarted(systemUser, "project", project.guid)
-    SyncsDao.findAll(objectGuid = Some(project.guid)).map(_.event).contains(SyncEvent.Started) must be(true)
+    SyncsDao.recordStarted(systemUser, "project", project.id)
+    SyncsDao.findAll(objectId = Some(project.id)).map(_.event).contains(SyncEvent.Started) must be(true)
   }
 
   "recordCompleted" in {
     val project = createProject(org)
-    SyncsDao.recordCompleted(systemUser, "project", project.guid)
-    SyncsDao.findAll(objectGuid = Some(project.guid)).map(_.event).contains(SyncEvent.Completed) must be(true)
+    SyncsDao.recordCompleted(systemUser, "project", project.id)
+    SyncsDao.findAll(objectId = Some(project.id)).map(_.event).contains(SyncEvent.Completed) must be(true)
   }
 
-  "findByGuid" in {
+  "findById" in {
     val sync = createSync()
-    SyncsDao.findByGuid(sync.guid).map(_.guid) must be(
-      Some(sync.guid)
+    SyncsDao.findById(sync.id).map(_.id) must be(
+      Some(sync.id)
     )
 
-    SyncsDao.findByGuid(UUID.randomUUID) must be(None)
+    SyncsDao.findById(UUID.randomUUID.toString) must be(None)
   }
 
-  "findAll by guids" in {
+  "findAll by ids" in {
     val sync1 = createSync()
     val sync2 = createSync()
 
-    SyncsDao.findAll(guids = Some(Seq(sync1.guid, sync2.guid))).map(_.guid).sorted must be(
-      Seq(sync1.guid, sync2.guid).sorted
+    SyncsDao.findAll(ids = Some(Seq(sync1.id, sync2.id))).map(_.id).sorted must be(
+      Seq(sync1.id, sync2.id).sorted
     )
 
-    SyncsDao.findAll(guids = Some(Nil)) must be(Nil)
-    SyncsDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    SyncsDao.findAll(guids = Some(Seq(sync1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(sync1.guid))
+    SyncsDao.findAll(ids = Some(Nil)) must be(Nil)
+    SyncsDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    SyncsDao.findAll(ids = Some(Seq(sync1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(sync1.id))
   }
 
-  "findAll by objectGuid and event" in {
+  "findAll by objectId and event" in {
     val start = createSync(createSyncForm(event = SyncEvent.Started))
     val completed = createSync(createSyncForm(event = SyncEvent.Completed))
 
     SyncsDao.findAll(
-      guids = Some(Seq(start.guid, completed.guid)),
+      ids = Some(Seq(start.id, completed.id)),
       event = Some(SyncEvent.Started)
-    ).map(_.guid) must be(Seq(start.guid))
+    ).map(_.id) must be(Seq(start.id))
 
     SyncsDao.findAll(
-      guids = Some(Seq(start.guid, completed.guid)),
+      ids = Some(Seq(start.id, completed.id)),
       event = Some(SyncEvent.Completed)
-    ).map(_.guid) must be(Seq(completed.guid))
+    ).map(_.id) must be(Seq(completed.id))
 
     SyncsDao.findAll(
-      guids = Some(Seq(start.guid, completed.guid)),
+      ids = Some(Seq(start.id, completed.id)),
       event = Some(SyncEvent.UNDEFINED("other"))
     ) must be(Nil)
   }
 
-  "findAll by objectGuid" in {
+  "findAll by objectId" in {
     val form = createSyncForm()
     val sync = createSync(form)
 
     SyncsDao.findAll(
-      guids = Some(Seq(sync.guid)),
-      objectGuid = Some(form.objectGuid)
-    ).map(_.guid) must be(Seq(sync.guid))
+      ids = Some(Seq(sync.id)),
+      objectId = Some(form.objectId)
+    ).map(_.id) must be(Seq(sync.id))
 
     SyncsDao.findAll(
-      objectGuid = Some(UUID.randomUUID)
+      objectId = Some(UUID.randomUUID.toString)
     ) must be(Nil)
   }
 
   "purge executes" in {
     val sync = createSync()
     SyncsDao.purgeOld()
-    SyncsDao.findByGuid(sync.guid).map(_.guid) must be(Some(sync.guid))
+    SyncsDao.findById(sync.id).map(_.id) must be(Some(sync.id))
   }
 
 }

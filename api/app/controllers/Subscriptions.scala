@@ -11,7 +11,6 @@ import io.flow.common.v0.models.json._
 import play.api.Logger
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 @javax.inject.Singleton
@@ -48,9 +47,9 @@ class Subscriptions @javax.inject.Inject() (
   }
 
   def get(
-    guid: Option[UUID],
-    guids: Option[Seq[UUID]],
-    userGuid: Option[UUID],
+    id: Option[String],
+    ids: Option[Seq[String]],
+    userId: Option[String],
     identifier: Option[String],
     publication: Option[Publication],
     limit: Long = 25,
@@ -59,9 +58,9 @@ class Subscriptions @javax.inject.Inject() (
     Ok(
       Json.toJson(
         SubscriptionsDao.findAll(
-          guid = guid,
-          guids = optionals(guids),
-          userGuid = userGuid,
+          id = id,
+          ids = optionals(ids),
+          userId = userId,
           identifier = identifier,
           publication = publication,
           limit = limit,
@@ -71,8 +70,8 @@ class Subscriptions @javax.inject.Inject() (
     )
   }
 
-  def getByGuid(guid: UUID) = Identified { request =>
-    withSubscription(guid) { subscription =>
+  def getById(id: String) = Identified { request =>
+    withSubscription(id) { subscription =>
       Ok(Json.toJson(subscription))
     }
   }
@@ -92,17 +91,17 @@ class Subscriptions @javax.inject.Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID, identifier: Option[String]) = Identified { request =>
-    withSubscription(guid) { subscription =>
+  def deleteById(id: String, identifier: Option[String]) = Identified { request =>
+    withSubscription(id) { subscription =>
       SubscriptionsDao.softDelete(request.user, subscription)
       NoContent
     }
   }
 
-  def withSubscription(guid: UUID)(
+  def withSubscription(id: String)(
     f: Subscription => Result
   ): Result = {
-    SubscriptionsDao.findByGuid(guid) match {
+    SubscriptionsDao.findById(id) match {
       case None => {
         NotFound
       }

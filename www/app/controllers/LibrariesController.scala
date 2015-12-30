@@ -5,7 +5,6 @@ import com.bryzek.dependency.v0.models.{Library, LibraryForm, Scms}
 import com.bryzek.dependency.www.lib.{Config, DependencyClientProvider}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
-import java.util.UUID
 import scala.concurrent.Future
 
 import play.api._
@@ -41,19 +40,19 @@ class LibrariesController @javax.inject.Inject() (
   }
 
   def show(
-    guid: UUID,
+    id: String,
     versionsPage: Int = 0,
     projectsPage: Int = 0
   ) = Identified.async { implicit request =>
-    withLibrary(request, guid) { library =>
+    withLibrary(request, id) { library =>
       for {
         versions <- dependencyClient(request).libraryVersions.get(
-          libraryGuid = Some(guid),
+          libraryId = Some(id),
           limit = Config.VersionsPerPage+1,
           offset = versionsPage * Config.VersionsPerPage
         )
         projectLibraries <- dependencyClient(request).projectLibraries.get(
-          libraryGuid = Some(guid),
+          libraryId = Some(id),
           limit = Pagination.DefaultLimit+1,
           offset = projectsPage * Pagination.DefaultLimit
         )
@@ -72,11 +71,11 @@ class LibrariesController @javax.inject.Inject() (
 
   def withLibrary[T](
     request: IdentifiedRequest[T],
-    guid: UUID
+    id: String
   )(
     f: Library => Future[Result]
   ) = {
-    dependencyClient(request).libraries.getByGuid(guid).flatMap { library =>
+    dependencyClient(request).libraries.getById(id).flatMap { library =>
       f(library)
     }.recover {
       case UnitResponse(404) => {

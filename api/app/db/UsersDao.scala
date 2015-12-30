@@ -1,9 +1,8 @@
 package db
 
 import com.bryzek.dependency.actors.MainActor
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy}
+import io.flow.postgresql.{Query, OrderBy}
 import io.flow.user.v0.models.{Name, User, UserForm}
-import java.util.UUID
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -26,20 +25,19 @@ object UsersDao {
   }
 
   private[this] val BaseQuery = Query(s"""
-    select users.guid,
+    select users.id,
            users.email,
            users.first_name as users_name_first,
            users.last_name as users_name_last,
-           users.avatar_url,
-           ${AuditsDao.all("users")}
+           users.avatar_url
       from users
   """)
 
   private[this] val InsertQuery = """
     insert into users
-    (guid, email, first_name, last_name, avatar_url, updated_by_guid, created_by_guid)
+    (id, email, first_name, last_name, avatar_url, updated_by_user_id)
     values
-    ({guid}::uuid, {email}, {first_name}, {last_name}, {avatar_url}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({id}, {email}, {first_name}, {last_name}, {avatar_url}, {updated_by_user_id})
   """
 
   def validate(form: UserForm): Seq[String] = {
@@ -71,25 +69,23 @@ object UsersDao {
   def create(createdBy: Option[User], form: UserForm): Either[Seq[String], User] = {
     validate(form) match {
       case Nil => {
-        val guid = UUID.randomUUID
+        val id = io.flow.play.util.IdGenerator("usr").randomId()
 
-        DB.withTransaction { implicit c =>
+        DB.withConnection { implicit c =>
           SQL(InsertQuery).on(
-            'guid -> guid,
+            'id -> id,
             'email -> form.email.map(_.trim),
             'avatar_url -> Util.trimmedString(form.avatarUrl),
             'first_name -> Util.trimmedString(form.name.flatMap(_.first)),
             'last_name -> Util.trimmedString(form.name.flatMap(_.last)),
-            'created_by_guid -> createdBy.getOrElse(UsersDao.anonymousUser).guid
+            'updated_by_user_id -> createdBy.getOrElse(UsersDao.anonymousUser).id
           ).execute()
-
-          // TODO: Git hub user
         }
 
-        MainActor.ref ! MainActor.Messages.UserCreated(guid)
+        MainActor.ref ! MainActor.Messages.UserCreated(id.toString)
 
         Right(
-          findByGuid(guid).getOrElse {
+          findById(id).getOrElse {
             sys.error("Failed to create user")
           }
         )
@@ -106,13 +102,13 @@ object UsersDao {
     findAll(email = Some(email), limit = 1).headOption
   }
 
-  def findByGuid(guid: UUID): Option[User] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+  def findById(id: String): Option[User] = {
+    findAll(id = Some(id), limit = 1).headOption
   }
 
   def findAll(
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
     email: Option[String] = None,
     identifier: Option[String] = None,
     githubUserId: Option[Long] = None,
@@ -126,8 +122,8 @@ object UsersDao {
         BaseQuery,
         tableName = "users",
         auth = Clause.True, // TODO
-        guid = guid,
-        guids = guids,
+        id = id,
+        ids = ids,
         orderBy = orderBy.sql,
         isDeleted = isDeleted,
         limit = Some(limit),
@@ -139,11 +135,11 @@ object UsersDao {
           columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
-        subquery("users.guid", "identifier", identifier, { bindVar =>
-          s"select user_guid from user_identifiers where deleted_at is null and value = trim(${bindVar.sql})"
+        subquery("users.id", "identifier", identifier, { bindVar =>
+          s"select user_id from user_identifiers where deleted_at is null and value = trim(${bindVar.sql})"
         }).
-        subquery("users.guid", "github_user_id", githubUserId, { bindVar =>
-          s"select user_guid from github_users where deleted_at is null and id = ${bindVar.sql}"
+        subquery("users.id", "github_user_id", githubUserId, { bindVar =>
+          s"select user_id from github_users where deleted_at is null and github_user_id = ${bindVar.sql}"
         }).
         as(
           io.flow.user.v0.anorm.parsers.User.table("users").*

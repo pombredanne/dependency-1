@@ -50,7 +50,7 @@ lazy val root = project
 
     "parse dependencies" in {
       val result = BuildSbtScalaParser(projectSummary, "test.sbt", contents)
-      result.binaries must beEqualTo(Seq(ProjectBinaryForm(projectSummary.guid, BinaryType.Scala, "2.11.7", "test.sbt")))
+      result.binaries must beEqualTo(Seq(ProjectBinaryForm(projectSummary.id, BinaryType.Scala, "2.11.7", "test.sbt")))
       result.libraries must beEqualTo(
         Seq(
           Artifact(projectSummary, "test.sbt", "io.flow", "lib-play-postgresql", "0.0.1-SNAPSHOT", true),

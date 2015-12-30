@@ -7,7 +7,7 @@
     <table class="table">
       @binaries.items.map { lang =>
         <tr>
-          <td><a href="@routes.BinariesController.show(lang.guid)">@lang.name</a</td>
+          <td><a href="@routes.BinariesController.show(lang.id)">@lang.name</a</td>
         </tr>
       }
     </table>

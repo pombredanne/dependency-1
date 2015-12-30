@@ -1,7 +1,6 @@
 package db
 
 import com.bryzek.dependency.v0.models.Visibility
-import java.util.UUID
 
 trait Clause {
 
@@ -42,7 +41,7 @@ object Clause {
 sealed trait Authorization {
 
   def organizations(
-    organizationGuidColumn: String,
+    organizationIdColumn: String,
     visibilityColumnName: Option[String] = None
   ): Clause
 
@@ -61,7 +60,7 @@ object Authorization {
   case object PublicOnly extends Authorization {
 
     override def organizations(
-      organizationGuidColumn: String,
+      organizationIdColumn: String,
       visibilityColumnName: Option[String] = None
     ): Clause = {
       visibilityColumnName match {
@@ -75,19 +74,20 @@ object Authorization {
   case object All extends Authorization {
 
     override def organizations(
-      organizationGuidColumn: String,
+      organizationIdColumn: String,
       visibilityColumnName: Option[String] = None
     ): Clause = AllRecordsClause
 
   }
 
-  case class User(guid: UUID) extends Authorization {
+  case class User(id: String) extends Authorization {
 
     override def organizations(
-      organizationGuidColumn: String,
+      organizationIdColumn: String,
       visibilityColumnName: Option[String] = None
     ): Clause = {
-      val userClause = s"$organizationGuidColumn in (select organization_guid from memberships where deleted_at is null and user_guid = '$guid')"
+      // TODO: Bind
+      val userClause = s"$organizationIdColumn in (select organization_id from memberships where deleted_at is null and user_id = '$id')"
       visibilityColumnName match {
         case None => Clause.Single(userClause)
         case Some(col) => Clause.Or(Seq(userClause, publicVisibilityClause(col)))
@@ -96,13 +96,13 @@ object Authorization {
 
   }
 
-  case class Organization(guid: UUID) extends Authorization {
+  case class Organization(id: String) extends Authorization {
 
     override def organizations(
-      organizationGuidColumn: String,
+      organizationIdColumn: String,
       visibilityColumnName: Option[String] = None
     ): Clause = {
-      val orgClause = s"$organizationGuidColumn = '$guid'"
+      val orgClause = s"$organizationIdColumn = '$id'"
       visibilityColumnName match {
         case None => Clause.Single(orgClause)
         case Some(col) => Clause.Or(Seq(orgClause, publicVisibilityClause(col)))
@@ -111,17 +111,17 @@ object Authorization {
 
   }
 
-  def fromUser(userGuid: Option[UUID]): Authorization = {
-    userGuid match {
+  def fromUser(userId: Option[String]): Authorization = {
+    userId match {
       case None => Authorization.PublicOnly
-      case Some(guid) => Authorization.User(guid)
+      case Some(id) => Authorization.User(id)
     }
   }
 
-  def fromOrganization(orgGuid: Option[UUID]): Authorization = {
-    orgGuid match {
+  def fromOrganization(orgId: Option[String]): Authorization = {
+    orgId match {
       case None => Authorization.PublicOnly
-      case Some(guid) => Authorization.Organization(guid)
+      case Some(id) => Authorization.Organization(id)
     }
   }
 

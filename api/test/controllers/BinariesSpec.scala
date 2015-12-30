@@ -16,16 +16,16 @@ class BinariesSpec extends PlaySpecification with MockClient {
   lazy val binary1 = createBinary(org)()
   lazy val binary2 = createBinary(org)()
 
-  "GET /binaries by guid" in new WithServer(port=port) {
+  "GET /binaries by id" in new WithServer(port=port) {
     await(
-      client.binaries.get(guid = Some(binary1.guid))
-    ).map(_.guid) must beEqualTo(
-      Seq(binary1.guid)
+      client.binaries.get(id = Some(binary1.id))
+    ).map(_.id) must beEqualTo(
+      Seq(binary1.id)
     )
 
     await(
-      client.binaries.get(guid = Some(UUID.randomUUID))
-    ).map(_.guid) must be(
+      client.binaries.get(id = Some(UUID.randomUUID.toString))
+    ).map(_.id) must be(
       Nil
     )
   }
@@ -50,12 +50,12 @@ class BinariesSpec extends PlaySpecification with MockClient {
     )
   }
 
-  "GET /binaries/:guid" in new WithServer(port=port) {
-    await(client.binaries.getByGuid(binary1.guid)).guid must beEqualTo(binary1.guid)
-    await(client.binaries.getByGuid(binary2.guid)).guid must beEqualTo(binary2.guid)
+  "GET /binaries/:id" in new WithServer(port=port) {
+    await(client.binaries.getById(binary1.id)).id must beEqualTo(binary1.id)
+    await(client.binaries.getById(binary2.id)).id must beEqualTo(binary2.id)
 
     expectNotFound {
-      client.binaries.getByGuid(UUID.randomUUID)
+      client.binaries.getById(UUID.randomUUID.toString)
     }
   }
 
@@ -76,15 +76,15 @@ class BinariesSpec extends PlaySpecification with MockClient {
   "DELETE /binaries" in new WithServer(port=port) {
     val binary = createBinary(org)()
     await(
-      client.binaries.deleteByGuid(binary.guid)
+      client.binaries.deleteById(binary.id)
     ) must beEqualTo(())
 
     expectNotFound(
-      client.binaries.getByGuid(binary.guid)
+      client.binaries.getById(binary.id)
     )
 
     expectNotFound(
-      client.binaries.deleteByGuid(binary.guid)
+      client.binaries.deleteById(binary.id)
     )
   }
 

@@ -6,7 +6,6 @@ import com.bryzek.dependency.www.lib.DependencyClientProvider
 import io.flow.user.v0.models.User
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
-import java.util.UUID
 import scala.concurrent.Future
 
 import play.api._
@@ -82,7 +81,7 @@ class MembersController @javax.inject.Inject() (
                   dependencyClient(request).memberships.post(
                     MembershipForm(
                       organization = org.key,
-                      userGuid = user.guid,
+                      userId = user.id,
                       role = Role(uiForm.role)
                     )
                   ).map { membership =>
@@ -103,9 +102,9 @@ class MembersController @javax.inject.Inject() (
     }
   }
 
-  def postDelete(orgKey: String, guid: UUID) = Identified.async { implicit request =>
+  def postDelete(orgKey: String, id: String) = Identified.async { implicit request =>
     withOrganization(request, orgKey) { org =>
-      dependencyClient(request).memberships.deleteByGuid(guid).map { response =>
+      dependencyClient(request).memberships.deleteById(id).map { response =>
         Redirect(routes.MembersController.index(org.key)).flashing("success" -> s"Membership deleted")
       }.recover {
         case UnitResponse(404) => {
@@ -115,26 +114,26 @@ class MembersController @javax.inject.Inject() (
     }
   }
 
-  def postMakeMember(orgKey: String, guid: UUID) = Identified.async { implicit request =>
-    makeRole(request, orgKey, guid, Role.Member)
+  def postMakeMember(orgKey: String, id: String) = Identified.async { implicit request =>
+    makeRole(request, orgKey, id, Role.Member)
   }
 
-  def postMakeAdmin(orgKey: String, guid: UUID) = Identified.async { implicit request =>
-    makeRole(request, orgKey, guid, Role.Admin)
+  def postMakeAdmin(orgKey: String, id: String) = Identified.async { implicit request =>
+    makeRole(request, orgKey, id, Role.Admin)
   }
 
   def makeRole[T](
     request: IdentifiedRequest[T],
     orgKey: String,
-    guid: UUID,
+    id: String,
     role: Role
   ): Future[Result] = {
     withOrganization(request, orgKey) { org =>
-      withMembership(org.key, request, guid) { membership =>
+      withMembership(org.key, request, id) { membership =>
         dependencyClient(request).memberships.post(
           MembershipForm(
             organization = membership.organization.key,
-            userGuid = membership.user.guid,
+            userId = membership.user.id,
             role = role
           )
         ).map { membership =>
@@ -151,11 +150,11 @@ class MembersController @javax.inject.Inject() (
   def withMembership[T](
     org: String,
     request: IdentifiedRequest[T],
-    guid: UUID
+    id: String
   )(
     f: Membership => Future[Result]
   ) = {
-    dependencyClient(request).memberships.getByGuid(guid).flatMap { membership =>
+    dependencyClient(request).memberships.getById(id).flatMap { membership =>
       f(membership)
     }.recover {
       case UnitResponse(404) => {

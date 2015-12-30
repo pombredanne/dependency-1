@@ -2,74 +2,71 @@ package db
 
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Library, LibraryVersion, VersionForm}
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
 import play.api.Play.current
 import play.api.libs.json._
-import java.util.UUID
 import scala.util.{Failure, Success, Try}
 
 object LibraryVersionsDao {
 
   private[this] val BaseQuery = Query(s"""
-    select library_versions.guid,
+    select library_versions.id,
            library_versions.version,
            library_versions.cross_build_version,
-           ${AuditsDao.all("library_versions")},
-           libraries.guid as library_versions_library_guid,
+           libraries.id as library_versions_library_id,
            libraries.group_id as library_versions_library_group_id,
            libraries.artifact_id as library_versions_library_artifact_id,
-           ${AuditsDao.all("libraries", Some("library_versions_library"))},
-           organizations.guid as library_versions_library_organization_guid,
+           organizations.id as library_versions_library_organization_id,
            organizations.key as library_versions_library_organization_key,
-           resolvers.guid as library_versions_library_resolver_guid,
+           resolvers.id as library_versions_library_resolver_id,
            resolvers.visibility as library_versions_library_resolver_visibility,
            resolvers.uri as library_versions_library_resolver_uri,
-           resolver_orgs.guid as library_versions_library_resolver_organization_guid,
+           resolver_orgs.id as library_versions_library_resolver_organization_id,
            resolver_orgs.key as library_versions_library_resolver_organization_key
       from library_versions
-      join libraries on libraries.deleted_at is null and libraries.guid = library_versions.library_guid
-      join organizations on organizations.deleted_at is null and organizations.guid = libraries.organization_guid
-      join resolvers on resolvers.deleted_at is null and resolvers.guid = libraries.resolver_guid
-      left join organizations resolver_orgs on resolver_orgs.deleted_at is null and resolver_orgs.guid = resolvers.organization_guid
+      join libraries on libraries.deleted_at is null and libraries.id = library_versions.library_id
+      join organizations on organizations.deleted_at is null and organizations.id = libraries.organization_id
+      join resolvers on resolvers.deleted_at is null and resolvers.id = libraries.resolver_id
+      left join organizations resolver_orgs on resolver_orgs.deleted_at is null and resolver_orgs.id = resolvers.organization_id
   """)
 
   private[this] val InsertQuery = s"""
     insert into library_versions
-    (guid, library_guid, version, cross_build_version, sort_key, created_by_guid, updated_by_guid)
+    (id, library_id, version, cross_build_version, sort_key, updated_by_user_id)
     values
-    ({guid}::uuid, {library_guid}::uuid, {version}, {cross_build_version}, {sort_key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({id}, {library_id}, {version}, {cross_build_version}, {sort_key}, {updated_by_user_id})
   """
 
-  def upsert(createdBy: User, libraryGuid: UUID, form: VersionForm): LibraryVersion = {
+  def upsert(createdBy: User, libraryId: String, form: VersionForm): LibraryVersion = {
     DB.withConnection { implicit c =>
-      upsertWithConnection(createdBy, libraryGuid, form)
+      upsertWithConnection(createdBy, libraryId, form)
     }
   }
 
-  private[db] def upsertWithConnection(createdBy: User, libraryGuid: UUID, form: VersionForm)(
+  private[db] def upsertWithConnection(createdBy: User, libraryId: String, form: VersionForm)(
     implicit c: java.sql.Connection
   ): LibraryVersion = {
-    val auth = Authorization.User(createdBy.guid)
+    val auth = Authorization.User(createdBy.id)
 
     findAllWithConnection(
       auth,
-      libraryGuid = Some(libraryGuid),
+      libraryId = Some(libraryId),
       version = Some(form.version),
       crossBuildVersion = Some(form.crossBuildVersion),
       limit = 1
     ).headOption.getOrElse {
       Try {
-        createWithConnection(createdBy, libraryGuid, form)
+        createWithConnection(createdBy, libraryId, form)
       } match {
         case Success(version) => version
         case Failure(ex) => {
           // check concurrent insert
           findAllWithConnection(
             auth,
-            libraryGuid = Some(libraryGuid),
+            libraryId = Some(libraryId),
             version = Some(form.version),
             crossBuildVersion = Some(form.crossBuildVersion),
             limit = 1
@@ -82,14 +79,14 @@ object LibraryVersionsDao {
     }
   }
 
-  def create(createdBy: User, libraryGuid: UUID, form: VersionForm): LibraryVersion = {
+  def create(createdBy: User, libraryId: String, form: VersionForm): LibraryVersion = {
     DB.withConnection { implicit c =>
-      createWithConnection(createdBy, libraryGuid, form)
+      createWithConnection(createdBy, libraryId, form)
     }
   }
 
-  def createWithConnection(createdBy: User, libraryGuid: UUID, form: VersionForm)(implicit c: java.sql.Connection): LibraryVersion = {
-    val guid = UUID.randomUUID
+  def createWithConnection(createdBy: User, libraryId: String, form: VersionForm)(implicit c: java.sql.Connection): LibraryVersion = {
+    val id = io.flow.play.util.IdGenerator("liv").randomId()
 
     val sortKey = form.crossBuildVersion match {
       case None => Version(form.version).sortKey
@@ -97,21 +94,21 @@ object LibraryVersionsDao {
     }
 
     SQL(InsertQuery).on(
-      'guid -> guid,
-      'library_guid -> libraryGuid,
+      'id -> id,
+      'library_id -> libraryId,
       'version -> form.version.trim,
       'cross_build_version -> form.crossBuildVersion.map(_.trim),
       'sort_key -> sortKey,
-      'created_by_guid -> createdBy.guid
+      'updated_by_user_id -> createdBy.id
     ).execute()
 
-    findByGuidWithConnection(Authorization.All, guid).getOrElse {
+    findByIdWithConnection(Authorization.All, id).getOrElse {
       sys.error("Failed to create version")
     }
   }
 
-  def softDelete(deletedBy: User, guid: UUID) {
-    SoftDelete.delete("library_versions", deletedBy.guid, guid)
+  def softDelete(deletedBy: User, id: String) {
+    SoftDelete.delete("library_versions", deletedBy.id, id)
   }
 
   def findByLibraryAndVersionAndCrossBuildVersion(
@@ -122,36 +119,36 @@ object LibraryVersionsDao {
   ): Option[LibraryVersion] = {
     findAll(
       auth,
-      libraryGuid = Some(library.guid),
+      libraryId = Some(library.id),
       version = Some(version),
       crossBuildVersion = Some(crossBuildVersion),
       limit = 1
     ).headOption
   }
 
-  def findByGuid(
+  def findById(
     auth: Authorization,
-    guid: UUID
+    id: String
   ): Option[LibraryVersion] = {
     DB.withConnection { implicit c =>
-      findByGuidWithConnection(auth, guid)
+      findByIdWithConnection(auth, id)
     }
   }
 
-  def findByGuidWithConnection(
+  def findByIdWithConnection(
     auth: Authorization,
-    guid: UUID
+    id: String
   ) (
     implicit c: java.sql.Connection
   ): Option[LibraryVersion] = {
-    findAllWithConnection(auth, guid = Some(guid), limit = 1).headOption
+    findAllWithConnection(auth, id = Some(id), limit = 1).headOption
   }
 
   def findAll(
     auth: Authorization,
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
-    libraryGuid: Option[UUID] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
+    libraryId: Option[String] = None,
     version: Option[String] = None,
     crossBuildVersion: Option[Option[String]] = None,
     greaterThanVersion: Option[String] = None,
@@ -162,9 +159,9 @@ object LibraryVersionsDao {
     DB.withConnection { implicit c =>
       findAllWithConnection(
         auth,
-        guid = guid,
-        guids = guids,
-        libraryGuid = libraryGuid,
+        id = id,
+        ids = ids,
+        libraryId = libraryId,
         version = version,
         crossBuildVersion = crossBuildVersion,
         greaterThanVersion = greaterThanVersion,
@@ -177,9 +174,9 @@ object LibraryVersionsDao {
 
   def findAllWithConnection(
     auth: Authorization,
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
-    libraryGuid: Option[UUID] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
+    libraryId: Option[String] = None,
     version: Option[String] = None,
     crossBuildVersion: Option[Option[String]] = None,
     greaterThanVersion: Option[String] = None,
@@ -193,15 +190,15 @@ object LibraryVersionsDao {
     Standards.query(
       BaseQuery,
       tableName = "library_versions",
-      auth = auth.organizations("organizations.guid", Some("resolvers.visibility")),
-      guid = guid,
-      guids = guids,
+      auth = auth.organizations("organizations.id", Some("resolvers.visibility")),
+      id = id,
+      ids = ids,
       orderBy = orderBy.sql,
       isDeleted = isDeleted,
       limit = Some(limit),
       offset = offset
     ).
-      equals("library_versions.library_guid", libraryGuid).
+      equals("library_versions.library_id", libraryId).
       text(
         "library_versions.version",
         version,

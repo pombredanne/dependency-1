@@ -15,46 +15,46 @@ class TokensDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val token1 = TokensDao.create(systemUser, form)
 
     val token2 = TokensDao.upsert(systemUser, form)
-    token1.guid must be(token2.guid)
+    token1.id must be(token2.id)
 
     val newToken = UUID.randomUUID.toString
     val token3 = TokensDao.upsert(systemUser, form.copy(token = newToken))
 
-    token2.guid must not be(token3.guid)
+    token2.id must not be(token3.id)
     token2.token must be(form.token)
     token3.token must be(newToken)
   }
 
-  "findByGuid" in {
+  "findById" in {
     val token = createToken()
-    TokensDao.findByGuid(token.guid).map(_.guid) must be(
-      Some(token.guid)
+    TokensDao.findById(token.id).map(_.id) must be(
+      Some(token.id)
     )
 
-    TokensDao.findByGuid(UUID.randomUUID) must be(None)
+    TokensDao.findById(UUID.randomUUID.toString) must be(None)
   }
 
-  "findByTokenGuidAndTag" in {
+  "findByTokenIdAndTag" in {
     val token = createToken()
-    TokensDao.findByUserGuidAndTag(token.user.guid, token.tag).map(_.guid) must be(
-      Some(token.guid)
+    TokensDao.findByUserIdAndTag(token.user.id, token.tag).map(_.id) must be(
+      Some(token.id)
     )
 
-    TokensDao.findByUserGuidAndTag(UUID.randomUUID, token.tag).map(_.guid) must be(None)
-    TokensDao.findByUserGuidAndTag(token.user.guid, UUID.randomUUID.toString).map(_.guid) must be(None)
+    TokensDao.findByUserIdAndTag(UUID.randomUUID.toString, token.tag).map(_.id) must be(None)
+    TokensDao.findByUserIdAndTag(token.user.id, UUID.randomUUID.toString).map(_.id) must be(None)
   }
 
-  "findAll by guids" in {
+  "findAll by ids" in {
     val token1 = createToken()
     val token2 = createToken()
 
-    TokensDao.findAll(guids = Some(Seq(token1.guid, token2.guid))).map(_.guid) must be(
-      Seq(token1.guid, token2.guid)
+    TokensDao.findAll(ids = Some(Seq(token1.id, token2.id))).map(_.id) must be(
+      Seq(token1.id, token2.id)
     )
 
-    TokensDao.findAll(guids = Some(Nil)) must be(Nil)
-    TokensDao.findAll(guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    TokensDao.findAll(guids = Some(Seq(token1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(token1.guid))
+    TokensDao.findAll(ids = Some(Nil)) must be(Nil)
+    TokensDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    TokensDao.findAll(ids = Some(Seq(token1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(token1.id))
   }
 
 }

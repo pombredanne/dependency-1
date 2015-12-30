@@ -1,9 +1,9 @@
  drop table if exists user_identifiers;
  
  create table user_identifiers (
-  guid                    uuid primary key,
-  user_guid               uuid not null references users,
-  value                   text not null check(non_empty_trimmed_string(value)) check(length(value) >= 40)
+  id                      text primary key,
+  user_id                 text not null references users,
+  value                   text not null check(util.non_empty_trimmed_string(value)) check(length(value) >= 40)
 );
 
 comment on table user_identifiers is '
@@ -13,7 +13,7 @@ comment on table user_identifiers is '
   being valid (allowing eventual expiration).
 ';
 
-select schema_evolution_manager.create_basic_audit_data('public', 'user_identifiers');
-create index on user_identifiers(user_guid);
+select audit.setup('public', 'user_identifiers');
+create index on user_identifiers(user_id);
 create unique index on user_identifiers(value);
 

@@ -15,26 +15,26 @@ class LastEmailsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "softDelete" in {
     val lastEmail = createLastEmail()
     LastEmailsDao.softDelete(systemUser, lastEmail)
-    LastEmailsDao.findByGuid(lastEmail.guid) must be(None)
+    LastEmailsDao.findById(lastEmail.id) must be(None)
   }
 
   "record" in {
     val form = createLastEmailForm()
     val lastEmail1 = createLastEmail(form)
     val lastEmail2 = createLastEmail(form)
-    lastEmail1.guid must not be(lastEmail2.guid)
+    lastEmail1.id must not be(lastEmail2.id)
 
-    LastEmailsDao.findByGuid(lastEmail1.guid) must be(None)
-    LastEmailsDao.findByGuid(lastEmail2.guid).map(_.guid) must be(Some(lastEmail2.guid))
+    LastEmailsDao.findById(lastEmail1.id) must be(None)
+    LastEmailsDao.findById(lastEmail2.id).map(_.id) must be(Some(lastEmail2.id))
   }
 
-  "findByUserGuidAndPublication" in {
+  "findByUserIdAndPublication" in {
     val form = createLastEmailForm()
     val lastEmail = createLastEmail(form)
 
-    LastEmailsDao.findByUserGuidAndPublication(form.userGuid, form.publication).map(_.guid) must be(Some(lastEmail.guid))
-    LastEmailsDao.findByUserGuidAndPublication(UUID.randomUUID, form.publication).map(_.guid) must be(None)
-    LastEmailsDao.findByUserGuidAndPublication(form.userGuid, Publication.UNDEFINED("other")).map(_.guid) must be(None)
+    LastEmailsDao.findByUserIdAndPublication(form.userId, form.publication).map(_.id) must be(Some(lastEmail.id))
+    LastEmailsDao.findByUserIdAndPublication(UUID.randomUUID.toString, form.publication).map(_.id) must be(None)
+    LastEmailsDao.findByUserIdAndPublication(form.userId, Publication.UNDEFINED("other")).map(_.id) must be(None)
   }
 
 }

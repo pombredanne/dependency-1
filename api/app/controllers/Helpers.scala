@@ -4,14 +4,13 @@ import db.{Authorization, OrganizationsDao, ProjectsDao, ResolversDao, UsersDao}
 import com.bryzek.dependency.v0.models.{Organization, Project, Resolver}
 import io.flow.user.v0.models.User
 import play.api.mvc.{Result, Results}
-import java.util.UUID
 
 trait Helpers {
 
-  def withUser(guid: UUID)(
+  def withUser(id: String)(
     f: User => Result
   ) = {
-    UsersDao.findByGuid(guid) match {
+    UsersDao.findById(id) match {
       case None => {
         Results.NotFound
       }
@@ -21,10 +20,10 @@ trait Helpers {
     }
   }
 
-  def withOrganization(user: User, guid: UUID)(
+  def withOrganization(user: User, id: String)(
     f: Organization => Result
   ) = {
-    OrganizationsDao.findByGuid(Authorization.User(user.guid), guid) match {
+    OrganizationsDao.findById(Authorization.User(user.id), id) match {
       case None => {
         Results.NotFound
       }
@@ -34,10 +33,10 @@ trait Helpers {
     }
   }
 
-  def withProject(user: User, guid: UUID)(
+  def withProject(user: User, id: String)(
     f: Project => Result
   ): Result = {
-    ProjectsDao.findByGuid(Authorization.User(user.guid), guid) match {
+    ProjectsDao.findById(Authorization.User(user.id), id) match {
       case None => {
         Results.NotFound
       }
@@ -47,10 +46,10 @@ trait Helpers {
     }
   }
 
-  def withResolver(user: User, guid: UUID)(
+  def withResolver(user: User, id: String)(
     f: Resolver => Result
   ): Result = {
-    ResolversDao.findByGuid(Authorization.User(user.guid), guid) match {
+    ResolversDao.findById(Authorization.User(user.id), id) match {
       case None => {
         Results.NotFound
       }

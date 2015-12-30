@@ -1,7 +1,7 @@
 package com.bryzek.dependency.actors
 
 import io.flow.play.util.DefaultConfig
-import io.flow.play.postgresql.Pager
+import io.flow.postgresql.Pager
 import io.flow.user.v0.models.User
 import db.{Authorization, LastEmail, LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UserIdentifiersDao, UsersDao}
 import com.bryzek.dependency.v0.models.{Publication, Subscription}
@@ -10,7 +10,6 @@ import com.bryzek.dependency.api.lib.{Email, Recipient}
 import org.joda.time.{DateTime, DateTimeZone}
 import play.api.Logger
 import akka.actor.Actor
-import java.util.UUID
 
 object EmailActor {
 
@@ -83,15 +82,15 @@ case class BatchEmailProcessor(
   def process() {
     subscriptions.foreach { subscription =>
       println(s"subscription: $subscription")
-      UsersDao.findByGuid(subscription.user.guid).foreach { user =>
-        println(s" - user[${user.guid}] email[${user.email}]")
+      UsersDao.findById(subscription.user.id).foreach { user =>
+        println(s" - user[${user.id}] email[${user.email}]")
         Recipient.fromUser(user).map { DailySummaryEmailMessage(_) }.map { generator =>
           // Record before send in case of crash - prevent loop of
           // emails.
           LastEmailsDao.record(
             MainActor.SystemUser,
             LastEmailForm(
-              userGuid = user.guid,
+              userId = user.id,
               publication = publication
             )
           )
@@ -120,14 +119,13 @@ case class DailySummaryEmailMessage(recipient: Recipient) extends EmailMessageGe
 
   private val MaxRecommendations = 250
 
-  private val lastEmail = LastEmailsDao.findByUserGuidAndPublication(recipient.userGuid, Publication.DailySummary)
+  private val lastEmail = LastEmailsDao.findByUserIdAndPublication(recipient.userId, Publication.DailySummary)
 
   override def subject() = "Daily Summary"
 
   override def body() = {
     val recommendations = RecommendationsDao.findAll(
-      Authorization.User(recipient.userGuid),
-      userGuid = Some(recipient.userGuid),
+      Authorization.User(recipient.userId),
       limit = Some(MaxRecommendations)
     )
 
@@ -135,8 +133,8 @@ case class DailySummaryEmailMessage(recipient: Recipient) extends EmailMessageGe
       case None => (recommendations, Nil)
       case Some(email) => {
         (
-          recommendations.filter { !_.audit.createdAt.isBefore(email.audit.createdAt) },
-          recommendations.filter { _.audit.createdAt.isBefore(email.audit.createdAt) }
+          recommendations.filter { !_.createdAt.isBefore(email.createdAt) },
+          recommendations.filter { _.createdAt.isBefore(email.createdAt) }
         )
       }
     }

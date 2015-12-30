@@ -1,8 +1,7 @@
 package com.bryzek.dependency.api.lib
 
 import io.flow.user.v0.models.{Name, User}
-import io.flow.play.util.DefaultConfig
-import java.util.UUID
+import io.flow.play.util.{DefaultConfig, IdGenerator}
 import java.nio.file.{Path, Paths, Files}
 import java.nio.charset.StandardCharsets
 import org.joda.time.DateTime
@@ -73,7 +72,7 @@ object Email {
     val timestamp = ISODateTimeFormat.dateTimeNoMillis.print(new DateTime())
 
     Files.createDirectories(dir)
-    val target = Paths.get(dir.toString, timestamp + "-" + UUID.randomUUID.toString + ".html")
+    val target = Paths.get(dir.toString, timestamp + "-" + IdGenerator("eml").randomId() + ".html")
     val name = fullName(to.name) match {
       case None => to.email
       case Some(name) => s""""$name" <${to.email}">"""

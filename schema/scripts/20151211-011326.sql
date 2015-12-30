@@ -1,9 +1,9 @@
 drop table if exists last_emails;
 
 create table last_emails (
-  guid                       uuid primary key,
-  user_guid                  uuid not null references users,
-  publication                text not null check(lower_non_empty_trimmed_string(publication))
+  id                       text primary key,
+  user_id                  text not null references users,
+  publication                text not null check(util.lower_non_empty_trimmed_string(publication))
 );
 
 comment on table last_emails is '
@@ -11,9 +11,9 @@ comment on table last_emails is '
   generated an email to a user.
 ';
 
-select schema_evolution_manager.create_basic_audit_data('public', 'last_emails');
-create index on last_emails(user_guid);
+select audit.setup('public', 'last_emails');
+create index on last_emails(user_id);
 
-create unique index last_emails_user_guid_publication_not_deleted_un_idx
-    on last_emails(user_guid, publication)
+create unique index last_emails_user_id_publication_not_deleted_un_idx
+    on last_emails(user_id, publication)
  where deleted_at is null;

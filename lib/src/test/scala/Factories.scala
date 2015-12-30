@@ -1,72 +1,75 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.{BinarySummary, BinaryType, ItemSummary, ItemSummaryUndefinedType, LibrarySummary, OrganizationSummary, ProjectSummary}
+import com.bryzek.dependency.v0.models.{BinarySummary, BinaryType, ItemSummary, ItemSummaryUndefinedType, LibrarySummary, OrganizationSummary, ProjectSummary, Reference}
 import com.bryzek.dependency.v0.models.{ProjectDetail, Recommendation, RecommendationType}
-import io.flow.common.v0.models.Reference
 import io.flow.play.clients.MockUserClient
-import java.util.UUID
+import io.flow.play.util.{IdGenerator, Random}
+import org.joda.time.DateTime
 
 trait Factories {
 
+  val idGenerator = IdGenerator("tst")
+  val random = Random()
+
   def makeName(): String = {
-    s"Z Test ${UUID.randomUUID}"
+    s"Z Test ${random.alpha(20)}"
   }
 
   def makeKey(): String = {
-    "z-test-${UUID.randomUUID.toString.toLowerCase}"
+    "z-test-${random.alphaNumeric(20)}"
   }
 
   def makeRecommendation(
     `type`: RecommendationType = RecommendationType.Library
   ) = Recommendation(
-    guid = UUID.randomUUID,
+    id = idGenerator.randomId(),
     project = ProjectDetail(
-      guid = UUID.randomUUID,
+      id = idGenerator.randomId(),
       organization = makeOrganizationSummary(),
       name = makeName()
     ),
     `type` = `type`,
-    `object` = Reference(UUID.randomUUID),
-      name = "io.flow.lib-play",
+    `object` = Reference(idGenerator.randomId()),
+    name = "io.flow.lib-play",
     from = "0.0.1",
     to = "0.0.1",
-    audit = MockUserClient.makeAudit()
+    createdAt = new DateTime()
   )
 
   def makeBinarySummary(
-    guid: UUID = UUID.randomUUID,
+    id: String = idGenerator.randomId(),
     `type`: BinaryType = BinaryType.Scala
   ) = BinarySummary(
-    guid = guid,
+    id = id,
     organization = makeOrganizationSummary(),
     name = `type`
   )
 
   def makeLibrarySummary(
-    guid: UUID = UUID.randomUUID,
+    id: String = idGenerator.randomId(),
     groupId: String = "io.flow",
     artifactId: String = "lib-play"
   ) = LibrarySummary(
-    guid = guid,
+    id = id,
     organization = makeOrganizationSummary(),
     groupId = groupId,
     artifactId = artifactId
   )
 
   def makeProjectSummary(
-    guid: UUID = UUID.randomUUID,
+    id: String = idGenerator.randomId(),
     name: String = makeName()
   ) = ProjectSummary(
-    guid = guid,
+    id = id,
     organization = makeOrganizationSummary(),
     name = name
   )
 
   def makeOrganizationSummary(
-    guid: UUID = UUID.randomUUID,
+    id: String = idGenerator.randomId(),
     key: String = makeKey()
   ) = OrganizationSummary(
-    guid = guid,
+    id = id,
     key = key
   )
 

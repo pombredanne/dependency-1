@@ -9,7 +9,6 @@ import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 
 @javax.inject.Singleton
 class Projects @javax.inject.Inject() (
@@ -17,33 +16,33 @@ class Projects @javax.inject.Inject() (
 ) extends Controller with IdentifiedRestController with Helpers {
 
   def get(
-    guid: Option[UUID],
-    guids: Option[Seq[UUID]],
+    id: Option[String],
+    ids: Option[Seq[String]],
     organization: Option[String],
     name: Option[String],
     groupId: _root_.scala.Option[String],
     artifactId: _root_.scala.Option[String],
     version: _root_.scala.Option[String],
-    libraryGuid: _root_.scala.Option[_root_.java.util.UUID],
+    libraryId: _root_.scala.Option[String],
     binary: _root_.scala.Option[String],
-    binaryGuid: _root_.scala.Option[_root_.java.util.UUID],
+    binaryId: _root_.scala.Option[String],
     limit: Long = 25,
     offset: Long = 0
   ) = Identified { request =>
     Ok(
       Json.toJson(
         ProjectsDao.findAll(
-          Authorization.User(request.user.guid),
-          guid = guid,
-          guids = optionals(guids),
+          Authorization.User(request.user.id),
+          id = id,
+          ids = optionals(ids),
           name = name,
           organization = organization,
           groupId = groupId,
           artifactId = artifactId,
           version = version,
-          libraryGuid = libraryGuid,
+          libraryId = libraryId,
           binary = binary,
-          binaryGuid = binaryGuid,
+          binaryId = binaryId,
           limit = limit,
           offset = offset
         )
@@ -51,8 +50,8 @@ class Projects @javax.inject.Inject() (
     )
   }
 
-  def getByGuid(guid: UUID) = Identified { request =>
-    withProject(request.user, guid) { project =>
+  def getById(id: String) = Identified { request =>
+    withProject(request.user, id) { project =>
       Ok(Json.toJson(project))
     }
   }
@@ -71,8 +70,8 @@ class Projects @javax.inject.Inject() (
     }
   }
 
-  def patchByGuid(guid: UUID) = Identified(parse.json) { request =>
-    withProject(request.user, guid) { project =>
+  def patchById(id: String) = Identified(parse.json) { request =>
+    withProject(request.user, id) { project =>
       request.body.validate[ProjectPatchForm] match {
         case e: JsError => {
           UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
@@ -95,8 +94,8 @@ class Projects @javax.inject.Inject() (
     }
   }
 
-  def putByGuid(guid: UUID) = Identified(parse.json) { request =>
-    withProject(request.user, guid) { project =>
+  def putById(id: String) = Identified(parse.json) { request =>
+    withProject(request.user, id) { project =>
       request.body.validate[ProjectForm] match {
         case e: JsError => {
           UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
@@ -111,8 +110,8 @@ class Projects @javax.inject.Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Identified { request =>
-    withProject(request.user, guid) { project =>
+  def deleteById(id: String) = Identified { request =>
+    withProject(request.user, id) { project =>
       ProjectsDao.softDelete(request.user, project)
       NoContent
     }

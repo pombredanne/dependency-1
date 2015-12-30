@@ -129,7 +129,7 @@ private[lib] case class GithubDependencyProvider(
             Some(
               Seq(
                 ProjectBinaryForm(
-                  projectGuid = project.guid,
+                  projectId = project.id,
                   name = BinaryType.Sbt,
                   version = value,
                   path = BuildPropertiesFilename

@@ -3,7 +3,6 @@ package com.bryzek.dependency.lib
 import io.flow.play.util.DefaultConfig
 import com.bryzek.dependency.v0.models.{BinarySummary, ItemSummary, ItemSummaryUndefinedType, LibrarySummary, ProjectSummary}
 import com.bryzek.dependency.v0.models.{Recommendation, RecommendationType}
-import java.util.UUID
 
 /**
  * All our URLs to the webapp go here. We tried to use the www routers
@@ -18,9 +17,9 @@ case class Urls(
 
   val github = "https://github.com/mbryzek/dependency"
 
-  def binary(guid: UUID) = s"/binaries/$guid"
-  def library(guid: UUID) = s"/libraries/$guid"
-  def project(guid: UUID) = s"/projects/$guid"
+  def binary(id: String) = s"/binaries/$id"
+  def library(id: String) = s"/libraries/$id"
+  def project(id: String) = s"/projects/$id"
 
   def subscriptions(userIdentifier: Option[String]): String = {
     val base = "/subscriptions/"
@@ -44,17 +43,17 @@ case class Urls(
 
   def recommendation(recommendation: Recommendation): String = {
     recommendation.`type` match {
-      case RecommendationType.Library => library(recommendation.`object`.guid)
-      case RecommendationType.Binary => binary(recommendation.`object`.guid)
+      case RecommendationType.Library => library(recommendation.`object`.id)
+      case RecommendationType.Binary => binary(recommendation.`object`.id)
       case RecommendationType.UNDEFINED(_) => "#"
     }
   }
 
   def itemSummary(summary: ItemSummary): String = {
     summary match {
-      case BinarySummary(guid, org, name) => binary(guid)
-      case LibrarySummary(guid, org, groupId, artifactId) => library(guid)
-      case ProjectSummary(guid, org, name) => project(guid)
+      case BinarySummary(id, org, name) => binary(id)
+      case LibrarySummary(id, org, groupId, artifactId) => library(id)
+      case ProjectSummary(id, org, name) => project(id)
       case ItemSummaryUndefinedType(name) => "#"
     }
   }

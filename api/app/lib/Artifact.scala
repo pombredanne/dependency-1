@@ -16,7 +16,7 @@ case class Artifact(
     crossBuildVersion: Option[Version]
   ): ProjectLibraryForm = {
     ProjectLibraryForm(
-      projectGuid = project.guid,
+      projectId = project.id,
       path = path,
       groupId = groupId,
       artifactId = artifactId,

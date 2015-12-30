@@ -17,17 +17,16 @@
         [<a href="#TODO">More</a>]
       }
     </li>
-    <li>@audit(binary.audit)</li>
   </ul>
 
   @views.html.binaries.versions.table(versions)
   @if(versions.hasPrevious || versions.hasNext) {
     <ul class="pager">
       @if(versions.hasPrevious) {
-        <li><a href="@routes.BinariesController.show(binary.guid, versionsPage = versions.page - 1, projectsPage = projectBinaries.page)">Previous</a></li>
+        <li><a href="@routes.BinariesController.show(binary.id, versionsPage = versions.page - 1, projectsPage = projectBinaries.page)">Previous</a></li>
       }
       @if(versions.hasNext) {
-        <li><a href="@routes.BinariesController.show(binary.guid, versionsPage = versions.page + 1, projectsPage = projectBinaries.page)">Next</a></li>
+        <li><a href="@routes.BinariesController.show(binary.id, versionsPage = versions.page + 1, projectsPage = projectBinaries.page)">Next</a></li>
       }
     </ul>
   }
@@ -38,7 +37,7 @@
     <table class="table">
       @projectBinaries.items.map { rec =>
         <tr>
-          <td><a href="@routes.ProjectsController.show(rec.project.guid)">@{rec.project.name}</a></td>
+          <td><a href="@routes.ProjectsController.show(rec.project.id)">@{rec.project.name}</a></td>
           <td><a href="">@{rec.version}</a></td>
         </tr>
       }
@@ -48,10 +47,10 @@
   @if(projectBinaries.hasPrevious || projectBinaries.hasNext) {
     <ul class="pager">
       @if(projectBinaries.hasPrevious) {
-        <li><a href="@routes.LibrariesController.show(binary.guid, versionsPage = versions.page, projectsPage = projectBinaries.page - 1)">Previous</a></li>
+        <li><a href="@routes.LibrariesController.show(binary.id, versionsPage = versions.page, projectsPage = projectBinaries.page - 1)">Previous</a></li>
       }
       @if(projectBinaries.hasNext) {
-        <li><a href="@routes.LibrariesController.show(binary.guid, versionsPage = versions.page, projectsPage = projectBinaries.page + 1)">Next</a></li>
+        <li><a href="@routes.LibrariesController.show(binary.id, versionsPage = versions.page, projectsPage = projectBinaries.page + 1)">Next</a></li>
       }
     </ul>
   }

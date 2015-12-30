@@ -4,7 +4,6 @@ import com.bryzek.dependency.v0.models.{Publication, SubscriptionForm}
 import io.flow.user.v0.models.User
 import db.{OrganizationsDao, SubscriptionsDao, UserIdentifiersDao, UsersDao}
 import akka.actor.Actor
-import java.util.UUID
 import scala.concurrent.ExecutionContext
 
 object UserActor {
@@ -12,7 +11,7 @@ object UserActor {
   trait Message
 
   object Messages {
-    case class Data(guid: UUID) extends Message
+    case class Data(id: String) extends Message
     case object Created extends Message
   }
 
@@ -24,8 +23,8 @@ class UserActor extends Actor with Util {
 
   def receive = {
 
-    case m @ UserActor.Messages.Data(guid) => withVerboseErrorHandler(m.toString) {
-      dataUser = UsersDao.findByGuid(guid)
+    case m @ UserActor.Messages.Data(id) => withVerboseErrorHandler(m.toString) {
+      dataUser = UsersDao.findById(id)
     }
 
     case m @ UserActor.Messages.Created => withVerboseErrorHandler(m.toString) {
@@ -40,7 +39,7 @@ class UserActor extends Actor with Util {
           SubscriptionsDao.upsert(
             MainActor.SystemUser,
             SubscriptionForm(
-              userGuid = user.guid,
+              userId = user.id,
               publication = publication
             )
           )

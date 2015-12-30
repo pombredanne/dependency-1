@@ -11,7 +11,6 @@ import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 import scala.concurrent.Future
 
 class Users @javax.inject.Inject() (
@@ -21,17 +20,17 @@ class Users @javax.inject.Inject() (
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def get(
-    guid: Option[UUID],
+    id: Option[String],
     email: Option[String],
     identifier: Option[String]
   ) = Anonymous { request =>
-    if (Seq(guid, email, identifier).isEmpty) {
-      UnprocessableEntity(Json.toJson(Validation.error("Must specify guid, email or identifier")))
+    if (Seq(id, email, identifier).isEmpty) {
+      UnprocessableEntity(Json.toJson(Validation.error("Must specify id, email or identifier")))
     } else {
       Ok(
         Json.toJson(
           UsersDao.findAll(
-            guid = guid,
+            id = id,
             email = email,
             identifier = identifier,
             limit = 1,
@@ -42,14 +41,14 @@ class Users @javax.inject.Inject() (
     }
   }
 
-  def getByGuid(guid: UUID) = Identified { request =>
-    withUser(guid) { user =>
+  def getById(id: String) = Identified { request =>
+    withUser(id) { user =>
       Ok(Json.toJson(user))
     }
   }
 
-  def getIdentifierByGuid(guid: UUID) = Identified { request =>
-    withUser(guid) { user =>
+  def getIdentifierById(id: String) = Identified { request =>
+    withUser(id) { user =>
       Ok(Json.toJson(UserIdentifiersDao.latestForUser(request.user, user)))
     }
   }
@@ -70,10 +69,10 @@ class Users @javax.inject.Inject() (
     }
   }
 
-  def withUser(guid: UUID)(
+  def withUser(id: String)(
     f: User => Result
   ) = {
-    UsersDao.findByGuid(guid) match {
+    UsersDao.findById(id) match {
       case None => {
         NotFound
       }

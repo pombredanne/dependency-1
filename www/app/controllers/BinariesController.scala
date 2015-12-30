@@ -5,7 +5,6 @@ import com.bryzek.dependency.v0.models.Binary
 import com.bryzek.dependency.www.lib.{Config, DependencyClientProvider}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
-import java.util.UUID
 import scala.concurrent.Future
 
 import play.api._
@@ -39,19 +38,19 @@ class BinariesController @javax.inject.Inject() (
   }
 
   def show(
-    guid: UUID,
+    id: String,
     versionsPage: Int = 0,
     projectsPage: Int = 0
   ) = Identified.async { implicit request =>
-    withBinary(request, guid) { binary =>
+    withBinary(request, id) { binary =>
       for {
         versions <- dependencyClient(request).binaryVersions.get(
-          binaryGuid = Some(guid),
+          binaryId = Some(id),
           limit = Config.VersionsPerPage+1,
           offset = versionsPage * Config.VersionsPerPage
         )
         projectBinaries <- dependencyClient(request).projectBinaries.get(
-          binaryGuid = Some(guid),
+          binaryId = Some(id),
           limit = Pagination.DefaultLimit+1,
           offset = projectsPage * Pagination.DefaultLimit
         )
@@ -70,11 +69,11 @@ class BinariesController @javax.inject.Inject() (
 
   def withBinary[T](
     request: IdentifiedRequest[T],
-    guid: UUID
+    id: String
   )(
     f: Binary => Future[Result]
   ) = {
-    dependencyClient(request).binaries.getByGuid(guid).flatMap { binary =>
+    dependencyClient(request).binaries.getById(id).flatMap { binary =>
       f(binary)
     }.recover {
       case UnitResponse(404) => {

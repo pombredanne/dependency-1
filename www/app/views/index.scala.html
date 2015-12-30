@@ -9,9 +9,7 @@
 
     <p><em>We do not have any upgrade recommendations for you. When
     you add a project, we begin monitoring all of its dependencies,
-    creating recommendations for you. The Dashboard summarizes
-    recommendations from all of the projects you are
-    watching.</em></p>
+    creating recommendations for you.</em></p>
 
     <p>
       <a href="@routes.ProjectsController.github()">Add a project</a>
@@ -31,8 +29,8 @@
 	</thead>
         @recommendations.items.map { rec =>
           <tr>
-            <td>@io.flow.play.util.DateHelper.shortDate(rec.audit.createdAt)</td>
-            <td><a href="@routes.ProjectsController.show(rec.project.guid)">@{rec.project.name}</a></td>
+            <td>@io.flow.play.util.DateHelper.shortDate(rec.createdAt)</td>
+            <td><a href="@routes.ProjectsController.show(rec.project.id)">@{rec.project.name}</a></td>
             <td><a href="@data.urls.recommendation(rec)">@com.bryzek.dependency.lib.Text.truncate(rec.name, 50)</a></td>
             <td>@rec.from</td>
             <td>@rec.to</td>

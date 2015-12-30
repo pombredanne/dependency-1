@@ -2,7 +2,6 @@ package com.bryzek.dependency.api.lib
 
 import db.{UserIdentifiersDao, UsersDao}
 import io.flow.user.v0.models.{Name, User}
-import java.util.UUID
 
 /**
   * Information we use to render email messages, including the links
@@ -11,7 +10,7 @@ import java.util.UUID
 case class Recipient(
   email: String,
   name: Name,
-  userGuid: UUID,
+  userId: String,
   identifier: String
 )
 
@@ -22,7 +21,7 @@ object Recipient {
       Recipient(
         email = email,
         name = user.name,
-        userGuid = user.guid,
+        userId = user.id,
         identifier = UserIdentifiersDao.latestForUser(UsersDao.systemUser, user).value
       )
     }

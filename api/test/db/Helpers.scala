@@ -1,21 +1,22 @@
 package db
 
 import io.flow.play.clients.MockUserClient
+import io.flow.play.util.Random
 import com.bryzek.dependency.v0.models._
 import io.flow.user.v0.models.{NameForm, User, UserForm}
 import java.util.UUID
-import scala.util.Random
 
 trait Helpers {
 
   lazy val systemUser = createUser()
+  val random = Random()
 
   def createTestEmail(): String = {
     s"${createTestKey}@test.bryzek.com"
   }
 
   def createTestName(): String = {
-    s"Z Test ${UUID.randomUUID}"
+    s"Z Test ${UUID.randomUUID.toString}"
   }
 
   def createTestKey(): String = {
@@ -51,15 +52,6 @@ trait Helpers {
     true
   }
 
-  @scala.annotation.tailrec
-  final def positiveRandomLong(): Long = {
-    val value = (new Random()).nextLong
-    (value > 0) match {
-      case true => value
-      case false => positiveRandomLong()
-    }
-  }
-
   def createOrganization(
     form: OrganizationForm = createOrganizationForm(),
     user: User = systemUser
@@ -88,17 +80,17 @@ trait Helpers {
   def createBinaryForm(
     org: Organization = createOrganization()
   ) = BinaryForm(
-    organizationGuid = org.guid,
-    name = BinaryType.UNDEFINED(s"z-test-binary-${UUID.randomUUID}".toLowerCase)
+    organizationId = org.id,
+    name = BinaryType.UNDEFINED(s"z-test-binary-${UUID.randomUUID.toString}".toLowerCase)
   )
 
   def createBinaryVersion(
     org: Organization = createOrganization()
   ) (
     implicit binary: Binary = createBinary(org),
-             version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
+             version: String = s"0.0.1-${UUID.randomUUID.toString}".toLowerCase
   ): BinaryVersion = {
-    BinaryVersionsDao.create(systemUser, binary.guid, version)
+    BinaryVersionsDao.create(systemUser, binary.id, version)
   }
 
   def createLibrary(
@@ -119,11 +111,11 @@ trait Helpers {
     implicit versionForm: VersionForm = VersionForm("0.0.1"),
              resolver: Resolver = createResolver(org, user)
   ) = LibraryForm(
-    organizationGuid = org.guid,
-    groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
-    artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
+    organizationId = org.id,
+    groupId = s"z-test.${UUID.randomUUID.toString}".toLowerCase,
+    artifactId = s"z-test-${UUID.randomUUID.toString}".toLowerCase,
     version = Some(versionForm),
-    resolverGuid = resolver.guid
+    resolverId = resolver.id
   )
 
   def createLibraryVersion(
@@ -133,11 +125,11 @@ trait Helpers {
     implicit library: Library = createLibrary(org, user),
              version: VersionForm = createVersionForm()
   ): LibraryVersion = {
-    LibraryVersionsDao.create(user, library.guid, version)
+    LibraryVersionsDao.create(user, library.id, version)
   }
 
   def createVersionForm(
-    version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase,
+    version: String = s"0.0.1-${UUID.randomUUID.toString}".toLowerCase,
     crossBuildVersion: Option[String] = None
   ) = {
     VersionForm(version, crossBuildVersion)
@@ -149,7 +141,7 @@ trait Helpers {
     implicit form: ProjectForm = createProjectForm(org)
   ): Project = {
     val user = OrganizationsDao.findByKey(Authorization.All, form.organization).flatMap { org =>
-      UsersDao.findByGuid(org.audit.createdBy.guid)
+      UsersDao.findById(org.user.id)
     }.getOrElse {
       sys.error("Could not find user that created org")
     }
@@ -165,7 +157,7 @@ trait Helpers {
       name = createTestName(),
       visibility = Visibility.Private,
       scms = Scms.Github,
-      uri = s"http://github.com/test/${UUID.randomUUID}"
+      uri = s"http://github.com/test/${UUID.randomUUID.toString}"
     )
   }
 
@@ -174,8 +166,8 @@ trait Helpers {
     version: VersionForm = VersionForm(version = "0.0.1")
   ) (
     implicit libraryForm: LibraryForm = createLibraryForm(org).copy(
-      groupId = s"z-test-${UUID.randomUUID}".toLowerCase,
-      artifactId = s"z-test-${UUID.randomUUID}".toLowerCase
+      groupId = s"z-test-${UUID.randomUUID.toString}".toLowerCase,
+      artifactId = s"z-test-${UUID.randomUUID.toString}".toLowerCase
     )
   ): (Project, LibraryVersion) = {
     val project = createProject(org)
@@ -191,7 +183,7 @@ trait Helpers {
       )
     )
 
-    val libraryVersion = LibraryVersionsDao.upsert(systemUser, library.guid, version)
+    val libraryVersion = LibraryVersionsDao.upsert(systemUser, library.id, version)
 
     ProjectLibrariesDao.setLibrary(systemUser, projectLibrary, library)
 
@@ -253,12 +245,12 @@ trait Helpers {
 
   def createGithubUserForm(
     user: User = createUser(),
-    id: Long = positiveRandomLong(),
+    githubUserId: Long = random.positiveLong(),
     login: String = createTestEmail()
   ) = {
     GithubUserForm(
-      userGuid = user.guid,
-      id = id,
+      userId = user.id,
+      githubUserId = githubUserId,
       login = login
     )
   }
@@ -272,10 +264,10 @@ trait Helpers {
   def createTokenForm(
     user: User = createUser(),
     tag: String = createTestName().toLowerCase,
-    token: String = UUID.randomUUID().toString.toLowerCase
+    token: String = UUID.randomUUID.toString().toString.toLowerCase
   ) = {
     TokenForm(
-      userGuid = user.guid,
+      userId = user.id,
       tag = tag,
       token = token
     )
@@ -289,12 +281,12 @@ trait Helpers {
 
   def createSyncForm(
     `type`: String = "test",
-    objectGuid: UUID = UUID.randomUUID,
+    objectId: String = UUID.randomUUID.toString,
     event: SyncEvent = SyncEvent.Started
   ) = {
     SyncForm(
       `type` = `type`,
-      objectGuid = objectGuid,
+      objectId = objectId,
       event = event
     )
   }
@@ -311,7 +303,7 @@ trait Helpers {
   def createResolverForm(
     org: Organization = createOrganization(),
     visibility: Visibility = Visibility.Private,
-    uri: String = s"http://${UUID.randomUUID}.z-test.flow.io"
+    uri: String = s"http://${UUID.randomUUID.toString}.z-test.flow.io"
   ) = {
     ResolverForm(
       visibility = visibility,
@@ -333,28 +325,8 @@ trait Helpers {
   ) = {
     MembershipForm(
       organization = org.key,
-      userGuid = user.guid,
+      userId = user.id,
       role = role
-    )
-  }
-
-  def createWatchProject(
-    org: Organization
-  ) (
-    implicit form: WatchProjectForm = createWatchProjectForm(org)
-  ): WatchProject = {
-    create(WatchProjectsDao.create(systemUser, form))
-  }
-
-  def createWatchProjectForm(
-    org: Organization
-  ) (
-    implicit user: User = createUser(),
-             project: Project = createProject(org)
-  ) = {
-    WatchProjectForm(
-      userGuid = user.guid,
-      projectGuid = project.guid
     )
   }
 
@@ -382,7 +354,7 @@ trait Helpers {
       ProjectLibrariesDao.upsert(
         systemUser,
         ProjectLibraryForm(
-          projectGuid = project.guid,
+          projectId = project.id,
           groupId = libraryVersion.library.groupId,
           artifactId = libraryVersion.library.artifactId,
           path = "test.sbt",
@@ -408,8 +380,8 @@ trait Helpers {
     implicit binary: Binary = createBinary(org)
   ): ItemSummary = {
     BinarySummary(
-      guid = binary.guid,
-      organization = OrganizationSummary(org.guid, org.key),
+      id = binary.id,
+      organization = OrganizationSummary(org.id, org.key),
       name = binary.name
     )
   }
@@ -420,9 +392,9 @@ trait Helpers {
     implicit summary: ItemSummary = createItemSummary(org)
   ): ItemForm = {
     val label = summary match {
-      case BinarySummary(guid, org, name) => name.toString
-      case LibrarySummary(guid, org, groupId, artifactId) => Seq(groupId, artifactId).mkString(".")
-      case ProjectSummary(guid, org, name) => name
+      case BinarySummary(id, org, name) => name.toString
+      case LibrarySummary(id, org, groupId, artifactId) => Seq(groupId, artifactId).mkString(".")
+      case ProjectSummary(id, org, name) => name
       case ItemSummaryUndefinedType(name) => name
     }
     ItemForm(
@@ -444,7 +416,7 @@ trait Helpers {
     publication: Publication = Publication.DailySummary
   ) = {
     SubscriptionForm(
-      userGuid = user.guid,
+      userId = user.id,
       publication = publication
     )
   }
@@ -459,7 +431,7 @@ trait Helpers {
     user: User = createUser(),
     publication: Publication = Publication.DailySummary
   ) = LastEmailForm(
-    userGuid = user.guid,
+    userId = user.id,
     publication = publication
   )
 
@@ -473,14 +445,14 @@ trait Helpers {
 
   def createProjectLibraryForm(
     project: Project = createProject(),
-    groupId: String = s"z-test.${UUID.randomUUID}".toLowerCase,
-    artifactId: String = s"z-test-${UUID.randomUUID}".toLowerCase,
+    groupId: String = s"z-test.${UUID.randomUUID.toString}".toLowerCase,
+    artifactId: String = s"z-test-${UUID.randomUUID.toString}".toLowerCase,
     path: String = "build.sbt",
     version: String = "0.0.1",
     crossBuildVersion: Option[String] = None
   ) = {
     ProjectLibraryForm(
-      projectGuid = project.guid,
+      projectId = project.id,
       groupId = groupId,
       artifactId = artifactId,
       path = path,
@@ -503,7 +475,7 @@ trait Helpers {
     version: String = "0.0.1"
   ) = {
     ProjectBinaryForm(
-      projectGuid = project.guid,
+      projectId = project.id,
       name = name,
       path = path,
       version = version

@@ -15,45 +15,45 @@ class BinaryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "upsert" in {
     val binary = createBinary(org)
-    val version1 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.0")
-    val version2 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.0")
-    val version3 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.1")
+    val version1 = BinaryVersionsDao.upsert(systemUser, binary.id, "1.0")
+    val version2 = BinaryVersionsDao.upsert(systemUser, binary.id, "1.0")
+    val version3 = BinaryVersionsDao.upsert(systemUser, binary.id, "1.1")
 
-    version1.guid must be(version2.guid)
-    version2.guid must not be(version3.guid)
+    version1.id must be(version2.id)
+    version2.id must not be(version3.id)
   }
 
-  "findByGuid" in {
+  "findById" in {
     val version = createBinaryVersion(org)()
-    BinaryVersionsDao.findByGuid(Authorization.All, version.guid).map(_.guid) must be(
-      Some(version.guid)
+    BinaryVersionsDao.findById(Authorization.All, version.id).map(_.id) must be(
+      Some(version.id)
     )
 
-    BinaryVersionsDao.findByGuid(Authorization.All, UUID.randomUUID) must be(None)
+    BinaryVersionsDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
-  "findAll by guids" in {
+  "findAll by ids" in {
     val version1 = createBinaryVersion(org)()
     val version2 = createBinaryVersion(org)()
 
-    BinaryVersionsDao.findAll(Authorization.All, guids = Some(Seq(version1.guid, version2.guid))).map(_.guid).sorted must be(
-      Seq(version1.guid, version2.guid).sorted
+    BinaryVersionsDao.findAll(Authorization.All, ids = Some(Seq(version1.id, version2.id))).map(_.id).sorted must be(
+      Seq(version1.id, version2.id).sorted
     )
 
-    BinaryVersionsDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
-    BinaryVersionsDao.findAll(Authorization.All, guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    BinaryVersionsDao.findAll(Authorization.All, guids = Some(Seq(version1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(version1.guid))
+    BinaryVersionsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
+    BinaryVersionsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    BinaryVersionsDao.findAll(Authorization.All, ids = Some(Seq(version1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(version1.id))
   }
 
   "softDelete" in {
     val binary = createBinary(org)
-    val version1 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.0")
-    BinaryVersionsDao.softDelete(systemUser, version1.guid)
-    val version2 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.0")
-    val version3 = BinaryVersionsDao.upsert(systemUser, binary.guid, "1.0")
+    val version1 = BinaryVersionsDao.upsert(systemUser, binary.id, "1.0")
+    BinaryVersionsDao.softDelete(systemUser, version1.id)
+    val version2 = BinaryVersionsDao.upsert(systemUser, binary.id, "1.0")
+    val version3 = BinaryVersionsDao.upsert(systemUser, binary.id, "1.0")
 
-    version1.guid must not be(version2.guid)
-    version2.guid must be(version3.guid)
+    version1.id must not be(version2.id)
+    version2.id must be(version3.id)
   }
 
 }

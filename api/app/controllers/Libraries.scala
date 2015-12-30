@@ -10,7 +10,6 @@ import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 
 @javax.inject.Singleton
 class Libraries @javax.inject.Inject() (
@@ -18,25 +17,25 @@ class Libraries @javax.inject.Inject() (
 ) extends Controller with IdentifiedRestController {
 
   def get(
-    guid: Option[UUID],
-    guids: Option[Seq[UUID]],
-    projectGuid: Option[UUID],
+    id: Option[String],
+    ids: Option[Seq[String]],
+    projectId: Option[String],
     groupId: Option[String],
     artifactId: Option[String],
-    resolverGuid: Option[UUID],
+    resolverId: Option[String],
     limit: Long = 25,
     offset: Long = 0
   ) = Identified { request =>
     Ok(
       Json.toJson(
         LibrariesDao.findAll(
-          Authorization.User(request.user.guid),
-          guid = guid,
-          guids = optionals(guids),
-          projectGuid = projectGuid,
+          Authorization.User(request.user.id),
+          id = id,
+          ids = optionals(ids),
+          projectId = projectId,
           groupId = groupId,
           artifactId = artifactId,
-          resolverGuid = resolverGuid,
+          resolverId = resolverId,
           limit = limit,
           offset = offset
         )
@@ -44,8 +43,8 @@ class Libraries @javax.inject.Inject() (
     )
   }
 
-  def getByGuid(guid: UUID) = Identified { request =>
-    withLibrary(request.user, guid) { library =>
+  def getById(id: String) = Identified { request =>
+    withLibrary(request.user, id) { library =>
       Ok(Json.toJson(library))
     }
   }
@@ -64,17 +63,17 @@ class Libraries @javax.inject.Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Identified { request =>
-    withLibrary(request.user, guid) { library =>
+  def deleteById(id: String) = Identified { request =>
+    withLibrary(request.user, id) { library =>
       LibrariesDao.softDelete(request.user, library)
       NoContent
     }
   }
 
-  def withLibrary(user: User, guid: UUID)(
+  def withLibrary(user: User, id: String)(
     f: Library => Result
   ): Result = {
-    LibrariesDao.findByGuid(Authorization.User(user.guid), guid) match {
+    LibrariesDao.findById(Authorization.User(user.id), id) match {
       case None => {
         NotFound
       }

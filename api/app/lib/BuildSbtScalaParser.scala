@@ -27,7 +27,7 @@ case class BuildSbtScalaParser(
         case head :: version :: Nil => {
           Some(
             ProjectBinaryForm(
-              projectGuid = project.guid,
+              projectId = project.id,
               name = BinaryType.Scala,
               version = interpolate(version),
               path

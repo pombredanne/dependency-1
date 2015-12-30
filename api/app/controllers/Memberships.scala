@@ -10,7 +10,6 @@ import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
-import java.util.UUID
 
 @javax.inject.Singleton
 class Memberships @javax.inject.Inject() (
@@ -18,10 +17,10 @@ class Memberships @javax.inject.Inject() (
 ) extends Controller with IdentifiedRestController with Helpers {
 
   def get(
-    guid: Option[UUID],
-    guids: Option[Seq[UUID]],
+    id: Option[String],
+    ids: Option[Seq[String]],
     organization: Option[String],
-    userGuid: Option[UUID],
+    userId: Option[String],
     role: Option[Role],
     limit: Long = 25,
     offset: Long = 0
@@ -29,11 +28,11 @@ class Memberships @javax.inject.Inject() (
     Ok(
       Json.toJson(
         MembershipsDao.findAll(
-          Authorization.User(request.user.guid),
-          guid = guid,
-          guids = optionals(guids),
+          Authorization.User(request.user.id),
+          id = id,
+          ids = optionals(ids),
           organization = organization,
-          userGuid = userGuid,
+          userId = userId,
           role = role,
           limit = limit,
           offset = offset
@@ -42,8 +41,8 @@ class Memberships @javax.inject.Inject() (
     )
   }
 
-  def getByGuid(guid: UUID) = Identified { request =>
-    withMembership(request.user, guid) { membership =>
+  def getById(id: String) = Identified { request =>
+    withMembership(request.user, id) { membership =>
       Ok(Json.toJson(membership))
     }
   }
@@ -62,17 +61,17 @@ class Memberships @javax.inject.Inject() (
     }
   }
 
-  def deleteByGuid(guid: UUID) = Identified { request =>
-    withMembership(request.user, guid) { membership =>
+  def deleteById(id: String) = Identified { request =>
+    withMembership(request.user, id) { membership =>
       MembershipsDao.softDelete(request.user, membership)
       NoContent
     }
   }
 
-  def withMembership(user: User, guid: UUID)(
+  def withMembership(user: User, id: String)(
     f: Membership => Result
   ): Result = {
-    MembershipsDao.findByGuid(Authorization.User(user.guid), guid) match {
+    MembershipsDao.findById(Authorization.User(user.id), id) match {
       case None => {
         Results.NotFound
       }

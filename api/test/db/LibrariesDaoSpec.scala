@@ -19,7 +19,7 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Authorization.All,
       library.groupId,
       library.artifactId
-    ).map(_.guid) must be(Some(library.guid))
+    ).map(_.id) must be(Some(library.id))
 
     LibrariesDao.findByGroupIdAndArtifactId(
       Authorization.All,
@@ -34,34 +34,34 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     ) must be (None)
   }
 
-  "findByGuid" in {
+  "findById" in {
     val library = createLibrary(org)
-    LibrariesDao.findByGuid(Authorization.All, library.guid).map(_.guid) must be(
-      Some(library.guid)
+    LibrariesDao.findById(Authorization.All, library.id).map(_.id) must be(
+      Some(library.id)
     )
 
-    LibrariesDao.findByGuid(Authorization.All, UUID.randomUUID) must be(None)
+    LibrariesDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
-  "findAll by guids" in {
+  "findAll by ids" in {
     val library1 = createLibrary(org)
     val library2 = createLibrary(org)
 
-    LibrariesDao.findAll(Authorization.All, guids = Some(Seq(library1.guid, library2.guid))).map(_.guid) must be(
-      Seq(library1, library2).sortWith { (x,y) => x.groupId.toString < y.groupId.toString }.map(_.guid)
+    LibrariesDao.findAll(Authorization.All, ids = Some(Seq(library1.id, library2.id))).map(_.id) must be(
+      Seq(library1, library2).sortWith { (x,y) => x.groupId.toString < y.groupId.toString }.map(_.id)
     )
 
-    LibrariesDao.findAll(Authorization.All, guids = Some(Nil)) must be(Nil)
-    LibrariesDao.findAll(Authorization.All, guids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    LibrariesDao.findAll(Authorization.All, guids = Some(Seq(library1.guid, UUID.randomUUID))).map(_.guid) must be(Seq(library1.guid))
+    LibrariesDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
+    LibrariesDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    LibrariesDao.findAll(Authorization.All, ids = Some(Seq(library1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(library1.id))
   }
 
   "findAll by resolver" in {
     val resolver = createResolver(org)
-    val form = createLibraryForm(org).copy(resolverGuid = resolver.guid)
+    val form = createLibraryForm(org).copy(resolverId = resolver.id)
     val library = createLibrary(org)(form)
 
-    LibrariesDao.findAll(Authorization.All, resolverGuid = Some(resolver.guid)).map(_.guid) must be(Seq(library.guid))
+    LibrariesDao.findAll(Authorization.All, resolverId = Some(resolver.id)).map(_.id) must be(Seq(library.id))
   }
 
   "create" must {
@@ -101,11 +101,11 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       )
       val lib = createLibrary(org, user = user)(createLibraryForm(org)(resolver = resolver))
 
-      LibrariesDao.findAll(Authorization.PublicOnly, guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
-      LibrariesDao.findAll(Authorization.All, guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
-      LibrariesDao.findAll(Authorization.Organization(org.guid), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
-      LibrariesDao.findAll(Authorization.Organization(createOrganization().guid), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
-      LibrariesDao.findAll(Authorization.User(user.guid), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
+      LibrariesDao.findAll(Authorization.PublicOnly, id = Some(lib.id)).map(_.id) must be(Seq(lib.id))
+      LibrariesDao.findAll(Authorization.All, id = Some(lib.id)).map(_.id) must be(Seq(lib.id))
+      LibrariesDao.findAll(Authorization.Organization(org.id), id = Some(lib.id)).map(_.id) must be(Seq(lib.id))
+      LibrariesDao.findAll(Authorization.Organization(createOrganization().id), id = Some(lib.id)).map(_.id) must be(Seq(lib.id))
+      LibrariesDao.findAll(Authorization.User(user.id), id = Some(lib.id)).map(_.id) must be(Seq(lib.id))
     }
 
     "allow only users of an org to access a library w/ a private resolver" in {
@@ -117,12 +117,12 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       val lib = createLibrary(org, user = user)(createLibraryForm(org)(resolver = resolver))
       lib.resolver.visibility must be(Visibility.Private)
 
-      LibrariesDao.findAll(Authorization.PublicOnly, guid = Some(lib.guid))must be(Nil)
-      LibrariesDao.findAll(Authorization.All, guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
-      LibrariesDao.findAll(Authorization.Organization(org.guid), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
-      LibrariesDao.findAll(Authorization.Organization(createOrganization().guid), guid = Some(lib.guid))must be(Nil)
-      LibrariesDao.findAll(Authorization.User(user.guid), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
-      LibrariesDao.findAll(Authorization.User(createUser().guid), guid = Some(lib.guid)) must be(Nil)
+      LibrariesDao.findAll(Authorization.PublicOnly, id = Some(lib.id))must be(Nil)
+      LibrariesDao.findAll(Authorization.All, id = Some(lib.id)).map(_.id) must be(Seq(lib.id))
+      LibrariesDao.findAll(Authorization.Organization(org.id), id = Some(lib.id)).map(_.id) must be(Seq(lib.id))
+      LibrariesDao.findAll(Authorization.Organization(createOrganization().id), id = Some(lib.id))must be(Nil)
+      LibrariesDao.findAll(Authorization.User(user.id), id = Some(lib.id)).map(_.id) must be(Seq(lib.id))
+      LibrariesDao.findAll(Authorization.User(createUser().id), id = Some(lib.id)) must be(Nil)
     }
 
   }

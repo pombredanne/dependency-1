@@ -19,7 +19,6 @@
       <table class="table">
 	<thead>
 	  <tr>
-	    <th>Joined</th>
 	    <th>Email</th>
 	    <th>Name</th>
 	    <th>Role</th>
@@ -28,27 +27,26 @@
 	</thead>
         @memberships.items.map { membership =>
           <tr>
-            <td>@io.flow.play.util.DateHelper.shortDate(membership.audit.createdAt)</td>
             <td>@membership.user.email.getOrElse("N/A")</td>
             <td>@Seq(membership.user.name.first, membership.user.name.last).flatten.mkString(" ")</td>
             <td>@membership.role</td>
             <td>
 	      @if(membership.role == com.bryzek.dependency.v0.models.Role.Admin) {
-	        @if(Some(membership.user.guid) == data.user.map(_.guid)) {
-  	          <a href="@routes.MembersController.postMakeMember(org.key, membership.guid)" class="delete" data-confirm="If you remove your admin privileges, you will no longer have full access to this org. Would you like to proceed?">Make member</a>
+	        @if(Some(membership.user.id) == data.user.map(_.id)) {
+  	          <a href="@routes.MembersController.postMakeMember(org.key, membership.id)" class="delete" data-confirm="If you remove your admin privileges, you will no longer have full access to this org. Would you like to proceed?">Make member</a>
                 } else {
-    	          <a href="@routes.MembersController.postMakeMember(org.key, membership.guid)" class="delete" data-confirm="Are you sure?">Make member</a>
+    	          <a href="@routes.MembersController.postMakeMember(org.key, membership.id)" class="delete" data-confirm="Are you sure?">Make member</a>
 	        }
 
 	      } else {
-  	        <a href="@routes.MembersController.postMakeAdmin(org.key, membership.guid)" class="delete" data-confirm="Are you sure?">Make admin</a>
+  	        <a href="@routes.MembersController.postMakeAdmin(org.key, membership.id)" class="delete" data-confirm="Are you sure?">Make admin</a>
               }
 
 	      |
-	      @if(Some(membership.user.guid) == data.user.map(_.guid)) {
-  	        <a href="@routes.MembersController.postDelete(org.key, membership.guid)" class="delete" data-confirm="If you remove yourself, you will no longer have access to this org. Would you like to proceed?">Remove</a>
+	      @if(Some(membership.user.id) == data.user.map(_.id)) {
+  	        <a href="@routes.MembersController.postDelete(org.key, membership.id)" class="delete" data-confirm="If you remove yourself, you will no longer have access to this org. Would you like to proceed?">Remove</a>
               } else {
-    	        <a href="@routes.MembersController.postDelete(org.key, membership.guid)" class="delete" data-confirm="Are you sure?">Remove</a>
+    	        <a href="@routes.MembersController.postDelete(org.key, membership.id)" class="delete" data-confirm="Are you sure?">Remove</a>
 	      }
             </td>
           </tr>
