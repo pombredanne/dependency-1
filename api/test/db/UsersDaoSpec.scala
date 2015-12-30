@@ -44,6 +44,17 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     UsersDao.findByEmail(UUID.randomUUID.toString) must be(None)
   }
 
+  "findByToken" in {
+    val user = createUser()
+    val token = createToken(createTokenForm(user = user))
+    val clear = TokensDao.addCleartextIfAvailable(systemUser, token).cleartext.getOrElse {
+      sys.error("Could not find cleartext of token")
+    }
+
+    UsersDao.findByToken(clear).map(_.id) must be(Some(user.id))
+    UsersDao.findByToken(UUID.randomUUID.toString) must be(None)
+  }
+
   "findById" in {
     UsersDao.findById(UsersDao.systemUser.id).map(_.id) must be(
       Some(UsersDao.systemUser.id)

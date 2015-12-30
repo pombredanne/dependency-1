@@ -102,6 +102,10 @@ object UsersDao {
     findAll(email = Some(email), limit = 1).headOption
   }
 
+  def findByToken(token: String): Option[User] = {
+    findAll(token = Some(token), limit = 1).headOption
+  }
+
   def findById(id: String): Option[User] = {
     findAll(id = Some(id), limit = 1).headOption
   }
@@ -110,6 +114,7 @@ object UsersDao {
     id: Option[String] = None,
     ids: Option[Seq[String]] = None,
     email: Option[String] = None,
+    token: Option[String] = None,
     identifier: Option[String] = None,
     githubUserId: Option[Long] = None,
     isDeleted: Option[Boolean] = Some(false),
@@ -138,6 +143,9 @@ object UsersDao {
         subquery("users.id", "identifier", identifier, { bindVar =>
           s"select user_id from user_identifiers where deleted_at is null and value = trim(${bindVar.sql})"
         }).
+        subquery("users.id", "token", token, { bindVar =>
+          s"select user_id from tokens where deleted_at is null and token = trim(${bindVar.sql}) and tag = {user_created_tag}"
+        }).bind("user_created_tag", Some(InternalTokenForm.UserCreatedTag)).
         subquery("users.id", "github_user_id", githubUserId, { bindVar =>
           s"select user_id from github_users where deleted_at is null and github_user_id = ${bindVar.sql}"
         }).

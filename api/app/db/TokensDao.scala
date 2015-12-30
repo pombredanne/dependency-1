@@ -21,9 +21,10 @@ sealed trait InternalTokenForm {
 object InternalTokenForm {
 
   private[db] val GithubOauthTag = "github_oauth"
+  private[db] val UserCreatedTag = "user_created"
 
   private[this] val random = Random()
-  private[this] val TokenLength = 128
+  private[this] val TokenLength = 64
 
   case class GithubOauth(userId: String, token: String) extends InternalTokenForm {
     override val tag = GithubOauthTag
@@ -31,7 +32,7 @@ object InternalTokenForm {
   }
 
   case class UserCreated(form: TokenForm) extends InternalTokenForm {
-    override val tag = "user_created"
+    override val tag = UserCreatedTag
     override val userId = form.userId
     override val description = form.description
     def token = random.alphaNumeric(TokenLength)

@@ -1163,7 +1163,7 @@
 		    "description": "Create a new API token for this user",
 		    "body": { "type": "token_form" },
                     "responses": {
-                        "200": { "type": "token" },
+                        "201": { "type": "token" },
 			"401": { "type": "unit" },
                         "422": { "type": "[io.flow.common.v0.models.error]" }
                     }

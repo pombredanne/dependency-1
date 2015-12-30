@@ -12,9 +12,12 @@ class DefaultUserTokensClient() extends UserTokensClient {
   override def getUserByToken(
     token: String
   )(implicit ec: ExecutionContext): Future[Option[User]] = {
-    // Right now the token is just the user id
+    // token is either the user id or a user token
     Future {
-      UsersDao.findById(token)
+      UsersDao.findById(token) match {
+        case None => UsersDao.findByToken(token)
+        case Some(u) => Some(u)
+      }
     }
   }
 

@@ -43,9 +43,9 @@ class TokensDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val clear = TokensDao.addCleartextIfAvailable(systemUser, token).cleartext.getOrElse {
       sys.error("Failed to read token")
     }
-    clear.length must be(128)
     token.masked must be(clear.substring(0, 3) + "-masked-xxx")
     TokensDao.addCleartextIfAvailable(systemUser, token).cleartext must be(None)
+    clear.length must be(64)
   }
 
   "findAll by ids" in {
