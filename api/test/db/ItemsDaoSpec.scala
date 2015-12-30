@@ -33,7 +33,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(item.id)
     )
 
-    ItemsDao.findById(Authorization.All, UUID.randomUUID) must be(None)
+    ItemsDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
   "findByObjectId" in {
@@ -43,7 +43,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(item.id)
     )
 
-    ItemsDao.findByObjectId(Authorization.All, UUID.randomUUID) must be(None)
+    ItemsDao.findByObjectId(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
   "findAll by ids" in {
@@ -55,8 +55,8 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     )
 
     ItemsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-    ItemsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    ItemsDao.findAll(Authorization.All, ids = Some(Seq(item1.id, UUID.randomUUID))).map(_.id) must be(Seq(item1.id))
+    ItemsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    ItemsDao.findAll(Authorization.All, ids = Some(Seq(item1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(item1.id))
   }
 
   "supports binaries" in {

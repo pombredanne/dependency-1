@@ -22,9 +22,6 @@ class GithubUsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     user2.id must not be(user3.id)
     user2.id must not be(user3.id)
-
-    user1.audit.createdBy.id must be(db.UsersDao.anonymousUser.id)
-    user3.audit.createdBy.id must be(systemUser.id)
   }
 
   "findById" in {
@@ -33,7 +30,7 @@ class GithubUsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(user.id)
     )
 
-    UsersDao.findById(UUID.randomUUID) must be(None)
+    UsersDao.findById(UUID.randomUUID.toString) must be(None)
   }
 
   "findAll by ids" in {
@@ -45,8 +42,8 @@ class GithubUsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     )
 
     GithubUsersDao.findAll(ids = Some(Nil)) must be(Nil)
-    GithubUsersDao.findAll(ids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    GithubUsersDao.findAll(ids = Some(Seq(user1.id, UUID.randomUUID))).map(_.id) must be(Seq(user1.id))
+    GithubUsersDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    GithubUsersDao.findAll(ids = Some(Seq(user1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(user1.id))
   }
 
 }

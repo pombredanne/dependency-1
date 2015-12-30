@@ -196,6 +196,7 @@
 	"organization": {
 	    "fields": [
 		{ "name": "id", "type": "string" },
+		{ "name": "user", "type": "reference", "description": "The user that created this organization" },		
 		{ "name": "key", "type": "string" }
 	    ]
 	},

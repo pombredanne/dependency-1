@@ -23,7 +23,7 @@ class UsersSpec extends PlaySpecification with MockClient {
 
   "GET /users/:id" in new WithServer(port=port) {
     expectNotAuthorized {
-      anonClient.users.getById(UUID.randomUUID)
+      anonClient.users.getById(UUID.randomUUID.toString)
     }
   }
 
@@ -35,7 +35,7 @@ class UsersSpec extends PlaySpecification with MockClient {
     )
 
     await(
-      client.users.get(id = Some(UUID.randomUUID))
+      client.users.get(id = Some(UUID.randomUUID.toString))
     ).map(_.id) must be(
       Nil
     )
@@ -60,7 +60,7 @@ class UsersSpec extends PlaySpecification with MockClient {
     await(client.users.getById(user2.id)).id must beEqualTo(user2.id)
 
     expectNotFound {
-      client.users.getById(UUID.randomUUID)
+      client.users.getById(UUID.randomUUID.toString)
     }
   }
 

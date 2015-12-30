@@ -6,7 +6,6 @@ import play.api.test.Helpers._
 import org.scalatestplus.play._
 
 import com.bryzek.dependency.v0.models.{Library, OrganizationSummary}
-import io.flow.common.v0.models.{Audit, Reference}
 import io.flow.play.clients.MockUserClient
 import org.joda.time.DateTime
 import java.util.UUID
@@ -19,18 +18,17 @@ class LibraryArtifactProviderSpec extends PlaySpec with OneAppPerSuite with Fact
     artifactId: String = UUID.randomUUID.toString
   ): Library = {
     Library(
-      id = UUID.randomUUID,
+      id = UUID.randomUUID.toString,
       organization = orgSummary,
       groupId = groupId,
       artifactId = artifactId,
-      resolver = makeResolverSummary(),
-      audit = MockUserClient.makeAudit()
+      resolver = makeResolverSummary()
     )
   }
 
   lazy val provider = DefaultLibraryArtifactProvider()
   lazy val orgSummary = OrganizationSummary(
-    id = UUID.randomUUID,
+    id = UUID.randomUUID.toString,
     key = s"z-test-${UUID.randomUUID.toString.toLowerCase}"
   )
 

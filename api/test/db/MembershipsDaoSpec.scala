@@ -18,17 +18,17 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "isMember by id" in {
     membership // Create the membership record
 
-    MembershipsDao.isMember(org.id, user) must be(true)
-    MembershipsDao.isMember(org.id, createUser()) must be(false)
-    MembershipsDao.isMember(createOrganization().id, user) must be(false)
+    MembershipsDao.isMemberByOrgId(org.id, user) must be(true)
+    MembershipsDao.isMemberByOrgId(org.id, createUser()) must be(false)
+    MembershipsDao.isMemberByOrgId(createOrganization().id, user) must be(false)
   }
 
   "isMember by key" in {
     membership // Create the membership record
 
-    MembershipsDao.isMember(org.key, user) must be(true)
-    MembershipsDao.isMember(org.key, createUser()) must be(false)
-    MembershipsDao.isMember(createOrganization().key, user) must be(false)
+    MembershipsDao.isMemberByOrgKey(org.key, user) must be(true)
+    MembershipsDao.isMemberByOrgKey(org.key, createUser()) must be(false)
+    MembershipsDao.isMemberByOrgKey(createOrganization().key, user) must be(false)
   }
 
   "findByOrganizationIdAndUserId" in {
@@ -38,8 +38,8 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(membership.id)
     )
 
-    MembershipsDao.findByOrganizationIdAndUserId(Authorization.All, UUID.randomUUID, user.id) must be(None)
-    MembershipsDao.findByOrganizationIdAndUserId(Authorization.All, org.id, UUID.randomUUID) must be(None)
+    MembershipsDao.findByOrganizationIdAndUserId(Authorization.All, UUID.randomUUID.toString, user.id) must be(None)
+    MembershipsDao.findByOrganizationIdAndUserId(Authorization.All, org.id, UUID.randomUUID.toString) must be(None)
   }
 
   "findById" in {
@@ -47,7 +47,7 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(membership.id)
     )
 
-    MembershipsDao.findById(Authorization.All, UUID.randomUUID) must be(None)
+    MembershipsDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
   "soft delete" in {
@@ -87,8 +87,8 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       )
 
       MembershipsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-      MembershipsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID))) must be(Nil)
-      MembershipsDao.findAll(Authorization.All, ids = Some(Seq(membership.id, UUID.randomUUID))).map(_.id) must be(Seq(membership.id))
+      MembershipsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+      MembershipsDao.findAll(Authorization.All, ids = Some(Seq(membership.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(membership.id))
     }
 
     "userId" in {
@@ -96,7 +96,7 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
         Seq(membership.id)
       )
 
-      MembershipsDao.findAll(Authorization.All, id = Some(membership.id), userId = Some(UUID.randomUUID)) must be(Nil)
+      MembershipsDao.findAll(Authorization.All, id = Some(membership.id), userId = Some(UUID.randomUUID.toString)) must be(Nil)
     }
 
     "organizationId" in {
@@ -104,7 +104,7 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
         Seq(membership.id)
       )
 
-      MembershipsDao.findAll(Authorization.All, id = Some(membership.id), organizationId = Some(UUID.randomUUID)) must be(Nil)
+      MembershipsDao.findAll(Authorization.All, id = Some(membership.id), organizationId = Some(UUID.randomUUID.toString)) must be(Nil)
     }
   }
 }

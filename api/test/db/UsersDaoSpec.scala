@@ -49,14 +49,14 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(UsersDao.systemUser.id)
     )
 
-    UsersDao.findById(UUID.randomUUID) must be(None)
+    UsersDao.findById(UUID.randomUUID.toString) must be(None)
   }
 
   "findByGithubUserId" in {
     val user = createUser()
     val githubUser = createGithubUser(createGithubUserForm(user = user))
 
-    UsersDao.findByGithubUserId(githubUser.id).map(_.id) must be(
+    UsersDao.findByGithubUserId(githubUser.githubUserId).map(_.id) must be(
       Some(user.id)
     )
 
@@ -75,8 +75,8 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       )
 
       UsersDao.findAll(ids = Some(Nil)) must be(Nil)
-      UsersDao.findAll(ids = Some(Seq(UUID.randomUUID))) must be(Nil)
-      UsersDao.findAll(ids = Some(Seq(user1.id, UUID.randomUUID))).map(_.id) must be(Seq(user1.id))
+      UsersDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+      UsersDao.findAll(ids = Some(Seq(user1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(user1.id))
     }
 
     "filter by email" in {

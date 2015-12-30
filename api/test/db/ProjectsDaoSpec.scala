@@ -29,7 +29,7 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(project1.id)
     )
 
-    ProjectsDao.findById(Authorization.All, UUID.randomUUID) must be(None)
+    ProjectsDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
   "update" in {
@@ -92,8 +92,8 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       )
 
       ProjectsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-      ProjectsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID))) must be(Nil)
-      ProjectsDao.findAll(Authorization.All, ids = Some(Seq(project1.id, UUID.randomUUID))).map(_.id) must be(Seq(project1.id))
+      ProjectsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+      ProjectsDao.findAll(Authorization.All, ids = Some(Seq(project1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(project1.id))
     }
 
     "name" in {
@@ -159,7 +159,7 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
           Seq(project.id)
         )
 
-        ProjectsDao.findAll(Authorization.All, id = Some(project.id), libraryId = Some(UUID.randomUUID)).map(_.id) must be(Nil)
+        ProjectsDao.findAll(Authorization.All, id = Some(project.id), libraryId = Some(UUID.randomUUID.toString)).map(_.id) must be(Nil)
       }
     }
 
@@ -182,7 +182,7 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
           Seq(project.id)
         )
 
-        ProjectsDao.findAll(Authorization.All, id = Some(project.id), binaryId = Some(UUID.randomUUID)) must be(Nil)
+        ProjectsDao.findAll(Authorization.All, id = Some(project.id), binaryId = Some(UUID.randomUUID.toString)) must be(Nil)
       }
 
     }

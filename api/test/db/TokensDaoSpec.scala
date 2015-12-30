@@ -31,7 +31,7 @@ class TokensDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(token.id)
     )
 
-    TokensDao.findById(UUID.randomUUID) must be(None)
+    TokensDao.findById(UUID.randomUUID.toString) must be(None)
   }
 
   "findByTokenIdAndTag" in {
@@ -40,7 +40,7 @@ class TokensDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(token.id)
     )
 
-    TokensDao.findByUserIdAndTag(UUID.randomUUID, token.tag).map(_.id) must be(None)
+    TokensDao.findByUserIdAndTag(UUID.randomUUID.toString, token.tag).map(_.id) must be(None)
     TokensDao.findByUserIdAndTag(token.user.id, UUID.randomUUID.toString).map(_.id) must be(None)
   }
 
@@ -53,8 +53,8 @@ class TokensDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     )
 
     TokensDao.findAll(ids = Some(Nil)) must be(Nil)
-    TokensDao.findAll(ids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    TokensDao.findAll(ids = Some(Seq(token1.id, UUID.randomUUID))).map(_.id) must be(Seq(token1.id))
+    TokensDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    TokensDao.findAll(ids = Some(Seq(token1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(token1.id))
   }
 
 }

@@ -30,7 +30,7 @@ class SubscriptionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(subscription.id)
     )
 
-    SubscriptionsDao.findById(UUID.randomUUID) must be(None)
+    SubscriptionsDao.findById(UUID.randomUUID.toString) must be(None)
   }
 
   "findByUserIdAndPublication" in {
@@ -39,7 +39,7 @@ class SubscriptionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(subscription.id)
     )
 
-    SubscriptionsDao.findByUserIdAndPublication(UUID.randomUUID, subscription.publication).map(_.id) must be(None)
+    SubscriptionsDao.findByUserIdAndPublication(UUID.randomUUID.toString, subscription.publication).map(_.id) must be(None)
     SubscriptionsDao.findByUserIdAndPublication(subscription.user.id, Publication.UNDEFINED("other")).map(_.id) must be(None)
   }
 
@@ -52,8 +52,8 @@ class SubscriptionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     )
 
     SubscriptionsDao.findAll(ids = Some(Nil)) must be(Nil)
-    SubscriptionsDao.findAll(ids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    SubscriptionsDao.findAll(ids = Some(Seq(subscription1.id, UUID.randomUUID))).map(_.id) must be(Seq(subscription1.id))
+    SubscriptionsDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    SubscriptionsDao.findAll(ids = Some(Seq(subscription1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(subscription1.id))
   }
 
   "findAll by identifier" in {

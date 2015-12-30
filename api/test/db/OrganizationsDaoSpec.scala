@@ -74,7 +74,7 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(organization.id)
     )
 
-    OrganizationsDao.findById(Authorization.All, UUID.randomUUID) must be(None)
+    OrganizationsDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
   "findAll by ids" in {
@@ -86,8 +86,8 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     )
 
     OrganizationsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-    OrganizationsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    OrganizationsDao.findAll(Authorization.All, ids = Some(Seq(organization1.id, UUID.randomUUID))).map(_.id) must be(Seq(organization1.id))
+    OrganizationsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    OrganizationsDao.findAll(Authorization.All, ids = Some(Seq(organization1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(organization1.id))
   }
 
   "findAll by userId includes user's org" in {
@@ -99,7 +99,7 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
     val org = OrganizationsDao.findAll(Authorization.All, forUserId = Some(user.id)).head
     OrganizationsDao.findAll(Authorization.All, id = Some(org.id), userId = Some(user.id)).map(_.id) must be(Seq(org.id))
-    OrganizationsDao.findAll(Authorization.All, id = Some(org.id), userId = Some(UUID.randomUUID)) must be(Nil)
+    OrganizationsDao.findAll(Authorization.All, id = Some(org.id), userId = Some(UUID.randomUUID.toString)) must be(Nil)
   }
 
   "validate" must {

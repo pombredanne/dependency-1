@@ -40,7 +40,7 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(resolver.id)
     )
 
-    ResolversDao.findById(Authorization.All, UUID.randomUUID) must be(None)
+    ResolversDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
   "findByOrganizationIdAndUri" in {
@@ -64,8 +64,8 @@ class ResolversDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       )
 
       ResolversDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-      ResolversDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID))) must be(Nil)
-      ResolversDao.findAll(Authorization.All, ids = Some(Seq(resolver1.id, UUID.randomUUID))).map(_.id) must be(Seq(resolver1.id))
+      ResolversDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+      ResolversDao.findAll(Authorization.All, ids = Some(Seq(resolver1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(resolver1.id))
     }
 
     "find by organizationId" in {

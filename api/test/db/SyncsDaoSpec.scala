@@ -48,7 +48,7 @@ class SyncsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(sync.id)
     )
 
-    SyncsDao.findById(UUID.randomUUID) must be(None)
+    SyncsDao.findById(UUID.randomUUID.toString) must be(None)
   }
 
   "findAll by ids" in {
@@ -60,8 +60,8 @@ class SyncsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     )
 
     SyncsDao.findAll(ids = Some(Nil)) must be(Nil)
-    SyncsDao.findAll(ids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    SyncsDao.findAll(ids = Some(Seq(sync1.id, UUID.randomUUID))).map(_.id) must be(Seq(sync1.id))
+    SyncsDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    SyncsDao.findAll(ids = Some(Seq(sync1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(sync1.id))
   }
 
   "findAll by objectId and event" in {
@@ -94,7 +94,7 @@ class SyncsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     ).map(_.id) must be(Seq(sync.id))
 
     SyncsDao.findAll(
-      objectId = Some(UUID.randomUUID)
+      objectId = Some(UUID.randomUUID.toString)
     ) must be(Nil)
   }
 

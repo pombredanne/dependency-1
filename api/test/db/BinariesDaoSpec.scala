@@ -28,7 +28,7 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(lang.id)
     )
 
-    BinariesDao.findById(Authorization.All, UUID.randomUUID) must be(None)
+    BinariesDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
   "findAll by ids" in {
@@ -40,8 +40,8 @@ class BinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     )
 
     BinariesDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-    BinariesDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    BinariesDao.findAll(Authorization.All, ids = Some(Seq(binary1.id, UUID.randomUUID))).map(_.id) must be(Seq(binary1.id))
+    BinariesDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    BinariesDao.findAll(Authorization.All, ids = Some(Seq(binary1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(binary1.id))
   }
 
   "findAll by isSynced" in {

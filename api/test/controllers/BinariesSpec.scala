@@ -24,7 +24,7 @@ class BinariesSpec extends PlaySpecification with MockClient {
     )
 
     await(
-      client.binaries.get(id = Some(UUID.randomUUID))
+      client.binaries.get(id = Some(UUID.randomUUID.toString))
     ).map(_.id) must be(
       Nil
     )
@@ -55,7 +55,7 @@ class BinariesSpec extends PlaySpecification with MockClient {
     await(client.binaries.getById(binary2.id)).id must beEqualTo(binary2.id)
 
     expectNotFound {
-      client.binaries.getById(UUID.randomUUID)
+      client.binaries.getById(UUID.randomUUID.toString)
     }
   }
 

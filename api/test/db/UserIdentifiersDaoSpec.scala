@@ -37,7 +37,7 @@ class UserIdentifiersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(identifier.id)
     )
 
-    UserIdentifiersDao.findById(Authorization.All, UUID.randomUUID) must be(None)
+    UserIdentifiersDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
   "findAll" must {
@@ -50,8 +50,8 @@ class UserIdentifiersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       )
 
       UserIdentifiersDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-      UserIdentifiersDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID))) must be(Nil)
-      UserIdentifiersDao.findAll(Authorization.All, ids = Some(Seq(identifier1.id, UUID.randomUUID))).map(_.id) must be(
+      UserIdentifiersDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+      UserIdentifiersDao.findAll(Authorization.All, ids = Some(Seq(identifier1.id, UUID.randomUUID.toString))).map(_.id) must be(
         Seq(identifier1.id)
       )
     }

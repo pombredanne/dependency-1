@@ -1,39 +1,43 @@
 package com.bryzek.dependency.lib
 
-import com.bryzek.dependency.v0.models.{BinarySummary, BinaryType, ItemSummary, ItemSummaryUndefinedType, LibrarySummary, OrganizationSummary, ProjectSummary}
+import com.bryzek.dependency.v0.models.{BinarySummary, BinaryType, ItemSummary, ItemSummaryUndefinedType, LibrarySummary, OrganizationSummary, ProjectSummary, Reference}
 import com.bryzek.dependency.v0.models.{ProjectDetail, Recommendation, RecommendationType}
-import io.flow.common.v0.models.Reference
 import io.flow.play.clients.MockUserClient
+import io.flow.play.util.{IdGenerator, Random}
+import org.joda.time.DateTime
 
 trait Factories {
 
+  val idGenerator = IdGenerator("tst")
+  val random = Random()
+
   def makeName(): String = {
-    s"Z Test ${UUID.randomUUID}"
+    s"Z Test ${random.alpha(20)}"
   }
 
   def makeKey(): String = {
-    "z-test-${UUID.randomUUID.toString.toLowerCase}"
+    "z-test-${random.alphaNumeric(20)}"
   }
 
   def makeRecommendation(
     `type`: RecommendationType = RecommendationType.Library
   ) = Recommendation(
-    id = UUID.randomUUID,
+    id = idGenerator.randomId(),
     project = ProjectDetail(
-      id = UUID.randomUUID,
+      id = idGenerator.randomId(),
       organization = makeOrganizationSummary(),
       name = makeName()
     ),
     `type` = `type`,
-    `object` = Reference(UUID.randomUUID),
-      name = "io.flow.lib-play",
+    `object` = Reference(idGenerator.randomId()),
+    name = "io.flow.lib-play",
     from = "0.0.1",
     to = "0.0.1",
-    audit = MockUserClient.makeAudit()
+    createdAt = new DateTime()
   )
 
   def makeBinarySummary(
-    id: String = UUID.randomUUID,
+    id: String = idGenerator.randomId(),
     `type`: BinaryType = BinaryType.Scala
   ) = BinarySummary(
     id = id,
@@ -42,7 +46,7 @@ trait Factories {
   )
 
   def makeLibrarySummary(
-    id: String = UUID.randomUUID,
+    id: String = idGenerator.randomId(),
     groupId: String = "io.flow",
     artifactId: String = "lib-play"
   ) = LibrarySummary(
@@ -53,7 +57,7 @@ trait Factories {
   )
 
   def makeProjectSummary(
-    id: String = UUID.randomUUID,
+    id: String = idGenerator.randomId(),
     name: String = makeName()
   ) = ProjectSummary(
     id = id,
@@ -62,7 +66,7 @@ trait Factories {
   )
 
   def makeOrganizationSummary(
-    id: String = UUID.randomUUID,
+    id: String = idGenerator.randomId(),
     key: String = makeKey()
   ) = OrganizationSummary(
     id = id,

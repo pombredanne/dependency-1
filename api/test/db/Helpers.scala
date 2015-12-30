@@ -1,21 +1,22 @@
 package db
 
 import io.flow.play.clients.MockUserClient
+import io.flow.play.util.Random
 import com.bryzek.dependency.v0.models._
 import io.flow.user.v0.models.{NameForm, User, UserForm}
 import java.util.UUID
-import scala.util.Random
 
 trait Helpers {
 
   lazy val systemUser = createUser()
+  val random = Random()
 
   def createTestEmail(): String = {
     s"${createTestKey}@test.bryzek.com"
   }
 
   def createTestName(): String = {
-    s"Z Test ${UUID.randomUUID}"
+    s"Z Test ${UUID.randomUUID.toString}"
   }
 
   def createTestKey(): String = {
@@ -51,15 +52,6 @@ trait Helpers {
     true
   }
 
-  @scala.annotation.tailrec
-  final def positiveRandomLong(): Long = {
-    val value = (new Random()).nextLong
-    (value > 0) match {
-      case true => value
-      case false => positiveRandomLong()
-    }
-  }
-
   def createOrganization(
     form: OrganizationForm = createOrganizationForm(),
     user: User = systemUser
@@ -89,14 +81,14 @@ trait Helpers {
     org: Organization = createOrganization()
   ) = BinaryForm(
     organizationId = org.id,
-    name = BinaryType.UNDEFINED(s"z-test-binary-${UUID.randomUUID}".toLowerCase)
+    name = BinaryType.UNDEFINED(s"z-test-binary-${UUID.randomUUID.toString}".toLowerCase)
   )
 
   def createBinaryVersion(
     org: Organization = createOrganization()
   ) (
     implicit binary: Binary = createBinary(org),
-             version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase
+             version: String = s"0.0.1-${UUID.randomUUID.toString}".toLowerCase
   ): BinaryVersion = {
     BinaryVersionsDao.create(systemUser, binary.id, version)
   }
@@ -120,8 +112,8 @@ trait Helpers {
              resolver: Resolver = createResolver(org, user)
   ) = LibraryForm(
     organizationId = org.id,
-    groupId = s"z-test.${UUID.randomUUID}".toLowerCase,
-    artifactId = s"z-test-${UUID.randomUUID}".toLowerCase,
+    groupId = s"z-test.${UUID.randomUUID.toString}".toLowerCase,
+    artifactId = s"z-test-${UUID.randomUUID.toString}".toLowerCase,
     version = Some(versionForm),
     resolverId = resolver.id
   )
@@ -137,7 +129,7 @@ trait Helpers {
   }
 
   def createVersionForm(
-    version: String = s"0.0.1-${UUID.randomUUID}".toLowerCase,
+    version: String = s"0.0.1-${UUID.randomUUID.toString}".toLowerCase,
     crossBuildVersion: Option[String] = None
   ) = {
     VersionForm(version, crossBuildVersion)
@@ -149,7 +141,7 @@ trait Helpers {
     implicit form: ProjectForm = createProjectForm(org)
   ): Project = {
     val user = OrganizationsDao.findByKey(Authorization.All, form.organization).flatMap { org =>
-      UsersDao.findById(org.audit.createdBy.id)
+      UsersDao.findById(org.user.id)
     }.getOrElse {
       sys.error("Could not find user that created org")
     }
@@ -165,7 +157,7 @@ trait Helpers {
       name = createTestName(),
       visibility = Visibility.Private,
       scms = Scms.Github,
-      uri = s"http://github.com/test/${UUID.randomUUID}"
+      uri = s"http://github.com/test/${UUID.randomUUID.toString}"
     )
   }
 
@@ -174,8 +166,8 @@ trait Helpers {
     version: VersionForm = VersionForm(version = "0.0.1")
   ) (
     implicit libraryForm: LibraryForm = createLibraryForm(org).copy(
-      groupId = s"z-test-${UUID.randomUUID}".toLowerCase,
-      artifactId = s"z-test-${UUID.randomUUID}".toLowerCase
+      groupId = s"z-test-${UUID.randomUUID.toString}".toLowerCase,
+      artifactId = s"z-test-${UUID.randomUUID.toString}".toLowerCase
     )
   ): (Project, LibraryVersion) = {
     val project = createProject(org)
@@ -253,12 +245,12 @@ trait Helpers {
 
   def createGithubUserForm(
     user: User = createUser(),
-    id: Long = positiveRandomLong(),
+    githubUserId: Long = random.positiveLong(),
     login: String = createTestEmail()
   ) = {
     GithubUserForm(
       userId = user.id,
-      id = id,
+      githubUserId = githubUserId,
       login = login
     )
   }
@@ -272,7 +264,7 @@ trait Helpers {
   def createTokenForm(
     user: User = createUser(),
     tag: String = createTestName().toLowerCase,
-    token: String = UUID.randomUUID().toString.toLowerCase
+    token: String = UUID.randomUUID.toString().toString.toLowerCase
   ) = {
     TokenForm(
       userId = user.id,
@@ -289,7 +281,7 @@ trait Helpers {
 
   def createSyncForm(
     `type`: String = "test",
-    objectId: String = UUID.randomUUID,
+    objectId: String = UUID.randomUUID.toString,
     event: SyncEvent = SyncEvent.Started
   ) = {
     SyncForm(
@@ -311,7 +303,7 @@ trait Helpers {
   def createResolverForm(
     org: Organization = createOrganization(),
     visibility: Visibility = Visibility.Private,
-    uri: String = s"http://${UUID.randomUUID}.z-test.flow.io"
+    uri: String = s"http://${UUID.randomUUID.toString}.z-test.flow.io"
   ) = {
     ResolverForm(
       visibility = visibility,
@@ -335,26 +327,6 @@ trait Helpers {
       organization = org.key,
       userId = user.id,
       role = role
-    )
-  }
-
-  def createWatchProject(
-    org: Organization
-  ) (
-    implicit form: WatchProjectForm = createWatchProjectForm(org)
-  ): WatchProject = {
-    create(WatchProjectsDao.create(systemUser, form))
-  }
-
-  def createWatchProjectForm(
-    org: Organization
-  ) (
-    implicit user: User = createUser(),
-             project: Project = createProject(org)
-  ) = {
-    WatchProjectForm(
-      userId = user.id,
-      projectId = project.id
     )
   }
 
@@ -473,8 +445,8 @@ trait Helpers {
 
   def createProjectLibraryForm(
     project: Project = createProject(),
-    groupId: String = s"z-test.${UUID.randomUUID}".toLowerCase,
-    artifactId: String = s"z-test-${UUID.randomUUID}".toLowerCase,
+    groupId: String = s"z-test.${UUID.randomUUID.toString}".toLowerCase,
+    artifactId: String = s"z-test-${UUID.randomUUID.toString}".toLowerCase,
     path: String = "build.sbt",
     version: String = "0.0.1",
     crossBuildVersion: Option[String] = None

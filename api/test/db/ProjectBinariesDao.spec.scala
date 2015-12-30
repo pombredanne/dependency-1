@@ -34,7 +34,7 @@ class ProjectBinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     "catch invalid project" in {
       ProjectBinariesDao.validate(
         systemUser,
-        createProjectBinaryForm(project).copy(projectId = UUID.randomUUID())
+        createProjectBinaryForm(project).copy(projectId = UUID.randomUUID.toString())
       ) must be(Seq("Project not found"))
     }
 
@@ -101,7 +101,7 @@ class ProjectBinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       ProjectBinariesDao.findAll(Authorization.All, id = Some(projectBinary.id)).map(_.id) must be(
         Seq(projectBinary.id)
       )
-      ProjectBinariesDao.findAll(Authorization.All, projectId = Some(UUID.randomUUID)) must be(Nil)
+      ProjectBinariesDao.findAll(Authorization.All, projectId = Some(UUID.randomUUID.toString)) must be(Nil)
     }
 
     "filter by ids" in {
@@ -111,7 +111,7 @@ class ProjectBinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
         Seq(projectBinary.id, other.id).sorted
       )
 
-      ProjectBinariesDao.findAll(Authorization.All, ids = Some(Seq(projectBinary.id, UUID.randomUUID))).map(_.id).sorted must be(
+      ProjectBinariesDao.findAll(Authorization.All, ids = Some(Seq(projectBinary.id, UUID.randomUUID.toString))).map(_.id).sorted must be(
         Seq(projectBinary.id).sorted
       )
 
@@ -122,7 +122,7 @@ class ProjectBinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       ProjectBinariesDao.findAll(Authorization.All, id = Some(projectBinary.id), projectId = Some(project.id)).map(_.id) must be(
         Seq(projectBinary.id)
       )
-      ProjectBinariesDao.findAll(Authorization.All, projectId = Some(UUID.randomUUID)) must be(Nil)
+      ProjectBinariesDao.findAll(Authorization.All, projectId = Some(UUID.randomUUID.toString)) must be(Nil)
     }
 
     "filter by binaryId" in {
@@ -133,7 +133,7 @@ class ProjectBinariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       ProjectBinariesDao.findAll(Authorization.All, id = Some(projectBinary.id), binaryId = Some(binary.id)).map(_.id) must be(
         Seq(projectBinary.id)
       )
-      ProjectBinariesDao.findAll(Authorization.All, binaryId = Some(UUID.randomUUID)) must be(Nil)
+      ProjectBinariesDao.findAll(Authorization.All, binaryId = Some(UUID.randomUUID.toString)) must be(Nil)
     }
 
     "filter by name" in {

@@ -15,15 +15,16 @@ object OrganizationsDao {
 
   private[this] val BaseQuery = Query(s"""
     select organizations.id,
+           organizations.user_id as organizations_user_id,
            organizations.key
       from organizations
   """)
 
   private[this] val InsertQuery = """
     insert into organizations
-    (id, key, created_by_id, updated_by_id)
+    (id, user_id, key, created_by_id, updated_by_id)
     values
-    ({id}, {key}, {updated_by_user_id})
+    ({id}, {user_id}, {key}, {updated_by_user_id})
   """
 
   private[this] val UpdateQuery = """
@@ -89,6 +90,7 @@ object OrganizationsDao {
 
     SQL(InsertQuery).on(
       'id -> id,
+      'user_id -> createdBy.id,
       'key -> form.key.trim,
       'updated_by_user_id -> createdBy.id
     ).execute()

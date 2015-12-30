@@ -40,7 +40,7 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(library.id)
     )
 
-    LibrariesDao.findById(Authorization.All, UUID.randomUUID) must be(None)
+    LibrariesDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
   "findAll by ids" in {
@@ -52,8 +52,8 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     )
 
     LibrariesDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-    LibrariesDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    LibrariesDao.findAll(Authorization.All, ids = Some(Seq(library1.id, UUID.randomUUID))).map(_.id) must be(Seq(library1.id))
+    LibrariesDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    LibrariesDao.findAll(Authorization.All, ids = Some(Seq(library1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(library1.id))
   }
 
   "findAll by resolver" in {

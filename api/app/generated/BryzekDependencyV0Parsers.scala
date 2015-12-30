@@ -780,6 +780,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     case class Mappings(
       id: String = "id",
+      user: com.bryzek.dependency.v0.anorm.parsers.Reference.Mappings,
       key: String = "key"
     )
 
@@ -791,6 +792,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
       def prefix(prefix: String, sep: String) = Mappings(
         id = s"${prefix}${sep}id",
+        user = com.bryzek.dependency.v0.anorm.parsers.Reference.Mappings.prefix(Seq(prefix, "user").filter(!_.isEmpty).mkString("_"), "_"),
         key = s"${prefix}${sep}key"
       )
 
@@ -800,10 +802,12 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Organization] = {
       SqlParser.str(mappings.id) ~
+      com.bryzek.dependency.v0.anorm.parsers.Reference.parser(mappings.user) ~
       SqlParser.str(mappings.key) map {
-        case id ~ key => {
+        case id ~ user ~ key => {
           com.bryzek.dependency.v0.models.Organization(
             id = id,
+            user = user,
             key = key
           )
         }

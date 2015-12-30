@@ -59,7 +59,7 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       Some(version.id)
     )
 
-    LibraryVersionsDao.findById(Authorization.All, UUID.randomUUID) must be(None)
+    LibraryVersionsDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
   "findAll by ids" in {
@@ -71,8 +71,8 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     )
 
     LibraryVersionsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-    LibraryVersionsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID))) must be(Nil)
-    LibraryVersionsDao.findAll(Authorization.All, ids = Some(Seq(version1.id, UUID.randomUUID))).map(_.id) must be(Seq(version1.id))
+    LibraryVersionsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    LibraryVersionsDao.findAll(Authorization.All, ids = Some(Seq(version1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(version1.id))
   }
 
   "softDelete" in {

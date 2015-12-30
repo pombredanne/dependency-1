@@ -43,12 +43,14 @@ create unique index authorizations_user_id_scms_token_not_deleted_un_idx
 
 create table organizations (
   id                      text primary key,
+  user_id                 text not null references users,
   key                     text not null check (util.lower_non_empty_trimmed_string(key))
 );
 
 select audit.setup('public', 'organizations');
 
 create unique index organizations_key_not_deleted_un_idx on organizations(key) where deleted_at is null;
+create index on organizations(user_id);
 
 comment on table organizations is '
   An organization is the top level entity to which projects,
@@ -58,6 +60,10 @@ comment on table organizations is '
 
 comment on column organizations.key is '
   Used to uniquely identify this organization. URL friendly.
+';
+
+comment on column organizations.user_id is '
+  The user that created this organization.
 ';
 
 create table projects (
@@ -75,6 +81,10 @@ comment on table projects is '
   tracking its dependent libraries.
 ';
 
+comment on column projects.user_id is '
+  The user that created this project
+';
+
 comment on column projects.scms is '
   The source code management system where we find this project.
 ';
@@ -86,6 +96,7 @@ comment on column projects.name is '
 
 select audit.setup('public', 'projects');
 create index on projects(organization_id);
+create index on projects(user_id);
 create unique index projects_organization_scms_lower_name_not_deleted_un_idx on projects(organization_id, scms, lower(name)) where deleted_at is null;
 
 create table resolvers (

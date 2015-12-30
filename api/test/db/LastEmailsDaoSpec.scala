@@ -33,7 +33,7 @@ class LastEmailsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val lastEmail = createLastEmail(form)
 
     LastEmailsDao.findByUserIdAndPublication(form.userId, form.publication).map(_.id) must be(Some(lastEmail.id))
-    LastEmailsDao.findByUserIdAndPublication(UUID.randomUUID, form.publication).map(_.id) must be(None)
+    LastEmailsDao.findByUserIdAndPublication(UUID.randomUUID.toString, form.publication).map(_.id) must be(None)
     LastEmailsDao.findByUserIdAndPublication(form.userId, Publication.UNDEFINED("other")).map(_.id) must be(None)
   }
 

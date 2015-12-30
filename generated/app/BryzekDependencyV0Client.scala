@@ -112,6 +112,7 @@ package com.bryzek.dependency.v0.models {
 
   case class Organization(
     id: String,
+    user: com.bryzek.dependency.v0.models.Reference,
     key: String
   )
 
@@ -859,6 +860,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonReadsDependencyOrganization: play.api.libs.json.Reads[Organization] = {
       (
         (__ \ "id").read[String] and
+        (__ \ "user").read[com.bryzek.dependency.v0.models.Reference] and
         (__ \ "key").read[String]
       )(Organization.apply _)
     }
@@ -866,6 +868,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyOrganization: play.api.libs.json.Writes[Organization] = {
       (
         (__ \ "id").write[String] and
+        (__ \ "user").write[com.bryzek.dependency.v0.models.Reference] and
         (__ \ "key").write[String]
       )(unlift(Organization.unapply _))
     }

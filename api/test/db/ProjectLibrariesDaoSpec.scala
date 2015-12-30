@@ -41,7 +41,7 @@ class ProjectLibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
     "catch invalid project" in {
       ProjectLibrariesDao.validate(
         systemUser,
-        createProjectLibraryForm(project).copy(projectId = UUID.randomUUID())
+        createProjectLibraryForm(project).copy(projectId = UUID.randomUUID.toString())
       ) must be(Seq("Project not found"))
     }
 
@@ -127,7 +127,7 @@ class ProjectLibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
       ProjectLibrariesDao.findAll(Authorization.All, id = Some(projectLibrary.id)).map(_.id) must be(
         Seq(projectLibrary.id)
       )
-      ProjectLibrariesDao.findAll(Authorization.All, projectId = Some(UUID.randomUUID)) must be(Nil)
+      ProjectLibrariesDao.findAll(Authorization.All, projectId = Some(UUID.randomUUID.toString)) must be(Nil)
     }
 
     "filter by ids" in {
@@ -137,7 +137,7 @@ class ProjectLibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
         Seq(projectLibrary.id, other.id).sorted
       )
 
-      ProjectLibrariesDao.findAll(Authorization.All, ids = Some(Seq(projectLibrary.id, UUID.randomUUID))).map(_.id).sorted must be(
+      ProjectLibrariesDao.findAll(Authorization.All, ids = Some(Seq(projectLibrary.id, UUID.randomUUID.toString))).map(_.id).sorted must be(
         Seq(projectLibrary.id).sorted
       )
 
@@ -148,7 +148,7 @@ class ProjectLibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
       ProjectLibrariesDao.findAll(Authorization.All, id = Some(projectLibrary.id), projectId = Some(project.id)).map(_.id) must be(
         Seq(projectLibrary.id)
       )
-      ProjectLibrariesDao.findAll(Authorization.All, projectId = Some(UUID.randomUUID)) must be(Nil)
+      ProjectLibrariesDao.findAll(Authorization.All, projectId = Some(UUID.randomUUID.toString)) must be(Nil)
     }
 
     "filter by libraryId" in {
@@ -159,7 +159,7 @@ class ProjectLibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
       ProjectLibrariesDao.findAll(Authorization.All, id = Some(projectLibrary.id), libraryId = Some(library.id)).map(_.id) must be(
         Seq(projectLibrary.id)
       )
-      ProjectLibrariesDao.findAll(Authorization.All, libraryId = Some(UUID.randomUUID)) must be(Nil)
+      ProjectLibrariesDao.findAll(Authorization.All, libraryId = Some(UUID.randomUUID.toString)) must be(Nil)
     }
 
     "filter by groupId" in {

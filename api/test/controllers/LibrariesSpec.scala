@@ -24,7 +24,7 @@ class LibrariesSpec extends PlaySpecification with MockClient {
     )
 
     await(
-      client.libraries.get(id = Some(UUID.randomUUID))
+      client.libraries.get(id = Some(UUID.randomUUID.toString))
     ).map(_.id) must be(
       Nil
     )
@@ -63,7 +63,7 @@ class LibrariesSpec extends PlaySpecification with MockClient {
     await(client.libraries.getById(library2.id)).id must beEqualTo(library2.id)
 
     expectNotFound {
-      client.libraries.getById(UUID.randomUUID)
+      client.libraries.getById(UUID.randomUUID.toString)
     }
   }
 

@@ -19,7 +19,7 @@ class GithubUsersSpec extends PlaySpecification with MockClient {
   def createGithubUser(): GithubUser = {
     val login = createTestEmail()
     GithubUser(
-      id = positiveRandomLong(),
+      id = random.positiveLong(),
       login = login,
       name = None,
       email = Some(login),
@@ -39,7 +39,7 @@ class GithubUsersSpec extends PlaySpecification with MockClient {
     val user = await(anonClient.githubUsers.postAuthenticationsAndGithub(GithubAuthenticationForm(code = code)))
     user.email must beEqualTo(githubUser.email)
 
-    GithubUsersDao.findById(githubUser.id).map(_.user.id) must beEqualTo(Some(user.id))
+    GithubUsersDao.findAll(userId = Some(user.id), limit = 1).headOption.map(_.user.id) must beEqualTo(Some(user.id))
 
     // Test idempotence
     val user2 = await(anonClient.githubUsers.postAuthenticationsAndGithub(GithubAuthenticationForm(code = code)))

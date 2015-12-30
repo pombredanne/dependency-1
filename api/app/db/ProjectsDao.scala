@@ -14,6 +14,7 @@ object ProjectsDao {
 
   private[this] val BaseQuery = Query(s"""
     select projects.id,
+           projects.user_id as projects_user_id,
            projects.visibility,
            projects.scms,
            projects.name,

@@ -23,7 +23,7 @@ class ProjectsSpec extends PlaySpecification with MockClient {
     )
 
     await(
-      client.projects.get(id = Some(UUID.randomUUID))
+      client.projects.get(id = Some(UUID.randomUUID.toString))
     ).map(_.id) must be(
       Nil
     )
@@ -54,7 +54,7 @@ class ProjectsSpec extends PlaySpecification with MockClient {
     await(client.projects.getById(project2.id)).id must beEqualTo(project2.id)
 
     expectNotFound {
-      client.projects.getById(UUID.randomUUID)
+      client.projects.getById(UUID.randomUUID.toString)
     }
   }
 

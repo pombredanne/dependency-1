@@ -6,7 +6,7 @@ import java.util.UUID
 trait Factories {
 
   def makeName(): String = {
-    s"Z Test ${UUID.randomUUID}"
+    s"Z Test ${UUID.randomUUID.toString}"
   }
 
   def makeKey(): String = {
@@ -14,7 +14,7 @@ trait Factories {
   }
 
   def makeOrganizationSummary(
-    id: String = UUID.randomUUID,
+    id: String = UUID.randomUUID.toString,
     key: String = makeKey()
   ) = OrganizationSummary(
     id = id,
@@ -22,7 +22,7 @@ trait Factories {
   )
 
   def makeProjectSummary(
-    id: String = UUID.randomUUID,
+    id: String = UUID.randomUUID.toString,
     org: OrganizationSummary = makeOrganizationSummary(),
     name: String = makeName
   ) = ProjectSummary(
@@ -32,7 +32,7 @@ trait Factories {
   )
 
   def makeResolverSummary(
-    id: String = UUID.randomUUID,
+    id: String = UUID.randomUUID.toString,
     org: OrganizationSummary = makeOrganizationSummary(),
     name: String = makeName
   ) = ResolverSummary(
