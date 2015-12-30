@@ -34,11 +34,11 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "findByOrganizationGuidAndUserGuid" in {
     membership // Create the membership record
 
-    MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, org.guid, user.guid).map(_.guid) must be(
+    MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, org.guid, user.id).map(_.guid) must be(
       Some(membership.guid)
     )
 
-    MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, UUID.randomUUID, user.guid) must be(None)
+    MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, UUID.randomUUID, user.id) must be(None)
     MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, org.guid, UUID.randomUUID) must be(None)
   }
 
@@ -92,7 +92,7 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     }
 
     "userGuid" in {
-      MembershipsDao.findAll(Authorization.All, guid = Some(membership.guid), userGuid = Some(user.guid)).map(_.guid) must be(
+      MembershipsDao.findAll(Authorization.All, guid = Some(membership.guid), userGuid = Some(user.id)).map(_.guid) must be(
         Seq(membership.guid)
       )
 

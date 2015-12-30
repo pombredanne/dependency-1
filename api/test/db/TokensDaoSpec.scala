@@ -36,12 +36,12 @@ class TokensDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "findByTokenGuidAndTag" in {
     val token = createToken()
-    TokensDao.findByUserGuidAndTag(token.user.guid, token.tag).map(_.guid) must be(
+    TokensDao.findByUserGuidAndTag(token.user.id, token.tag).map(_.guid) must be(
       Some(token.guid)
     )
 
     TokensDao.findByUserGuidAndTag(UUID.randomUUID, token.tag).map(_.guid) must be(None)
-    TokensDao.findByUserGuidAndTag(token.user.guid, UUID.randomUUID.toString).map(_.guid) must be(None)
+    TokensDao.findByUserGuidAndTag(token.user.id, UUID.randomUUID.toString).map(_.guid) must be(None)
   }
 
   "findAll by guids" in {

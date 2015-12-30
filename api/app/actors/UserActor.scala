@@ -40,7 +40,7 @@ class UserActor extends Actor with Util {
           SubscriptionsDao.upsert(
             MainActor.SystemUser,
             SubscriptionForm(
-              userGuid = user.guid,
+              userGuid = user.id,
               publication = publication
             )
           )

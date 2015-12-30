@@ -24,7 +24,7 @@ trait Helpers {
   def withOrganization(user: User, guid: UUID)(
     f: Organization => Result
   ) = {
-    OrganizationsDao.findByGuid(Authorization.User(user.guid), guid) match {
+    OrganizationsDao.findByGuid(Authorization.User(user.id), guid) match {
       case None => {
         Results.NotFound
       }
@@ -37,7 +37,7 @@ trait Helpers {
   def withProject(user: User, guid: UUID)(
     f: Project => Result
   ): Result = {
-    ProjectsDao.findByGuid(Authorization.User(user.guid), guid) match {
+    ProjectsDao.findByGuid(Authorization.User(user.id), guid) match {
       case None => {
         Results.NotFound
       }
@@ -50,7 +50,7 @@ trait Helpers {
   def withResolver(user: User, guid: UUID)(
     f: Resolver => Result
   ): Result = {
-    ResolversDao.findByGuid(Authorization.User(user.guid), guid) match {
+    ResolversDao.findByGuid(Authorization.User(user.id), guid) match {
       case None => {
         Results.NotFound
       }

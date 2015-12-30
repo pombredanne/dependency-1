@@ -54,7 +54,7 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val org = OrganizationsDao.create(user, form).right.getOrElse {
       sys.error("Failed to create org")
     }
-    val membership = MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, org.guid, user.guid).getOrElse {
+    val membership = MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, org.guid, user.id).getOrElse {
       sys.error("Failed to create membership record")
     }
     membership.role must be(Role.Admin)
@@ -94,11 +94,11 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val user = createUser()
 
     waitFor { () =>
-      !OrganizationsDao.findAll(Authorization.All, forUserGuid = Some(user.guid)).isEmpty
+      !OrganizationsDao.findAll(Authorization.All, forUserGuid = Some(user.id)).isEmpty
     }
 
-    val org = OrganizationsDao.findAll(Authorization.All, forUserGuid = Some(user.guid)).head
-    OrganizationsDao.findAll(Authorization.All, guid = Some(org.guid), userGuid = Some(user.guid)).map(_.guid) must be(Seq(org.guid))
+    val org = OrganizationsDao.findAll(Authorization.All, forUserGuid = Some(user.id)).head
+    OrganizationsDao.findAll(Authorization.All, guid = Some(org.guid), userGuid = Some(user.id)).map(_.guid) must be(Seq(org.guid))
     OrganizationsDao.findAll(Authorization.All, guid = Some(org.guid), userGuid = Some(UUID.randomUUID)) must be(Nil)
   }
 
@@ -120,7 +120,7 @@ class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     OrganizationsDao.findAll(Authorization.All, guid = Some(org.guid)).map(_.guid) must be(Seq(org.guid))
     OrganizationsDao.findAll(Authorization.Organization(org.guid), guid = Some(org.guid)).map(_.guid) must be(Seq(org.guid))
     OrganizationsDao.findAll(Authorization.Organization(createOrganization().guid), guid = Some(org.guid)) must be(Nil)
-    OrganizationsDao.findAll(Authorization.User(user.guid), guid = Some(org.guid)).map(_.guid) must be(Seq(org.guid))
+    OrganizationsDao.findAll(Authorization.User(user.id), guid = Some(org.guid)).map(_.guid) must be(Seq(org.guid))
     OrganizationsDao.findAll(Authorization.User(createUser().guid), guid = Some(org.guid)) must be(Nil)
   }
 

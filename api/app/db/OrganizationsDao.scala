@@ -1,8 +1,8 @@
 package db
 
 import com.bryzek.dependency.v0.models.{MembershipForm, Organization, OrganizationForm, Role}
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
-import io.flow.play.util.UrlKey
+import io.flow.postgresql.{Query, OrderBy}
+import io.flow.play.util.{Random, UrlKey}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
@@ -16,8 +16,7 @@ object OrganizationsDao {
 
   private[this] val BaseQuery = Query(s"""
     select organizations.guid,
-           organizations.key,
-           ${AuditsDao.all("organizations")}
+           organizations.key
       from organizations
   """)
 
@@ -25,7 +24,7 @@ object OrganizationsDao {
     insert into organizations
     (guid, key, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {key}, {updated_by_user_id})
   """
 
   private[this] val UpdateQuery = """
@@ -39,9 +38,10 @@ object OrganizationsDao {
     insert into user_organizations
     (guid, user_guid, organization_guid, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {user_guid}::uuid, {organization_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {user_guid}::uuid, {organization_guid}::uuid, {updated_by_user_id})
   """
 
+  private[this] val random = Random()
   private[this] val urlKey = UrlKey(minKeyLength = 3)
 
   private[db] def validate(
@@ -91,7 +91,7 @@ object OrganizationsDao {
     SQL(InsertQuery).on(
       'guid -> guid,
       'key -> form.key.trim,
-      'created_by_guid -> createdBy.guid
+      'updated_by_user_id -> createdBy.id
     ).execute()
 
     MembershipsDao.create(
@@ -131,7 +131,7 @@ object OrganizationsDao {
   }
 
   def upsertForUser(user: User): Organization = {
-    findAll(Authorization.All, forUserGuid = Some(user.guid), limit = 1).headOption.getOrElse {
+    findAll(Authorization.All, forUserGuid = Some(user.id), limit = 1).headOption.getOrElse {
       val key = urlKey.generate(defaultUserName(user))
       val orgGuid = DB.withTransaction { implicit c =>
         val orgGuid = create(c, user, OrganizationForm(
@@ -140,9 +140,9 @@ object OrganizationsDao {
 
         SQL(InsertUserOrganizationQuery).on(
           'guid -> UUID.randomUUID,
-          'user_guid -> user.guid,
+          'user_guid -> user.id,
           'organization_guid -> orgGuid,
-          'created_by_guid -> user.guid
+          'created_by_guid -> user.id
         ).execute()
 
         orgGuid
@@ -165,7 +165,7 @@ object OrganizationsDao {
         }
         case None => {
           (user.name.first, user.name.last) match {
-            case (None, None) => urlKey.randomAlphanumericString(DefaultUserNameLength)
+            case (None, None) => random.alphanumeric(DefaultUserNameLength)
             case (Some(first), None) => first
             case (None, Some(last)) => last
             case (Some(first), Some(last)) => first(0) + last

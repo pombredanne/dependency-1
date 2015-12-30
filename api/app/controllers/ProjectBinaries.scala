@@ -27,7 +27,7 @@ class ProjectBinaries @javax.inject.Inject() (
     Ok(
       Json.toJson(
         ProjectBinariesDao.findAll(
-          Authorization.User(request.user.guid),
+          Authorization.User(request.user.id),
           guid = guid,
           guids = optionals(guids),
           projectGuid = projectGuid,

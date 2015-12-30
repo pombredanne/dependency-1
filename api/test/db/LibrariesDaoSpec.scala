@@ -105,7 +105,7 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       LibrariesDao.findAll(Authorization.All, guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
       LibrariesDao.findAll(Authorization.Organization(org.guid), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
       LibrariesDao.findAll(Authorization.Organization(createOrganization().guid), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
-      LibrariesDao.findAll(Authorization.User(user.guid), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
+      LibrariesDao.findAll(Authorization.User(user.id), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
     }
 
     "allow only users of an org to access a library w/ a private resolver" in {
@@ -121,7 +121,7 @@ class LibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       LibrariesDao.findAll(Authorization.All, guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
       LibrariesDao.findAll(Authorization.Organization(org.guid), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
       LibrariesDao.findAll(Authorization.Organization(createOrganization().guid), guid = Some(lib.guid))must be(Nil)
-      LibrariesDao.findAll(Authorization.User(user.guid), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
+      LibrariesDao.findAll(Authorization.User(user.id), guid = Some(lib.guid)).map(_.guid) must be(Seq(lib.guid))
       LibrariesDao.findAll(Authorization.User(createUser().guid), guid = Some(lib.guid)) must be(Nil)
     }
 

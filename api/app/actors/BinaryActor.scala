@@ -2,7 +2,7 @@ package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.v0.models.{Binary, BinaryForm}
 import com.bryzek.dependency.api.lib.DefaultBinaryVersionProvider
-import io.flow.play.postgresql.Pager
+import io.flow.postgresql.Pager
 import db.{Authorization, BinariesDao, BinaryVersionsDao, ItemsDao, ProjectBinariesDao, SyncsDao, UsersDao}
 import play.api.Logger
 import akka.actor.Actor

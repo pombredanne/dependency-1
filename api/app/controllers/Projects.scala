@@ -33,7 +33,7 @@ class Projects @javax.inject.Inject() (
     Ok(
       Json.toJson(
         ProjectsDao.findAll(
-          Authorization.User(request.user.guid),
+          Authorization.User(request.user.id),
           guid = guid,
           guids = optionals(guids),
           name = name,

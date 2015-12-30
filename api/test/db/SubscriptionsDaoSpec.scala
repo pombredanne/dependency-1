@@ -35,12 +35,12 @@ class SubscriptionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "findByUserGuidAndPublication" in {
     val subscription = createSubscription()
-    SubscriptionsDao.findByUserGuidAndPublication(subscription.user.guid, subscription.publication).map(_.guid) must be(
+    SubscriptionsDao.findByUserGuidAndPublication(subscription.user.id, subscription.publication).map(_.guid) must be(
       Some(subscription.guid)
     )
 
     SubscriptionsDao.findByUserGuidAndPublication(UUID.randomUUID, subscription.publication).map(_.guid) must be(None)
-    SubscriptionsDao.findByUserGuidAndPublication(subscription.user.guid, Publication.UNDEFINED("other")).map(_.guid) must be(None)
+    SubscriptionsDao.findByUserGuidAndPublication(subscription.user.id, Publication.UNDEFINED("other")).map(_.guid) must be(None)
   }
 
   "findAll by guids" in {

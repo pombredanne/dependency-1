@@ -3,7 +3,7 @@ package db
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Library, ProjectLibrary, SyncEvent, VersionForm}
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, Pager, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy, Pager}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
@@ -29,7 +29,6 @@ object ProjectLibrariesDao {
            project_libraries.cross_build_version,
            project_libraries.path,
            project_libraries.library_guid as project_libraries_library_guid,
-           ${AuditsDao.all("project_libraries")},
            projects.guid as project_libraries_project_guid,
            projects.name as project_libraries_project_name,
            organizations.guid as project_libraries_project_organization_guid,
@@ -43,7 +42,7 @@ object ProjectLibrariesDao {
     insert into project_libraries
     (guid, project_guid, group_id, artifact_id, version, cross_build_version, path, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {project_guid}::uuid, {group_id}, {artifact_id}, {version}, {cross_build_version}, {path}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {project_guid}::uuid, {group_id}, {artifact_id}, {version}, {cross_build_version}, {path}, {updated_by_user_id})
   """
 
   private[this] val SetLibraryQuery = """
@@ -135,7 +134,7 @@ object ProjectLibrariesDao {
             'version -> form.version.version.trim,
             'cross_build_version -> Util.trimmedString(form.version.crossBuildVersion),
             'path -> form.path.trim,
-            'created_by_guid -> createdBy.guid
+            'updated_by_user_id -> createdBy.id
           ).execute()
           MainActor.ref ! MainActor.Messages.ProjectLibraryCreated(form.projectGuid, guid)
         }
@@ -154,7 +153,7 @@ object ProjectLibrariesDao {
     DB.withConnection { implicit c =>
       SQL(RemoveLibraryQuery).on(
         'guid -> projectLibrary.guid,
-        'updated_by_guid -> user.guid
+        'updated_by_guid -> user.id
       ).execute()
     }
   }
@@ -179,7 +178,7 @@ object ProjectLibrariesDao {
       SQL(SetLibraryQuery).on(
         'guid -> projectLibrary.guid,
         'library_guid -> library.guid,
-        'updated_by_guid -> user.guid
+        'updated_by_guid -> user.id
       ).execute()
     }
   }

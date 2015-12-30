@@ -32,7 +32,7 @@ class Repositories @javax.inject.Inject() (
         UnprocessableEntity(Json.toJson(Validation.error("When filtering by existing projects, you must also provide the organization_guid")))
       }
     } else {
-      val auth = Authorization.User(request.user.guid)
+      val auth = Authorization.User(request.user.id)
       github.repositories(request.user).map { repos =>
         Ok(
           Json.toJson(

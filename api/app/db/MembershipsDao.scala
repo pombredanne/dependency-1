@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.v0.models.{Membership, MembershipForm, Organization, OrganizationSummary, Role}
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
@@ -16,7 +16,6 @@ object MembershipsDao {
   private[this] val BaseQuery = Query(s"""
     select memberships.guid,
            memberships.role,
-           ${AuditsDao.all("memberships")},
            organizations.guid as memberships_organization_guid,
            organizations.key as memberships_organization_key,
            users.guid as memberships_user_guid,
@@ -32,18 +31,18 @@ object MembershipsDao {
     insert into memberships
     (guid, role, user_guid, organization_guid, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {role}, {user_guid}::uuid, {organization_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {role}, {user_guid}::uuid, {organization_guid}::uuid, {updated_by_user_id})
   """
 
   def isMember(orgGuid: UUID, user: User): Boolean = {
-    MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, orgGuid, user.guid) match {
+    MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, orgGuid, user.id) match {
       case None => false
       case Some(_) => true
     }
   }
 
   def isMember(org: String, user: User): Boolean = {
-    MembershipsDao.findByOrganizationAndUserGuid(Authorization.All, org, user.guid) match {
+    MembershipsDao.findByOrganizationAndUserGuid(Authorization.All, org, user.id) match {
       case None => false
       case Some(_) => true
     }
@@ -65,7 +64,7 @@ object MembershipsDao {
       }
     }
 
-    val organizationErrors = MembershipsDao.findByOrganizationAndUserGuid(Authorization.All, form.organization, user.guid) match {
+    val organizationErrors = MembershipsDao.findByOrganizationAndUserGuid(Authorization.All, form.organization, user.id) match {
       case None => Seq("Organization does not exist or you are not authorized to access this organization")
       case Some(_) => Nil
     }
@@ -116,7 +115,7 @@ object MembershipsDao {
       'user_guid -> userGuid,
       'organization_guid -> orgGuid,
       'role -> role.toString,
-      'created_by_guid -> createdBy.guid
+      'updated_by_user_id -> createdBy.id
     ).execute()
     guid
   }

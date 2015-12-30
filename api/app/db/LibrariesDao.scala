@@ -3,7 +3,7 @@ package db
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Library, LibraryForm}
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
@@ -17,7 +17,6 @@ object LibrariesDao {
     select libraries.guid,
            libraries.group_id,
            libraries.artifact_id,
-           ${AuditsDao.all("libraries")},
            organizations.guid as libraries_organization_guid,
            organizations.key as libraries_organization_key,
            resolvers.guid as libraries_resolver_guid,
@@ -35,7 +34,7 @@ object LibrariesDao {
     insert into libraries
     (guid, organization_guid, group_id, artifact_id, resolver_guid, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {group_id}, {artifact_id}, {resolver_guid}::uuid, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {organization_guid}::uuid, {group_id}, {artifact_id}, {resolver_guid}::uuid, {updated_by_user_id})
   """
 
   private[db] def validate(
@@ -100,7 +99,7 @@ object LibrariesDao {
             'group_id -> form.groupId.trim,
             'artifact_id -> form.artifactId.trim,
             'resolver_guid -> form.resolverGuid,
-            'created_by_guid -> createdBy.guid
+            'updated_by_user_id -> createdBy.id
           ).execute()
           form.version.foreach { version =>
             LibraryVersionsDao.upsertWithConnection(createdBy, guid, version)

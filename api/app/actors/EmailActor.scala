@@ -1,7 +1,7 @@
 package com.bryzek.dependency.actors
 
 import io.flow.play.util.DefaultConfig
-import io.flow.play.postgresql.Pager
+import io.flow.postgresql.Pager
 import io.flow.user.v0.models.User
 import db.{Authorization, LastEmail, LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UserIdentifiersDao, UsersDao}
 import com.bryzek.dependency.v0.models.{Publication, Subscription}
@@ -83,15 +83,15 @@ case class BatchEmailProcessor(
   def process() {
     subscriptions.foreach { subscription =>
       println(s"subscription: $subscription")
-      UsersDao.findByGuid(subscription.user.guid).foreach { user =>
-        println(s" - user[${user.guid}] email[${user.email}]")
+      UsersDao.findByGuid(subscription.user.id).foreach { user =>
+        println(s" - user[${user.id}] email[${user.email}]")
         Recipient.fromUser(user).map { DailySummaryEmailMessage(_) }.map { generator =>
           // Record before send in case of crash - prevent loop of
           // emails.
           LastEmailsDao.record(
             MainActor.SystemUser,
             LastEmailForm(
-              userGuid = user.guid,
+              userGuid = user.id,
               publication = publication
             )
           )

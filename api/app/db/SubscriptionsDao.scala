@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.v0.models.{Publication, Subscription, SubscriptionForm}
 import io.flow.user.v0.models.User
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -14,16 +14,15 @@ object SubscriptionsDao {
   private[this] val BaseQuery = Query(s"""
     select subscriptions.guid,
            subscriptions.user_guid as subscriptions_user_guid,
-           subscriptions.publication,
-           ${AuditsDao.all("subscriptions")}
+           subscriptions.publication
       from subscriptions
   """)
 
   private[this] val InsertQuery = """
     insert into subscriptions
-    (guid, user_guid, publication, updated_by_guid, created_by_guid)
+    (guid, user_guid, publication, updated_by_user_id
     values
-    ({guid}::uuid, {user_guid}::uuid, {publication}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {user_guid}::uuid, {publication}, {updated_by_user_id})
   """
 
   private[db] def validate(
@@ -65,7 +64,7 @@ object SubscriptionsDao {
             'guid -> guid,
             'user_guid -> form.userGuid,
             'publication -> form.publication.toString,
-            'created_by_guid -> createdBy.guid
+            'updated_by_user_id -> createdBy.id
           ).execute()
         }
 

@@ -28,7 +28,7 @@ class BinaryVersions @javax.inject.Inject() (
     Ok(
       Json.toJson(
         BinaryVersionsDao.findAll(
-          Authorization.User(request.user.guid),
+          Authorization.User(request.user.id),
           guid = guid,
           guids = optionals(guids),
           binaryGuid = binaryGuid,
@@ -49,7 +49,7 @@ class BinaryVersions @javax.inject.Inject() (
   def withBinaryVersion(user: User, guid: UUID)(
     f: BinaryVersion => Result
   ): Result = {
-    BinaryVersionsDao.findByGuid(Authorization.User(user.guid), guid) match {
+    BinaryVersionsDao.findByGuid(Authorization.User(user.id), guid) match {
       case None => {
         NotFound
       }

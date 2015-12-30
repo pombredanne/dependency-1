@@ -27,7 +27,7 @@ class ProjectLibraries @javax.inject.Inject() (
     Ok(
       Json.toJson(
         ProjectLibrariesDao.findAll(
-          Authorization.User(request.user.guid),
+          Authorization.User(request.user.id),
           guid = guid,
           guids = optionals(guids),
           projectGuid = projectGuid,

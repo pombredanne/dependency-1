@@ -1,6 +1,6 @@
 package com.bryzek.dependency.actors
 
-import io.flow.play.postgresql.Pager
+import io.flow.postgresql.Pager
 import db.{Authorization, BinariesDao, LibrariesDao, ProjectsDao, SyncsDao}
 import play.api.Logger
 import akka.actor.Actor

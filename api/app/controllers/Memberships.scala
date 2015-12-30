@@ -29,7 +29,7 @@ class Memberships @javax.inject.Inject() (
     Ok(
       Json.toJson(
         MembershipsDao.findAll(
-          Authorization.User(request.user.guid),
+          Authorization.User(request.user.id),
           guid = guid,
           guids = optionals(guids),
           organization = organization,
@@ -72,7 +72,7 @@ class Memberships @javax.inject.Inject() (
   def withMembership(user: User, guid: UUID)(
     f: Membership => Result
   ): Result = {
-    MembershipsDao.findByGuid(Authorization.User(user.guid), guid) match {
+    MembershipsDao.findByGuid(Authorization.User(user.id), guid) match {
       case None => {
         Results.NotFound
       }

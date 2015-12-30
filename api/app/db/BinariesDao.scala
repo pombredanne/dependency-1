@@ -3,7 +3,7 @@ package db
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Binary, BinaryForm, SyncEvent}
 import io.flow.user.v0.models.User
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -15,7 +15,6 @@ object BinariesDao {
   private[this] val BaseQuery = Query(s"""
     select binaries.guid,
            binaries.name,
-           ${AuditsDao.all("binaries")},
            organizations.guid as binaries_organization_guid,
            organizations.key as binaries_organization_key
       from binaries
@@ -26,7 +25,7 @@ object BinariesDao {
     insert into binaries
     (guid, organization_guid, name, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {name}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {organization_guid}::uuid, {name}, {updated_by_user_id})
   """
 
   private[db] def validate(
@@ -60,7 +59,7 @@ object BinariesDao {
             'guid -> guid,
             'organization_guid -> form.organizationGuid,
             'name -> form.name.toString.toLowerCase,
-            'created_by_guid -> createdBy.guid
+            'updated_by_user_id -> createdBy.id
           ).execute()
         }
 

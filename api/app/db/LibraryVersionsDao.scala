@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Library, LibraryVersion, VersionForm}
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
@@ -17,11 +17,9 @@ object LibraryVersionsDao {
     select library_versions.guid,
            library_versions.version,
            library_versions.cross_build_version,
-           ${AuditsDao.all("library_versions")},
            libraries.guid as library_versions_library_guid,
            libraries.group_id as library_versions_library_group_id,
            libraries.artifact_id as library_versions_library_artifact_id,
-           ${AuditsDao.all("libraries", Some("library_versions_library"))},
            organizations.guid as library_versions_library_organization_guid,
            organizations.key as library_versions_library_organization_key,
            resolvers.guid as library_versions_library_resolver_guid,
@@ -40,7 +38,7 @@ object LibraryVersionsDao {
     insert into library_versions
     (guid, library_guid, version, cross_build_version, sort_key, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {library_guid}::uuid, {version}, {cross_build_version}, {sort_key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {library_guid}::uuid, {version}, {cross_build_version}, {sort_key}, {updated_by_user_id})
   """
 
   def upsert(createdBy: User, libraryGuid: UUID, form: VersionForm): LibraryVersion = {
@@ -102,7 +100,7 @@ object LibraryVersionsDao {
       'version -> form.version.trim,
       'cross_build_version -> form.crossBuildVersion.map(_.trim),
       'sort_key -> sortKey,
-      'created_by_guid -> createdBy.guid
+      'updated_by_user_id -> createdBy.id
     ).execute()
 
     findByGuidWithConnection(Authorization.All, guid).getOrElse {

@@ -257,7 +257,7 @@ trait Helpers {
     login: String = createTestEmail()
   ) = {
     GithubUserForm(
-      userGuid = user.guid,
+      userGuid = user.id,
       id = id,
       login = login
     )
@@ -275,7 +275,7 @@ trait Helpers {
     token: String = UUID.randomUUID().toString.toLowerCase
   ) = {
     TokenForm(
-      userGuid = user.guid,
+      userGuid = user.id,
       tag = tag,
       token = token
     )
@@ -333,7 +333,7 @@ trait Helpers {
   ) = {
     MembershipForm(
       organization = org.key,
-      userGuid = user.guid,
+      userGuid = user.id,
       role = role
     )
   }
@@ -353,7 +353,7 @@ trait Helpers {
              project: Project = createProject(org)
   ) = {
     WatchProjectForm(
-      userGuid = user.guid,
+      userGuid = user.id,
       projectGuid = project.guid
     )
   }
@@ -444,7 +444,7 @@ trait Helpers {
     publication: Publication = Publication.DailySummary
   ) = {
     SubscriptionForm(
-      userGuid = user.guid,
+      userGuid = user.id,
       publication = publication
     )
   }
@@ -459,7 +459,7 @@ trait Helpers {
     user: User = createUser(),
     publication: Publication = Publication.DailySummary
   ) = LastEmailForm(
-    userGuid = user.guid,
+    userGuid = user.id,
     publication = publication
   )
 

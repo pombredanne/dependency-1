@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.v0.models.{Sync, SyncEvent}
 import io.flow.user.v0.models.User
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy}
+import io.flow.postgresql.{Query, OrderBy}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -22,8 +22,7 @@ object SyncsDao {
     select syncs.guid,
            syncs.type,
            syncs.object_guid,
-           syncs.event,
-           ${AuditsDao.creationOnly("syncs")}
+           syncs.event
       from syncs
   """)
 
@@ -73,7 +72,7 @@ object SyncsDao {
         'type -> form.`type`,
         'object_guid -> form.objectGuid,
         'event -> form.event.toString,
-        'created_by_guid -> createdBy.guid
+        'updated_by_user_id -> createdBy.id
       ).execute()
     }
 

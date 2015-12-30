@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.v0.models.{Token, TokenForm}
 import io.flow.user.v0.models.User
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -17,16 +17,15 @@ object TokensDao {
     select tokens.guid,
            tokens.user_guid as tokens_user_guid,
            tokens.tag,
-           tokens.token,
-           ${AuditsDao.all("tokens")}
+           tokens.token
       from tokens
   """)
 
   private[this] val InsertQuery = """
     insert into tokens
-    (guid, user_guid, tag, token, updated_by_guid, created_by_guid)
+    (guid, user_guid, tag, token, updated_by_user_id
     values
-    ({guid}::uuid, {user_guid}::uuid, {tag}, {token}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {user_guid}::uuid, {tag}, {token}, {updated_by_user_id})
   """
 
   def upsert(createdBy: User, form: TokenForm): Token = {
@@ -62,7 +61,7 @@ object TokensDao {
       'user_guid -> form.userGuid,
       'tag -> form.tag.trim,
       'token -> form.token.trim,
-      'created_by_guid -> createdBy.guid
+      'updated_by_user_id -> createdBy.id
     ).execute()
 
     findAllWithConnection(guid = Some(guid), limit = 1).headOption.getOrElse {

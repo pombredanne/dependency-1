@@ -25,8 +25,8 @@ class UserIdentifiersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val identifier2 = UserIdentifiersDao.createForUser(systemUser, user)
 
     identifier1.value must not be(identifier2.value)
-    identifier1.user.guid must be(user.guid)
-    identifier2.user.guid must be(user.guid)
+    identifier1.user.id must be(user.id)
+    identifier2.user.id must be(user.id)
     identifier1.value.length must be(60)
   }
 

@@ -22,7 +22,7 @@ object Recipient {
       Recipient(
         email = email,
         name = user.name,
-        userGuid = user.guid,
+        userGuid = user.id,
         identifier = UserIdentifiersDao.latestForUser(UsersDao.systemUser, user).value
       )
     }

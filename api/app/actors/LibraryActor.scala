@@ -2,7 +2,7 @@ package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.v0.models.{Library, LibraryForm, VersionForm}
 import com.bryzek.dependency.api.lib.DefaultLibraryArtifactProvider
-import io.flow.play.postgresql.Pager
+import io.flow.postgresql.Pager
 import db.{Authorization, ItemsDao, LibrariesDao, LibraryVersionsDao, ProjectLibrariesDao, ResolversDao, SyncsDao, UsersDao}
 import play.api.Logger
 import akka.actor.Actor

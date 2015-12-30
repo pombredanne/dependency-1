@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.v0.models.UserIdentifier
 import io.flow.user.v0.models.User
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import io.flow.play.util.UrlKey
 import anorm._
 import play.api.db._
@@ -17,23 +17,22 @@ object UserIdentifiersDao {
   private[this] val BaseQuery = Query(s"""
     select user_identifiers.guid,
            user_identifiers.user_guid as user_identifiers_user_guid,
-           user_identifiers.value,
-           ${AuditsDao.all("user_identifiers")}
+           user_identifiers.value
       from user_identifiers
   """)
 
   private[this] val InsertQuery = """
     insert into user_identifiers
-    (guid, user_guid, value, updated_by_guid, created_by_guid)
+    (guid, user_guid, value, updated_by_user_id
     values
-    ({guid}::uuid, {user_guid}::uuid, {value}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {user_guid}::uuid, {value}, {updated_by_user_id})
   """
 
   /**
     * Returns the latest identifier, creating if necessary
     */
   def latestForUser(createdBy: User, user: User): UserIdentifier = {
-    findAll(Authorization.All, userGuid = Some(user.guid)).headOption match {
+    findAll(Authorization.All, userGuid = Some(user.id)).headOption match {
       case None => {
         createForUser(createdBy, user)
       }
@@ -73,9 +72,9 @@ object UserIdentifiersDao {
 
     SQL(InsertQuery).on(
       'guid -> guid,
-      'user_guid -> user.guid,
+      'user_guid -> user.id,
       'value -> generateIdentifier(),
-      'created_by_guid -> createdBy.guid
+      'updated_by_user_id -> createdBy.id
     ).execute()
 
     findAllWithConnection(Authorization.All, guid = Some(guid), limit = 1).headOption.getOrElse {

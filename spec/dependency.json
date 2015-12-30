@@ -75,6 +75,18 @@
 
     "models": {
 
+	"reference": {
+	    "fields": [
+		{ "name": "guid", "type": "uuid" }
+	    ]
+	},
+	
+	"user_reference": {
+	    "fields": [
+		{ "name": "id", "type": "string" }
+	    ]
+	},
+	
 	"username_password": {
 	    "fields": [
 		{ "name": "username", "type": "string" },
@@ -88,8 +100,7 @@
 		{ "name": "visibility", "type": "visibility" },
                 { "name": "organization", "type": "organization_summary", "required": false, "description": "The organization that created the resolver. If empty, indicates a globally public resolver" },
 		{ "name": "uri", "type": "string", "example": "https://flow.artifactoryonline.com/flow/libs-release" },
-		{ "name": "credentials", "type": "credentials", "required": false },
-		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+		{ "name": "credentials", "type": "credentials", "required": false }
 	    ]
 	},
 
@@ -116,8 +127,7 @@
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
 		{ "name": "organization", "type": "organization_summary" },
-		{ "name": "name", "type": "binary_type" },
-		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+		{ "name": "name", "type": "binary_type" }
 	    ]
 	},
 
@@ -140,8 +150,7 @@
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
 		{ "name": "binary", "type": "binary" },
-		{ "name": "version", "type": "string" },
-		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+		{ "name": "version", "type": "string" }
 	    ]
 	},
 
@@ -151,8 +160,7 @@
 		{ "name": "organization", "type": "organization_summary" },
 		{ "name": "group_id", "type": "string" },
 		{ "name": "artifact_id", "type": "string" },
-		{ "name": "resolver", "type": "resolver_summary", "description": "The resolver where we found this library" },
-		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+		{ "name": "resolver", "type": "resolver_summary", "description": "The resolver where we found this library" }
 	    ]
 	},
 
@@ -187,16 +195,14 @@
 		{ "name": "guid", "type": "uuid" },
 		{ "name": "library", "type": "library" },
 		{ "name": "version", "type": "string" },
-		{ "name": "cross_build_version", "type": "string", "required": false },
-		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+		{ "name": "cross_build_version", "type": "string", "required": false }
 	    ]
 	},
 	
 	"organization": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
-		{ "name": "key", "type": "string" },
-                { "name": "audit", "type": "io.flow.common.v0.models.audit" }
+		{ "name": "key", "type": "string" }
 	    ]
 	},
 
@@ -220,8 +226,7 @@
 		{ "name": "visibility", "type": "visibility" },
 		{ "name": "scms", "type": "scms" },
 		{ "name": "name", "type": "string" },
-		{ "name": "uri", "type": "string" },
-                { "name": "audit", "type": "io.flow.common.v0.models.audit" }
+		{ "name": "uri", "type": "string" }
 	    ]
 	},
 
@@ -250,8 +255,7 @@
 		{ "name": "version", "type": "string" },
 		{ "name": "cross_build_version", "type": "string", "required": false },
 		{ "name": "path", "type": "string" },
-		{ "name": "library", "type": "io.flow.common.v0.models.reference", "required": false },
-		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+		{ "name": "library", "type": "reference", "required": false }
 	    ]
 	},
 
@@ -262,8 +266,7 @@
 		{ "name": "name", "type": "string" },
 		{ "name": "version", "type": "string" },
 		{ "name": "path", "type": "string" },
-		{ "name": "binary", "type": "io.flow.common.v0.models.reference", "required": false },
-		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+		{ "name": "binary", "type": "reference", "required": false }
 	    ]
 	},
 
@@ -300,11 +303,10 @@
 		{ "name": "guid", "type": "uuid" },
 		{ "name": "project", "type": "project_detail" },
 		{ "name": "type", "type": "recommendation_type" },
-		{ "name": "object", "type": "io.flow.common.v0.models.reference" },
+		{ "name": "object", "type": "reference" },
 		{ "name": "name", "type": "string", "description": "The name of the library or binary to upgrade" },
 		{ "name": "from", "type": "string", "description": "The current version" },
-		{ "name": "to", "type": "string", "description": "The version to which we recommend upgrading" },
-                { "name": "audit", "type": "io.flow.common.v0.models.audit" }
+		{ "name": "to", "type": "string", "description": "The version to which we recommend upgrading" }
 	    ]
 	},
 
@@ -319,10 +321,9 @@
 	"github_user": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
-                { "name": "user", "type": "io.flow.common.v0.models.reference" },
+                { "name": "user", "type": "user_reference" },
 		{ "name": "id", "type": "long" },
-		{ "name": "login", "type": "string" },
-                { "name": "audit", "type": "io.flow.common.v0.models.audit" }
+		{ "name": "login", "type": "string" }
 	    ]
 	},
 
@@ -336,19 +337,17 @@
 	"user_identifier": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
-                { "name": "user", "type": "io.flow.common.v0.models.reference" },
-		{ "name": "value", "type": "string" },
-                { "name": "audit", "type": "io.flow.common.v0.models.audit" }
+                { "name": "user", "type": "user_reference" },
+		{ "name": "value", "type": "string" }
 	    ]
 	},
 
 	"token": {
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
-                { "name": "user", "type": "io.flow.common.v0.models.reference" },
+                { "name": "user", "type": "user_reference" },
 		{ "name": "tag", "type": "string" },
-		{ "name": "token", "type": "string" },
-		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+		{ "name": "token", "type": "string" }
 	    ]
 	},
 
@@ -364,9 +363,8 @@
 	    "description": "Represents a user that is currently subscribed to a publication",
 	    "fields": [
 		{ "name": "guid", "type": "uuid", "description": "Internal unique identifier for this subscription record" },
-		{ "name": "user", "type": "io.flow.common.v0.models.reference" },
-		{ "name": "publication", "type": "publication" },
-                { "name": "audit", "type": "io.flow.common.v0.models.audit" }
+		{ "name": "user", "type": "user_reference" },
+		{ "name": "publication", "type": "publication" }
 	    ]
 	},
 
@@ -393,8 +391,7 @@
             "description": "Records when we start and complete each sync of a module (e.g. project)",
             "fields": [
                 { "name": "guid", "type": "uuid", "description": "Unique identifier for this item." },
-                { "name": "event", "type": "sync_event" },
-		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+                { "name": "event", "type": "sync_event" }
             ]
         },
 
@@ -412,8 +409,7 @@
                 { "name": "guid", "type": "uuid", "description": "Unique identifier for this membership" },
                 { "name": "user", "type": "user_summary" },
                 { "name": "organization", "type": "organization_summary" },
-		{ "name": "role", "type": "role" },
-		{ "name": "audit", "type": "io.flow.common.v0.models.audit" }
+		{ "name": "role", "type": "role" }
             ]
         },
 

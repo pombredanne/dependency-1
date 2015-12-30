@@ -30,7 +30,7 @@ class Libraries @javax.inject.Inject() (
     Ok(
       Json.toJson(
         LibrariesDao.findAll(
-          Authorization.User(request.user.guid),
+          Authorization.User(request.user.id),
           guid = guid,
           guids = optionals(guids),
           projectGuid = projectGuid,
@@ -74,7 +74,7 @@ class Libraries @javax.inject.Inject() (
   def withLibrary(user: User, guid: UUID)(
     f: Library => Result
   ): Result = {
-    LibrariesDao.findByGuid(Authorization.User(user.guid), guid) match {
+    LibrariesDao.findByGuid(Authorization.User(user.id), guid) match {
       case None => {
         NotFound
       }

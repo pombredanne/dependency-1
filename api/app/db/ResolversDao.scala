@@ -6,7 +6,7 @@ import com.bryzek.dependency.v0.models.{Credentials, CredentialsUndefinedType, R
 import com.bryzek.dependency.v0.models.{OrganizationSummary, UsernamePassword, Visibility}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.user.v0.models.User
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, Pager, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy, Pager}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -23,7 +23,6 @@ object ResolversDao {
            resolvers.credentials,
            resolvers.uri,
            resolvers.position,
-           ${AuditsDao.all("resolvers")},
            organizations.guid as resolvers_organization_guid,
            organizations.key as resolvers_organization_key
       from resolvers
@@ -36,9 +35,9 @@ object ResolversDao {
 
   private[this] val InsertQuery = """
     insert into resolvers
-    (guid, visibility, credentials, position, organization_guid, uri, updated_by_guid, created_by_guid)
+    (guid, visibility, credentials, position, organization_guid, uri, updated_by_user_id
     values
-    ({guid}::uuid, {visibility}, {credentials}::json, {position}, {organization_guid}::uuid, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {visibility}, {credentials}::json, {position}, {organization_guid}::uuid, {uri}, {updated_by_user_id})
   """
 
   def credentials(resolver: Resolver): Option[Credentials] = {
@@ -127,7 +126,7 @@ object ResolversDao {
             'credentials -> form.credentials.map { cred => Json.stringify(Json.toJson(cred)) },
             'position -> nextPosition(org.guid, form.visibility),
             'uri -> form.uri.trim,
-            'created_by_guid -> createdBy.guid
+            'updated_by_user_id -> createdBy.id
           ).execute()
         }
 

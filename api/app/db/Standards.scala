@@ -1,7 +1,7 @@
 package db
 
 import java.util.UUID
-import io.flow.play.postgresql.Query
+import io.flow.postgresql.Query
 
 /**
  * Provides docuemntation and implementation for the key attributes we

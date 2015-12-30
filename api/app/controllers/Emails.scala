@@ -36,7 +36,7 @@ class Emails @javax.inject.Inject() (
           case None => Ok(s"No user with email address[$email] found")
           case Some(user) => {
             val recipient = Recipient.fromUser(user).getOrElse {
-              Recipient(email = "noemail@test.flow.io", name = user.name, userGuid = user.guid, identifier = "TESTID")
+              Recipient(email = "noemail@test.flow.io", name = user.name, userGuid = user.id, identifier = "TESTID")
             }
             val generator = DailySummaryEmailMessage(recipient)
 

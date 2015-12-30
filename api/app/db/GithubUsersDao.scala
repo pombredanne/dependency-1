@@ -1,6 +1,6 @@
 package db
 
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy}
+import io.flow.postgresql.{Query, OrderBy}
 import com.bryzek.dependency.v0.models.{GithubUser, GithubUserForm}
 import io.flow.user.v0.models.User
 import java.util.UUID
@@ -14,16 +14,15 @@ object GithubUsersDao {
     select github_users.guid,
            github_users.user_guid as github_users_user_guid,
            github_users.id,
-           github_users.login,
-           ${AuditsDao.all("github_users")}
+           github_users.login
       from github_users
   """)
 
   private[this] val InsertQuery = """
     insert into github_users
-    (guid, user_guid, id, login, updated_by_guid, created_by_guid)
+    (guid, user_guid, id, login, updated_by_user_id
     values
-    ({guid}::uuid, {user_guid}::uuid, {id}, {login}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {user_guid}::uuid, {id}, {login}, {updated_by_user_id})
   """
 
   def upsertById(createdBy: Option[User], form: GithubUserForm): GithubUser = {
@@ -51,7 +50,7 @@ object GithubUsersDao {
       'user_guid -> form.userGuid,
       'id -> form.id,
       'login -> form.login.trim,
-      'created_by_guid -> createdBy.getOrElse(UsersDao.anonymousUser).guid
+      'created_by_guid -> createdBy.getOrElse(UsersDao.anonymousUser).id
     ).execute()
 
     findByGuid(guid).getOrElse {

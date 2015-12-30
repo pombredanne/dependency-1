@@ -29,8 +29,8 @@ class GithubUsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "findByGuid" in {
     val user = createGithubUser()
-    GithubUsersDao.findByGuid(user.guid).map(_.guid) must be(
-      Some(user.guid)
+    GithubUsersDao.findByGuid(user.id).map(_.guid) must be(
+      Some(user.id)
     )
 
     UsersDao.findByGuid(UUID.randomUUID) must be(None)

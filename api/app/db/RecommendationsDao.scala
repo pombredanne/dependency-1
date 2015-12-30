@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.v0.models.{Project, Recommendation, RecommendationType}
 import io.flow.user.v0.models.User
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -28,7 +28,6 @@ object RecommendationsDao {
            recommendations.name,
            recommendations.from_version as "recommendations.from",
            recommendations.to_version as "recommendations.to",
-           ${AuditsDao.all("recommendations")},
            projects.guid as recommendations_project_guid,
            projects.name as recommendations_project_name,
            organizations.guid as recommendations_project_organization_guid,
@@ -46,7 +45,7 @@ object RecommendationsDao {
     insert into recommendations
     (guid, project_guid, type, object_guid, name, from_version, to_version, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {project_guid}::uuid, {type}, {object_guid}::uuid, {name}, {from_version}, {to_version}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {project_guid}::uuid, {type}, {object_guid}::uuid, {name}, {from_version}, {to_version}, {updated_by_user_id})
   """
 
   def sync(user: User, project: Project) {
@@ -82,7 +81,7 @@ object RecommendationsDao {
     DB.withTransaction { implicit c =>
       toAdd.foreach { upsert(user, _) }
       toRemove.foreach { rec =>
-        SoftDelete.delete(c, "recommendations", user.guid, rec.guid)
+        SoftDelete.delete(c, "recommendations", user.id, rec.guid)
       }
     }
 
@@ -147,7 +146,7 @@ object RecommendationsDao {
       'name -> form.name,
       'from_version -> form.from,
       'to_version -> form.to,
-      'created_by_guid -> createdBy.guid
+      'updated_by_user_id -> createdBy.id
     ).execute()
   }
 

@@ -27,7 +27,7 @@ class Resolvers @javax.inject.Inject() (
     Ok(
       Json.toJson(
         ResolversDao.findAll(
-          Authorization.User(request.user.guid),
+          Authorization.User(request.user.id),
           guid = guid,
           guids = optionals(guids),
           visibility = visibility,

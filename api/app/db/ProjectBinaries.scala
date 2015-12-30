@@ -3,7 +3,7 @@ package db
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Binary, BinaryType, Project, ProjectBinary, SyncEvent}
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, Pager, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy, Pager}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
@@ -26,7 +26,6 @@ object ProjectBinariesDao {
            project_binaries.version,
            project_binaries.path,
            project_binaries.binary_guid as project_binaries_binary_guid,
-           ${AuditsDao.all("project_binaries")},
            projects.guid as project_binaries_project_guid,
            projects.name as project_binaries_project_name,
            organizations.guid as project_binaries_project_organization_guid,
@@ -40,7 +39,7 @@ object ProjectBinariesDao {
     insert into project_binaries
     (guid, project_guid, name, version, path, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {project_guid}::uuid, {name}, {version}, {path}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {project_guid}::uuid, {name}, {version}, {path}, {updated_by_user_id})
   """
 
   private[this] val RemoveBinaryQuery = """
@@ -124,7 +123,7 @@ object ProjectBinariesDao {
             'name -> form.name.toString.trim,
             'version -> form.version.trim,
             'path -> form.path.trim,
-            'created_by_guid -> createdBy.guid
+            'updated_by_user_id -> createdBy.id
           ).execute()
           MainActor.ref ! MainActor.Messages.ProjectBinaryCreated(form.projectGuid, guid)
         }
@@ -143,7 +142,7 @@ object ProjectBinariesDao {
     DB.withConnection { implicit c =>
       SQL(RemoveBinaryQuery).on(
         'guid -> projectBinary.guid,
-        'updated_by_guid -> user.guid
+        'updated_by_guid -> user.id
       ).execute()
     }
   }
@@ -168,7 +167,7 @@ object ProjectBinariesDao {
       SQL(SetBinaryQuery).on(
         'guid -> projectBinary.guid,
         'binary_guid -> binary.guid,
-        'updated_by_guid -> user.guid
+        'updated_by_guid -> user.id
       ).execute()
     }
   }

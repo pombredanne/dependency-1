@@ -104,7 +104,7 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       LibraryVersionsDao.findAll(Authorization.All, guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
       LibraryVersionsDao.findAll(Authorization.Organization(org.guid), guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
       LibraryVersionsDao.findAll(Authorization.Organization(createOrganization().guid), guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
-      LibraryVersionsDao.findAll(Authorization.User(user.guid), guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
+      LibraryVersionsDao.findAll(Authorization.User(user.id), guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
     }
 
     "allow only org users to access private libraries" in {
@@ -121,7 +121,7 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
       LibraryVersionsDao.findAll(Authorization.All, guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
       LibraryVersionsDao.findAll(Authorization.Organization(org.guid), guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
-      LibraryVersionsDao.findAll(Authorization.User(user.guid), guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
+      LibraryVersionsDao.findAll(Authorization.User(user.id), guid = Some(libraryVersion.guid)).map(_.guid) must be(Seq(libraryVersion.guid))
 
       LibraryVersionsDao.findAll(Authorization.PublicOnly, guid = Some(libraryVersion.guid)) must be(Nil)
       LibraryVersionsDao.findAll(Authorization.Organization(createOrganization().guid), guid = Some(libraryVersion.guid)) must be(Nil)

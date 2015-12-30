@@ -27,7 +27,7 @@ class LibraryVersions @javax.inject.Inject() (
     Ok(
       Json.toJson(
         LibraryVersionsDao.findAll(
-          Authorization.User(request.user.guid),
+          Authorization.User(request.user.id),
           guid = guid,
           guids = optionals(guids),
           libraryGuid = libraryGuid,
@@ -48,7 +48,7 @@ class LibraryVersions @javax.inject.Inject() (
     f: LibraryVersion => Result
   ): Result = {
     LibraryVersionsDao.findByGuid(
-      Authorization.User(user.guid),
+      Authorization.User(user.id),
       guid
     ) match {
       case None => {

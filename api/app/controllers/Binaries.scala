@@ -28,7 +28,7 @@ class Binaries @javax.inject.Inject() (
     Ok(
       Json.toJson(
         BinariesDao.findAll(
-          Authorization.User(request.user.guid),
+          Authorization.User(request.user.id),
           guid = guid,
           guids = optionals(guids),
           projectGuid = projectGuid,
@@ -71,7 +71,7 @@ class Binaries @javax.inject.Inject() (
   def withBinary(user: User, guid: UUID)(
     f: Binary => Result
   ): Result = {
-    BinariesDao.findByGuid(Authorization.User(user.guid), guid) match {
+    BinariesDao.findByGuid(Authorization.User(user.id), guid) match {
       case None => {
         NotFound
       }

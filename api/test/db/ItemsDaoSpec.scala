@@ -130,7 +130,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     ItemsDao.findAll(Authorization.All, objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
     ItemsDao.findAll(Authorization.Organization(org.guid), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
     ItemsDao.findAll(Authorization.Organization(createOrganization().guid), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
-    ItemsDao.findAll(Authorization.User(user.guid), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
+    ItemsDao.findAll(Authorization.User(user.id), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
   }
 
   "authorization for private projects" in {
@@ -143,7 +143,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     ItemsDao.findAll(Authorization.All, objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
     ItemsDao.findAll(Authorization.Organization(org.guid), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
     ItemsDao.findAll(Authorization.Organization(createOrganization().guid), objectGuid = Some(project.guid)) must be(Nil)
-    ItemsDao.findAll(Authorization.User(user.guid), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
+    ItemsDao.findAll(Authorization.User(user.id), objectGuid = Some(project.guid)).map(_.guid) must be(Seq(item.guid))
     ItemsDao.findAll(Authorization.User(createUser().guid), objectGuid = Some(project.guid)) must be(Nil)
   }
 

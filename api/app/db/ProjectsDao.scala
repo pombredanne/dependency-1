@@ -3,7 +3,7 @@ package db
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Scms, Binary, BinaryForm, Library, LibraryForm, Project, ProjectForm, ProjectSummary, OrganizationSummary, Visibility}
 import com.bryzek.dependency.api.lib.GithubUtil
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
@@ -19,7 +19,6 @@ object ProjectsDao {
            projects.scms,
            projects.name,
            projects.uri,
-           ${AuditsDao.all("projects")},
            organizations.guid as projects_organization_guid,
            organizations.key as projects_organization_key
       from projects
@@ -38,7 +37,7 @@ object ProjectsDao {
     insert into projects
     (guid, organization_guid, visibility, scms, name, uri, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {visibility}, {scms}, {name}, {uri}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {organization_guid}::uuid, {visibility}, {scms}, {name}, {uri}, {updated_by_user_id})
   """
 
   private[this] val UpdateQuery = """
@@ -124,7 +123,7 @@ object ProjectsDao {
             'scms -> form.scms.toString,
             'name -> form.name.trim,
             'uri -> form.uri.trim,
-            'created_by_guid -> createdBy.guid
+            'updated_by_user_id -> createdBy.id
           ).execute()
         }
 

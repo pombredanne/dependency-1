@@ -2,7 +2,7 @@ package db
 
 import io.flow.common.v0.models.{Audit, Reference}
 import io.flow.user.v0.models.User
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import com.bryzek.dependency.v0.models.Publication
 
 import anorm._
@@ -34,7 +34,7 @@ object LastEmailsDao {
     insert into last_emails
     (guid, user_guid, publication, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {user_guid}::uuid, {publication}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {user_guid}::uuid, {publication}, {updated_by_user_id})
   """
 
   def record(
@@ -67,7 +67,7 @@ object LastEmailsDao {
       'guid -> guid,
       'user_guid -> form.userGuid,
       'publication -> form.publication.toString,
-      'created_by_guid -> createdBy.guid
+      'updated_by_user_id -> createdBy.id
     ).execute()
     guid
   }

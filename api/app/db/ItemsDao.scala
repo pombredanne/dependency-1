@@ -4,7 +4,7 @@ import com.bryzek.dependency.v0.models.{Binary, BinarySummary, Item, ItemSummary
 import com.bryzek.dependency.v0.models.{OrganizationSummary, Project, ProjectSummary, ResolverSummary, Visibility}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.user.v0.models.User
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -42,7 +42,7 @@ object ItemsDao {
     insert into items
     (guid, organization_guid, visibility, object_guid, label, description, contents, summary, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {visibility}, {object_guid}::uuid, {label}, {description}, {contents}, {summary}::json, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {organization_guid}::uuid, {visibility}, {object_guid}::uuid, {label}, {description}, {contents}, {summary}::json, {updated_by_user_id})
   """
 
   private[this] def objectGuid(summary: ItemSummary): UUID = {
@@ -167,7 +167,7 @@ object ItemsDao {
         'description -> form.description,
         'contents -> form.contents.trim.toLowerCase,
         'summary -> Json.stringify(Json.toJson(form.summary)),
-        'created_by_guid -> createdBy.guid
+        'updated_by_user_id -> createdBy.id
       ).execute()
     }
 

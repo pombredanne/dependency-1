@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Binary, BinaryType, BinaryVersion}
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy, SoftDelete}
+import io.flow.postgresql.{Query, OrderBy}
 import io.flow.user.v0.models.User
 import anorm._
 import play.api.db._
@@ -16,10 +16,8 @@ object BinaryVersionsDao {
   private[this] val BaseQuery = Query(s"""
     select binary_versions.guid,
            binary_versions.version,
-           ${AuditsDao.all("binary_versions")},
            binaries.guid as binary_versions_binary_guid,
            binaries.name as binary_versions_binary_name,
-           ${AuditsDao.all("binaries", Some("binary_versions_binary"))},
            organizations.guid as binary_versions_binary_organization_guid,
            organizations.key as binary_versions_binary_organization_key
       from binary_versions
@@ -31,7 +29,7 @@ object BinaryVersionsDao {
     insert into binary_versions
     (guid, binary_guid, version, sort_key, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {binary_guid}::uuid, {version}, {sort_key}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {binary_guid}::uuid, {version}, {sort_key}, {updated_by_user_id})
   """
 
   def upsert(createdBy: User, binaryGuid: UUID, version: String): BinaryVersion = {
@@ -84,7 +82,7 @@ object BinaryVersionsDao {
       'binary_guid -> binaryGuid,
       'version -> version.trim,
       'sort_key -> Version(version.trim).sortKey,
-      'created_by_guid -> createdBy.guid
+      'updated_by_user_id -> createdBy.id
     ).execute()
 
     findByGuidWithConnection(Authorization.All, guid).getOrElse {

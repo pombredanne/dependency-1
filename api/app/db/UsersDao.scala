@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.actors.MainActor
-import io.flow.play.postgresql.{AuditsDao, Query, OrderBy}
+import io.flow.postgresql.{Query, OrderBy}
 import io.flow.user.v0.models.{Name, User, UserForm}
 import java.util.UUID
 import anorm._
@@ -30,16 +30,15 @@ object UsersDao {
            users.email,
            users.first_name as users_name_first,
            users.last_name as users_name_last,
-           users.avatar_url,
-           ${AuditsDao.all("users")}
+           users.avatar_url
       from users
   """)
 
   private[this] val InsertQuery = """
     insert into users
-    (guid, email, first_name, last_name, avatar_url, updated_by_guid, created_by_guid)
+    (guid, email, first_name, last_name, avatar_url, updated_by_user_id
     values
-    ({guid}::uuid, {email}, {first_name}, {last_name}, {avatar_url}, {created_by_guid}::uuid, {created_by_guid}::uuid)
+    ({guid}::uuid, {email}, {first_name}, {last_name}, {avatar_url}, {updated_by_user_id})
   """
 
   def validate(form: UserForm): Seq[String] = {
