@@ -12,14 +12,14 @@ object GithubUsersDao {
   private[this] val BaseQuery = Query(s"""
     select github_users.id,
            github_users.user_id as github_users_user_id,
-           github_users.id,
+           github_users.github_user_id,
            github_users.login
       from github_users
   """)
 
   private[this] val InsertQuery = """
     insert into github_users
-    (id, user_id, id, login, updated_by_user_id)
+    (id, user_id, github_user_id, login, updated_by_user_id)
     values
     ({id}, {user_id}, {github_user_id}, {login}, {updated_by_user_id})
   """
