@@ -24,6 +24,7 @@ object RecommendationsDao {
     select recommendations.id,
            recommendations.type,
            recommendations.object_id as recommendations_object_id,
+           recommendations.created_at,
            recommendations.name,
            recommendations.from_version as "recommendations.from",
            recommendations.to_version as "recommendations.to",
