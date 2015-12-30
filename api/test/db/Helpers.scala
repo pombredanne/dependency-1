@@ -258,7 +258,7 @@ trait Helpers {
   def createToken(
     form: TokenForm = createTokenForm()
   ): Token = {
-    TokensDao.create(systemUser, InternalTokenForm.UserCreated(form))
+    create(TokensDao.create(systemUser, InternalTokenForm.UserCreated(form)))
   }
 
   def createTokenForm(

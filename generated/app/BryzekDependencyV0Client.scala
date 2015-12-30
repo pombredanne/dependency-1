@@ -1492,6 +1492,8 @@ package com.bryzek.dependency.v0 {
 
     def syncs: Syncs = Syncs
 
+    def tokens: Tokens = Tokens
+
     def users: Users = Users
 
     object Binaries extends Binaries {
@@ -2247,6 +2249,63 @@ package com.bryzek.dependency.v0 {
       }
     }
 
+    object Tokens extends Tokens {
+      override def get(
+        id: _root_.scala.Option[Seq[String]] = None,
+        userId: _root_.scala.Option[String] = None,
+        limit: Long = 25,
+        offset: Long = 0
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Token]] = {
+        val queryParameters = Seq(
+          userId.map("user_id" -> _),
+          Some("limit" -> limit.toString),
+          Some("offset" -> offset.toString)
+        ).flatten ++
+          id.getOrElse(Nil).map("id" -> _)
+
+        _executeRequest("GET", s"/tokens", queryParameters = queryParameters).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Token]", r, _.validate[Seq[com.bryzek.dependency.v0.models.Token]])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+        }
+      }
+
+      override def getById(
+        id: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Token] = {
+        _executeRequest("GET", s"/tokens/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Token", r, _.validate[com.bryzek.dependency.v0.models.Token])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+        }
+      }
+
+      override def post(
+        tokenForm: com.bryzek.dependency.v0.models.TokenForm
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Token] = {
+        val payload = play.api.libs.json.Json.toJson(tokenForm)
+
+        _executeRequest("POST", s"/tokens", body = Some(payload)).map {
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("com.bryzek.dependency.v0.models.Token", r, _.validate[com.bryzek.dependency.v0.models.Token])
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 422")
+        }
+      }
+
+      override def deleteById(
+        id: String
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
+        _executeRequest("DELETE", s"/tokens/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}").map {
+          case r if r.status == 204 => ()
+          case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
+          case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+        }
+      }
+    }
+
     object Users extends Users {
       override def get(
         id: _root_.scala.Option[String] = None,
@@ -2777,6 +2836,33 @@ package com.bryzek.dependency.v0 {
       limit: Long = 25,
       offset: Long = 0
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Sync]]
+  }
+
+  trait Tokens {
+    def get(
+      id: _root_.scala.Option[Seq[String]] = None,
+      userId: _root_.scala.Option[String] = None,
+      limit: Long = 25,
+      offset: Long = 0
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Token]]
+
+    /**
+     * Used to fetch one token
+     */
+    def getById(
+      id: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Token]
+
+    /**
+     * Create a new API token for this user
+     */
+    def post(
+      tokenForm: com.bryzek.dependency.v0.models.TokenForm
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[com.bryzek.dependency.v0.models.Token]
+
+    def deleteById(
+      id: String
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }
 
   trait Users {

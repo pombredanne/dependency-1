@@ -12,7 +12,7 @@ class TokensDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "setLatestByTag" in {
     val form = InternalTokenForm.UserCreated(createTokenForm())
-    val token1 = TokensDao.create(systemUser, form)
+    val token1 = create(TokensDao.create(systemUser, form))
 
     val token2 = TokensDao.setLatestByTag(systemUser, form)
     token1.id must not be(token2.id)
@@ -20,11 +20,11 @@ class TokensDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "findById" in {
     val token = createToken()
-    TokensDao.findById(token.id).map(_.id) must be(
+    TokensDao.findById(Authorization.All, token.id).map(_.id) must be(
       Some(token.id)
     )
 
-    TokensDao.findById(UUID.randomUUID.toString) must be(None)
+    TokensDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
   "getCleartextGithubOauthTokenByUserId" in {
@@ -37,32 +37,28 @@ class TokensDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     TokensDao.getCleartextGithubOauthTokenByUserId(createUser().id) must be(None)
   }
 
-  "incrementNumberViews" in {
+  "addCleartextIfAvailable" in {
     val token = createToken()
-
-    token.cleartext.getOrElse {
-      sys.error("New token must show cleartext")
+    token.cleartext must be(None)
+    val clear = TokensDao.addCleartextIfAvailable(systemUser, token).cleartext.getOrElse {
+      sys.error("Failed to read token")
     }
-
-    TokensDao.incrementNumberViews(systemUser, token.id)
-
-    val updated = TokensDao.findById(token.id).getOrElse {
-      sys.error("Failed to fetch token")
-    }
-    updated.cleartext must be(None)
+    clear.length must be(128)
+    token.masked must be(clear.substring(0, 3) + "-masked-xxx")
+    TokensDao.addCleartextIfAvailable(systemUser, token).cleartext must be(None)
   }
 
   "findAll by ids" in {
     val token1 = createToken()
     val token2 = createToken()
 
-    TokensDao.findAll(ids = Some(Seq(token1.id, token2.id))).map(_.id) must be(
+    TokensDao.findAll(Authorization.All, ids = Some(Seq(token1.id, token2.id))).map(_.id) must be(
       Seq(token1.id, token2.id)
     )
 
-    TokensDao.findAll(ids = Some(Nil)) must be(Nil)
-    TokensDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-    TokensDao.findAll(ids = Some(Seq(token1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(token1.id))
+    TokensDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
+    TokensDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    TokensDao.findAll(Authorization.All, ids = Some(Seq(token1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(token1.id))
   }
 
 }

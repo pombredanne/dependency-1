@@ -46,15 +46,14 @@ object TokensDao {
     select tokens.id,
            tokens.user_id,
            tokens.tag,
-           'xxx' as masked,
-           case when number_views = 0 then tokens.token else null end as cleartext,
+           substr(token, 1, 3) || '-masked-xxx' as masked,
+           null as cleartext,
            tokens.description
       from tokens
   """)
 
   private[this] val SelectCleartextTokenQuery = Query(s"""
-    select tokens.token
-      from tokens
+    select token, number_views from tokens
   """)
 
   private[this] val InsertQuery = """
@@ -69,49 +68,97 @@ object TokensDao {
   """
 
   def setLatestByTag(createdBy: User, form: InternalTokenForm): Token = {
-    findAll(userId = Some(form.userId), tag = Some(form.tag), limit = 1).headOption match {
+    findAll(Authorization.All, userId = Some(form.userId), tag = Some(form.tag), limit = 1).headOption match {
       case None => {
-        create(createdBy, form)
+        create(createdBy, form) match {
+          case Left(errors) => sys.error("Failed to create token: " + errors.mkString(", "))
+          case Right(token) => token
+        }
       }
       case Some(existing) => {
         DB.withTransaction { implicit c =>
           SoftDelete.delete(c, "tokens", createdBy.id, existing.id)
-          createWithConnection(createdBy, form)
+          createWithConnection(createdBy, form) match {
+            case Left(errors) => sys.error("Failed to create token: " + errors.mkString(", "))
+            case Right(token) => token
+          }
         }
       }
     }
   }
 
-  def create(createdBy: User, form: InternalTokenForm): Token = {
+  def create(createdBy: User, form: InternalTokenForm): Either[Seq[String], Token] = {
     DB.withConnection { implicit c =>
       createWithConnection(createdBy, form)
     }
   }
 
-  private[this] def createWithConnection(createdBy: User, form: InternalTokenForm)(implicit c: java.sql.Connection): Token = {
-    val id = io.flow.play.util.IdGenerator("tok").randomId()
-
-    SQL(InsertQuery).on(
-      'id -> id,
-      'user_id -> form.userId,
-      'tag -> form.tag.trim,
-      'token -> form.token.trim,
-      'description -> Util.trimmedString(form.description),
-      'updated_by_user_id -> createdBy.id
-    ).execute()
-
-    findAllWithConnection(id = Some(id), limit = 1).headOption.getOrElse {
-      sys.error("Failed to create token")
+  private[db] def validate(
+    form: InternalTokenForm
+  ): Seq[String] = {
+    form match {
+      case InternalTokenForm.GithubOauth(userId, token) => Nil
+      case InternalTokenForm.UserCreated(f) => {
+        UsersDao.findById(f.userId) match {
+          case None => Seq("User not found")
+          case Some(_) => Nil
+        }
+      }
     }
   }
 
-  def incrementNumberViews(createdBy: User, tokenId: String) {
-    DB.withConnection { implicit c =>
-      SQL(IncrementNumberViewsQuery).on(
-        'id -> tokenId,
-        'updated_by_user_id -> createdBy.id
-      ).execute()
+  private[this] def createWithConnection(createdBy: User, form: InternalTokenForm)(implicit c: java.sql.Connection): Either[Seq[String], Token] = {
+    validate(form) match {
+      case Nil => {
+        val id = io.flow.play.util.IdGenerator("tok").randomId()
+
+        SQL(InsertQuery).on(
+          'id -> id,
+          'user_id -> form.userId,
+          'tag -> form.tag.trim,
+          'token -> form.token.trim,
+          'description -> Util.trimmedString(form.description),
+          'updated_by_user_id -> createdBy.id
+        ).execute()
+
+        Right(
+          findAllWithConnection(Authorization.All, id = Some(id), limit = 1).headOption.getOrElse {
+            sys.error("Failed to create token")
+          }
+        )
+      }
+      case errors => Left(errors)
     }
+  }
+
+  def addCleartextIfAvailable(user: User, token: Token): Token = {
+    DB.withConnection { implicit c =>
+      SelectCleartextTokenQuery.equals("tokens.id", Some(token.id)).as(
+        cleartextTokenParser().*
+      ).headOption match {
+        case None => token
+        case Some(clear) => {
+          clear.numberViews match {
+            case 0 => {
+              incrementNumberViews(user, token.id)(c)
+              token.copy(cleartext = Some(clear.token))
+            }
+            case _ => {
+              token
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private[this] def incrementNumberViews(createdBy: User, tokenId: String)(
+    implicit c: java.sql.Connection
+  ) {
+    SQL(IncrementNumberViewsQuery).on(
+      'id -> tokenId,
+      'updated_by_user_id -> createdBy.id
+    ).execute()
   }
 
   def softDelete(deletedBy: User, token: Token) {
@@ -129,20 +176,23 @@ object TokensDao {
         limit(Some(1)).
         orderBy(Some("tokens.created_at desc")).
         as(
-          cleartestTokenParser().*
-        ).headOption
+          cleartextTokenParser().*
+        ).headOption.map(_.token)
     }
   }
 
-  private[this] def cleartestTokenParser() = {
-    SqlParser.str("token") map { case token => token }
+  private[this] case class CleartextToken(token: String, numberViews: Long)
+
+  private[this] def cleartextTokenParser() = {
+    SqlParser.str("token") ~ SqlParser.long("number_views") map { case token ~ numberViews => CleartextToken(token, numberViews) }
   }
 
-  def findById(id: String): Option[Token] = {
-    findAll(id = Some(id), limit = 1).headOption
+  def findById(auth: Authorization, id: String): Option[Token] = {
+    findAll(auth, id = Some(id), limit = 1).headOption
   }
 
   def findAll(
+    auth: Authorization,
     id: Option[String] = None,
     ids: Option[Seq[String]] = None,
     userId: Option[String] = None,
@@ -154,6 +204,7 @@ object TokensDao {
   ): Seq[Token] = {
     DB.withConnection { implicit c =>
       findAllWithConnection(
+        auth,
         id = id,
         ids = ids,
         userId = userId,
@@ -167,6 +218,7 @@ object TokensDao {
   }
 
   private[this] def findAllWithConnection(
+    auth: Authorization,
     id: Option[String] = None,
     ids: Option[Seq[String]] = None,
     userId: Option[String] = None,
@@ -179,7 +231,7 @@ object TokensDao {
     Standards.query(
       BaseQuery,
       tableName = "tokens",
-      auth = Clause.True, // TODO
+      auth = Clause.True, // TODO auth
       id = id,
       ids = ids,
       orderBy = orderBy.sql,
