@@ -31,15 +31,15 @@ class MembershipsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     MembershipsDao.isMember(createOrganization().key, user) must be(false)
   }
 
-  "findByOrganizationGuidAndUserGuid" in {
+  "findByOrganizationGuidAndUserId" in {
     membership // Create the membership record
 
-    MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, org.guid, user.id).map(_.guid) must be(
+    MembershipsDao.findByOrganizationGuidAndUserId(Authorization.All, org.guid, user.id).map(_.guid) must be(
       Some(membership.guid)
     )
 
-    MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, UUID.randomUUID, user.id) must be(None)
-    MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, org.guid, UUID.randomUUID) must be(None)
+    MembershipsDao.findByOrganizationGuidAndUserId(Authorization.All, UUID.randomUUID, user.id) must be(None)
+    MembershipsDao.findByOrganizationGuidAndUserId(Authorization.All, org.guid, UUID.randomUUID) must be(None)
   }
 
   "findByGuid" in {

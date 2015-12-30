@@ -38,7 +38,7 @@ object TokensDao {
           case true => existing
           case false => {
             DB.withTransaction { implicit c =>
-              SoftDelete.delete(c, "tokens", createdBy.guid, existing.guid)
+              SoftDelete.delete(c, "tokens", createdBy.id, existing.guid)
               createWithConnection(createdBy, form)
             }
           }
@@ -70,11 +70,11 @@ object TokensDao {
   }
 
   def softDelete(deletedBy: User, token: Token) {
-    SoftDelete.delete("tokens", deletedBy.guid, token.guid)
+    SoftDelete.delete("tokens", deletedBy.id, token.guid)
   }
 
   def findByUserGuidAndTag(
-    userGuid: UUID,
+    userId: String,
     tag: String
   ): Option[Token] = {
     findAll(
@@ -91,7 +91,7 @@ object TokensDao {
   def findAll(
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    userGuid: Option[UUID] = None,
+    userId: Option[String] = None,
     tag: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
@@ -113,7 +113,7 @@ object TokensDao {
   private[this] def findAllWithConnection(
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    userGuid: Option[UUID] = None,
+    userId: Option[String] = None,
     tag: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("tokens.created_at"),
@@ -131,7 +131,7 @@ object TokensDao {
       limit = Some(limit),
       offset = offset
     ).
-      equals("tokens.user_guid", userGuid).
+      equals("tokens.user_guid", userId).
       text("tokens.tag", tag, valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)).
       as(
         com.bryzek.dependency.v0.anorm.parsers.Token.table("tokens").*

@@ -41,7 +41,7 @@ object BinaryVersionsDao {
   private[db] def upsertWithConnection(createdBy: User, binaryGuid: UUID, version: String)(
     implicit c: java.sql.Connection
   ): BinaryVersion = {
-    val auth = Authorization.User(createdBy.guid)
+    val auth = Authorization.User(createdBy.id)
     findAllWithConnection(
       auth,
       binaryGuid = Some(binaryGuid),
@@ -91,7 +91,7 @@ object BinaryVersionsDao {
   }
 
   def softDelete(deletedBy: User, guid: UUID) {
-    SoftDelete.delete("binary_versions", deletedBy.guid, guid)
+    SoftDelete.delete("binary_versions", deletedBy.id, guid)
   }
 
   def findByBinaryAndVersion(

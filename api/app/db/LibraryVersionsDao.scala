@@ -50,7 +50,7 @@ object LibraryVersionsDao {
   private[db] def upsertWithConnection(createdBy: User, libraryGuid: UUID, form: VersionForm)(
     implicit c: java.sql.Connection
   ): LibraryVersion = {
-    val auth = Authorization.User(createdBy.guid)
+    val auth = Authorization.User(createdBy.id)
 
     findAllWithConnection(
       auth,
@@ -109,7 +109,7 @@ object LibraryVersionsDao {
   }
 
   def softDelete(deletedBy: User, guid: UUID) {
-    SoftDelete.delete("library_versions", deletedBy.guid, guid)
+    SoftDelete.delete("library_versions", deletedBy.id, guid)
   }
 
   def findByLibraryAndVersionAndCrossBuildVersion(

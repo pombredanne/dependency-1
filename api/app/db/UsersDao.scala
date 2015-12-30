@@ -105,13 +105,13 @@ object UsersDao {
     findAll(email = Some(email), limit = 1).headOption
   }
 
-  def findByGuid(guid: UUID): Option[User] = {
-    findAll(guid = Some(guid), limit = 1).headOption
+  def findById(id: String): Option[User] = {
+    findAll(id = Some(id), limit = 1).headOption
   }
 
   def findAll(
-    guid: Option[UUID] = None,
-    guids: Option[Seq[UUID]] = None,
+    id: Option[String] = None,
+    ids: Option[Seq[String]] = None,
     email: Option[String] = None,
     identifier: Option[String] = None,
     githubUserId: Option[Long] = None,

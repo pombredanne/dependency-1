@@ -1,9 +1,10 @@
 package db
 
-import io.flow.common.v0.models.{Audit, Reference}
+import com.bryzek.dependency.v0.models.UserReference
 import io.flow.user.v0.models.User
 import io.flow.postgresql.{Query, OrderBy}
 import com.bryzek.dependency.v0.models.Publication
+import org.joda.time.DateTime
 
 import anorm._
 import play.api.db._
@@ -12,15 +13,15 @@ import play.api.libs.json._
 import java.util.UUID
 
 case class LastEmailForm(
-  userGuid: UUID,
+  userId: String,
   publication: Publication
 )
 
 case class LastEmail(
   guid: UUID,
-  user: Reference,
+  user: UserReference,
   publication: Publication,
-  audit: Audit
+  createdAt: DateTime
 )
 
 object LastEmailsDao {
@@ -43,7 +44,7 @@ object LastEmailsDao {
   ): LastEmail = {
     val guid = DB.withTransaction { implicit c =>
       findByUserGuidAndPublication(form.userGuid, form.publication).foreach { rec =>
-        SoftDelete.delete(c, "last_emails", createdBy.guid, rec.guid)
+        SoftDelete.delete(c, "last_emails", createdBy.id, rec.guid)
       }
       create(createdBy, form)
     }
@@ -53,7 +54,7 @@ object LastEmailsDao {
   }
 
   def softDelete(deletedBy: User, rec: LastEmail) {
-    SoftDelete.delete("last_emails", deletedBy.guid, rec.guid)
+    SoftDelete.delete("last_emails", deletedBy.id, rec.guid)
   }
 
   private[this] def create(
@@ -76,14 +77,14 @@ object LastEmailsDao {
     findAll(guid = Some(guid), limit = 1).headOption
   }
 
-  def findByUserGuidAndPublication(userGuid: UUID, publication: Publication): Option[LastEmail] = {
+  def findByUserGuidAndPublication(userId: String, publication: Publication): Option[LastEmail] = {
     findAll(userGuid = Some(userGuid), publication = Some(publication), limit = 1).headOption
   }
 
   def findAll(
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    userGuid: Option[UUID] = None,
+    userId: Option[String] = None,
     publication: Option[Publication] = None,
     isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("-last_emails.publication, last_emails.created_at"),
@@ -95,7 +96,7 @@ object LastEmailsDao {
       BaseQuery.
         equals("last_emails.guid", guid).
         in("last_emails.guid", guids).
-        equals("last_emails.user_guid", userGuid).
+        equals("last_emails.user_guid", userId).
         text("last_emails.publication", publication).
         nullBoolean("last_emails.deleted_at", isDeleted).
         orderBy(orderBy.sql).
@@ -107,23 +108,17 @@ object LastEmailsDao {
 
   private[this] val parser: RowParser[LastEmail] = {
     SqlParser.get[_root_.java.util.UUID]("guid") ~
-    io.flow.common.v0.anorm.parsers.Reference.parser(
-      io.flow.common.v0.anorm.parsers.Reference.Mappings(
-        guid = "user_guid"
-      )
-    ) ~
+    SqlParser.str("user_id") ~
     com.bryzek.dependency.v0.anorm.parsers.Publication.parser(
       com.bryzek.dependency.v0.anorm.parsers.Publication.Mappings("publication")
     ) ~
-    io.flow.common.v0.anorm.parsers.Audit.parser(
-      io.flow.common.v0.anorm.parsers.Audit.Mappings.base
-    ) map {
-      case guid ~ user ~ publication ~ audit => {
+    SqlParser.get[DateTime]("created_at") map {
+      case guid ~ user ~ publication ~ createdAt => {
         LastEmail(
           guid = guid,
           user = user,
           publication = publication,
-          audit = audit
+          createdAt = createdAt
         )
       }
     }

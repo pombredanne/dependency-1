@@ -223,6 +223,7 @@
 	    "fields": [
 		{ "name": "guid", "type": "uuid" },
 		{ "name": "organization", "type": "organization_summary" },
+		{ "name": "user", "type": "user_reference", "description": "The user that created this project" },
 		{ "name": "visibility", "type": "visibility" },
 		{ "name": "scms", "type": "scms" },
 		{ "name": "name", "type": "string" },
@@ -306,13 +307,14 @@
 		{ "name": "object", "type": "reference" },
 		{ "name": "name", "type": "string", "description": "The name of the library or binary to upgrade" },
 		{ "name": "from", "type": "string", "description": "The current version" },
-		{ "name": "to", "type": "string", "description": "The version to which we recommend upgrading" }
+		{ "name": "to", "type": "string", "description": "The version to which we recommend upgrading" },
+		{ "name": "created_at", "type": "date-time-iso8601" }
 	    ]
 	},
 
 	"github_user_form": {
 	    "fields": [
-		{ "name": "user_guid", "type": "uuid" },
+		{ "name": "user_id", "type": "string" },
 		{ "name": "id", "type": "long" },
 		{ "name": "login", "type": "string" }
 	    ]
@@ -353,7 +355,7 @@
 
 	"token_form": {
 	    "fields": [
-		{ "name": "user_guid", "type": "uuid" },
+		{ "name": "user_id", "type": "string" },
 		{ "name": "tag", "type": "string" },
 		{ "name": "token", "type": "string" }
 	    ]
@@ -370,7 +372,7 @@
 
 	"subscription_form": {
 	    "fields": [
-		{ "name": "user_guid", "type": "uuid" },
+		{ "name": "user_id", "type": "string" },
 		{ "name": "publication", "type": "publication" }
 	    ]
 	},
@@ -415,7 +417,7 @@
 
 	"membership_form": {
             "fields": [
-                { "name": "user_guid", "type": "uuid" },
+                { "name": "user_id", "type": "string" },
                 { "name": "organization", "type": "string" },
                 { "name": "role", "type": "role", "default": "member" }
             ]
@@ -460,9 +462,9 @@
             "operations": [
                 {
                     "method": "GET",
-                    "description": "Search for a specific user. You must specify at least 1 parameter - either a guid or email - and will receive back either 0 or 1 users.",
+                    "description": "Search for a specific user. You must specify at least 1 parameter - either a id or email - and will receive back either 0 or 1 users.",
                     "parameters": [
-                        { "name": "guid", "type": "uuid", "description": "Find user with this guid. Exact match", "required": false },
+                        { "name": "id", "type": "string", "description": "Find user with this id. Exact match", "required": false },
                         { "name": "email", "type": "string", "description": "Find user with this email address. Case in-sensitive. Exact match", "required": false },
 			{ "name": "identifier", "type": "string", "description": "Find user associated with this randomly generated identifier. Exact match", "required": false }
                     ],
@@ -474,8 +476,8 @@
 
                 {
                     "method": "GET",
-                    "description": "Returns information about the user with this guid.",
-                    "path": "/:guid",
+                    "description": "Returns information about the user with this id.",
+                    "path": "/:id",
                     "responses": {
                         "200": { "type": "io.flow.user.v0.models.user" },
                         "401": { "type": "unit" },
@@ -486,7 +488,7 @@
                 {
                     "method": "GET",
                     "description": "Returns the latest identifier for this user. The basic use case is to enable things like unsubscribe w/out  login (and thus once you have an identifier, you can GET /users?identifier=xxx). Identifiers are rotated regularly with last n identifiers being valid (allowing eventual expiration).",
-                    "path": "/:guid/identifier",
+                    "path": "/:id/identifier",
                     "responses": {
                         "200": { "type": "user_identifier" },
                         "401": { "type": "unit" },
@@ -643,7 +645,7 @@
                     "parameters": [
                         { "name": "guid", "type": "uuid", "description": "Find organization with this guid. Exact match", "required": false },
 			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
-                        { "name": "user_guid", "type": "uuid", "description": "Find organizations that this user has access to", "required": false },
+                        { "name": "user_id", "type": "string", "description": "Find organizations that this user has access to", "required": false },
                         { "name": "key", "type": "string", "description": "Find organization with this key. Case in-sensitive. Exact match", "required": false },
 			{ "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
@@ -657,9 +659,9 @@
                 {
                     "method": "GET",
                     "description": "Returns the organization representing the individual user.",
-                    "path": "/users/:user_guid",
+                    "path": "/users/:user_id",
                     "parameters": [
-                        { "name": "user_guid", "type": "uuid", "description": "Find organization representing this user" }
+                        { "name": "user_id", "type": "string", "description": "Find organization representing this user" }
 		    ],
                     "responses": {
                         "200": { "type": "organization" },
@@ -723,7 +725,7 @@
                         { "name": "guid", "type": "uuid", "description": "Find organization with this guid. Exact match", "required": false },
 			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
                         { "name": "organization", "type": "string", "required": false, "description": "Filter to organization with this key. Case insensitive" },
-                        { "name": "user_guid", "type": "uuid", "required": false },
+                        { "name": "user_id", "type": "string", "required": false },
                         { "name": "role", "type": "role", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },
                         { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
@@ -1023,7 +1025,7 @@
                     "parameters": [
                         { "name": "guid", "type": "uuid", "description": "Find the subscription with this guid.", "required": false },
 			{ "name": "guids", "type": "[uuid]", "description": "Filter by any one of these guids", "required": false },
-                        { "name": "user_guid", "type": "uuid", "description": "Find subscriptions for this user.", "required": false },
+                        { "name": "user_id", "type": "string", "description": "Find subscriptions for this user.", "required": false },
 			{ "name": "identifier", "type": "string", "description": "Find subscriptions associated with this user identifier. Exact match", "required": false },
                         { "name": "publication", "type": "publication", "description": "Find subscriptions for this publication.", "required": false },
                         { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 0, "maximum": 100 },

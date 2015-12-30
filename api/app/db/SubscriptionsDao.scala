@@ -28,7 +28,7 @@ object SubscriptionsDao {
   private[db] def validate(
     form: SubscriptionForm
   ): Seq[String] = {
-    val userErrors = UsersDao.findByGuid(form.userGuid) match {
+    val userErrors = UsersDao.findById(form.userGuid) match {
       case None => Seq("User not found")
       case Some(_) => Nil
     }
@@ -79,11 +79,11 @@ object SubscriptionsDao {
   }
 
   def softDelete(deletedBy: User, subscription: Subscription) {
-    SoftDelete.delete("subscriptions", deletedBy.guid, subscription.guid)
+    SoftDelete.delete("subscriptions", deletedBy.id, subscription.guid)
   }
 
   def findByUserGuidAndPublication(
-    userGuid: UUID,
+    userId: String,
     publication: Publication
   ): Option[Subscription] = {
     findAll(
@@ -100,7 +100,7 @@ object SubscriptionsDao {
   def findAll(
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    userGuid: Option[UUID] = None,
+    userId: Option[String] = None,
     identifier: Option[String] = None,
     publication: Option[Publication] = None,
     minHoursSinceLastEmail: Option[Int] = None,
@@ -122,7 +122,7 @@ object SubscriptionsDao {
         limit = Some(limit),
         offset = offset
       ).
-        equals("subscriptions.user_guid", userGuid).
+        equals("subscriptions.user_guid", userId).
         text("subscriptions.publication", publication).
         condition(
           minHoursSinceLastEmail.map { v => """

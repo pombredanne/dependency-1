@@ -20,7 +20,8 @@ object ProjectsDao {
            projects.name,
            projects.uri,
            organizations.guid as projects_organization_guid,
-           organizations.key as projects_organization_key
+           organizations.key as projects_organization_key,
+           users.guid as projects_user_guid
       from projects
       left join organizations on organizations.deleted_at is null and organizations.guid = projects.organization_guid
   """)
@@ -37,7 +38,7 @@ object ProjectsDao {
     insert into projects
     (guid, organization_guid, visibility, scms, name, uri, created_by_guid, updated_by_guid)
     values
-    ({guid}::uuid, {organization_guid}::uuid, {visibility}, {scms}, {name}, {uri}, {updated_by_user_id})
+    ({guid}::uuid, {user_guid}::uuid, {organization_guid}::uuid, {visibility}, {scms}, {name}, {uri}, {updated_by_user_id})
   """
 
   private[this] val UpdateQuery = """
@@ -119,6 +120,7 @@ object ProjectsDao {
           SQL(InsertQuery).on(
             'guid -> guid,
             'organization_guid -> org.guid,
+            'user_guid -> createdBy.id,
             'visibility -> form.visibility.toString,
             'scms -> form.scms.toString,
             'name -> form.name.trim,
@@ -156,7 +158,7 @@ object ProjectsDao {
             'scms -> form.scms.toString,
             'name -> form.name.trim,
             'uri -> form.uri.trim,
-            'updated_by_guid -> createdBy.guid
+            'updated_by_guid -> createdBy.id
           ).execute()
         }
 
@@ -173,7 +175,7 @@ object ProjectsDao {
   }
 
   def softDelete(deletedBy: User, project: Project) {
-    SoftDelete.delete("projects", deletedBy.guid, project.guid)
+    SoftDelete.delete("projects", deletedBy.id, project.guid)
     MainActor.ref ! MainActor.Messages.ProjectDeleted(project.guid)
   }
 

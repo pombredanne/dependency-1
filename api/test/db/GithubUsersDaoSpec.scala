@@ -23,17 +23,17 @@ class GithubUsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     user2.guid must not be(user3.guid)
     user2.guid must not be(user3.guid)
 
-    user1.audit.createdBy.guid must be(db.UsersDao.anonymousUser.guid)
-    user3.audit.createdBy.guid must be(systemUser.guid)
+    user1.audit.createdBy.id must be(db.UsersDao.anonymousUser.guid)
+    user3.audit.createdBy.id must be(systemUser.guid)
   }
 
   "findByGuid" in {
     val user = createGithubUser()
-    GithubUsersDao.findByGuid(user.id).map(_.guid) must be(
+    GithubUsersDao.findById(user.id).map(_.guid) must be(
       Some(user.id)
     )
 
-    UsersDao.findByGuid(UUID.randomUUID) must be(None)
+    UsersDao.findById(UUID.randomUUID) must be(None)
   }
 
   "findAll by guids" in {

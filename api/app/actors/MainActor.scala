@@ -45,7 +45,7 @@ object MainActor {
     case class BinarySync(guid: UUID)
     case class BinarySyncCompleted(guid: UUID)
 
-    case class UserCreated(guid: UUID)
+    case class UserCreated(id: String)
   }
 }
 
@@ -60,7 +60,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
   private[this] val binaryActors = scala.collection.mutable.Map[UUID, ActorRef]()
   private[this] val libraryActors = scala.collection.mutable.Map[UUID, ActorRef]()
   private[this] val projectActors = scala.collection.mutable.Map[UUID, ActorRef]()
-  private[this] val userActors = scala.collection.mutable.Map[UUID, ActorRef]()
+  private[this] val userActors = scala.collection.mutable.Map[String, ActorRef]()
   private[this] val resolverActors = scala.collection.mutable.Map[UUID, ActorRef]()
 
   implicit val mainActorExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("main-actor-context")
@@ -97,13 +97,12 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
 
   def receive = akka.event.LoggingReceive {
 
-    case m @ MainActor.Messages.UserCreated(guid) => withVerboseErrorHandler(m) {
-      upsertUserActor(guid) ! UserActor.Messages.Created
+    case m @ MainActor.Messages.UserCreated(id) => withVerboseErrorHandler(m) {
+      upsertUserActor(id) ! UserActor.Messages.Created
     }
 
     case m @ MainActor.Messages.ProjectCreated(guid) => withVerboseErrorHandler(m) {
       val actor = upsertProjectActor(guid)
-      actor ! ProjectActor.Messages.Watch
       actor ! ProjectActor.Messages.Sync
       searchActor ! SearchActor.Messages.SyncProject(guid)
     }
@@ -199,11 +198,11 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
 
   }
 
-  def upsertUserActor(guid: UUID): ActorRef = {
-    userActors.lift(guid).getOrElse {
-      val ref = Akka.system.actorOf(Props[UserActor], name = s"$name:userActor:$guid")
-      ref ! UserActor.Messages.Data(guid)
-      userActors += (guid -> ref)
+  def upsertUserActor(id: String): ActorRef = {
+    userActors.lift(id).getOrElse {
+      val ref = Akka.system.actorOf(Props[UserActor], name = s"$name:userActor:$id")
+      ref ! UserActor.Messages.Data(id)
+      userActors += (id -> ref)
       ref
     }
   }

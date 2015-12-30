@@ -21,7 +21,7 @@ class Memberships @javax.inject.Inject() (
     guid: Option[UUID],
     guids: Option[Seq[UUID]],
     organization: Option[String],
-    userGuid: Option[UUID],
+    userId: Option[String],
     role: Option[Role],
     limit: Long = 25,
     offset: Long = 0
@@ -33,7 +33,7 @@ class Memberships @javax.inject.Inject() (
           guid = guid,
           guids = optionals(guids),
           organization = organization,
-          userGuid = userGuid,
+          userId = userId,
           role = role,
           limit = limit,
           offset = offset

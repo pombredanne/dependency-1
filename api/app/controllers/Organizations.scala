@@ -19,7 +19,7 @@ class Organizations @javax.inject.Inject() (
   def get(
     guid: Option[UUID],
     guids: Option[Seq[UUID]],
-    userGuid: Option[UUID],
+    userId: Option[String],
     key: Option[String],
     limit: Long = 25,
     offset: Long = 0
@@ -30,7 +30,7 @@ class Organizations @javax.inject.Inject() (
           authorization(request),
           guid = guid,
           guids = optionals(guids),
-          userGuid = userGuid,
+          userId = userId,
           key = key,
           limit = limit,
           offset = offset
@@ -45,8 +45,8 @@ class Organizations @javax.inject.Inject() (
     }
   }
 
-  def getUsersByUserGuid(userGuid: UUID) = Identified { request =>
-    withUser(userGuid) { user =>
+  def getUsersByUserId(userId: String) = Identified { request =>
+    withUser(userId) { user =>
       Ok(Json.toJson(OrganizationsDao.upsertForUser(user)))
     }
   }

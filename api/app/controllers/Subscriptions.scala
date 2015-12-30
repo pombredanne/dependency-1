@@ -50,7 +50,7 @@ class Subscriptions @javax.inject.Inject() (
   def get(
     guid: Option[UUID],
     guids: Option[Seq[UUID]],
-    userGuid: Option[UUID],
+    userId: Option[String],
     identifier: Option[String],
     publication: Option[Publication],
     limit: Long = 25,
@@ -61,7 +61,7 @@ class Subscriptions @javax.inject.Inject() (
         SubscriptionsDao.findAll(
           guid = guid,
           guids = optionals(guids),
-          userGuid = userGuid,
+          userId = userId,
           identifier = identifier,
           publication = publication,
           limit = limit,

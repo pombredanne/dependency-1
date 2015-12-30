@@ -76,7 +76,7 @@ object BinariesDao {
   }
 
   def softDelete(deletedBy: User, binary: Binary) {
-    SoftDelete.delete("binaries", deletedBy.guid, binary.guid)
+    SoftDelete.delete("binaries", deletedBy.id, binary.guid)
     MainActor.ref ! MainActor.Messages.BinaryDeleted(binary.guid)
   }
 

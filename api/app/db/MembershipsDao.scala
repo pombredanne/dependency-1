@@ -35,14 +35,14 @@ object MembershipsDao {
   """
 
   def isMember(orgGuid: UUID, user: User): Boolean = {
-    MembershipsDao.findByOrganizationGuidAndUserGuid(Authorization.All, orgGuid, user.id) match {
+    MembershipsDao.findByOrganizationGuidAndUserId(Authorization.All, orgGuid, user.id) match {
       case None => false
       case Some(_) => true
     }
   }
 
   def isMember(org: String, user: User): Boolean = {
-    MembershipsDao.findByOrganizationAndUserGuid(Authorization.All, org, user.id) match {
+    MembershipsDao.findByOrganizationAndUserId(Authorization.All, org, user.id) match {
       case None => false
       case Some(_) => true
     }
@@ -55,7 +55,7 @@ object MembershipsDao {
     val roleErrors = form.role match {
       case Role.UNDEFINED(_) => Seq("Invalid role. Must be one of: " + Role.all.map(_.toString).mkString(", "))
       case _ => {
-        MembershipsDao.findByOrganizationAndUserGuid(Authorization.All, form.organization, form.userGuid) match {
+        MembershipsDao.findByOrganizationAndUserId(Authorization.All, form.organization, form.userGuid) match {
           case None => Seq.empty
           case Some(membership) => {
             Seq("User is already a member")
@@ -64,7 +64,7 @@ object MembershipsDao {
       }
     }
 
-    val organizationErrors = MembershipsDao.findByOrganizationAndUserGuid(Authorization.All, form.organization, user.id) match {
+    val organizationErrors = MembershipsDao.findByOrganizationAndUserId(Authorization.All, form.organization, user.id) match {
       case None => Seq("Organization does not exist or you are not authorized to access this organization")
       case Some(_) => Nil
     }
@@ -75,7 +75,7 @@ object MembershipsDao {
   def create(createdBy: User, form: MembershipForm): Either[Seq[String], Membership] = {
     validate(createdBy, form) match {
       case Nil => {
-        val guid = MembershipsDao.findByOrganizationAndUserGuid(Authorization.All, form.organization, form.userGuid) match {
+        val guid = MembershipsDao.findByOrganizationAndUserId(Authorization.All, form.organization, form.userGuid) match {
           case None => {
             DB.withConnection { implicit c =>
               create(c, createdBy, form)
@@ -84,7 +84,7 @@ object MembershipsDao {
           case Some(existing) => {
             // the role is changing. Replace record
             DB.withTransaction { implicit c =>
-              SoftDelete.delete(c, "memberships", createdBy.guid, existing.guid)
+              SoftDelete.delete(c, "memberships", createdBy.id, existing.guid)
               create(c, createdBy, form)
             }
           }
@@ -107,7 +107,7 @@ object MembershipsDao {
     create(c, createdBy, org.guid, form.userGuid, form.role)
   }
 
-  private[db] def create(implicit c: java.sql.Connection, createdBy: User, orgGuid: UUID, userGuid: UUID, role: Role): UUID = {
+  private[db] def create(implicit c: java.sql.Connection, createdBy: User, orgGuid: UUID, userId: String, role: Role): UUID = {
     val guid = UUID.randomUUID
 
     SQL(InsertQuery).on(
@@ -121,13 +121,13 @@ object MembershipsDao {
   }
 
   def softDelete(deletedBy: User, membership: Membership) {
-    SoftDelete.delete("memberships", deletedBy.guid, membership.guid)
+    SoftDelete.delete("memberships", deletedBy.id, membership.guid)
   }
 
-  def findByOrganizationAndUserGuid(
+  def findByOrganizationAndUserId(
     auth: Authorization,
     organization: String,
-    userGuid: UUID
+    userId: String
   ): Option[Membership] = {
     findAll(
       auth,
@@ -137,10 +137,10 @@ object MembershipsDao {
     ).headOption
   }
 
-  def findByOrganizationGuidAndUserGuid(
+  def findByOrganizationGuidAndUserId(
     auth: Authorization,
     organizationGuid: UUID,
-    userGuid: UUID
+    userId: String
   ): Option[Membership] = {
     findAll(
       auth,
@@ -160,7 +160,7 @@ object MembershipsDao {
     guids: Option[Seq[UUID]] = None,
      organization: Option[String] = None,
     organizationGuid: Option[UUID] = None,
-    userGuid: Option[UUID] = None,
+    userId: Option[String] = None,
     role: Option[Role] = None,
     isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("memberships.created_at"),
@@ -181,7 +181,7 @@ object MembershipsDao {
     ).
       equals("memberships.organization_guid", organizationGuid).
       text("organizations.key", organization, valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)).
-      equals("memberships.user_guid", userGuid).
+      equals("memberships.user_guid", userId).
       text("memberships.role", role.map(_.toString.toLowerCase)).
       as(
         com.bryzek.dependency.v0.anorm.parsers.Membership.table("memberships").*

@@ -419,7 +419,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
   object GithubUserForm {
 
     case class Mappings(
-      userGuid: String = "user_guid",
+      userId: String = "user_id",
       id: String = "id",
       login: String = "login"
     )
@@ -431,7 +431,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       def table(table: String) = prefix(table, ".")
 
       def prefix(prefix: String, sep: String) = Mappings(
-        userGuid = s"${prefix}${sep}user_guid",
+        userId = s"${prefix}${sep}user_id",
         id = s"${prefix}${sep}id",
         login = s"${prefix}${sep}login"
       )
@@ -441,12 +441,12 @@ package com.bryzek.dependency.v0.anorm.parsers {
     def table(table: String) = parser(Mappings.prefix(table, "."))
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.GithubUserForm] = {
-      SqlParser.get[_root_.java.util.UUID](mappings.userGuid) ~
+      SqlParser.str(mappings.userId) ~
       SqlParser.long(mappings.id) ~
       SqlParser.str(mappings.login) map {
-        case userGuid ~ id ~ login => {
+        case userId ~ id ~ login => {
           com.bryzek.dependency.v0.models.GithubUserForm(
-            userGuid = userGuid,
+            userId = userId,
             id = id,
             login = login
           )
@@ -739,7 +739,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
   object MembershipForm {
 
     case class Mappings(
-      userGuid: String = "user_guid",
+      userId: String = "user_id",
       organization: String = "organization",
       role: String = "role"
     )
@@ -751,7 +751,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       def table(table: String) = prefix(table, ".")
 
       def prefix(prefix: String, sep: String) = Mappings(
-        userGuid = s"${prefix}${sep}user_guid",
+        userId = s"${prefix}${sep}user_id",
         organization = s"${prefix}${sep}organization",
         role = s"${prefix}${sep}role"
       )
@@ -761,12 +761,12 @@ package com.bryzek.dependency.v0.anorm.parsers {
     def table(table: String) = parser(Mappings.prefix(table, "."))
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.MembershipForm] = {
-      SqlParser.get[_root_.java.util.UUID](mappings.userGuid) ~
+      SqlParser.str(mappings.userId) ~
       SqlParser.str(mappings.organization) ~
       com.bryzek.dependency.v0.anorm.parsers.Role.parser(com.bryzek.dependency.v0.anorm.parsers.Role.Mappings(mappings.role)) map {
-        case userGuid ~ organization ~ role => {
+        case userId ~ organization ~ role => {
           com.bryzek.dependency.v0.models.MembershipForm(
-            userGuid = userGuid,
+            userId = userId,
             organization = organization,
             role = role
           )
@@ -885,6 +885,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
     case class Mappings(
       guid: String = "guid",
       organization: com.bryzek.dependency.v0.anorm.parsers.OrganizationSummary.Mappings,
+      user: com.bryzek.dependency.v0.anorm.parsers.UserReference.Mappings,
       visibility: String = "visibility",
       scms: String = "scms",
       name: String = "name",
@@ -900,6 +901,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       def prefix(prefix: String, sep: String) = Mappings(
         guid = s"${prefix}${sep}guid",
         organization = com.bryzek.dependency.v0.anorm.parsers.OrganizationSummary.Mappings.prefix(Seq(prefix, "organization").filter(!_.isEmpty).mkString("_"), "_"),
+        user = com.bryzek.dependency.v0.anorm.parsers.UserReference.Mappings.prefix(Seq(prefix, "user").filter(!_.isEmpty).mkString("_"), "_"),
         visibility = s"${prefix}${sep}visibility",
         scms = s"${prefix}${sep}scms",
         name = s"${prefix}${sep}name",
@@ -913,14 +915,16 @@ package com.bryzek.dependency.v0.anorm.parsers {
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.Project] = {
       SqlParser.get[_root_.java.util.UUID](mappings.guid) ~
       com.bryzek.dependency.v0.anorm.parsers.OrganizationSummary.parser(mappings.organization) ~
+      com.bryzek.dependency.v0.anorm.parsers.UserReference.parser(mappings.user) ~
       com.bryzek.dependency.v0.anorm.parsers.Visibility.parser(com.bryzek.dependency.v0.anorm.parsers.Visibility.Mappings(mappings.visibility)) ~
       com.bryzek.dependency.v0.anorm.parsers.Scms.parser(com.bryzek.dependency.v0.anorm.parsers.Scms.Mappings(mappings.scms)) ~
       SqlParser.str(mappings.name) ~
       SqlParser.str(mappings.uri) map {
-        case guid ~ organization ~ visibility ~ scms ~ name ~ uri => {
+        case guid ~ organization ~ user ~ visibility ~ scms ~ name ~ uri => {
           com.bryzek.dependency.v0.models.Project(
             guid = guid,
             organization = organization,
+            user = user,
             visibility = visibility,
             scms = scms,
             name = name,
@@ -1225,7 +1229,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
       `object`: com.bryzek.dependency.v0.anorm.parsers.Reference.Mappings,
       name: String = "name",
       from: String = "from",
-      to: String = "to"
+      to: String = "to",
+      createdAt: String = "created_at"
     )
 
     object Mappings {
@@ -1241,7 +1246,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
         `object` = com.bryzek.dependency.v0.anorm.parsers.Reference.Mappings.prefix(Seq(prefix, "object").filter(!_.isEmpty).mkString("_"), "_"),
         name = s"${prefix}${sep}name",
         from = s"${prefix}${sep}from",
-        to = s"${prefix}${sep}to"
+        to = s"${prefix}${sep}to",
+        createdAt = s"${prefix}${sep}created_at"
       )
 
     }
@@ -1255,8 +1261,9 @@ package com.bryzek.dependency.v0.anorm.parsers {
       com.bryzek.dependency.v0.anorm.parsers.Reference.parser(mappings.`object`) ~
       SqlParser.str(mappings.name) ~
       SqlParser.str(mappings.from) ~
-      SqlParser.str(mappings.to) map {
-        case guid ~ project ~ typeInstance ~ objectInstance ~ name ~ from ~ to => {
+      SqlParser.str(mappings.to) ~
+      SqlParser.get[_root_.org.joda.time.DateTime](mappings.createdAt) map {
+        case guid ~ project ~ typeInstance ~ objectInstance ~ name ~ from ~ to ~ createdAt => {
           com.bryzek.dependency.v0.models.Recommendation(
             guid = guid,
             project = project,
@@ -1264,7 +1271,8 @@ package com.bryzek.dependency.v0.anorm.parsers {
             `object` = objectInstance,
             name = name,
             from = from,
-            to = to
+            to = to,
+            createdAt = createdAt
           )
         }
       }
@@ -1523,7 +1531,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
   object SubscriptionForm {
 
     case class Mappings(
-      userGuid: String = "user_guid",
+      userId: String = "user_id",
       publication: String = "publication"
     )
 
@@ -1534,7 +1542,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       def table(table: String) = prefix(table, ".")
 
       def prefix(prefix: String, sep: String) = Mappings(
-        userGuid = s"${prefix}${sep}user_guid",
+        userId = s"${prefix}${sep}user_id",
         publication = s"${prefix}${sep}publication"
       )
 
@@ -1543,11 +1551,11 @@ package com.bryzek.dependency.v0.anorm.parsers {
     def table(table: String) = parser(Mappings.prefix(table, "."))
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.SubscriptionForm] = {
-      SqlParser.get[_root_.java.util.UUID](mappings.userGuid) ~
+      SqlParser.str(mappings.userId) ~
       com.bryzek.dependency.v0.anorm.parsers.Publication.parser(com.bryzek.dependency.v0.anorm.parsers.Publication.Mappings(mappings.publication)) map {
-        case userGuid ~ publication => {
+        case userId ~ publication => {
           com.bryzek.dependency.v0.models.SubscriptionForm(
-            userGuid = userGuid,
+            userId = userId,
             publication = publication
           )
         }
@@ -1639,7 +1647,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
   object TokenForm {
 
     case class Mappings(
-      userGuid: String = "user_guid",
+      userId: String = "user_id",
       tag: String = "tag",
       token: String = "token"
     )
@@ -1651,7 +1659,7 @@ package com.bryzek.dependency.v0.anorm.parsers {
       def table(table: String) = prefix(table, ".")
 
       def prefix(prefix: String, sep: String) = Mappings(
-        userGuid = s"${prefix}${sep}user_guid",
+        userId = s"${prefix}${sep}user_id",
         tag = s"${prefix}${sep}tag",
         token = s"${prefix}${sep}token"
       )
@@ -1661,12 +1669,12 @@ package com.bryzek.dependency.v0.anorm.parsers {
     def table(table: String) = parser(Mappings.prefix(table, "."))
 
     def parser(mappings: Mappings): RowParser[com.bryzek.dependency.v0.models.TokenForm] = {
-      SqlParser.get[_root_.java.util.UUID](mappings.userGuid) ~
+      SqlParser.str(mappings.userId) ~
       SqlParser.str(mappings.tag) ~
       SqlParser.str(mappings.token) map {
-        case userGuid ~ tag ~ token => {
+        case userId ~ tag ~ token => {
           com.bryzek.dependency.v0.models.TokenForm(
-            userGuid = userGuid,
+            userId = userId,
             tag = tag,
             token = token
           )

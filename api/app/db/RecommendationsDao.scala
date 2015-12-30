@@ -92,7 +92,7 @@ object RecommendationsDao {
   }
 
   def softDelete(deletedBy: User, rec: Recommendation) {
-    SoftDelete.delete("recommendations", deletedBy.guid, rec.guid)
+    SoftDelete.delete("recommendations", deletedBy.id, rec.guid)
   }
 
   private[this] def upsert(
@@ -123,7 +123,7 @@ object RecommendationsDao {
             // No-op
           }
           case false => {
-            SoftDelete.delete(c, "recommendations", createdBy.guid, rec.guid)
+            SoftDelete.delete(c, "recommendations", createdBy.id, rec.guid)
             create(createdBy, form)
           }
         }

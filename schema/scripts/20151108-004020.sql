@@ -63,6 +63,7 @@ comment on column organizations.key is '
 create table projects (
   guid                    uuid primary key,
   organization_guid       uuid not null references organizations,
+  user_guid               uuid not null references users,
   visibility              text not null check(util.lower_non_empty_trimmed_string(visibility)),
   scms                    text not null check(util.lower_non_empty_trimmed_string(scms)),
   name                    text not null check(util.non_empty_trimmed_string(name)),

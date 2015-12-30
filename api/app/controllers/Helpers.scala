@@ -8,10 +8,10 @@ import java.util.UUID
 
 trait Helpers {
 
-  def withUser(guid: UUID)(
+  def withUser(id: String)(
     f: User => Result
   ) = {
-    UsersDao.findByGuid(guid) match {
+    UsersDao.findById(id) match {
       case None => {
         Results.NotFound
       }

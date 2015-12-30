@@ -69,7 +69,7 @@ object GithubUsersDao {
   def findAll(
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    userGuid: Option[UUID] = None,
+    userId: Option[String] = None,
     login: Option[String] = None,
     id: Option[Long] = None,
     isDeleted: Option[Boolean] = Some(false),

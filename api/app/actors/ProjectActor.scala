@@ -1,10 +1,10 @@
 package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.api.lib.{DefaultLibraryArtifactProvider, Dependencies, GithubDependencyProviderClient}
-import com.bryzek.dependency.v0.models.{Binary, BinaryForm, BinaryType, Library, LibraryForm, Project, ProjectBinary, ProjectLibrary, RecommendationType, VersionForm, WatchProjectForm}
+import com.bryzek.dependency.v0.models.{Binary, BinaryForm, BinaryType, Library, LibraryForm, Project, ProjectBinary, ProjectLibrary, RecommendationType, VersionForm}
 import io.flow.postgresql.Pager
 import db.{Authorization, BinariesDao, LibrariesDao, LibraryVersionsDao, ProjectBinariesDao, ProjectLibrariesDao}
-import db.{ProjectsDao, RecommendationsDao, SyncsDao, UsersDao, WatchProjectsDao}
+import db.{ProjectsDao, RecommendationsDao, SyncsDao, UsersDao}
 import play.api.Logger
 import play.libs.Akka
 import akka.actor.Actor
@@ -20,7 +20,6 @@ object ProjectActor {
     case object Deleted extends Message
     case object Sync extends Message
     case object SyncCompleted extends Message
-    case object Watch extends Message
 
     case class ProjectLibraryCreated(guid: UUID) extends Message
     case class ProjectLibrarySync(guid: UUID) extends Message
@@ -46,20 +45,6 @@ class ProjectActor extends Actor with Util {
 
     case m @ ProjectActor.Messages.Data(guid) => withVerboseErrorHandler(m.toString) {
       dataProject = ProjectsDao.findByGuid(Authorization.All, guid)
-    }
-
-    case m @ ProjectActor.Messages.Watch => withVerboseErrorHandler(m.toString) {
-      dataProject.foreach { project =>
-        UsersDao.findByGuid(project.audit.createdBy.guid).map { createdBy =>
-          WatchProjectsDao.upsert(
-            createdBy,
-            WatchProjectForm(
-              userGuid = project.audit.createdBy.guid,
-              projectGuid = project.guid
-            )
-          )
-        }
-      }
     }
 
     case m @ ProjectActor.Messages.ProjectLibraryCreated(guid) => withVerboseErrorHandler(m.toString) {
@@ -94,7 +79,7 @@ class ProjectActor extends Actor with Util {
       dataProject.foreach { project =>
         SyncsDao.recordStarted(MainActor.SystemUser, "project", project.guid)
 
-        UsersDao.findByGuid(project.audit.createdBy.guid).map { user =>
+        UsersDao.findById(project.user.id).map { user =>
           val summary = ProjectsDao.toSummary(project)
 
           GithubDependencyProviderClient.instance(summary, user).dependencies(project).map { dependencies =>

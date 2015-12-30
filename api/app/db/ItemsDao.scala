@@ -177,7 +177,7 @@ object ItemsDao {
   }
 
   def softDelete(deletedBy: User, item: Item) {
-    SoftDelete.delete("items", deletedBy.guid, item.guid)
+    SoftDelete.delete("items", deletedBy.id, item.guid)
   }
 
   def softDeleteByObjectGuid(auth: Authorization, deletedBy: User, objectGuid: UUID) {

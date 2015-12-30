@@ -119,7 +119,7 @@ object LibrariesDao {
   }
 
   def softDelete(deletedBy: User, library: Library) {
-    SoftDelete.delete("libraries", deletedBy.guid, library.guid)
+    SoftDelete.delete("libraries", deletedBy.id, library.guid)
     MainActor.ref ! MainActor.Messages.LibraryDeleted(library.guid)
   }
 

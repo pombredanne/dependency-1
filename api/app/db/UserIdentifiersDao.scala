@@ -83,7 +83,7 @@ object UserIdentifiersDao {
   }
 
   def softDelete(deletedBy: User, identifier: UserIdentifier) {
-    SoftDelete.delete("user_identifiers", deletedBy.guid, identifier.guid)
+    SoftDelete.delete("user_identifiers", deletedBy.id, identifier.guid)
   }
 
   def findByGuid(auth: Authorization, guid: UUID): Option[UserIdentifier] = {
@@ -94,7 +94,7 @@ object UserIdentifiersDao {
     auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    userGuid: Option[UUID] = None,
+    userId: Option[String] = None,
     value: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
@@ -118,7 +118,7 @@ object UserIdentifiersDao {
     auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    userGuid: Option[UUID] = None,
+    userId: Option[String] = None,
     value: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("-user_identifiers.created_at"),
@@ -136,7 +136,7 @@ object UserIdentifiersDao {
       limit = Some(limit),
       offset = offset
     ).
-      equals("user_identifiers.user_guid", userGuid).
+      equals("user_identifiers.user_guid", userId).
       text("user_identifiers.value", value).
       as(
         com.bryzek.dependency.v0.anorm.parsers.UserIdentifier.table("user_identifiers").*

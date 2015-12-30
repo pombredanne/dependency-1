@@ -11,7 +11,7 @@ import java.util.UUID
 case class Recipient(
   email: String,
   name: Name,
-  userGuid: UUID,
+  userId: String,
   identifier: String
 )
 
@@ -22,7 +22,7 @@ object Recipient {
       Recipient(
         email = email,
         name = user.name,
-        userGuid = user.id,
+        userId = user.id,
         identifier = UserIdentifiersDao.latestForUser(UsersDao.systemUser, user).value
       )
     }

@@ -98,7 +98,7 @@ object OrganizationsDao {
       c,
       createdBy,
       guid,
-      createdBy.guid,
+      createdBy.id,
       Role.Admin
     )
     
@@ -112,7 +112,7 @@ object OrganizationsDao {
           SQL(UpdateQuery).on(
             'guid -> organization.guid,
             'key -> form.key.trim,
-            'updated_by_guid -> createdBy.guid
+            'updated_by_guid -> createdBy.id
           ).execute()
         }
 
@@ -127,7 +127,7 @@ object OrganizationsDao {
   }
 
   def softDelete(deletedBy: User, organization: Organization) {
-    SoftDelete.delete("organizations", deletedBy.guid, organization.guid)
+    SoftDelete.delete("organizations", deletedBy.id, organization.guid)
   }
 
   def upsertForUser(user: User): Organization = {
@@ -187,7 +187,7 @@ object OrganizationsDao {
     auth: Authorization,
     guid: Option[UUID] = None,
     guids: Option[Seq[UUID]] = None,
-    userGuid: Option[UUID] = None,
+    userId: Option[String] = None,
     key: Option[String] = None,
     forUserGuid: Option[UUID] = None,
     isDeleted: Option[Boolean] = Some(false),

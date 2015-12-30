@@ -45,11 +45,11 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findByGuid" in {
-    UsersDao.findByGuid(UsersDao.systemUser.guid).map(_.guid) must be(
+    UsersDao.findById(UsersDao.systemUser.guid).map(_.guid) must be(
       Some(UsersDao.systemUser.guid)
     )
 
-    UsersDao.findByGuid(UUID.randomUUID) must be(None)
+    UsersDao.findById(UUID.randomUUID) must be(None)
   }
 
   "findByGithubUserId" in {

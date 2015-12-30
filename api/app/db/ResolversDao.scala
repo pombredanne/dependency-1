@@ -154,7 +154,7 @@ object ResolversDao {
     }
 
     MainActor.ref ! MainActor.Messages.ResolverDeleted(resolver.guid)
-    SoftDelete.delete("resolvers", deletedBy.guid, resolver.guid)
+    SoftDelete.delete("resolvers", deletedBy.id, resolver.guid)
   }
 
   def findByOrganizationAndUri(
