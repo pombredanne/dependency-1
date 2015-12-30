@@ -1,7 +1,7 @@
 package com.bryzek.dependency.api.lib
 
-import db.{GithubUsersDao, TokensDao, UsersDao}
-import com.bryzek.dependency.v0.models.{GithubUserForm, Repository, TokenForm, Visibility}
+import db.{GithubUsersDao, InternalTokenForm, TokensDao, UsersDao}
+import com.bryzek.dependency.v0.models.{GithubUserForm, Repository, Visibility}
 import io.flow.user.v0.models.{NameForm, User, UserForm}
 import io.flow.play.util.{DefaultConfig, IdGenerator}
 import io.flow.github.oauth.v0.{Client => GithubOauthClient}
@@ -85,11 +85,10 @@ trait Github {
               )
             )
 
-            TokensDao.upsert(
+            TokensDao.setLatestByTag(
               createdBy = user,
-              form = TokenForm(
+              form = InternalTokenForm.GithubOauth(
                 userId = user.id,
-                tag = TokensDao.GithubOauthTokenTag,
                 token = githubUserWithToken.token
               )
             )
@@ -172,7 +171,7 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
   }
 
   override def oauthToken(user: User): Option[String] = {
-    TokensDao.findByUserIdAndTag(user.id, TokensDao.GithubOauthTokenTag).map(_.token)
+    TokensDao.getCleartextGithubOauthTokenByUserId(user.id)
   }
 
   override def file(

@@ -343,16 +343,16 @@
 	    "fields": [
 		{ "name": "id", "type": "string" },
                 { "name": "user", "type": "reference" },
-		{ "name": "tag", "type": "string" },
-		{ "name": "token", "type": "string" }
+		{ "name": "masked", "type": "string" },
+		{ "name": "cleartext", "type": "string", "required": false, "description": "The cleartext token. Only available when the token is initially created" },
+		{ "name": "description", "type": "string", "required": false }
 	    ]
 	},
 
 	"token_form": {
 	    "fields": [
 		{ "name": "user_id", "type": "string" },
-		{ "name": "tag", "type": "string" },
-		{ "name": "token", "type": "string" }
+		{ "name": "description", "type": "string", "required": false }
 	    ]
 	},
 	

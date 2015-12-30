@@ -42,6 +42,13 @@ GET     /login/github                           controllers.LoginController.gith
 GET     /logout                                 controllers.LogoutController.index
 GET     /logged_out                             controllers.LogoutController.logged_out
 
+GET     /tokens                                 controllers.ApplicationController.redirect
+GET     /tokens/                                controllers.TokensController.index(page: Int ?= 0)
+GET     /tokens/create                          controllers.TokensController.create
+POST    /tokens/postCreate                      controllers.TokensController.postCreate
+GET     /tokens/:id/show                        controllers.TokensController.show(id: String)
+POST    /tokens/:id/postDelete                  controllers.TokensController.postDelete(id: String)
+
 GET     /organizations                          controllers.OrganizationsController.index(page: Int ?= 0)
 GET     /organizations/create                   controllers.OrganizationsController.create()
 POST    /organizations/postCreate               controllers.OrganizationsController.postCreate()
