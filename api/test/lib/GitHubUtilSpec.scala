@@ -1,8 +1,19 @@
 package com.bryzek.dependency.api.lib
 
+import io.flow.user.v0.models.NameForm
 import org.specs2.mutable._
 
 class GithubUtilSpec extends Specification {
+
+  "GithubHelper.parseName" in {
+    GithubHelper.parseName("") must beEqualTo(NameForm())
+    GithubHelper.parseName("  ") must beEqualTo(NameForm())
+    GithubHelper.parseName("mike") must beEqualTo(NameForm(first = Some("mike")))
+    GithubHelper.parseName("mike bryzek") must beEqualTo(NameForm(first = Some("mike"), last = Some("bryzek")))
+    GithubHelper.parseName("   mike    maciej    bryzek  ") must beEqualTo(
+      NameForm(first = Some("mike"), last = Some("maciej bryzek"))
+    )
+  }
 
   "parseUri" in {
     GithubUtil.parseUri("http://github.com/mbryzek/apidoc") must beEqualTo(
