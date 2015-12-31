@@ -1,19 +1,23 @@
-insert into resolvers
-(id, position, visibility, uri, updated_by_user_id)
-select '272588ae-9b62-4cf1-bebd-2b55a82da482', 1, 'public', 'http://jcenter.bintray.com/',
-       (select id from users where email = 'system@bryzek.com' and deleted_at is null);
+create or replace function make_resolver(uri text) returns text language plpgsql as $$
+declare
+  v_num integer;
+  v_resolver_id text;
+begin
+  select coalesce(count(*), 0) into v_num from resolvers;
+  v_resolver_id := 'res-20151231-' || v_num + 1;
 
-insert into resolvers
-(id, position, visibility, uri, updated_by_user_id)
-select 'eea634de-e888-40b6-916d-e600d883163a', 2, 'public', 'http://repo.typesafe.com/typesafe/ivy-releases/',
-       (select id from users where email = 'system@bryzek.com' and deleted_at is null);
+  insert into resolvers
+  (id, position, visibility, uri, updated_by_user_id)
+  values
+  (v_resolver_id, v_num, 'public', uri, 'usr-20151231-1');
 
-insert into resolvers
-(id, position, visibility, uri, updated_by_user_id)
-select 'e64f96a3-633f-4d9d-a5cb-fa0d1b91d08a', 3, 'public', 'http://oss.sonatype.org/content/repositories/snapshots',
-       (select id from users where email = 'system@bryzek.com' and deleted_at is null);
+  return v_resolver_id;
+end;
+$$;
 
-insert into resolvers
-(id, position, visibility, uri, updated_by_user_id)
-select 'd5931164-7a17-446b-8b04-8b1b52c8b07e', 4, 'public', 'http://repo1.maven.org/maven2/',
-       (select id from users where email = 'system@bryzek.com' and deleted_at is null);
+select make_resolver('http://jcenter.bintray.com/');
+select make_resolver('http://repo.typesafe.com/typesafe/ivy-releases/');
+select make_resolver('http://oss.sonatype.org/content/repositories/snapshots');
+select make_resolver('http://repo1.maven.org/maven2/');
+
+drop function make_resolver(text);
