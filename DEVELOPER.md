@@ -19,12 +19,11 @@ apidoc. To regenerate code, clone github.com/gilt/apidoc-cli and
 Database
 ========
 
-    psql -h <host> dependency -c "create role api login password 'xxx'" root
-    psql -h <host> dependency -c "GRANT ALL ON DATABASE dependency TO api" root
+    psql -h <host> -U root -c "create role api login password 'xxx'" dependency
+    psql -h <host> -U root -c "GRANT ALL ON DATABASE dependency TO api" dependency
 
-
-Database
-========
+Running locally
+===============
 
 In one screen:
 
