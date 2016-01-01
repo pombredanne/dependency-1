@@ -13,22 +13,17 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   lazy val org = createOrganization()
 
-  "upsert" in {
+  "replace" in {
     val form = createItemForm(org)()
-    val item1 = ItemsDao.create(systemUser, form)
+    val item1 = ItemsDao.replace(systemUser, form)
 
-    val item2 = ItemsDao.upsert(systemUser, form)
-    item1.id must be(item2.id)
-
-    val item3 = upsertItem(org)()
-
-    item1.id must be(item2.id)
-    item2.id must not be(item3.id)
-    item2.label must be(form.label)
+    val item2 = ItemsDao.replace(systemUser, form)
+    item1.id must not be(item2.id)
+    item1.label must be(item2.label)
   }
 
   "findById" in {
-    val item = upsertItem(org)()
+    val item = replaceItem(org)()
     ItemsDao.findById(Authorization.All, item.id).map(_.id) must be(
       Some(item.id)
     )
@@ -38,7 +33,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "findByObjectId" in {
     val binary = createBinary(org)()
-    val item = ItemsDao.upsertBinary(systemUser, binary)
+    val item = ItemsDao.replaceBinary(systemUser, binary)
     ItemsDao.findByObjectId(Authorization.All, binary.id).map(_.id) must be(
       Some(item.id)
     )
@@ -47,8 +42,8 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   }
 
   "findAll by ids" in {
-    val item1 = upsertItem(org)()
-    val item2 = upsertItem(org)()
+    val item1 = replaceItem(org)()
+    val item2 = replaceItem(org)()
 
     ItemsDao.findAll(Authorization.All, ids = Some(Seq(item1.id, item2.id))).map(_.id).sorted must be(
       Seq(item1.id, item2.id).sorted
@@ -61,7 +56,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "supports binaries" in {
     val binary = createBinary(org)()
-    val itemBinary = ItemsDao.upsertBinary(systemUser, binary)
+    val itemBinary = ItemsDao.replaceBinary(systemUser, binary)
 
     val actual = ItemsDao.findByObjectId(Authorization.All, binary.id).getOrElse {
       sys.error("Failed to create binary")
@@ -82,7 +77,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "supports libraries" in {
     val library = createLibrary(org)()
 
-    val itemLibrary = ItemsDao.upsertLibrary(systemUser, library)
+    val itemLibrary = ItemsDao.replaceLibrary(systemUser, library)
     val actual = ItemsDao.findByObjectId(Authorization.All, library.id).getOrElse {
       sys.error("Failed to create library")
     }
@@ -103,7 +98,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "supports projects" in {
     val project = createProject(org)
 
-    val itemProject = ItemsDao.upsertProject(systemUser, project)
+    val itemProject = ItemsDao.replaceProject(systemUser, project)
     val actual = ItemsDao.findByObjectId(Authorization.All, project.id).getOrElse {
       sys.error("Failed to create project")
     }
@@ -124,7 +119,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val user = createUser()
     val org = createOrganization(user = user)
     val project = createProject(org)(createProjectForm(org).copy(visibility = Visibility.Public))
-    val item = ItemsDao.upsertProject(systemUser, project)
+    val item = ItemsDao.replaceProject(systemUser, project)
 
     ItemsDao.findAll(Authorization.PublicOnly, objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
     ItemsDao.findAll(Authorization.All, objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
@@ -137,7 +132,7 @@ class ItemsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val user = createUser()
     val org = createOrganization(user = user)
     val project = createProject(org)(createProjectForm(org).copy(visibility = Visibility.Private))
-    val item = ItemsDao.upsertProject(systemUser, project)
+    val item = ItemsDao.replaceProject(systemUser, project)
 
     ItemsDao.findAll(Authorization.PublicOnly, objectId = Some(project.id)) must be(Nil)
     ItemsDao.findAll(Authorization.All, objectId = Some(project.id)).map(_.id) must be(Seq(item.id))

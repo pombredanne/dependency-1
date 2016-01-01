@@ -363,12 +363,12 @@ trait Helpers {
     ProjectLibrariesDao.setLibrary(systemUser, projectLibrary, libraryVersion.library)
   }
 
-  def upsertItem(
+  def replaceItem(
     org: Organization
   ) (
     implicit form: ItemForm = createItemForm(org)
   ): Item = {
-    ItemsDao.upsert(systemUser, form)
+    ItemsDao.replace(systemUser, form)
   }
 
   def createItemSummary(

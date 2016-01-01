@@ -83,9 +83,9 @@ object ItemsDao {
     ResolversDao.findById(Authorization.All, resolver.id).map(_.visibility).getOrElse(Visibility.Private)
   }
 
-  def upsertBinary(user: User, binary: Binary): Item = {
+  def replaceBinary(user: User, binary: Binary): Item = {
     val label = binary.name.toString
-    upsert(
+    replace(
       user,
       ItemForm(
         summary = BinarySummary(
@@ -100,9 +100,9 @@ object ItemsDao {
     )
   }
 
-  def upsertLibrary(user: User, library: Library): Item = {
+  def replaceLibrary(user: User, library: Library): Item = {
     val label = Seq(library.groupId, library.artifactId).mkString(".")
-    upsert(
+    replace(
       user,
       ItemForm(
         summary = LibrarySummary(
@@ -118,11 +118,11 @@ object ItemsDao {
     )
   }
 
-  def upsertProject(user: User, project: Project): Item = {
+  def replaceProject(user: User, project: Project): Item = {
     val label = project.name
     val description = project.uri
 
-    upsert(
+    replace(
       user,
       ItemForm(
         summary = ProjectSummary(
@@ -137,38 +137,37 @@ object ItemsDao {
     )
   }
 
-  def upsert(user: User, form: ItemForm): Item = {
-    findByObjectId(Authorization.All, objectId(form.summary)) match {
-      case Some(item) => item
-      case None => {
-        Try(create(user, form)) match {
-          case Success(item) => item
-          case Failure(ex) => {
-            findByObjectId(Authorization.All, objectId(form.summary)).getOrElse {
-              sys.error(s"Failed to upsert item: $ex")
-            }
+  private[db] def replace(user: User, form: ItemForm): Item = {
+    DB.withConnection { implicit c =>
+      findByObjectId(Authorization.All, objectId(form.summary)).map { item =>
+        softDeleteWithConnection(user, item)(c)
+      }
+
+      Try(create(user, form)(c)) match {
+        case Success(item) => item
+        case Failure(ex) => {
+          findByObjectId(Authorization.All, objectId(form.summary)).getOrElse {
+            sys.error(s"Failed to replace item: $ex")
           }
         }
       }
     }
   }
 
-  def create(createdBy: User, form: ItemForm): Item = {
+  private[this] def create(createdBy: User, form: ItemForm)(implicit c: java.sql.Connection): Item = {
     val id = io.flow.play.util.IdGenerator("itm").randomId()
 
-    DB.withConnection { implicit c =>
-      SQL(InsertQuery).on(
-        'id -> id,
-        'organization_id -> organization(form.summary).id,
-        'visibility -> visibility(form.summary).toString,
-        'object_id -> objectId(form.summary),
-        'label -> form.label,
-        'description -> form.description,
-        'contents -> form.contents.trim.toLowerCase,
-        'summary -> Json.stringify(Json.toJson(form.summary)),
-        'updated_by_user_id -> createdBy.id
-      ).execute()
-    }
+    SQL(InsertQuery).on(
+      'id -> id,
+      'organization_id -> organization(form.summary).id,
+      'visibility -> visibility(form.summary).toString,
+      'object_id -> objectId(form.summary),
+      'label -> form.label,
+      'description -> form.description,
+      'contents -> form.contents.trim.toLowerCase,
+      'summary -> Json.stringify(Json.toJson(form.summary)),
+      'updated_by_user_id -> createdBy.id
+    ).execute()
 
     findById(Authorization.All, id).getOrElse {
       sys.error("Failed to create item")
@@ -176,6 +175,14 @@ object ItemsDao {
   }
 
   def softDelete(deletedBy: User, item: Item) {
+    DB.withConnection { implicit c =>
+      softDeleteWithConnection(deletedBy, item)(c)
+    }
+  }
+
+  private[this] def softDeleteWithConnection(deletedBy: User, item: Item)(
+    implicit c: java.sql.Connection
+  ) {
     SoftDelete.delete("items", deletedBy.id, item.id)
   }
 
