@@ -191,7 +191,7 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
         apiClient(token).repositories.getUserAndRepos().map { repos =>
           repos.map { repo =>
             Repository(
-              name = s"${repo.owner.login}/${repo.name}",
+              name = repo.name,
               visibility = if (repo.`private`) { Visibility.Private } else { Visibility.Public },
               uri = repo.htmlUrl
             )
