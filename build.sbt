@@ -72,7 +72,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     "io.flow" %% "lib-play" % "0.0.15",
     specs2 % Test,
-    "org.scalatest" %% "scalatest" % "2.2.5" % Test
+    "org.scalatest" %% "scalatest" % "2.2.6" % Test
   ),
   scalacOptions += "-feature",
   coverageHighlighting := true,
