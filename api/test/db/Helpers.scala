@@ -215,7 +215,7 @@ trait Helpers {
     form: UserForm = makeUserForm()
   ): User = {
     User(
-      id = io.flow.play.util.IdGenerator("usr-test").randomId(),
+      id = io.flow.play.util.IdGenerator("tst").randomId(),
       email = form.email,
       name = form.name.getOrElse(Name())
     )
