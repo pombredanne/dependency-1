@@ -1,14 +1,13 @@
 package controllers
 
+import com.bryzek.dependency.v0.models.UserForm
+import com.bryzek.dependency.v0.models.json._
 import db.{UserIdentifiersDao, UsersDao}
-import io.flow.common.v0.models.Error
+import io.flow.common.v0.models.{Error, User}
+import io.flow.common.v0.models.json._
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
-import io.flow.user.v0.models.{User, UserForm}
-import io.flow.user.v0.models.json._
-import com.bryzek.dependency.v0.models.json._
-import io.flow.common.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import scala.concurrent.Future

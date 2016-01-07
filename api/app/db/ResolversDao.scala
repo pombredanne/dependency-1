@@ -5,7 +5,7 @@ import com.bryzek.dependency.api.lib.Validation
 import com.bryzek.dependency.v0.models.{Credentials, CredentialsUndefinedType, Resolver, ResolverForm, ResolverSummary}
 import com.bryzek.dependency.v0.models.{OrganizationSummary, UsernamePassword, Visibility}
 import com.bryzek.dependency.v0.models.json._
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import io.flow.postgresql.{Query, OrderBy, Pager}
 import anorm._
 import play.api.db._

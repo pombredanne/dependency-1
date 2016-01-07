@@ -1,7 +1,7 @@
 package com.bryzek.dependency.www.lib
 
 import com.bryzek.dependency.v0.models.{Organization, Project, Resolver, Visibility}
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 
 object Permissions {
 

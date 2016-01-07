@@ -2,7 +2,7 @@ package db
 
 import io.flow.postgresql.{Query, OrderBy}
 import com.bryzek.dependency.v0.models.{GithubUser, GithubUserForm}
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import anorm._
 import play.api.db._
 import play.api.Play.current

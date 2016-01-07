@@ -3,7 +3,7 @@ package controllers
 import db.{Authorization, BinaryVersionsDao}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import io.flow.play.util.Validation
 import com.bryzek.dependency.v0.models.BinaryVersion
 import com.bryzek.dependency.v0.models.json._

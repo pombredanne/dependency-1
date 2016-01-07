@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.v0.models.Reference
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import io.flow.postgresql.{Query, OrderBy}
 import com.bryzek.dependency.v0.models.Publication
 import org.joda.time.DateTime

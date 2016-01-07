@@ -1,8 +1,8 @@
 package com.bryzek.dependency.api.lib
 
 import db.{GithubUsersDao, InternalTokenForm, TokensDao, UsersDao}
-import com.bryzek.dependency.v0.models.{GithubUserForm, Repository, Visibility}
-import io.flow.user.v0.models.{NameForm, User, UserForm}
+import com.bryzek.dependency.v0.models.{GithubUserForm, Repository, UserForm, Visibility}
+import io.flow.common.v0.models.{Name, User}
 import io.flow.play.util.{DefaultConfig, IdGenerator}
 import io.flow.github.oauth.v0.{Client => GithubOauthClient}
 import io.flow.github.oauth.v0.models.AccessTokenForm
@@ -23,15 +23,15 @@ case class GithubUserData(
 
 object GithubHelper {
 
-  def parseName(value: String): NameForm = {
+  def parseName(value: String): Name = {
     if (value.trim.isEmpty) {
-      NameForm()
+      Name()
     } else {
       value.trim.split("\\s+").toList match {
-        case Nil => NameForm()
-        case first :: Nil => NameForm(first = Some(first))
-        case first :: last :: Nil => NameForm(first = Some(first), last = Some(last))
-        case first :: multiple => NameForm(first = Some(first), last = Some(multiple.mkString(" ")))
+        case Nil => Name()
+        case first :: Nil => Name(first = Some(first))
+        case first :: last :: Nil => Name(first = Some(first), last = Some(last))
+        case first :: multiple => Name(first = Some(first), last = Some(multiple.mkString(" ")))
       }
     }
   }
@@ -81,8 +81,7 @@ trait Github {
                   createdBy = None,
                   form = UserForm(
                     email = githubUserWithToken.emails.headOption,
-                    name = githubUserWithToken.name.map(GithubHelper.parseName(_)),
-                    avatarUrl = githubUserWithToken.avatarUrl
+                    name = githubUserWithToken.name.map(GithubHelper.parseName(_))
                   )
                 )
               }

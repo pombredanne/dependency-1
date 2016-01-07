@@ -1,7 +1,7 @@
 package com.bryzek.dependency.actors
 
 import com.bryzek.dependency.v0.models.{Publication, SubscriptionForm}
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import db.{OrganizationsDao, SubscriptionsDao, UserIdentifiersDao, UsersDao}
 import akka.actor.Actor
 import scala.concurrent.ExecutionContext

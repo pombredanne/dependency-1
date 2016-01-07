@@ -1,6 +1,6 @@
 package com.bryzek.dependency.www.lib
 
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import com.bryzek.dependency.lib.Urls
 
 sealed trait Section

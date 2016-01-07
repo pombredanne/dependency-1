@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.v0.models.{Token, TokenForm}
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import io.flow.play.util.Random
 import io.flow.postgresql.{Query, OrderBy}
 import anorm._

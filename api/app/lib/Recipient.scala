@@ -1,7 +1,7 @@
 package com.bryzek.dependency.api.lib
 
 import db.{UserIdentifiersDao, UsersDao}
-import io.flow.user.v0.models.{Name, User}
+import io.flow.common.v0.models.{Name, User}
 
 /**
   * Information we use to render email messages, including the links

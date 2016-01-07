@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.v0.models.{Membership, MembershipForm, Organization, OrganizationSummary, Role}
 import io.flow.postgresql.{Query, OrderBy}
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import anorm._
 import play.api.db._
 import play.api.Play.current

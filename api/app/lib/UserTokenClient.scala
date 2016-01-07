@@ -2,7 +2,7 @@ package com.bryzek.dependency.api.lib
 
 import db.UsersDao
 import io.flow.play.clients.UserTokensClient
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 

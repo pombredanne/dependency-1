@@ -2,7 +2,7 @@ package com.bryzek.dependency.actors
 
 import io.flow.play.util.DefaultConfig
 import io.flow.postgresql.Pager
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import db.{Authorization, LastEmail, LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UserIdentifiersDao, UsersDao}
 import com.bryzek.dependency.v0.models.{Publication, Subscription}
 import com.bryzek.dependency.lib.Urls

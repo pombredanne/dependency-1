@@ -3,7 +3,7 @@ package db
 import com.bryzek.dependency.v0.models.{MembershipForm, Organization, OrganizationForm, Role}
 import io.flow.postgresql.{Query, OrderBy}
 import io.flow.play.util.{IdGenerator, Random, UrlKey}
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import anorm._
 import play.api.db._
 import play.api.Play.current

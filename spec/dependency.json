@@ -2,8 +2,7 @@
     "name": "dependency",
 
     "imports": [
-	{ "uri": "http://www.apidoc.me/flow/common/0.0.1-dev/service.json" },
-	{ "uri": "http://www.apidoc.me/flow/user/0.0.1-dev/service.json" }
+	{ "uri": "http://www.apidoc.me/flow/common/0.0.5-dev/service.json" }
     ],
 
     "unions": {
@@ -307,6 +306,13 @@
 	    ]
 	},
 
+	"user_form": {
+	    "fields": [
+		{ "name": "email", "type": "string", "required": false },
+		{ "name": "name", "type": "io.flow.common.v0.models.name", "required": false }
+	    ]
+	},
+
 	"github_user_form": {
 	    "fields": [
 		{ "name": "user_id", "type": "string" },
@@ -397,7 +403,7 @@
 	    "fields": [
 		{ "name": "id", "type": "string" },
 		{ "name": "email", "type": "string", "required": false },
-		{ "name": "name", "type": "io.flow.user.v0.models.name" }
+		{ "name": "name", "type": "io.flow.common.v0.models.name" }
 	    ]
 	},
 
@@ -445,14 +451,14 @@
 		    "description": "Used to authenticate a user via github",
 		    "body": { "type": "github_authentication_form" },
                     "responses": {
-                        "200": { "type": "io.flow.user.v0.models.user" },
+                        "200": { "type": "io.flow.common.v0.models.user" },
                         "422": { "type": "[io.flow.common.v0.models.error]" }
 		    }
 		}
 	    ]
 	},
 
-	"io.flow.user.v0.models.user": {
+	"io.flow.common.v0.models.user": {
 	    "path": "/users",
 
             "operations": [
@@ -465,7 +471,7 @@
 			{ "name": "identifier", "type": "string", "description": "Find user associated with this randomly generated identifier. Exact match", "required": false }
                     ],
                     "responses": {
-                        "200": { "type": "[io.flow.user.v0.models.user]" },
+                        "200": { "type": "[io.flow.common.v0.models.user]" },
                         "401": { "type": "unit" }
                     }
                 },
@@ -475,7 +481,7 @@
                     "description": "Returns information about the user with this id.",
                     "path": "/:id",
                     "responses": {
-                        "200": { "type": "io.flow.user.v0.models.user" },
+                        "200": { "type": "io.flow.common.v0.models.user" },
                         "401": { "type": "unit" },
                         "404": { "type": "unit" }
                     }
@@ -495,9 +501,9 @@
                 {
                     "method": "POST",
                     "description": "Create a new user.",
-                    "body": { "type": "io.flow.user.v0.models.user_form" },
+                    "body": { "type": "user_form" },
                     "responses": {
-                        "201": { "type": "io.flow.user.v0.models.user" },
+                        "201": { "type": "io.flow.common.v0.models.user" },
                         "422": { "type": "[io.flow.common.v0.models.error]" }
                     }
                 }

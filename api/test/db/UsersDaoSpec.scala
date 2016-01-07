@@ -1,6 +1,7 @@
 package db
 
-import io.flow.user.v0.models.{Name, NameForm, UserForm}
+import com.bryzek.dependency.v0.models.UserForm
+import io.flow.common.v0.models.Name
 import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
@@ -113,7 +114,7 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "create" must {
     "user with email and name" in {
       val email = createTestEmail()
-      val name = NameForm(
+      val name = Name(
         first = Some("Michael"),
         last = Some("Bryzek")
       )
@@ -134,7 +135,7 @@ class UsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     }
 
     "processes empty name" in {
-      val name = NameForm(
+      val name = Name(
         first = Some("  "),
         last = Some("   ")
       )

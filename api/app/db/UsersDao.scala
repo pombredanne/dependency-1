@@ -1,8 +1,9 @@
 package db
 
+import com.bryzek.dependency.v0.models.UserForm
 import com.bryzek.dependency.actors.MainActor
 import io.flow.postgresql.{Query, OrderBy}
-import io.flow.user.v0.models.{Name, User, UserForm}
+import io.flow.common.v0.models.{Name, User}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -35,9 +36,9 @@ object UsersDao {
 
   private[this] val InsertQuery = """
     insert into users
-    (id, email, first_name, last_name, avatar_url, updated_by_user_id)
+    (id, email, first_name, last_name, updated_by_user_id)
     values
-    ({id}, {email}, {first_name}, {last_name}, {avatar_url}, {updated_by_user_id})
+    ({id}, {email}, {first_name}, {last_name}, {updated_by_user_id})
   """
 
   def validate(form: UserForm): Seq[String] = {
@@ -75,7 +76,6 @@ object UsersDao {
           SQL(InsertQuery).on(
             'id -> id,
             'email -> form.email.map(_.trim),
-            'avatar_url -> Util.trimmedString(form.avatarUrl),
             'first_name -> Util.trimmedString(form.name.flatMap(_.first)),
             'last_name -> Util.trimmedString(form.name.flatMap(_.last)),
             'updated_by_user_id -> createdBy.getOrElse(UsersDao.anonymousUser).id
@@ -150,7 +150,7 @@ object UsersDao {
           s"select user_id from github_users where deleted_at is null and github_user_id = ${bindVar.sql}"
         }).
         as(
-          io.flow.user.v0.anorm.parsers.User.table("users").*
+          io.flow.common.v0.anorm.parsers.User.table("users").*
         )
     }
   }

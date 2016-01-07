@@ -4,7 +4,7 @@ import com.bryzek.dependency.v0.Client
 import com.bryzek.dependency.v0.models.Organization
 import com.bryzek.dependency.www.lib.{DependencyClientProvider, Section, UiData}
 import io.flow.play.clients.UserTokensClient
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import io.flow.play.controllers.IdentifiedController
 import scala.concurrent.{ExecutionContext, Future}
 import play.api._
@@ -18,7 +18,7 @@ object Helpers {
     session: play.api.mvc.Session
   ) (
     implicit ec: scala.concurrent.ExecutionContext
-  ): scala.concurrent.Future[Option[io.flow.user.v0.models.User]] = {
+  ): scala.concurrent.Future[Option[io.flow.common.v0.models.User]] = {
     session.get("user_id") match {
       case None => {
         scala.concurrent.Future { None }
@@ -83,7 +83,7 @@ abstract class BaseController(
     queryString: Map[String, Seq[String]]
   ) (
     implicit ec: scala.concurrent.ExecutionContext
-  ): scala.concurrent.Future[Option[io.flow.user.v0.models.User]] = {
+  ): scala.concurrent.Future[Option[io.flow.common.v0.models.User]] = {
     Helpers.userFromSession(userTokensClient, session)
   }
 

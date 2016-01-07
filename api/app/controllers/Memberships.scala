@@ -4,7 +4,7 @@ import db.{Authorization, MembershipsDao}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import com.bryzek.dependency.v0.models.{Membership, MembershipForm, Role}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._

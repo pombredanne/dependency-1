@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.v0.models.UserIdentifier
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 
 import org.scalatest._
 import play.api.test._

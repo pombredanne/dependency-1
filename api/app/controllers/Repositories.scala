@@ -7,7 +7,6 @@ import io.flow.common.v0.models.json._
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
-import io.flow.user.v0.models.json._
 import play.api.mvc._
 import play.api.libs.json._
 import scala.concurrent.Future

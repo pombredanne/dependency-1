@@ -2,7 +2,7 @@ package controllers
 
 import db.{Authorization, OrganizationsDao, ProjectsDao, ResolversDao, UsersDao}
 import com.bryzek.dependency.v0.models.{Organization, Project, Resolver}
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import play.api.mvc.{Result, Results}
 
 trait Helpers {

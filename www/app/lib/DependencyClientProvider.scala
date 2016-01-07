@@ -2,7 +2,7 @@ package com.bryzek.dependency.www.lib
 
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.DefaultConfig
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import com.bryzek.dependency.v0.{Authorization, Client}
 import com.bryzek.dependency.v0.errors.UnitResponse
 import scala.concurrent.{ExecutionContext, Future}

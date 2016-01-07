@@ -1,7 +1,8 @@
 package controllers
 
 import com.bryzek.dependency.v0.Client
-import io.flow.user.v0.models.{NameForm, UserForm}
+import com.bryzek.dependency.v0.models.UserForm
+import io.flow.common.v0.models.Name
 import io.flow.play.util.Validation
 
 import java.util.UUID
@@ -79,7 +80,7 @@ class UsersSpec extends PlaySpecification with MockClient {
         UserForm(
           email = Some(email),
           name = Some(
-            NameForm(first = Some("Michael"), last = Some("Bryzek"))
+            Name(first = Some("Michael"), last = Some("Bryzek"))
           )
         )
       )

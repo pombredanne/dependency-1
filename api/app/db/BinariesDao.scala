@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Binary, BinaryForm, SyncEvent}
-import io.flow.user.v0.models.User
+import io.flow.common.v0.models.User
 import io.flow.postgresql.{Query, OrderBy}
 import anorm._
 import play.api.db._

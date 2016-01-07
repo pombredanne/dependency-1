@@ -3,7 +3,7 @@ package db
 import io.flow.play.clients.MockUserClient
 import io.flow.play.util.Random
 import com.bryzek.dependency.v0.models._
-import io.flow.user.v0.models.{NameForm, User, UserForm}
+import io.flow.common.v0.models.{Name, User}
 import java.util.UUID
 
 trait Helpers {
@@ -214,13 +214,16 @@ trait Helpers {
   def makeUser(
     form: UserForm = makeUserForm()
   ): User = {
-    MockUserClient.makeUser(form)
+    User(
+      id = io.flow.play.util.IdGenerator("usr-test").randomId(),
+      email = form.email,
+      name = form.name.getOrElse(Name())
+    )
   }
 
   def makeUserForm() = UserForm(
     email = None,
-    name = None,
-    avatarUrl = None
+    name = None
   )
 
   def createUser(
@@ -231,7 +234,7 @@ trait Helpers {
 
   def createUserForm(
     email: String = createTestEmail(),
-    name: Option[NameForm] = None
+    name: Option[Name] = None
   ) = UserForm(
     email = Some(email),
     name = name
