@@ -249,7 +249,7 @@ trait Helpers {
   def createGithubUserForm(
     user: User = createUser(),
     githubUserId: Long = random.positiveLong(),
-    login: String = createTestEmail()
+    login: String = createTestKey()
   ) = {
     GithubUserForm(
       userId = user.id,
