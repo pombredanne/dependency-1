@@ -7,6 +7,7 @@
 
     "unions": {
 	"item_summary": {
+	    "discriminator": "discriminator",
 	    "types": [
 		{ "type": "binary_summary" },
 		{ "type": "library_summary" },
@@ -15,6 +16,7 @@
 	},
 
 	"credentials": {
+	    "discriminator": "discriminator",
 	    "types": [
 		{ "type": "username_password" }
 	    ]
