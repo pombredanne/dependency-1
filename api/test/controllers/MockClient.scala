@@ -60,8 +60,6 @@ trait MockClient extends db.Helpers {
   }
 
   def expectStatus(code: Int)(f: => Unit) {
-    assert(code >= 400, s"code[$code] must be >= 400")
-
     Try(
       f
     ) match {

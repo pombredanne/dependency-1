@@ -11,7 +11,7 @@ class Items @javax.inject.Inject() (
   val userTokensClient: UserTokensClient
 ) extends Controller with BaseIdentifiedController {
 
-  def getSearch(
+  def get(
     q: Option[String],
     limit: Long = 25,
     offset: Long = 0
