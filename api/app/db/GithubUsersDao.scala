@@ -62,12 +62,11 @@ object GithubUsersDao {
   }
 
   def findById(id: String): Option[GithubUser] = {
-    findAll(id = Some(id), limit = 1).headOption
+    findAll(id = Some(Seq(id)), limit = 1).headOption
   }
 
   def findAll(
-    id: Option[String] = None,
-    ids: Option[Seq[String]] = None,
+    id: Option[Seq[String]] = None,
     userId: Option[String] = None,
     login: Option[String] = None,
     githubUserId: Option[Long] = None,
@@ -78,8 +77,8 @@ object GithubUsersDao {
   ): Seq[GithubUser] = {
     DB.withConnection { implicit c =>
       BaseQuery.
-        equals("github_users.id", id).
-        in("github_users.id", ids).
+        in("github_users.id", id).
+        equals("github_users.user_id", userId).
         text("github_users.login", login).
         equals("github_users.github_user_id", githubUserId).
         nullBoolean("github_users.deleted_at", isDeleted).
