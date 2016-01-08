@@ -16,13 +16,13 @@ class GithubUsersSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def createGithubUser(): GithubUser = {
-    val login = createTestEmail()
+  def createLocalGithubUser(): GithubUser = {
+    val login = createTestKey()
     GithubUser(
       id = random.positiveLong(),
       login = login,
       name = None,
-      email = Some(login),
+      email = Some(createTestEmail()),
       avatarUrl = None,
       gravatarId = None,
       url = s"https://github.com/$login",
@@ -32,10 +32,11 @@ class GithubUsersSpec extends PlaySpecification with MockClient {
   }
 
   "POST /authentications/github with valid token" in new WithServer(port=port) {
-    val githubUser = createGithubUser()
+    val githubUser = createLocalGithubUser()
     val code = "test"
 
     MockGithubData.addUser(githubUser, code)
+
     val user = await(anonClient.githubUsers.postAuthenticationsAndGithub(GithubAuthenticationForm(code = code)))
     user.email must beEqualTo(githubUser.email)
 
@@ -47,7 +48,7 @@ class GithubUsersSpec extends PlaySpecification with MockClient {
   }
 
   "POST /authentications/github accepts account w/out email" in new WithServer(port=port) {
-    val githubUser = createGithubUser().copy(email = None)
+    val githubUser = createLocalGithubUser().copy(email = None)
     val code = "test"
 
     MockGithubData.addUser(githubUser, code)

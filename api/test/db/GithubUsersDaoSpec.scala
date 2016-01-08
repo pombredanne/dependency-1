@@ -38,13 +38,13 @@ class GithubUsersDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val user1 = createGithubUser()
     val user2 = createGithubUser()
 
-    GithubUsersDao.findAll(ids = Some(Seq(user1.id, user2.id))).map(_.id) must be(
+    GithubUsersDao.findAll(id = Some(Seq(user1.id, user2.id))).map(_.id) must be(
       Seq(user1.id, user2.id)
     )
 
-    GithubUsersDao.findAll(ids = Some(Nil)) must be(Nil)
-    GithubUsersDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-    GithubUsersDao.findAll(ids = Some(Seq(user1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(user1.id))
+    GithubUsersDao.findAll(id = Some(Nil)) must be(Nil)
+    GithubUsersDao.findAll(id = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    GithubUsersDao.findAll(id = Some(Seq(user1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(user1.id))
   }
 
 }
