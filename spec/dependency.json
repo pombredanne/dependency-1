@@ -1103,7 +1103,6 @@
 	},
 
 	"item": {
-	    "path": "/search",
 	    "operations": [
 		{
                     "method": "GET",
