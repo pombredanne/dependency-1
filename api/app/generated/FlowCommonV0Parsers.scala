@@ -629,7 +629,7 @@ package io.flow.common.v0.anorm.parsers {
     def table(table: String) = parser(Mappings.prefix(table, "."))
 
     def parser(mappings: Mappings): RowParser[io.flow.common.v0.models.Price] = {
-      SqlParser.get[BigDecimal](mappings.amount) ~
+      SqlParser.str(mappings.amount) ~
       SqlParser.str(mappings.currency) map {
         case amount ~ currency => {
           io.flow.common.v0.models.Price(
