@@ -167,7 +167,6 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
       } yield {
         // put primary first
         val sortedEmailAddresses = (emails.filter(_.primary) ++ emails.filter(!_.primary)).map(_.email)
-        println(s"sortedEmailAddresses: "+ sortedEmailAddresses.mkString(" "))
 
         Right(
           GithubUserData(
