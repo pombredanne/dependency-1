@@ -589,39 +589,186 @@ package com.bryzek.dependency.v0.models {
       }
     }
 
-    implicit val jsonReadsDependencyBinaryType = __.read[String].map(BinaryType.apply)
-    implicit val jsonWritesDependencyBinaryType = new Writes[BinaryType] {
-      def writes(x: BinaryType) = JsString(x.toString)
+    implicit val jsonReadsDependencyBinaryType = new play.api.libs.json.Reads[com.bryzek.dependency.v0.models.BinaryType] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[com.bryzek.dependency.v0.models.BinaryType] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.BinaryType(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.BinaryType(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
     }
 
-    implicit val jsonReadsDependencyPublication = __.read[String].map(Publication.apply)
-    implicit val jsonWritesDependencyPublication = new Writes[Publication] {
-      def writes(x: Publication) = JsString(x.toString)
+    def jsObjectBinaryType(obj: com.bryzek.dependency.v0.models.BinaryType) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
     }
 
-    implicit val jsonReadsDependencyRecommendationType = __.read[String].map(RecommendationType.apply)
-    implicit val jsonWritesDependencyRecommendationType = new Writes[RecommendationType] {
-      def writes(x: RecommendationType) = JsString(x.toString)
+    implicit def jsonWritesDependencyBinaryType: play.api.libs.json.Writes[BinaryType] = {
+      new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.BinaryType] {
+        def writes(obj: com.bryzek.dependency.v0.models.BinaryType) = {
+          jsObjectBinaryType(obj)
+        }
+      }
     }
 
-    implicit val jsonReadsDependencyRole = __.read[String].map(Role.apply)
-    implicit val jsonWritesDependencyRole = new Writes[Role] {
-      def writes(x: Role) = JsString(x.toString)
+    implicit val jsonReadsDependencyPublication = new play.api.libs.json.Reads[com.bryzek.dependency.v0.models.Publication] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[com.bryzek.dependency.v0.models.Publication] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.Publication(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.Publication(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
     }
 
-    implicit val jsonReadsDependencyScms = __.read[String].map(Scms.apply)
-    implicit val jsonWritesDependencyScms = new Writes[Scms] {
-      def writes(x: Scms) = JsString(x.toString)
+    def jsObjectPublication(obj: com.bryzek.dependency.v0.models.Publication) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
     }
 
-    implicit val jsonReadsDependencySyncEvent = __.read[String].map(SyncEvent.apply)
-    implicit val jsonWritesDependencySyncEvent = new Writes[SyncEvent] {
-      def writes(x: SyncEvent) = JsString(x.toString)
+    implicit def jsonWritesDependencyPublication: play.api.libs.json.Writes[Publication] = {
+      new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Publication] {
+        def writes(obj: com.bryzek.dependency.v0.models.Publication) = {
+          jsObjectPublication(obj)
+        }
+      }
     }
 
-    implicit val jsonReadsDependencyVisibility = __.read[String].map(Visibility.apply)
-    implicit val jsonWritesDependencyVisibility = new Writes[Visibility] {
-      def writes(x: Visibility) = JsString(x.toString)
+    implicit val jsonReadsDependencyRecommendationType = new play.api.libs.json.Reads[com.bryzek.dependency.v0.models.RecommendationType] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[com.bryzek.dependency.v0.models.RecommendationType] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.RecommendationType(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.RecommendationType(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
+    }
+
+    def jsObjectRecommendationType(obj: com.bryzek.dependency.v0.models.RecommendationType) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesDependencyRecommendationType: play.api.libs.json.Writes[RecommendationType] = {
+      new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.RecommendationType] {
+        def writes(obj: com.bryzek.dependency.v0.models.RecommendationType) = {
+          jsObjectRecommendationType(obj)
+        }
+      }
+    }
+
+    implicit val jsonReadsDependencyRole = new play.api.libs.json.Reads[com.bryzek.dependency.v0.models.Role] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[com.bryzek.dependency.v0.models.Role] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.Role(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.Role(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
+    }
+
+    def jsObjectRole(obj: com.bryzek.dependency.v0.models.Role) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesDependencyRole: play.api.libs.json.Writes[Role] = {
+      new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Role] {
+        def writes(obj: com.bryzek.dependency.v0.models.Role) = {
+          jsObjectRole(obj)
+        }
+      }
+    }
+
+    implicit val jsonReadsDependencyScms = new play.api.libs.json.Reads[com.bryzek.dependency.v0.models.Scms] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[com.bryzek.dependency.v0.models.Scms] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.Scms(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.Scms(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
+    }
+
+    def jsObjectScms(obj: com.bryzek.dependency.v0.models.Scms) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesDependencyScms: play.api.libs.json.Writes[Scms] = {
+      new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Scms] {
+        def writes(obj: com.bryzek.dependency.v0.models.Scms) = {
+          jsObjectScms(obj)
+        }
+      }
+    }
+
+    implicit val jsonReadsDependencySyncEvent = new play.api.libs.json.Reads[com.bryzek.dependency.v0.models.SyncEvent] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[com.bryzek.dependency.v0.models.SyncEvent] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.SyncEvent(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.SyncEvent(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
+    }
+
+    def jsObjectSyncEvent(obj: com.bryzek.dependency.v0.models.SyncEvent) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesDependencySyncEvent: play.api.libs.json.Writes[SyncEvent] = {
+      new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.SyncEvent] {
+        def writes(obj: com.bryzek.dependency.v0.models.SyncEvent) = {
+          jsObjectSyncEvent(obj)
+        }
+      }
+    }
+
+    implicit val jsonReadsDependencyVisibility = new play.api.libs.json.Reads[com.bryzek.dependency.v0.models.Visibility] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[com.bryzek.dependency.v0.models.Visibility] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.Visibility(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(com.bryzek.dependency.v0.models.Visibility(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
+    }
+
+    def jsObjectVisibility(obj: com.bryzek.dependency.v0.models.Visibility) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesDependencyVisibility: play.api.libs.json.Writes[Visibility] = {
+      new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Visibility] {
+        def writes(obj: com.bryzek.dependency.v0.models.Visibility) = {
+          jsObjectVisibility(obj)
+        }
+      }
     }
 
     implicit def jsonReadsDependencyBinary: play.api.libs.json.Reads[Binary] = {
@@ -632,18 +779,18 @@ package com.bryzek.dependency.v0.models {
       )(Binary.apply _)
     }
 
-    def jsonDependencyBinaryToJsonObject(obj: com.bryzek.dependency.v0.models.Binary) = {
+    def jsObjectBinary(obj: com.bryzek.dependency.v0.models.Binary) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "organization" -> play.api.libs.json.Json.toJson(obj.organization),
-        "name" -> play.api.libs.json.Json.toJson(obj.name)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "organization" -> jsObjectOrganizationSummary(obj.organization),
+        "name" -> play.api.libs.json.JsString(obj.name.toString)
       )
     }
 
     implicit def jsonWritesDependencyBinary: play.api.libs.json.Writes[Binary] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Binary] {
         def writes(obj: com.bryzek.dependency.v0.models.Binary) = {
-          jsonDependencyBinaryToJsonObject(obj)
+          jsObjectBinary(obj)
         }
       }
     }
@@ -655,17 +802,17 @@ package com.bryzek.dependency.v0.models {
       )(BinaryForm.apply _)
     }
 
-    def jsonDependencyBinaryFormToJsonObject(obj: com.bryzek.dependency.v0.models.BinaryForm) = {
+    def jsObjectBinaryForm(obj: com.bryzek.dependency.v0.models.BinaryForm) = {
       play.api.libs.json.Json.obj(
-        "organization_id" -> play.api.libs.json.Json.toJson(obj.organizationId),
-        "name" -> play.api.libs.json.Json.toJson(obj.name)
+        "organization_id" -> play.api.libs.json.JsString(obj.organizationId),
+        "name" -> play.api.libs.json.JsString(obj.name.toString)
       )
     }
 
     implicit def jsonWritesDependencyBinaryForm: play.api.libs.json.Writes[BinaryForm] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.BinaryForm] {
         def writes(obj: com.bryzek.dependency.v0.models.BinaryForm) = {
-          jsonDependencyBinaryFormToJsonObject(obj)
+          jsObjectBinaryForm(obj)
         }
       }
     }
@@ -678,20 +825,12 @@ package com.bryzek.dependency.v0.models {
       )(BinarySummary.apply _)
     }
 
-    def jsonDependencyBinarySummaryToJsonObject(obj: com.bryzek.dependency.v0.models.BinarySummary) = {
+    def jsObjectBinarySummary(obj: com.bryzek.dependency.v0.models.BinarySummary) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "organization" -> play.api.libs.json.Json.toJson(obj.organization),
-        "name" -> play.api.libs.json.Json.toJson(obj.name)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "organization" -> jsObjectOrganizationSummary(obj.organization),
+        "name" -> play.api.libs.json.JsString(obj.name.toString)
       )
-    }
-
-    implicit def jsonWritesDependencyBinarySummary: play.api.libs.json.Writes[BinarySummary] = {
-      new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.BinarySummary] {
-        def writes(obj: com.bryzek.dependency.v0.models.BinarySummary) = {
-          jsonDependencyBinarySummaryToJsonObject(obj)
-        }
-      }
     }
 
     implicit def jsonReadsDependencyBinaryVersion: play.api.libs.json.Reads[BinaryVersion] = {
@@ -702,18 +841,18 @@ package com.bryzek.dependency.v0.models {
       )(BinaryVersion.apply _)
     }
 
-    def jsonDependencyBinaryVersionToJsonObject(obj: com.bryzek.dependency.v0.models.BinaryVersion) = {
+    def jsObjectBinaryVersion(obj: com.bryzek.dependency.v0.models.BinaryVersion) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "binary" -> play.api.libs.json.Json.toJson(obj.binary),
-        "version" -> play.api.libs.json.Json.toJson(obj.version)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "binary" -> jsObjectBinary(obj.binary),
+        "version" -> play.api.libs.json.JsString(obj.version)
       )
     }
 
     implicit def jsonWritesDependencyBinaryVersion: play.api.libs.json.Writes[BinaryVersion] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.BinaryVersion] {
         def writes(obj: com.bryzek.dependency.v0.models.BinaryVersion) = {
-          jsonDependencyBinaryVersionToJsonObject(obj)
+          jsObjectBinaryVersion(obj)
         }
       }
     }
@@ -722,16 +861,16 @@ package com.bryzek.dependency.v0.models {
       (__ \ "code").read[String].map { x => new GithubAuthenticationForm(code = x) }
     }
 
-    def jsonDependencyGithubAuthenticationFormToJsonObject(obj: com.bryzek.dependency.v0.models.GithubAuthenticationForm) = {
+    def jsObjectGithubAuthenticationForm(obj: com.bryzek.dependency.v0.models.GithubAuthenticationForm) = {
       play.api.libs.json.Json.obj(
-        "code" -> play.api.libs.json.Json.toJson(obj.code)
+        "code" -> play.api.libs.json.JsString(obj.code)
       )
     }
 
     implicit def jsonWritesDependencyGithubAuthenticationForm: play.api.libs.json.Writes[GithubAuthenticationForm] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.GithubAuthenticationForm] {
         def writes(obj: com.bryzek.dependency.v0.models.GithubAuthenticationForm) = {
-          jsonDependencyGithubAuthenticationFormToJsonObject(obj)
+          jsObjectGithubAuthenticationForm(obj)
         }
       }
     }
@@ -745,19 +884,19 @@ package com.bryzek.dependency.v0.models {
       )(GithubUser.apply _)
     }
 
-    def jsonDependencyGithubUserToJsonObject(obj: com.bryzek.dependency.v0.models.GithubUser) = {
+    def jsObjectGithubUser(obj: com.bryzek.dependency.v0.models.GithubUser) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "user" -> play.api.libs.json.Json.toJson(obj.user),
-        "github_user_id" -> play.api.libs.json.Json.toJson(obj.githubUserId),
-        "login" -> play.api.libs.json.Json.toJson(obj.login)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "user" -> jsObjectReference(obj.user),
+        "github_user_id" -> play.api.libs.json.JsNumber(obj.githubUserId),
+        "login" -> play.api.libs.json.JsString(obj.login)
       )
     }
 
     implicit def jsonWritesDependencyGithubUser: play.api.libs.json.Writes[GithubUser] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.GithubUser] {
         def writes(obj: com.bryzek.dependency.v0.models.GithubUser) = {
-          jsonDependencyGithubUserToJsonObject(obj)
+          jsObjectGithubUser(obj)
         }
       }
     }
@@ -770,18 +909,18 @@ package com.bryzek.dependency.v0.models {
       )(GithubUserForm.apply _)
     }
 
-    def jsonDependencyGithubUserFormToJsonObject(obj: com.bryzek.dependency.v0.models.GithubUserForm) = {
+    def jsObjectGithubUserForm(obj: com.bryzek.dependency.v0.models.GithubUserForm) = {
       play.api.libs.json.Json.obj(
-        "user_id" -> play.api.libs.json.Json.toJson(obj.userId),
-        "github_user_id" -> play.api.libs.json.Json.toJson(obj.githubUserId),
-        "login" -> play.api.libs.json.Json.toJson(obj.login)
+        "user_id" -> play.api.libs.json.JsString(obj.userId),
+        "github_user_id" -> play.api.libs.json.JsNumber(obj.githubUserId),
+        "login" -> play.api.libs.json.JsString(obj.login)
       )
     }
 
     implicit def jsonWritesDependencyGithubUserForm: play.api.libs.json.Writes[GithubUserForm] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.GithubUserForm] {
         def writes(obj: com.bryzek.dependency.v0.models.GithubUserForm) = {
-          jsonDependencyGithubUserFormToJsonObject(obj)
+          jsObjectGithubUserForm(obj)
         }
       }
     }
@@ -797,13 +936,13 @@ package com.bryzek.dependency.v0.models {
       )(Item.apply _)
     }
 
-    def jsonDependencyItemToJsonObject(obj: com.bryzek.dependency.v0.models.Item) = {
+    def jsObjectItem(obj: com.bryzek.dependency.v0.models.Item) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "organization" -> play.api.libs.json.Json.toJson(obj.organization),
-        "visibility" -> play.api.libs.json.Json.toJson(obj.visibility),
-        "summary" -> play.api.libs.json.Json.toJson(obj.summary),
-        "label" -> play.api.libs.json.Json.toJson(obj.label),
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "organization" -> jsObjectOrganizationSummary(obj.organization),
+        "visibility" -> play.api.libs.json.JsString(obj.visibility.toString),
+        "summary" -> jsObjectItemSummary(obj.summary),
+        "label" -> play.api.libs.json.JsString(obj.label),
         "description" -> play.api.libs.json.Json.toJson(obj.description)
       )
     }
@@ -811,7 +950,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyItem: play.api.libs.json.Writes[Item] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Item] {
         def writes(obj: com.bryzek.dependency.v0.models.Item) = {
-          jsonDependencyItemToJsonObject(obj)
+          jsObjectItem(obj)
         }
       }
     }
@@ -826,20 +965,20 @@ package com.bryzek.dependency.v0.models {
       )(Library.apply _)
     }
 
-    def jsonDependencyLibraryToJsonObject(obj: com.bryzek.dependency.v0.models.Library) = {
+    def jsObjectLibrary(obj: com.bryzek.dependency.v0.models.Library) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "organization" -> play.api.libs.json.Json.toJson(obj.organization),
-        "group_id" -> play.api.libs.json.Json.toJson(obj.groupId),
-        "artifact_id" -> play.api.libs.json.Json.toJson(obj.artifactId),
-        "resolver" -> play.api.libs.json.Json.toJson(obj.resolver)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "organization" -> jsObjectOrganizationSummary(obj.organization),
+        "group_id" -> play.api.libs.json.JsString(obj.groupId),
+        "artifact_id" -> play.api.libs.json.JsString(obj.artifactId),
+        "resolver" -> jsObjectResolverSummary(obj.resolver)
       )
     }
 
     implicit def jsonWritesDependencyLibrary: play.api.libs.json.Writes[Library] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Library] {
         def writes(obj: com.bryzek.dependency.v0.models.Library) = {
-          jsonDependencyLibraryToJsonObject(obj)
+          jsObjectLibrary(obj)
         }
       }
     }
@@ -854,12 +993,12 @@ package com.bryzek.dependency.v0.models {
       )(LibraryForm.apply _)
     }
 
-    def jsonDependencyLibraryFormToJsonObject(obj: com.bryzek.dependency.v0.models.LibraryForm) = {
+    def jsObjectLibraryForm(obj: com.bryzek.dependency.v0.models.LibraryForm) = {
       play.api.libs.json.Json.obj(
-        "organization_id" -> play.api.libs.json.Json.toJson(obj.organizationId),
-        "group_id" -> play.api.libs.json.Json.toJson(obj.groupId),
-        "artifact_id" -> play.api.libs.json.Json.toJson(obj.artifactId),
-        "resolver_id" -> play.api.libs.json.Json.toJson(obj.resolverId),
+        "organization_id" -> play.api.libs.json.JsString(obj.organizationId),
+        "group_id" -> play.api.libs.json.JsString(obj.groupId),
+        "artifact_id" -> play.api.libs.json.JsString(obj.artifactId),
+        "resolver_id" -> play.api.libs.json.JsString(obj.resolverId),
         "version" -> play.api.libs.json.Json.toJson(obj.version)
       )
     }
@@ -867,7 +1006,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyLibraryForm: play.api.libs.json.Writes[LibraryForm] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.LibraryForm] {
         def writes(obj: com.bryzek.dependency.v0.models.LibraryForm) = {
-          jsonDependencyLibraryFormToJsonObject(obj)
+          jsObjectLibraryForm(obj)
         }
       }
     }
@@ -881,21 +1020,13 @@ package com.bryzek.dependency.v0.models {
       )(LibrarySummary.apply _)
     }
 
-    def jsonDependencyLibrarySummaryToJsonObject(obj: com.bryzek.dependency.v0.models.LibrarySummary) = {
+    def jsObjectLibrarySummary(obj: com.bryzek.dependency.v0.models.LibrarySummary) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "organization" -> play.api.libs.json.Json.toJson(obj.organization),
-        "group_id" -> play.api.libs.json.Json.toJson(obj.groupId),
-        "artifact_id" -> play.api.libs.json.Json.toJson(obj.artifactId)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "organization" -> jsObjectOrganizationSummary(obj.organization),
+        "group_id" -> play.api.libs.json.JsString(obj.groupId),
+        "artifact_id" -> play.api.libs.json.JsString(obj.artifactId)
       )
-    }
-
-    implicit def jsonWritesDependencyLibrarySummary: play.api.libs.json.Writes[LibrarySummary] = {
-      new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.LibrarySummary] {
-        def writes(obj: com.bryzek.dependency.v0.models.LibrarySummary) = {
-          jsonDependencyLibrarySummaryToJsonObject(obj)
-        }
-      }
     }
 
     implicit def jsonReadsDependencyLibraryVersion: play.api.libs.json.Reads[LibraryVersion] = {
@@ -907,11 +1038,11 @@ package com.bryzek.dependency.v0.models {
       )(LibraryVersion.apply _)
     }
 
-    def jsonDependencyLibraryVersionToJsonObject(obj: com.bryzek.dependency.v0.models.LibraryVersion) = {
+    def jsObjectLibraryVersion(obj: com.bryzek.dependency.v0.models.LibraryVersion) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "library" -> play.api.libs.json.Json.toJson(obj.library),
-        "version" -> play.api.libs.json.Json.toJson(obj.version),
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "library" -> jsObjectLibrary(obj.library),
+        "version" -> play.api.libs.json.JsString(obj.version),
         "cross_build_version" -> play.api.libs.json.Json.toJson(obj.crossBuildVersion)
       )
     }
@@ -919,7 +1050,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyLibraryVersion: play.api.libs.json.Writes[LibraryVersion] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.LibraryVersion] {
         def writes(obj: com.bryzek.dependency.v0.models.LibraryVersion) = {
-          jsonDependencyLibraryVersionToJsonObject(obj)
+          jsObjectLibraryVersion(obj)
         }
       }
     }
@@ -933,19 +1064,19 @@ package com.bryzek.dependency.v0.models {
       )(Membership.apply _)
     }
 
-    def jsonDependencyMembershipToJsonObject(obj: com.bryzek.dependency.v0.models.Membership) = {
+    def jsObjectMembership(obj: com.bryzek.dependency.v0.models.Membership) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "user" -> play.api.libs.json.Json.toJson(obj.user),
-        "organization" -> play.api.libs.json.Json.toJson(obj.organization),
-        "role" -> play.api.libs.json.Json.toJson(obj.role)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "user" -> jsObjectUserSummary(obj.user),
+        "organization" -> jsObjectOrganizationSummary(obj.organization),
+        "role" -> play.api.libs.json.JsString(obj.role.toString)
       )
     }
 
     implicit def jsonWritesDependencyMembership: play.api.libs.json.Writes[Membership] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Membership] {
         def writes(obj: com.bryzek.dependency.v0.models.Membership) = {
-          jsonDependencyMembershipToJsonObject(obj)
+          jsObjectMembership(obj)
         }
       }
     }
@@ -958,18 +1089,18 @@ package com.bryzek.dependency.v0.models {
       )(MembershipForm.apply _)
     }
 
-    def jsonDependencyMembershipFormToJsonObject(obj: com.bryzek.dependency.v0.models.MembershipForm) = {
+    def jsObjectMembershipForm(obj: com.bryzek.dependency.v0.models.MembershipForm) = {
       play.api.libs.json.Json.obj(
-        "user_id" -> play.api.libs.json.Json.toJson(obj.userId),
-        "organization" -> play.api.libs.json.Json.toJson(obj.organization),
-        "role" -> play.api.libs.json.Json.toJson(obj.role)
+        "user_id" -> play.api.libs.json.JsString(obj.userId),
+        "organization" -> play.api.libs.json.JsString(obj.organization),
+        "role" -> play.api.libs.json.JsString(obj.role.toString)
       )
     }
 
     implicit def jsonWritesDependencyMembershipForm: play.api.libs.json.Writes[MembershipForm] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.MembershipForm] {
         def writes(obj: com.bryzek.dependency.v0.models.MembershipForm) = {
-          jsonDependencyMembershipFormToJsonObject(obj)
+          jsObjectMembershipForm(obj)
         }
       }
     }
@@ -982,18 +1113,18 @@ package com.bryzek.dependency.v0.models {
       )(Organization.apply _)
     }
 
-    def jsonDependencyOrganizationToJsonObject(obj: com.bryzek.dependency.v0.models.Organization) = {
+    def jsObjectOrganization(obj: com.bryzek.dependency.v0.models.Organization) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "user" -> play.api.libs.json.Json.toJson(obj.user),
-        "key" -> play.api.libs.json.Json.toJson(obj.key)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "user" -> jsObjectReference(obj.user),
+        "key" -> play.api.libs.json.JsString(obj.key)
       )
     }
 
     implicit def jsonWritesDependencyOrganization: play.api.libs.json.Writes[Organization] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Organization] {
         def writes(obj: com.bryzek.dependency.v0.models.Organization) = {
-          jsonDependencyOrganizationToJsonObject(obj)
+          jsObjectOrganization(obj)
         }
       }
     }
@@ -1002,16 +1133,16 @@ package com.bryzek.dependency.v0.models {
       (__ \ "key").read[String].map { x => new OrganizationForm(key = x) }
     }
 
-    def jsonDependencyOrganizationFormToJsonObject(obj: com.bryzek.dependency.v0.models.OrganizationForm) = {
+    def jsObjectOrganizationForm(obj: com.bryzek.dependency.v0.models.OrganizationForm) = {
       play.api.libs.json.Json.obj(
-        "key" -> play.api.libs.json.Json.toJson(obj.key)
+        "key" -> play.api.libs.json.JsString(obj.key)
       )
     }
 
     implicit def jsonWritesDependencyOrganizationForm: play.api.libs.json.Writes[OrganizationForm] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.OrganizationForm] {
         def writes(obj: com.bryzek.dependency.v0.models.OrganizationForm) = {
-          jsonDependencyOrganizationFormToJsonObject(obj)
+          jsObjectOrganizationForm(obj)
         }
       }
     }
@@ -1023,17 +1154,17 @@ package com.bryzek.dependency.v0.models {
       )(OrganizationSummary.apply _)
     }
 
-    def jsonDependencyOrganizationSummaryToJsonObject(obj: com.bryzek.dependency.v0.models.OrganizationSummary) = {
+    def jsObjectOrganizationSummary(obj: com.bryzek.dependency.v0.models.OrganizationSummary) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "key" -> play.api.libs.json.Json.toJson(obj.key)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "key" -> play.api.libs.json.JsString(obj.key)
       )
     }
 
     implicit def jsonWritesDependencyOrganizationSummary: play.api.libs.json.Writes[OrganizationSummary] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.OrganizationSummary] {
         def writes(obj: com.bryzek.dependency.v0.models.OrganizationSummary) = {
-          jsonDependencyOrganizationSummaryToJsonObject(obj)
+          jsObjectOrganizationSummary(obj)
         }
       }
     }
@@ -1050,22 +1181,22 @@ package com.bryzek.dependency.v0.models {
       )(Project.apply _)
     }
 
-    def jsonDependencyProjectToJsonObject(obj: com.bryzek.dependency.v0.models.Project) = {
+    def jsObjectProject(obj: com.bryzek.dependency.v0.models.Project) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "organization" -> play.api.libs.json.Json.toJson(obj.organization),
-        "user" -> play.api.libs.json.Json.toJson(obj.user),
-        "visibility" -> play.api.libs.json.Json.toJson(obj.visibility),
-        "scms" -> play.api.libs.json.Json.toJson(obj.scms),
-        "name" -> play.api.libs.json.Json.toJson(obj.name),
-        "uri" -> play.api.libs.json.Json.toJson(obj.uri)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "organization" -> jsObjectOrganizationSummary(obj.organization),
+        "user" -> jsObjectReference(obj.user),
+        "visibility" -> play.api.libs.json.JsString(obj.visibility.toString),
+        "scms" -> play.api.libs.json.JsString(obj.scms.toString),
+        "name" -> play.api.libs.json.JsString(obj.name),
+        "uri" -> play.api.libs.json.JsString(obj.uri)
       )
     }
 
     implicit def jsonWritesDependencyProject: play.api.libs.json.Writes[Project] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Project] {
         def writes(obj: com.bryzek.dependency.v0.models.Project) = {
-          jsonDependencyProjectToJsonObject(obj)
+          jsObjectProject(obj)
         }
       }
     }
@@ -1081,13 +1212,13 @@ package com.bryzek.dependency.v0.models {
       )(ProjectBinary.apply _)
     }
 
-    def jsonDependencyProjectBinaryToJsonObject(obj: com.bryzek.dependency.v0.models.ProjectBinary) = {
+    def jsObjectProjectBinary(obj: com.bryzek.dependency.v0.models.ProjectBinary) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "project" -> play.api.libs.json.Json.toJson(obj.project),
-        "name" -> play.api.libs.json.Json.toJson(obj.name),
-        "version" -> play.api.libs.json.Json.toJson(obj.version),
-        "path" -> play.api.libs.json.Json.toJson(obj.path),
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "project" -> jsObjectProjectDetail(obj.project),
+        "name" -> play.api.libs.json.JsString(obj.name),
+        "version" -> play.api.libs.json.JsString(obj.version),
+        "path" -> play.api.libs.json.JsString(obj.path),
         "binary" -> play.api.libs.json.Json.toJson(obj.binary)
       )
     }
@@ -1095,7 +1226,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyProjectBinary: play.api.libs.json.Writes[ProjectBinary] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.ProjectBinary] {
         def writes(obj: com.bryzek.dependency.v0.models.ProjectBinary) = {
-          jsonDependencyProjectBinaryToJsonObject(obj)
+          jsObjectProjectBinary(obj)
         }
       }
     }
@@ -1108,18 +1239,18 @@ package com.bryzek.dependency.v0.models {
       )(ProjectDetail.apply _)
     }
 
-    def jsonDependencyProjectDetailToJsonObject(obj: com.bryzek.dependency.v0.models.ProjectDetail) = {
+    def jsObjectProjectDetail(obj: com.bryzek.dependency.v0.models.ProjectDetail) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "organization" -> play.api.libs.json.Json.toJson(obj.organization),
-        "name" -> play.api.libs.json.Json.toJson(obj.name)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "organization" -> jsObjectOrganizationSummary(obj.organization),
+        "name" -> play.api.libs.json.JsString(obj.name)
       )
     }
 
     implicit def jsonWritesDependencyProjectDetail: play.api.libs.json.Writes[ProjectDetail] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.ProjectDetail] {
         def writes(obj: com.bryzek.dependency.v0.models.ProjectDetail) = {
-          jsonDependencyProjectDetailToJsonObject(obj)
+          jsObjectProjectDetail(obj)
         }
       }
     }
@@ -1134,20 +1265,20 @@ package com.bryzek.dependency.v0.models {
       )(ProjectForm.apply _)
     }
 
-    def jsonDependencyProjectFormToJsonObject(obj: com.bryzek.dependency.v0.models.ProjectForm) = {
+    def jsObjectProjectForm(obj: com.bryzek.dependency.v0.models.ProjectForm) = {
       play.api.libs.json.Json.obj(
-        "organization" -> play.api.libs.json.Json.toJson(obj.organization),
-        "name" -> play.api.libs.json.Json.toJson(obj.name),
-        "visibility" -> play.api.libs.json.Json.toJson(obj.visibility),
-        "scms" -> play.api.libs.json.Json.toJson(obj.scms),
-        "uri" -> play.api.libs.json.Json.toJson(obj.uri)
+        "organization" -> play.api.libs.json.JsString(obj.organization),
+        "name" -> play.api.libs.json.JsString(obj.name),
+        "visibility" -> play.api.libs.json.JsString(obj.visibility.toString),
+        "scms" -> play.api.libs.json.JsString(obj.scms.toString),
+        "uri" -> play.api.libs.json.JsString(obj.uri)
       )
     }
 
     implicit def jsonWritesDependencyProjectForm: play.api.libs.json.Writes[ProjectForm] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.ProjectForm] {
         def writes(obj: com.bryzek.dependency.v0.models.ProjectForm) = {
-          jsonDependencyProjectFormToJsonObject(obj)
+          jsObjectProjectForm(obj)
         }
       }
     }
@@ -1165,15 +1296,15 @@ package com.bryzek.dependency.v0.models {
       )(ProjectLibrary.apply _)
     }
 
-    def jsonDependencyProjectLibraryToJsonObject(obj: com.bryzek.dependency.v0.models.ProjectLibrary) = {
+    def jsObjectProjectLibrary(obj: com.bryzek.dependency.v0.models.ProjectLibrary) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "project" -> play.api.libs.json.Json.toJson(obj.project),
-        "group_id" -> play.api.libs.json.Json.toJson(obj.groupId),
-        "artifact_id" -> play.api.libs.json.Json.toJson(obj.artifactId),
-        "version" -> play.api.libs.json.Json.toJson(obj.version),
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "project" -> jsObjectProjectDetail(obj.project),
+        "group_id" -> play.api.libs.json.JsString(obj.groupId),
+        "artifact_id" -> play.api.libs.json.JsString(obj.artifactId),
+        "version" -> play.api.libs.json.JsString(obj.version),
         "cross_build_version" -> play.api.libs.json.Json.toJson(obj.crossBuildVersion),
-        "path" -> play.api.libs.json.Json.toJson(obj.path),
+        "path" -> play.api.libs.json.JsString(obj.path),
         "library" -> play.api.libs.json.Json.toJson(obj.library)
       )
     }
@@ -1181,7 +1312,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyProjectLibrary: play.api.libs.json.Writes[ProjectLibrary] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.ProjectLibrary] {
         def writes(obj: com.bryzek.dependency.v0.models.ProjectLibrary) = {
-          jsonDependencyProjectLibraryToJsonObject(obj)
+          jsObjectProjectLibrary(obj)
         }
       }
     }
@@ -1195,7 +1326,7 @@ package com.bryzek.dependency.v0.models {
       )(ProjectPatchForm.apply _)
     }
 
-    def jsonDependencyProjectPatchFormToJsonObject(obj: com.bryzek.dependency.v0.models.ProjectPatchForm) = {
+    def jsObjectProjectPatchForm(obj: com.bryzek.dependency.v0.models.ProjectPatchForm) = {
       play.api.libs.json.Json.obj(
         "name" -> play.api.libs.json.Json.toJson(obj.name),
         "visibility" -> play.api.libs.json.Json.toJson(obj.visibility),
@@ -1207,7 +1338,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyProjectPatchForm: play.api.libs.json.Writes[ProjectPatchForm] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.ProjectPatchForm] {
         def writes(obj: com.bryzek.dependency.v0.models.ProjectPatchForm) = {
-          jsonDependencyProjectPatchFormToJsonObject(obj)
+          jsObjectProjectPatchForm(obj)
         }
       }
     }
@@ -1220,20 +1351,12 @@ package com.bryzek.dependency.v0.models {
       )(ProjectSummary.apply _)
     }
 
-    def jsonDependencyProjectSummaryToJsonObject(obj: com.bryzek.dependency.v0.models.ProjectSummary) = {
+    def jsObjectProjectSummary(obj: com.bryzek.dependency.v0.models.ProjectSummary) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "organization" -> play.api.libs.json.Json.toJson(obj.organization),
-        "name" -> play.api.libs.json.Json.toJson(obj.name)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "organization" -> jsObjectOrganizationSummary(obj.organization),
+        "name" -> play.api.libs.json.JsString(obj.name)
       )
-    }
-
-    implicit def jsonWritesDependencyProjectSummary: play.api.libs.json.Writes[ProjectSummary] = {
-      new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.ProjectSummary] {
-        def writes(obj: com.bryzek.dependency.v0.models.ProjectSummary) = {
-          jsonDependencyProjectSummaryToJsonObject(obj)
-        }
-      }
     }
 
     implicit def jsonReadsDependencyRecommendation: play.api.libs.json.Reads[Recommendation] = {
@@ -1249,23 +1372,23 @@ package com.bryzek.dependency.v0.models {
       )(Recommendation.apply _)
     }
 
-    def jsonDependencyRecommendationToJsonObject(obj: com.bryzek.dependency.v0.models.Recommendation) = {
+    def jsObjectRecommendation(obj: com.bryzek.dependency.v0.models.Recommendation) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "project" -> play.api.libs.json.Json.toJson(obj.project),
-        "type" -> play.api.libs.json.Json.toJson(obj.`type`),
-        "object" -> play.api.libs.json.Json.toJson(obj.`object`),
-        "name" -> play.api.libs.json.Json.toJson(obj.name),
-        "from" -> play.api.libs.json.Json.toJson(obj.from),
-        "to" -> play.api.libs.json.Json.toJson(obj.to),
-        "created_at" -> play.api.libs.json.Json.toJson(obj.createdAt)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "project" -> jsObjectProjectDetail(obj.project),
+        "type" -> play.api.libs.json.JsString(obj.`type`.toString),
+        "object" -> jsObjectReference(obj.`object`),
+        "name" -> play.api.libs.json.JsString(obj.name),
+        "from" -> play.api.libs.json.JsString(obj.from),
+        "to" -> play.api.libs.json.JsString(obj.to),
+        "created_at" -> play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(obj.createdAt))
       )
     }
 
     implicit def jsonWritesDependencyRecommendation: play.api.libs.json.Writes[Recommendation] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Recommendation] {
         def writes(obj: com.bryzek.dependency.v0.models.Recommendation) = {
-          jsonDependencyRecommendationToJsonObject(obj)
+          jsObjectRecommendation(obj)
         }
       }
     }
@@ -1274,16 +1397,16 @@ package com.bryzek.dependency.v0.models {
       (__ \ "id").read[String].map { x => new Reference(id = x) }
     }
 
-    def jsonDependencyReferenceToJsonObject(obj: com.bryzek.dependency.v0.models.Reference) = {
+    def jsObjectReference(obj: com.bryzek.dependency.v0.models.Reference) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id)
+        "id" -> play.api.libs.json.JsString(obj.id)
       )
     }
 
     implicit def jsonWritesDependencyReference: play.api.libs.json.Writes[Reference] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Reference] {
         def writes(obj: com.bryzek.dependency.v0.models.Reference) = {
-          jsonDependencyReferenceToJsonObject(obj)
+          jsObjectReference(obj)
         }
       }
     }
@@ -1296,18 +1419,18 @@ package com.bryzek.dependency.v0.models {
       )(Repository.apply _)
     }
 
-    def jsonDependencyRepositoryToJsonObject(obj: com.bryzek.dependency.v0.models.Repository) = {
+    def jsObjectRepository(obj: com.bryzek.dependency.v0.models.Repository) = {
       play.api.libs.json.Json.obj(
-        "name" -> play.api.libs.json.Json.toJson(obj.name),
-        "visibility" -> play.api.libs.json.Json.toJson(obj.visibility),
-        "uri" -> play.api.libs.json.Json.toJson(obj.uri)
+        "name" -> play.api.libs.json.JsString(obj.name),
+        "visibility" -> play.api.libs.json.JsString(obj.visibility.toString),
+        "uri" -> play.api.libs.json.JsString(obj.uri)
       )
     }
 
     implicit def jsonWritesDependencyRepository: play.api.libs.json.Writes[Repository] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Repository] {
         def writes(obj: com.bryzek.dependency.v0.models.Repository) = {
-          jsonDependencyRepositoryToJsonObject(obj)
+          jsObjectRepository(obj)
         }
       }
     }
@@ -1322,12 +1445,12 @@ package com.bryzek.dependency.v0.models {
       )(Resolver.apply _)
     }
 
-    def jsonDependencyResolverToJsonObject(obj: com.bryzek.dependency.v0.models.Resolver) = {
+    def jsObjectResolver(obj: com.bryzek.dependency.v0.models.Resolver) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "visibility" -> play.api.libs.json.Json.toJson(obj.visibility),
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "visibility" -> play.api.libs.json.JsString(obj.visibility.toString),
         "organization" -> play.api.libs.json.Json.toJson(obj.organization),
-        "uri" -> play.api.libs.json.Json.toJson(obj.uri),
+        "uri" -> play.api.libs.json.JsString(obj.uri),
         "credentials" -> play.api.libs.json.Json.toJson(obj.credentials)
       )
     }
@@ -1335,7 +1458,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyResolver: play.api.libs.json.Writes[Resolver] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Resolver] {
         def writes(obj: com.bryzek.dependency.v0.models.Resolver) = {
-          jsonDependencyResolverToJsonObject(obj)
+          jsObjectResolver(obj)
         }
       }
     }
@@ -1349,11 +1472,11 @@ package com.bryzek.dependency.v0.models {
       )(ResolverForm.apply _)
     }
 
-    def jsonDependencyResolverFormToJsonObject(obj: com.bryzek.dependency.v0.models.ResolverForm) = {
+    def jsObjectResolverForm(obj: com.bryzek.dependency.v0.models.ResolverForm) = {
       play.api.libs.json.Json.obj(
-        "visibility" -> play.api.libs.json.Json.toJson(obj.visibility),
-        "organization" -> play.api.libs.json.Json.toJson(obj.organization),
-        "uri" -> play.api.libs.json.Json.toJson(obj.uri),
+        "visibility" -> play.api.libs.json.JsString(obj.visibility.toString),
+        "organization" -> play.api.libs.json.JsString(obj.organization),
+        "uri" -> play.api.libs.json.JsString(obj.uri),
         "credentials" -> play.api.libs.json.Json.toJson(obj.credentials)
       )
     }
@@ -1361,7 +1484,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyResolverForm: play.api.libs.json.Writes[ResolverForm] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.ResolverForm] {
         def writes(obj: com.bryzek.dependency.v0.models.ResolverForm) = {
-          jsonDependencyResolverFormToJsonObject(obj)
+          jsObjectResolverForm(obj)
         }
       }
     }
@@ -1375,19 +1498,19 @@ package com.bryzek.dependency.v0.models {
       )(ResolverSummary.apply _)
     }
 
-    def jsonDependencyResolverSummaryToJsonObject(obj: com.bryzek.dependency.v0.models.ResolverSummary) = {
+    def jsObjectResolverSummary(obj: com.bryzek.dependency.v0.models.ResolverSummary) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
+        "id" -> play.api.libs.json.JsString(obj.id),
         "organization" -> play.api.libs.json.Json.toJson(obj.organization),
-        "visibility" -> play.api.libs.json.Json.toJson(obj.visibility),
-        "uri" -> play.api.libs.json.Json.toJson(obj.uri)
+        "visibility" -> play.api.libs.json.JsString(obj.visibility.toString),
+        "uri" -> play.api.libs.json.JsString(obj.uri)
       )
     }
 
     implicit def jsonWritesDependencyResolverSummary: play.api.libs.json.Writes[ResolverSummary] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.ResolverSummary] {
         def writes(obj: com.bryzek.dependency.v0.models.ResolverSummary) = {
-          jsonDependencyResolverSummaryToJsonObject(obj)
+          jsObjectResolverSummary(obj)
         }
       }
     }
@@ -1400,18 +1523,18 @@ package com.bryzek.dependency.v0.models {
       )(Subscription.apply _)
     }
 
-    def jsonDependencySubscriptionToJsonObject(obj: com.bryzek.dependency.v0.models.Subscription) = {
+    def jsObjectSubscription(obj: com.bryzek.dependency.v0.models.Subscription) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "user" -> play.api.libs.json.Json.toJson(obj.user),
-        "publication" -> play.api.libs.json.Json.toJson(obj.publication)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "user" -> jsObjectReference(obj.user),
+        "publication" -> play.api.libs.json.JsString(obj.publication.toString)
       )
     }
 
     implicit def jsonWritesDependencySubscription: play.api.libs.json.Writes[Subscription] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Subscription] {
         def writes(obj: com.bryzek.dependency.v0.models.Subscription) = {
-          jsonDependencySubscriptionToJsonObject(obj)
+          jsObjectSubscription(obj)
         }
       }
     }
@@ -1423,17 +1546,17 @@ package com.bryzek.dependency.v0.models {
       )(SubscriptionForm.apply _)
     }
 
-    def jsonDependencySubscriptionFormToJsonObject(obj: com.bryzek.dependency.v0.models.SubscriptionForm) = {
+    def jsObjectSubscriptionForm(obj: com.bryzek.dependency.v0.models.SubscriptionForm) = {
       play.api.libs.json.Json.obj(
-        "user_id" -> play.api.libs.json.Json.toJson(obj.userId),
-        "publication" -> play.api.libs.json.Json.toJson(obj.publication)
+        "user_id" -> play.api.libs.json.JsString(obj.userId),
+        "publication" -> play.api.libs.json.JsString(obj.publication.toString)
       )
     }
 
     implicit def jsonWritesDependencySubscriptionForm: play.api.libs.json.Writes[SubscriptionForm] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.SubscriptionForm] {
         def writes(obj: com.bryzek.dependency.v0.models.SubscriptionForm) = {
-          jsonDependencySubscriptionFormToJsonObject(obj)
+          jsObjectSubscriptionForm(obj)
         }
       }
     }
@@ -1446,18 +1569,18 @@ package com.bryzek.dependency.v0.models {
       )(Sync.apply _)
     }
 
-    def jsonDependencySyncToJsonObject(obj: com.bryzek.dependency.v0.models.Sync) = {
+    def jsObjectSync(obj: com.bryzek.dependency.v0.models.Sync) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "event" -> play.api.libs.json.Json.toJson(obj.event),
-        "created_at" -> play.api.libs.json.Json.toJson(obj.createdAt)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "event" -> play.api.libs.json.JsString(obj.event.toString),
+        "created_at" -> play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(obj.createdAt))
       )
     }
 
     implicit def jsonWritesDependencySync: play.api.libs.json.Writes[Sync] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Sync] {
         def writes(obj: com.bryzek.dependency.v0.models.Sync) = {
-          jsonDependencySyncToJsonObject(obj)
+          jsObjectSync(obj)
         }
       }
     }
@@ -1472,11 +1595,11 @@ package com.bryzek.dependency.v0.models {
       )(Token.apply _)
     }
 
-    def jsonDependencyTokenToJsonObject(obj: com.bryzek.dependency.v0.models.Token) = {
+    def jsObjectToken(obj: com.bryzek.dependency.v0.models.Token) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "user" -> play.api.libs.json.Json.toJson(obj.user),
-        "masked" -> play.api.libs.json.Json.toJson(obj.masked),
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "user" -> jsObjectReference(obj.user),
+        "masked" -> play.api.libs.json.JsString(obj.masked),
         "cleartext" -> play.api.libs.json.Json.toJson(obj.cleartext),
         "description" -> play.api.libs.json.Json.toJson(obj.description)
       )
@@ -1485,7 +1608,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyToken: play.api.libs.json.Writes[Token] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Token] {
         def writes(obj: com.bryzek.dependency.v0.models.Token) = {
-          jsonDependencyTokenToJsonObject(obj)
+          jsObjectToken(obj)
         }
       }
     }
@@ -1497,9 +1620,9 @@ package com.bryzek.dependency.v0.models {
       )(TokenForm.apply _)
     }
 
-    def jsonDependencyTokenFormToJsonObject(obj: com.bryzek.dependency.v0.models.TokenForm) = {
+    def jsObjectTokenForm(obj: com.bryzek.dependency.v0.models.TokenForm) = {
       play.api.libs.json.Json.obj(
-        "user_id" -> play.api.libs.json.Json.toJson(obj.userId),
+        "user_id" -> play.api.libs.json.JsString(obj.userId),
         "description" -> play.api.libs.json.Json.toJson(obj.description)
       )
     }
@@ -1507,7 +1630,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyTokenForm: play.api.libs.json.Writes[TokenForm] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.TokenForm] {
         def writes(obj: com.bryzek.dependency.v0.models.TokenForm) = {
-          jsonDependencyTokenFormToJsonObject(obj)
+          jsObjectTokenForm(obj)
         }
       }
     }
@@ -1519,7 +1642,7 @@ package com.bryzek.dependency.v0.models {
       )(UserForm.apply _)
     }
 
-    def jsonDependencyUserFormToJsonObject(obj: com.bryzek.dependency.v0.models.UserForm) = {
+    def jsObjectUserForm(obj: com.bryzek.dependency.v0.models.UserForm) = {
       play.api.libs.json.Json.obj(
         "email" -> play.api.libs.json.Json.toJson(obj.email),
         "name" -> play.api.libs.json.Json.toJson(obj.name)
@@ -1529,7 +1652,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyUserForm: play.api.libs.json.Writes[UserForm] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.UserForm] {
         def writes(obj: com.bryzek.dependency.v0.models.UserForm) = {
-          jsonDependencyUserFormToJsonObject(obj)
+          jsObjectUserForm(obj)
         }
       }
     }
@@ -1542,18 +1665,18 @@ package com.bryzek.dependency.v0.models {
       )(UserIdentifier.apply _)
     }
 
-    def jsonDependencyUserIdentifierToJsonObject(obj: com.bryzek.dependency.v0.models.UserIdentifier) = {
+    def jsObjectUserIdentifier(obj: com.bryzek.dependency.v0.models.UserIdentifier) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "user" -> play.api.libs.json.Json.toJson(obj.user),
-        "value" -> play.api.libs.json.Json.toJson(obj.value)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "user" -> jsObjectReference(obj.user),
+        "value" -> play.api.libs.json.JsString(obj.value)
       )
     }
 
     implicit def jsonWritesDependencyUserIdentifier: play.api.libs.json.Writes[UserIdentifier] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.UserIdentifier] {
         def writes(obj: com.bryzek.dependency.v0.models.UserIdentifier) = {
-          jsonDependencyUserIdentifierToJsonObject(obj)
+          jsObjectUserIdentifier(obj)
         }
       }
     }
@@ -1566,18 +1689,18 @@ package com.bryzek.dependency.v0.models {
       )(UserSummary.apply _)
     }
 
-    def jsonDependencyUserSummaryToJsonObject(obj: com.bryzek.dependency.v0.models.UserSummary) = {
+    def jsObjectUserSummary(obj: com.bryzek.dependency.v0.models.UserSummary) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
+        "id" -> play.api.libs.json.JsString(obj.id),
         "email" -> play.api.libs.json.Json.toJson(obj.email),
-        "name" -> play.api.libs.json.Json.toJson(obj.name)
+        "name" -> io.flow.common.v0.models.json.jsObjectName(obj.name)
       )
     }
 
     implicit def jsonWritesDependencyUserSummary: play.api.libs.json.Writes[UserSummary] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.UserSummary] {
         def writes(obj: com.bryzek.dependency.v0.models.UserSummary) = {
-          jsonDependencyUserSummaryToJsonObject(obj)
+          jsObjectUserSummary(obj)
         }
       }
     }
@@ -1589,19 +1712,11 @@ package com.bryzek.dependency.v0.models {
       )(UsernamePassword.apply _)
     }
 
-    def jsonDependencyUsernamePasswordToJsonObject(obj: com.bryzek.dependency.v0.models.UsernamePassword) = {
+    def jsObjectUsernamePassword(obj: com.bryzek.dependency.v0.models.UsernamePassword) = {
       play.api.libs.json.Json.obj(
-        "username" -> play.api.libs.json.Json.toJson(obj.username),
+        "username" -> play.api.libs.json.JsString(obj.username),
         "password" -> play.api.libs.json.Json.toJson(obj.password)
       )
-    }
-
-    implicit def jsonWritesDependencyUsernamePassword: play.api.libs.json.Writes[UsernamePassword] = {
-      new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.UsernamePassword] {
-        def writes(obj: com.bryzek.dependency.v0.models.UsernamePassword) = {
-          jsonDependencyUsernamePasswordToJsonObject(obj)
-        }
-      }
     }
 
     implicit def jsonReadsDependencyVersionForm: play.api.libs.json.Reads[VersionForm] = {
@@ -1611,9 +1726,9 @@ package com.bryzek.dependency.v0.models {
       )(VersionForm.apply _)
     }
 
-    def jsonDependencyVersionFormToJsonObject(obj: com.bryzek.dependency.v0.models.VersionForm) = {
+    def jsObjectVersionForm(obj: com.bryzek.dependency.v0.models.VersionForm) = {
       play.api.libs.json.Json.obj(
-        "version" -> play.api.libs.json.Json.toJson(obj.version),
+        "version" -> play.api.libs.json.JsString(obj.version),
         "cross_build_version" -> play.api.libs.json.Json.toJson(obj.crossBuildVersion)
       )
     }
@@ -1621,7 +1736,7 @@ package com.bryzek.dependency.v0.models {
     implicit def jsonWritesDependencyVersionForm: play.api.libs.json.Writes[VersionForm] = {
       new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.VersionForm] {
         def writes(obj: com.bryzek.dependency.v0.models.VersionForm) = {
-          jsonDependencyVersionFormToJsonObject(obj)
+          jsObjectVersionForm(obj)
         }
       }
     }
@@ -1640,13 +1755,19 @@ package com.bryzek.dependency.v0.models {
       }
     }
 
-    implicit def jsonWritesDependencyCredentials: play.api.libs.json.Writes[Credentials] = new play.api.libs.json.Writes[Credentials] {
-      def writes(obj: com.bryzek.dependency.v0.models.Credentials) = {
-        obj match {
-          case x: UsernamePassword => jsonDependencyUsernamePasswordToJsonObject(x) ++ play.api.libs.json.Json.obj("discriminator" -> "username_password")
-          case other => {
-            sys.error(s"The type[${other.getClass.getName}] has no JSON writer")
-          }
+    def jsObjectCredentials(obj: com.bryzek.dependency.v0.models.Credentials) = {
+      obj match {
+        case x: com.bryzek.dependency.v0.models.UsernamePassword => jsObjectUsernamePassword(x) ++ play.api.libs.json.Json.obj("discriminator" -> "username_password")
+        case other => {
+          sys.error(s"The type[${other.getClass.getName}] has no JSON writer")
+        }
+      }
+    }
+
+    implicit def jsonWritesDependencyCredentials: play.api.libs.json.Writes[Credentials] = {
+      new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.Credentials] {
+        def writes(obj: com.bryzek.dependency.v0.models.Credentials) = {
+          jsObjectCredentials(obj)
         }
       }
     }
@@ -1667,15 +1788,21 @@ package com.bryzek.dependency.v0.models {
       }
     }
 
-    implicit def jsonWritesDependencyItemSummary: play.api.libs.json.Writes[ItemSummary] = new play.api.libs.json.Writes[ItemSummary] {
-      def writes(obj: com.bryzek.dependency.v0.models.ItemSummary) = {
-        obj match {
-          case x: BinarySummary => jsonDependencyBinarySummaryToJsonObject(x) ++ play.api.libs.json.Json.obj("discriminator" -> "binary_summary")
-          case x: LibrarySummary => jsonDependencyLibrarySummaryToJsonObject(x) ++ play.api.libs.json.Json.obj("discriminator" -> "library_summary")
-          case x: ProjectSummary => jsonDependencyProjectSummaryToJsonObject(x) ++ play.api.libs.json.Json.obj("discriminator" -> "project_summary")
-          case other => {
-            sys.error(s"The type[${other.getClass.getName}] has no JSON writer")
-          }
+    def jsObjectItemSummary(obj: com.bryzek.dependency.v0.models.ItemSummary) = {
+      obj match {
+        case x: com.bryzek.dependency.v0.models.BinarySummary => jsObjectBinarySummary(x) ++ play.api.libs.json.Json.obj("discriminator" -> "binary_summary")
+        case x: com.bryzek.dependency.v0.models.LibrarySummary => jsObjectLibrarySummary(x) ++ play.api.libs.json.Json.obj("discriminator" -> "library_summary")
+        case x: com.bryzek.dependency.v0.models.ProjectSummary => jsObjectProjectSummary(x) ++ play.api.libs.json.Json.obj("discriminator" -> "project_summary")
+        case other => {
+          sys.error(s"The type[${other.getClass.getName}] has no JSON writer")
+        }
+      }
+    }
+
+    implicit def jsonWritesDependencyItemSummary: play.api.libs.json.Writes[ItemSummary] = {
+      new play.api.libs.json.Writes[com.bryzek.dependency.v0.models.ItemSummary] {
+        def writes(obj: com.bryzek.dependency.v0.models.ItemSummary) = {
+          jsObjectItemSummary(obj)
         }
       }
     }

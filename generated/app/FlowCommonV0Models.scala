@@ -526,49 +526,238 @@ package io.flow.common.v0.models {
       }
     }
 
-    implicit val jsonReadsCommonCalendar = __.read[String].map(Calendar.apply)
-    implicit val jsonWritesCommonCalendar = new Writes[Calendar] {
-      def writes(x: Calendar) = JsString(x.toString)
+    implicit val jsonReadsCommonCalendar = new play.api.libs.json.Reads[io.flow.common.v0.models.Calendar] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.common.v0.models.Calendar] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.common.v0.models.Calendar(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.common.v0.models.Calendar(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
     }
 
-    implicit val jsonReadsCommonCapability = __.read[String].map(Capability.apply)
-    implicit val jsonWritesCommonCapability = new Writes[Capability] {
-      def writes(x: Capability) = JsString(x.toString)
+    def jsObjectCalendar(obj: io.flow.common.v0.models.Calendar) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
     }
 
-    implicit val jsonReadsCommonChangeType = __.read[String].map(ChangeType.apply)
-    implicit val jsonWritesCommonChangeType = new Writes[ChangeType] {
-      def writes(x: ChangeType) = JsString(x.toString)
+    implicit def jsonWritesCommonCalendar: play.api.libs.json.Writes[Calendar] = {
+      new play.api.libs.json.Writes[io.flow.common.v0.models.Calendar] {
+        def writes(obj: io.flow.common.v0.models.Calendar) = {
+          jsObjectCalendar(obj)
+        }
+      }
     }
 
-    implicit val jsonReadsCommonCountry = __.read[String].map(Country.apply)
-    implicit val jsonWritesCommonCountry = new Writes[Country] {
-      def writes(x: Country) = JsString(x.toString)
+    implicit val jsonReadsCommonCapability = new play.api.libs.json.Reads[io.flow.common.v0.models.Capability] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.common.v0.models.Capability] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.common.v0.models.Capability(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.common.v0.models.Capability(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
     }
 
-    implicit val jsonReadsCommonScheduleExceptionStatus = __.read[String].map(ScheduleExceptionStatus.apply)
-    implicit val jsonWritesCommonScheduleExceptionStatus = new Writes[ScheduleExceptionStatus] {
-      def writes(x: ScheduleExceptionStatus) = JsString(x.toString)
+    def jsObjectCapability(obj: io.flow.common.v0.models.Capability) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
     }
 
-    implicit val jsonReadsCommonUnitOfMeasurement = __.read[String].map(UnitOfMeasurement.apply)
-    implicit val jsonWritesCommonUnitOfMeasurement = new Writes[UnitOfMeasurement] {
-      def writes(x: UnitOfMeasurement) = JsString(x.toString)
+    implicit def jsonWritesCommonCapability: play.api.libs.json.Writes[Capability] = {
+      new play.api.libs.json.Writes[io.flow.common.v0.models.Capability] {
+        def writes(obj: io.flow.common.v0.models.Capability) = {
+          jsObjectCapability(obj)
+        }
+      }
     }
 
-    implicit val jsonReadsCommonUnitOfTime = __.read[String].map(UnitOfTime.apply)
-    implicit val jsonWritesCommonUnitOfTime = new Writes[UnitOfTime] {
-      def writes(x: UnitOfTime) = JsString(x.toString)
+    implicit val jsonReadsCommonChangeType = new play.api.libs.json.Reads[io.flow.common.v0.models.ChangeType] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.common.v0.models.ChangeType] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.common.v0.models.ChangeType(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.common.v0.models.ChangeType(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
     }
 
-    implicit val jsonReadsCommonValueAddedService = __.read[String].map(ValueAddedService.apply)
-    implicit val jsonWritesCommonValueAddedService = new Writes[ValueAddedService] {
-      def writes(x: ValueAddedService) = JsString(x.toString)
+    def jsObjectChangeType(obj: io.flow.common.v0.models.ChangeType) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
     }
 
-    implicit val jsonReadsCommonVisibility = __.read[String].map(Visibility.apply)
-    implicit val jsonWritesCommonVisibility = new Writes[Visibility] {
-      def writes(x: Visibility) = JsString(x.toString)
+    implicit def jsonWritesCommonChangeType: play.api.libs.json.Writes[ChangeType] = {
+      new play.api.libs.json.Writes[io.flow.common.v0.models.ChangeType] {
+        def writes(obj: io.flow.common.v0.models.ChangeType) = {
+          jsObjectChangeType(obj)
+        }
+      }
+    }
+
+    implicit val jsonReadsCommonCountry = new play.api.libs.json.Reads[io.flow.common.v0.models.Country] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.common.v0.models.Country] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.common.v0.models.Country(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.common.v0.models.Country(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
+    }
+
+    def jsObjectCountry(obj: io.flow.common.v0.models.Country) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesCommonCountry: play.api.libs.json.Writes[Country] = {
+      new play.api.libs.json.Writes[io.flow.common.v0.models.Country] {
+        def writes(obj: io.flow.common.v0.models.Country) = {
+          jsObjectCountry(obj)
+        }
+      }
+    }
+
+    implicit val jsonReadsCommonScheduleExceptionStatus = new play.api.libs.json.Reads[io.flow.common.v0.models.ScheduleExceptionStatus] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.common.v0.models.ScheduleExceptionStatus] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.common.v0.models.ScheduleExceptionStatus(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.common.v0.models.ScheduleExceptionStatus(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
+    }
+
+    def jsObjectScheduleExceptionStatus(obj: io.flow.common.v0.models.ScheduleExceptionStatus) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesCommonScheduleExceptionStatus: play.api.libs.json.Writes[ScheduleExceptionStatus] = {
+      new play.api.libs.json.Writes[io.flow.common.v0.models.ScheduleExceptionStatus] {
+        def writes(obj: io.flow.common.v0.models.ScheduleExceptionStatus) = {
+          jsObjectScheduleExceptionStatus(obj)
+        }
+      }
+    }
+
+    implicit val jsonReadsCommonUnitOfMeasurement = new play.api.libs.json.Reads[io.flow.common.v0.models.UnitOfMeasurement] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.common.v0.models.UnitOfMeasurement] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.common.v0.models.UnitOfMeasurement(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.common.v0.models.UnitOfMeasurement(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
+    }
+
+    def jsObjectUnitOfMeasurement(obj: io.flow.common.v0.models.UnitOfMeasurement) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesCommonUnitOfMeasurement: play.api.libs.json.Writes[UnitOfMeasurement] = {
+      new play.api.libs.json.Writes[io.flow.common.v0.models.UnitOfMeasurement] {
+        def writes(obj: io.flow.common.v0.models.UnitOfMeasurement) = {
+          jsObjectUnitOfMeasurement(obj)
+        }
+      }
+    }
+
+    implicit val jsonReadsCommonUnitOfTime = new play.api.libs.json.Reads[io.flow.common.v0.models.UnitOfTime] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.common.v0.models.UnitOfTime] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.common.v0.models.UnitOfTime(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.common.v0.models.UnitOfTime(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
+    }
+
+    def jsObjectUnitOfTime(obj: io.flow.common.v0.models.UnitOfTime) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesCommonUnitOfTime: play.api.libs.json.Writes[UnitOfTime] = {
+      new play.api.libs.json.Writes[io.flow.common.v0.models.UnitOfTime] {
+        def writes(obj: io.flow.common.v0.models.UnitOfTime) = {
+          jsObjectUnitOfTime(obj)
+        }
+      }
+    }
+
+    implicit val jsonReadsCommonValueAddedService = new play.api.libs.json.Reads[io.flow.common.v0.models.ValueAddedService] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.common.v0.models.ValueAddedService] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.common.v0.models.ValueAddedService(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.common.v0.models.ValueAddedService(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
+    }
+
+    def jsObjectValueAddedService(obj: io.flow.common.v0.models.ValueAddedService) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesCommonValueAddedService: play.api.libs.json.Writes[ValueAddedService] = {
+      new play.api.libs.json.Writes[io.flow.common.v0.models.ValueAddedService] {
+        def writes(obj: io.flow.common.v0.models.ValueAddedService) = {
+          jsObjectValueAddedService(obj)
+        }
+      }
+    }
+
+    implicit val jsonReadsCommonVisibility = new play.api.libs.json.Reads[io.flow.common.v0.models.Visibility] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.common.v0.models.Visibility] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.common.v0.models.Visibility(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.common.v0.models.Visibility(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
+    }
+
+    def jsObjectVisibility(obj: io.flow.common.v0.models.Visibility) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesCommonVisibility: play.api.libs.json.Writes[Visibility] = {
+      new play.api.libs.json.Writes[io.flow.common.v0.models.Visibility] {
+        def writes(obj: io.flow.common.v0.models.Visibility) = {
+          jsObjectVisibility(obj)
+        }
+      }
     }
 
     implicit def jsonReadsCommonAddress: play.api.libs.json.Reads[Address] = {
@@ -582,7 +771,7 @@ package io.flow.common.v0.models {
       )(Address.apply _)
     }
 
-    def jsonCommonAddressToJsonObject(obj: io.flow.common.v0.models.Address) = {
+    def jsObjectAddress(obj: io.flow.common.v0.models.Address) = {
       play.api.libs.json.Json.obj(
         "text" -> play.api.libs.json.Json.toJson(obj.text),
         "streets" -> play.api.libs.json.Json.toJson(obj.streets),
@@ -596,7 +785,7 @@ package io.flow.common.v0.models {
     implicit def jsonWritesCommonAddress: play.api.libs.json.Writes[Address] = {
       new play.api.libs.json.Writes[io.flow.common.v0.models.Address] {
         def writes(obj: io.flow.common.v0.models.Address) = {
-          jsonCommonAddressToJsonObject(obj)
+          jsObjectAddress(obj)
         }
       }
     }
@@ -609,18 +798,18 @@ package io.flow.common.v0.models {
       )(ChangeHeader.apply _)
     }
 
-    def jsonCommonChangeHeaderToJsonObject(obj: io.flow.common.v0.models.ChangeHeader) = {
+    def jsObjectChangeHeader(obj: io.flow.common.v0.models.ChangeHeader) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "timestamp" -> play.api.libs.json.Json.toJson(obj.timestamp),
-        "type" -> play.api.libs.json.Json.toJson(obj.`type`)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "timestamp" -> play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(obj.timestamp)),
+        "type" -> play.api.libs.json.JsString(obj.`type`.toString)
       )
     }
 
     implicit def jsonWritesCommonChangeHeader: play.api.libs.json.Writes[ChangeHeader] = {
       new play.api.libs.json.Writes[io.flow.common.v0.models.ChangeHeader] {
         def writes(obj: io.flow.common.v0.models.ChangeHeader) = {
-          jsonCommonChangeHeaderToJsonObject(obj)
+          jsObjectChangeHeader(obj)
         }
       }
     }
@@ -632,17 +821,17 @@ package io.flow.common.v0.models {
       )(DatetimeRange.apply _)
     }
 
-    def jsonCommonDatetimeRangeToJsonObject(obj: io.flow.common.v0.models.DatetimeRange) = {
+    def jsObjectDatetimeRange(obj: io.flow.common.v0.models.DatetimeRange) = {
       play.api.libs.json.Json.obj(
-        "from" -> play.api.libs.json.Json.toJson(obj.from),
-        "to" -> play.api.libs.json.Json.toJson(obj.to)
+        "from" -> play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(obj.from)),
+        "to" -> play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(obj.to))
       )
     }
 
     implicit def jsonWritesCommonDatetimeRange: play.api.libs.json.Writes[DatetimeRange] = {
       new play.api.libs.json.Writes[io.flow.common.v0.models.DatetimeRange] {
         def writes(obj: io.flow.common.v0.models.DatetimeRange) = {
-          jsonCommonDatetimeRangeToJsonObject(obj)
+          jsObjectDatetimeRange(obj)
         }
       }
     }
@@ -654,17 +843,17 @@ package io.flow.common.v0.models {
       )(Dimension.apply _)
     }
 
-    def jsonCommonDimensionToJsonObject(obj: io.flow.common.v0.models.Dimension) = {
+    def jsObjectDimension(obj: io.flow.common.v0.models.Dimension) = {
       play.api.libs.json.Json.obj(
-        "value" -> play.api.libs.json.Json.toJson(obj.value),
-        "units" -> play.api.libs.json.Json.toJson(obj.units)
+        "value" -> play.api.libs.json.JsNumber(obj.value),
+        "units" -> play.api.libs.json.JsString(obj.units.toString)
       )
     }
 
     implicit def jsonWritesCommonDimension: play.api.libs.json.Writes[Dimension] = {
       new play.api.libs.json.Writes[io.flow.common.v0.models.Dimension] {
         def writes(obj: io.flow.common.v0.models.Dimension) = {
-          jsonCommonDimensionToJsonObject(obj)
+          jsObjectDimension(obj)
         }
       }
     }
@@ -676,17 +865,17 @@ package io.flow.common.v0.models {
       )(Error.apply _)
     }
 
-    def jsonCommonErrorToJsonObject(obj: io.flow.common.v0.models.Error) = {
+    def jsObjectError(obj: io.flow.common.v0.models.Error) = {
       play.api.libs.json.Json.obj(
-        "code" -> play.api.libs.json.Json.toJson(obj.code),
-        "message" -> play.api.libs.json.Json.toJson(obj.message)
+        "code" -> play.api.libs.json.JsString(obj.code),
+        "message" -> play.api.libs.json.JsString(obj.message)
       )
     }
 
     implicit def jsonWritesCommonError: play.api.libs.json.Writes[Error] = {
       new play.api.libs.json.Writes[io.flow.common.v0.models.Error] {
         def writes(obj: io.flow.common.v0.models.Error) = {
-          jsonCommonErrorToJsonObject(obj)
+          jsObjectError(obj)
         }
       }
     }
@@ -695,16 +884,16 @@ package io.flow.common.v0.models {
       (__ \ "status").read[String].map { x => new Healthcheck(status = x) }
     }
 
-    def jsonCommonHealthcheckToJsonObject(obj: io.flow.common.v0.models.Healthcheck) = {
+    def jsObjectHealthcheck(obj: io.flow.common.v0.models.Healthcheck) = {
       play.api.libs.json.Json.obj(
-        "status" -> play.api.libs.json.Json.toJson(obj.status)
+        "status" -> play.api.libs.json.JsString(obj.status)
       )
     }
 
     implicit def jsonWritesCommonHealthcheck: play.api.libs.json.Writes[Healthcheck] = {
       new play.api.libs.json.Writes[io.flow.common.v0.models.Healthcheck] {
         def writes(obj: io.flow.common.v0.models.Healthcheck) = {
-          jsonCommonHealthcheckToJsonObject(obj)
+          jsObjectHealthcheck(obj)
         }
       }
     }
@@ -713,16 +902,16 @@ package io.flow.common.v0.models {
       (__ \ "value").read[String].map { x => new Location(value = x) }
     }
 
-    def jsonCommonLocationToJsonObject(obj: io.flow.common.v0.models.Location) = {
+    def jsObjectLocation(obj: io.flow.common.v0.models.Location) = {
       play.api.libs.json.Json.obj(
-        "value" -> play.api.libs.json.Json.toJson(obj.value)
+        "value" -> play.api.libs.json.JsString(obj.value)
       )
     }
 
     implicit def jsonWritesCommonLocation: play.api.libs.json.Writes[Location] = {
       new play.api.libs.json.Writes[io.flow.common.v0.models.Location] {
         def writes(obj: io.flow.common.v0.models.Location) = {
-          jsonCommonLocationToJsonObject(obj)
+          jsObjectLocation(obj)
         }
       }
     }
@@ -734,7 +923,7 @@ package io.flow.common.v0.models {
       )(Name.apply _)
     }
 
-    def jsonCommonNameToJsonObject(obj: io.flow.common.v0.models.Name) = {
+    def jsObjectName(obj: io.flow.common.v0.models.Name) = {
       play.api.libs.json.Json.obj(
         "first" -> play.api.libs.json.Json.toJson(obj.first),
         "last" -> play.api.libs.json.Json.toJson(obj.last)
@@ -744,7 +933,7 @@ package io.flow.common.v0.models {
     implicit def jsonWritesCommonName: play.api.libs.json.Writes[Name] = {
       new play.api.libs.json.Writes[io.flow.common.v0.models.Name] {
         def writes(obj: io.flow.common.v0.models.Name) = {
-          jsonCommonNameToJsonObject(obj)
+          jsObjectName(obj)
         }
       }
     }
@@ -756,19 +945,11 @@ package io.flow.common.v0.models {
       )(Organization.apply _)
     }
 
-    def jsonCommonOrganizationToJsonObject(obj: io.flow.common.v0.models.Organization) = {
+    def jsObjectOrganization(obj: io.flow.common.v0.models.Organization) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "name" -> play.api.libs.json.Json.toJson(obj.name)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "name" -> play.api.libs.json.JsString(obj.name)
       )
-    }
-
-    implicit def jsonWritesCommonOrganization: play.api.libs.json.Writes[Organization] = {
-      new play.api.libs.json.Writes[io.flow.common.v0.models.Organization] {
-        def writes(obj: io.flow.common.v0.models.Organization) = {
-          jsonCommonOrganizationToJsonObject(obj)
-        }
-      }
     }
 
     implicit def jsonReadsCommonOrganizationSummary: play.api.libs.json.Reads[OrganizationSummary] = {
@@ -778,17 +959,17 @@ package io.flow.common.v0.models {
       )(OrganizationSummary.apply _)
     }
 
-    def jsonCommonOrganizationSummaryToJsonObject(obj: io.flow.common.v0.models.OrganizationSummary) = {
+    def jsObjectOrganizationSummary(obj: io.flow.common.v0.models.OrganizationSummary) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "name" -> play.api.libs.json.Json.toJson(obj.name)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "name" -> play.api.libs.json.JsString(obj.name)
       )
     }
 
     implicit def jsonWritesCommonOrganizationSummary: play.api.libs.json.Writes[OrganizationSummary] = {
       new play.api.libs.json.Writes[io.flow.common.v0.models.OrganizationSummary] {
         def writes(obj: io.flow.common.v0.models.OrganizationSummary) = {
-          jsonCommonOrganizationSummaryToJsonObject(obj)
+          jsObjectOrganizationSummary(obj)
         }
       }
     }
@@ -800,17 +981,17 @@ package io.flow.common.v0.models {
       )(Price.apply _)
     }
 
-    def jsonCommonPriceToJsonObject(obj: io.flow.common.v0.models.Price) = {
+    def jsObjectPrice(obj: io.flow.common.v0.models.Price) = {
       play.api.libs.json.Json.obj(
-        "amount" -> play.api.libs.json.Json.toJson(obj.amount),
-        "currency" -> play.api.libs.json.Json.toJson(obj.currency)
+        "amount" -> play.api.libs.json.JsString(obj.amount),
+        "currency" -> play.api.libs.json.JsString(obj.currency)
       )
     }
 
     implicit def jsonWritesCommonPrice: play.api.libs.json.Writes[Price] = {
       new play.api.libs.json.Writes[io.flow.common.v0.models.Price] {
         def writes(obj: io.flow.common.v0.models.Price) = {
-          jsonCommonPriceToJsonObject(obj)
+          jsObjectPrice(obj)
         }
       }
     }
@@ -819,18 +1000,10 @@ package io.flow.common.v0.models {
       (__ \ "id").read[String].map { x => new Reference(id = x) }
     }
 
-    def jsonCommonReferenceToJsonObject(obj: io.flow.common.v0.models.Reference) = {
+    def jsObjectReference(obj: io.flow.common.v0.models.Reference) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id)
+        "id" -> play.api.libs.json.JsString(obj.id)
       )
-    }
-
-    implicit def jsonWritesCommonReference: play.api.libs.json.Writes[Reference] = {
-      new play.api.libs.json.Writes[io.flow.common.v0.models.Reference] {
-        def writes(obj: io.flow.common.v0.models.Reference) = {
-          jsonCommonReferenceToJsonObject(obj)
-        }
-      }
     }
 
     implicit def jsonReadsCommonUser: play.api.libs.json.Reads[User] = {
@@ -841,20 +1014,12 @@ package io.flow.common.v0.models {
       )(User.apply _)
     }
 
-    def jsonCommonUserToJsonObject(obj: io.flow.common.v0.models.User) = {
+    def jsObjectUser(obj: io.flow.common.v0.models.User) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
+        "id" -> play.api.libs.json.JsString(obj.id),
         "email" -> play.api.libs.json.Json.toJson(obj.email),
-        "name" -> play.api.libs.json.Json.toJson(obj.name)
+        "name" -> jsObjectName(obj.name)
       )
-    }
-
-    implicit def jsonWritesCommonUser: play.api.libs.json.Writes[User] = {
-      new play.api.libs.json.Writes[io.flow.common.v0.models.User] {
-        def writes(obj: io.flow.common.v0.models.User) = {
-          jsonCommonUserToJsonObject(obj)
-        }
-      }
     }
 
     implicit def jsonReadsCommonUserSummary: play.api.libs.json.Reads[UserSummary] = {
@@ -864,17 +1029,17 @@ package io.flow.common.v0.models {
       )(UserSummary.apply _)
     }
 
-    def jsonCommonUserSummaryToJsonObject(obj: io.flow.common.v0.models.UserSummary) = {
+    def jsObjectUserSummary(obj: io.flow.common.v0.models.UserSummary) = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.Json.toJson(obj.id),
-        "name" -> play.api.libs.json.Json.toJson(obj.name)
+        "id" -> play.api.libs.json.JsString(obj.id),
+        "name" -> play.api.libs.json.JsString(obj.name)
       )
     }
 
     implicit def jsonWritesCommonUserSummary: play.api.libs.json.Writes[UserSummary] = {
       new play.api.libs.json.Writes[io.flow.common.v0.models.UserSummary] {
         def writes(obj: io.flow.common.v0.models.UserSummary) = {
-          jsonCommonUserSummaryToJsonObject(obj)
+          jsObjectUserSummary(obj)
         }
       }
     }
@@ -894,14 +1059,20 @@ package io.flow.common.v0.models {
       }
     }
 
-    implicit def jsonWritesCommonExpandableOrganization: play.api.libs.json.Writes[ExpandableOrganization] = new play.api.libs.json.Writes[ExpandableOrganization] {
-      def writes(obj: io.flow.common.v0.models.ExpandableOrganization) = {
-        obj match {
-          case x: Reference => jsonCommonReferenceToJsonObject(x) ++ play.api.libs.json.Json.obj("discriminator" -> "reference")
-          case x: Organization => jsonCommonOrganizationToJsonObject(x) ++ play.api.libs.json.Json.obj("discriminator" -> "organization")
-          case other => {
-            sys.error(s"The type[${other.getClass.getName}] has no JSON writer")
-          }
+    def jsObjectExpandableOrganization(obj: io.flow.common.v0.models.ExpandableOrganization) = {
+      obj match {
+        case x: io.flow.common.v0.models.Reference => jsObjectReference(x) ++ play.api.libs.json.Json.obj("discriminator" -> "reference")
+        case x: io.flow.common.v0.models.Organization => jsObjectOrganization(x) ++ play.api.libs.json.Json.obj("discriminator" -> "organization")
+        case other => {
+          sys.error(s"The type[${other.getClass.getName}] has no JSON writer")
+        }
+      }
+    }
+
+    implicit def jsonWritesCommonExpandableOrganization: play.api.libs.json.Writes[ExpandableOrganization] = {
+      new play.api.libs.json.Writes[io.flow.common.v0.models.ExpandableOrganization] {
+        def writes(obj: io.flow.common.v0.models.ExpandableOrganization) = {
+          jsObjectExpandableOrganization(obj)
         }
       }
     }
@@ -921,14 +1092,20 @@ package io.flow.common.v0.models {
       }
     }
 
-    implicit def jsonWritesCommonExpandableUser: play.api.libs.json.Writes[ExpandableUser] = new play.api.libs.json.Writes[ExpandableUser] {
-      def writes(obj: io.flow.common.v0.models.ExpandableUser) = {
-        obj match {
-          case x: Reference => jsonCommonReferenceToJsonObject(x) ++ play.api.libs.json.Json.obj("discriminator" -> "reference")
-          case x: User => jsonCommonUserToJsonObject(x) ++ play.api.libs.json.Json.obj("discriminator" -> "user")
-          case other => {
-            sys.error(s"The type[${other.getClass.getName}] has no JSON writer")
-          }
+    def jsObjectExpandableUser(obj: io.flow.common.v0.models.ExpandableUser) = {
+      obj match {
+        case x: io.flow.common.v0.models.Reference => jsObjectReference(x) ++ play.api.libs.json.Json.obj("discriminator" -> "reference")
+        case x: io.flow.common.v0.models.User => jsObjectUser(x) ++ play.api.libs.json.Json.obj("discriminator" -> "user")
+        case other => {
+          sys.error(s"The type[${other.getClass.getName}] has no JSON writer")
+        }
+      }
+    }
+
+    implicit def jsonWritesCommonExpandableUser: play.api.libs.json.Writes[ExpandableUser] = {
+      new play.api.libs.json.Writes[io.flow.common.v0.models.ExpandableUser] {
+        def writes(obj: io.flow.common.v0.models.ExpandableUser) = {
+          jsObjectExpandableUser(obj)
         }
       }
     }
