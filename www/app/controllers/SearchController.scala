@@ -23,7 +23,7 @@ class SearchController @javax.inject.Inject() (
     page: Int
   ) = Identified.async { implicit request =>
     for {
-      items <- dependencyClient(request).items.getSearch(
+      items <- dependencyClient(request).items.get(
         q = q,
         limit = Pagination.DefaultLimit+1,
         offset = page * Pagination.DefaultLimit
