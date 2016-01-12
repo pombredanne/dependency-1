@@ -1,5 +1,6 @@
 package com.bryzek.dependency.actors
 
+import db.{Authorization, BinaryVersionsDao, LibraryVersionsDao}
 import io.flow.play.util.DefaultConfig
 import play.api.libs.concurrent.Akka
 import akka.actor._
@@ -39,11 +40,17 @@ object MainActor {
     case class LibrarySync(id: String)
     case class LibrarySyncCompleted(id: String)
 
+    case class LibraryVersionCreated(id: String)
+    case class LibraryVersionDeleted(id: String)
+
     case class BinaryCreated(id: String)
     case class BinaryDeleted(id: String)
     case class BinarySync(id: String)
     case class BinarySyncCompleted(id: String)
 
+    case class BinaryVersionCreated(id: String)
+    case class BinaryVersionDeleted(id: String)
+    
     case class UserCreated(id: String)
   }
 }
@@ -165,6 +172,14 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
       }
     }
 
+    case m @ MainActor.Messages.LibraryVersionCreated(id) => withVerboseErrorHandler(m) {
+      syncLibraryVersion(id)
+    }
+
+    case m @ MainActor.Messages.LibraryVersionDeleted(id) => withVerboseErrorHandler(m) {
+      syncLibraryVersion(id)
+    }
+
     case m @ MainActor.Messages.BinaryCreated(id) => withVerboseErrorHandler(m) {
       syncBinary(id)
     }
@@ -181,7 +196,14 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
       binaryActors.remove(id).map { ref =>
         ref ! BinaryActor.Messages.Deleted
       }
+    }
 
+    case m @ MainActor.Messages.BinaryVersionCreated(id) => withVerboseErrorHandler(m) {
+      syncBinaryVersion(id)
+    }
+
+    case m @ MainActor.Messages.BinaryVersionDeleted(id) => withVerboseErrorHandler(m) {
+      syncBinaryVersion(id)
     }
 
     case m @ MainActor.Messages.ResolverCreated(id) => withVerboseErrorHandler(m) {
@@ -249,10 +271,23 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
     projectBroadcast(ProjectActor.Messages.LibrarySynced(id))
   }
 
+
+  def syncLibraryVersion(id: String) {
+    LibraryVersionsDao.findById(Authorization.All, id).map { lv =>
+      syncLibrary(lv.library.id)
+    }
+  }
+
   def syncBinary(id: String) {
     upsertBinaryActor(id) ! BinaryActor.Messages.Sync
     searchActor ! SearchActor.Messages.SyncBinary(id)
     projectBroadcast(ProjectActor.Messages.BinarySynced(id))
+  }
+
+  def syncBinaryVersion(id: String) {
+    BinaryVersionsDao.findById(Authorization.All, id).map { bv =>
+      syncBinary(bv.binary.id)
+    }
   }
 
   def projectBroadcast(message: ProjectActor.Message) {

@@ -1,5 +1,6 @@
 package db
 
+import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Binary, BinaryType, BinaryVersion}
 import io.flow.postgresql.{Query, OrderBy}
@@ -84,6 +85,8 @@ object BinaryVersionsDao {
       'updated_by_user_id -> createdBy.id
     ).execute()
 
+    MainActor.ref ! MainActor.Messages.BinaryVersionCreated(id)
+
     findByIdWithConnection(Authorization.All, id).getOrElse {
       sys.error("Failed to create version")
     }
@@ -91,6 +94,7 @@ object BinaryVersionsDao {
 
   def softDelete(deletedBy: User, id: String) {
     SoftDelete.delete("binary_versions", deletedBy.id, id)
+    MainActor.ref ! MainActor.Messages.BinaryVersionDeleted(id)
   }
 
   def findByBinaryAndVersion(

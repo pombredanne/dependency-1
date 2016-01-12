@@ -1,5 +1,6 @@
 package db
 
+import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Library, LibraryVersion, VersionForm}
 import io.flow.postgresql.{Query, OrderBy}
@@ -61,7 +62,9 @@ object LibraryVersionsDao {
       Try {
         createWithConnection(createdBy, libraryId, form)
       } match {
-        case Success(version) => version
+        case Success(version) => {
+          version
+        }
         case Failure(ex) => {
           // check concurrent insert
           findAllWithConnection(
@@ -102,6 +105,8 @@ object LibraryVersionsDao {
       'updated_by_user_id -> createdBy.id
     ).execute()
 
+    MainActor.ref ! MainActor.Messages.LibraryVersionCreated(id)
+
     findByIdWithConnection(Authorization.All, id).getOrElse {
       sys.error("Failed to create version")
     }
@@ -109,6 +114,7 @@ object LibraryVersionsDao {
 
   def softDelete(deletedBy: User, id: String) {
     SoftDelete.delete("library_versions", deletedBy.id, id)
+    MainActor.ref ! MainActor.Messages.LibraryVersionDeleted(id)
   }
 
   def findByLibraryAndVersionAndCrossBuildVersion(

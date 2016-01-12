@@ -122,10 +122,12 @@ class ProjectActor extends Actor with Util {
               ProjectLibrariesDao.setIds(user, project.id, projectLibraries.flatten)
             }
 
+            RecommendationsDao.sync(MainActor.SystemUser, project)
+
             processPendingSync(project)
           }.recover {
             case e => {
-              e.printStackTrace(                System.err)
+              e.printStackTrace(System.err)
               Logger.error(s"Error fetching dependencies for project[${project.id}] name[${project.name}]: $e")
             }
           }
