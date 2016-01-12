@@ -273,7 +273,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
 
 
   def syncLibraryVersion(id: String) {
-    LibraryVersionsDao.findById(Authorization.All, id).map { lv =>
+    LibraryVersionsDao.findAll(Authorization.All, id = Some(id), isDeleted = None).map { lv =>
       syncLibrary(lv.library.id)
     }
   }
@@ -285,7 +285,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
   }
 
   def syncBinaryVersion(id: String) {
-    BinaryVersionsDao.findById(Authorization.All, id).map { bv =>
+    BinaryVersionsDao.findAll(Authorization.All, id = Some(id), isDeleted = None).map { bv =>
       syncBinary(bv.binary.id)
     }
   }
