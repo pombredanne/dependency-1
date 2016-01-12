@@ -37,7 +37,7 @@ lazy val api = project
       jdbc,      
       "io.flow" %% "lib-postgresql" % "0.0.16",
       "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.16",
-      "org.postgresql" % "postgresql" % "9.4-1206-jdbc42",
+      "org.postgresql" % "postgresql" % "9.4.1207",
       "com.typesafe.play" %% "anorm" % "2.5.0",
       "com.sendgrid"   %  "sendgrid-java" % "2.2.2",
       "org.scalatestplus" %% "play" % "1.4.0-M4" % "test"
