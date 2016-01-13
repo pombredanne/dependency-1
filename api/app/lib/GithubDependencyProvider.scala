@@ -81,6 +81,7 @@ private[lib] case class GithubDependencyProvider(
     } yield {
       Seq(build, plugins, properties).flatten.foldLeft(Dependencies()) { case (all, dep) =>
         all.copy(
+          libraries = Some((all.libraries.getOrElse(Nil) ++ dep.libraries.getOrElse(Nil)).distinct),
           resolverUris = Some((all.resolverUris.getOrElse(Nil) ++ dep.resolverUris.getOrElse(Nil)).distinct),
           plugins = Some((all.plugins.getOrElse(Nil) ++ dep.plugins.getOrElse(Nil)).distinct),
           binaries = Some((all.binaries.getOrElse(Nil) ++ dep.binaries.getOrElse(Nil)).distinct)
@@ -147,14 +148,13 @@ private[lib] case class GithubDependencyProvider(
   ) (
     implicit ec: ExecutionContext
   ): Future[Option[Dependencies]] = {
-    github.file(user, projectUri, BuildSbtFilename).map { result =>
+    github.file(user, projectUri, ProjectPluginsSbtFilename).map { result =>
       result.flatMap { text =>
         val result = ProjectPluginsSbtScalaParser(
           project = project,
-          path = BuildSbtFilename,
-          contents = text
+          contents = text,
+          path = ProjectPluginsSbtFilename
         )
-
         Some(
           Dependencies(
             plugins = Some(result.plugins),

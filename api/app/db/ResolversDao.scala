@@ -41,7 +41,7 @@ object ResolversDao {
 
   def credentials(resolver: Resolver): Option[Credentials] = {
     resolver.credentials.flatMap { _ =>
-      import com.bryzek.dependency.v0.anorm.conversions.Json._
+      import com.bryzek.dependency.v0.anorm.conversions.Json.Local._
       DB.withConnection { implicit c =>
         SQL(SelectCredentialsQuery).on('id -> resolver.id.toString).as(
           SqlParser.get[Credentials]("credentials").*

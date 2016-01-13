@@ -43,13 +43,18 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.3")
 
+resolvers += Resolver.url("scoverage-bintray", url("https://dl.bintray.com/sksamuel/sbt-plugins/"))(Resolver.ivyStylePatterns)
+
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.0.1")
 """
 
     "parse dependencies" in {
       val result = ProjectPluginsSbtScalaParser(projectSummary, "test.sbt", contents)
       result.resolverUris must beEqualTo(
-        Seq("http://repo.typesafe.com/typesafe/releases/")
+        Seq(
+          "http://repo.typesafe.com/typesafe/releases/",
+          "https://dl.bintray.com/sksamuel/sbt-plugins/"
+        )
       )
       result.plugins must beEqualTo(
         Seq(
