@@ -1,10 +1,11 @@
 package com.bryzek.dependency.actors
 
-import com.bryzek.dependency.api.lib.{DefaultLibraryArtifactProvider, Dependencies, GithubDependencyProviderClient}
+import com.bryzek.dependency.api.lib.{DefaultLibraryArtifactProvider, Dependencies, GithubDependencyProviderClient, GithubHelper, GithubUtil}
 import com.bryzek.dependency.v0.models.{Binary, BinaryForm, BinaryType, Library, LibraryForm, Project, ProjectBinary, ProjectLibrary, RecommendationType, VersionForm}
 import io.flow.postgresql.Pager
+import io.flow.play.util.DefaultConfig
 import db.{Authorization, BinariesDao, LibrariesDao, LibraryVersionsDao, ProjectBinariesDao, ProjectLibrariesDao}
-import db.{ProjectsDao, RecommendationsDao, SyncsDao, UsersDao}
+import db.{ProjectsDao, RecommendationsDao, SyncsDao, TokensDao, UsersDao}
 import play.api.Logger
 import play.libs.Akka
 import akka.actor.Actor
@@ -17,6 +18,7 @@ object ProjectActor {
   object Messages {
     case class Data(id: String) extends Message
     case object Deleted extends Message
+    case object CreateHooks extends Message
     case object Sync extends Message
     case object SyncCompleted extends Message
 
@@ -38,7 +40,15 @@ class ProjectActor extends Actor with Util {
 
   implicit val projectExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("project-actor-context")
 
-  var dataProject: Option[Project] = None
+  private[this] val HookUrl = DefaultConfig.requiredString("dependency.api.host") + "/webhooks/github"
+  private[this] val HookName = "web"
+  private[this] val HookEvents = Seq("push")
+  private[this] val HookConfig = io.flow.github.v0.models.HookConfig(
+    url = Some(HookUrl),
+    contentType = Some("json")
+  )
+
+  private[this] var dataProject: Option[Project] = None
 
   def receive = {
 
@@ -71,6 +81,61 @@ class ProjectActor extends Actor with Util {
     case m @ ProjectActor.Messages.BinarySynced(id) => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
         processPendingSync(project)
+      }
+    }
+
+    case m @ ProjectActor.Messages.CreateHooks => withVerboseErrorHandler(m.toString) {
+      dataProject.foreach { project =>
+        GithubUtil.parseUri(project.uri) match {
+          case Left(error) => {
+            Logger.warn(s"Project id[${project.id}] name[${project.name}]: $error")
+          }
+          case Right(repo) => {
+            println(s"Create Hooks for project[${project.id}] repo[$repo]")
+            UsersDao.findById(project.user.id).flatMap { u =>
+              TokensDao.getCleartextGithubOauthTokenByUserId(u.id)
+            } match {
+              case None => {
+                Logger.warn("No oauth token for user[${project.user.id}]")
+              }
+              case Some(token) => {
+                println(s"Create Hooks for project[${project.id}] user[${project.user.id}] token[$token]")
+                val client = GithubHelper.apiClient(token)
+
+                client.hooks.getReposByOwnerAndRepo(repo.owner, repo.project).map { hooks =>
+                  println("Got back from call to getReposByOwnerAndRepo")
+                  hooks.foreach { hook =>
+                    println(s"hook id[${hook.id}] url[${hook.url}]")
+                  }
+                  hooks.find(_.config.url == Some(HookUrl)) match {
+                    case Some(hook) => {
+                      println("  - existing hook found: " + hook.id)
+                      println("  - existing hook events: " + hook.events)
+                    }
+                    case None => {
+                      println("  - hook not found. Creating")
+                      println(s"  - HookEvents: ${HookEvents}")
+                      client.hooks.postReposByOwnerAndRepo(
+                        owner = repo.owner,
+                        repo = repo.project,
+                        name = HookName,
+                        config = HookConfig,
+                        events = HookEvents,
+                        active = true
+                      )
+                    }.map { hook =>
+                      println("  - hook created: " + hook)
+                    }.recover {
+                      case e: Throwable => {
+                        println("Error creating hook: " + e)
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
 

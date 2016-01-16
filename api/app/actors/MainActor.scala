@@ -109,13 +109,17 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
 
     case m @ MainActor.Messages.ProjectCreated(id) => withVerboseErrorHandler(m) {
       val actor = upsertProjectActor(id)
+      actor ! ProjectActor.Messages.CreateHooks
       actor ! ProjectActor.Messages.Sync
       searchActor ! SearchActor.Messages.SyncProject(id)
     }
 
     case m @ MainActor.Messages.ProjectUpdated(id) => withVerboseErrorHandler(m) {
-      upsertProjectActor(id) ! ProjectActor.Messages.Sync
-      searchActor ! SearchActor.Messages.SyncProject(id)
+      upsertProjectActor(id) ! ProjectActor.Messages.CreateHooks
+
+      // TODO: For testing only
+      //upsertProjectActor(id) ! ProjectActor.Messages.Sync
+      //searchActor ! SearchActor.Messages.SyncProject(id)
     }
 
     case m @ MainActor.Messages.ProjectDeleted(id) => withVerboseErrorHandler(m) {

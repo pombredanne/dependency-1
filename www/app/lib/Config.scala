@@ -12,7 +12,7 @@ object Config {
 
   val VersionsPerPage = 5
 
-  private val GithubScopes = Seq("user:email", "repo")
+  private val GithubScopes = Seq("user:email", "repo", "read:repo_hook", "write:repo_hook")
 
   private[this] val GitHubOauthUrl = "https://github.com/login/oauth/authorize"
 

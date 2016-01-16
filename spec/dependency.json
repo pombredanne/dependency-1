@@ -425,7 +425,47 @@
                 { "name": "organization", "type": "string" },
                 { "name": "role", "type": "role", "default": "member" }
             ]
-        }
+        },
+
+	"github_webhook": {
+	    "description": "Defines a github hook",
+	    "fields": [
+		{ "name": "id", "type": "long" }
+	    ]
+	},
+
+	"github_webhook_body": {
+	    "description": "Documents the payload of the data coming from github in webhooks",
+	    "fields": [
+		{ "name": "hook_id", "type": "long" },
+		{ "name": "hook", "type": "github_hook" },
+		{ "name": "repository", "type": "github_repository" },
+		{ "name": "sender", "type": "github_account" }
+	    ]
+	},
+
+	"github_hook": {
+	    "fields": [
+		{ "name": "id", "type": "long" },
+		{ "name": "name", "type": "string" },
+		{ "name": "events", "type": "[string]" }
+	    ]
+	},
+
+	"github_repository": {
+	    "fields": [
+		{ "name": "id", "type": "long" },
+		{ "name": "full_name", "type": "string" },
+		{ "name": "owner", "type": "github_account" }
+	    ]
+	},
+
+	"github_account": {
+	    "fields": [
+		{ "name": "id", "type": "long" },
+		{ "name": "login", "type": "string" }
+	    ]
+	}
 
     },
 
@@ -1187,6 +1227,17 @@
 
                 }
 
+	    ]
+	},
+
+	"github_webhook": {
+	    "path": "/webhooks/github",
+	    "description": "The target of the github webooks",
+	    "operations": [
+		{
+		    "method": "POST",
+		    "body": { "type": "github_webhook_body" }
+		}
 	    ]
 	}
 

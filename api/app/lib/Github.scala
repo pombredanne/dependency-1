@@ -23,6 +23,15 @@ case class GithubUserData(
 
 object GithubHelper {
 
+  def apiClient(oauthToken: String): GithubClient = {
+    new GithubClient(
+      apiUrl = "https://api.github.com",
+      defaultHeaders = Seq(
+        ("Authorization" -> s"token $oauthToken")
+      )
+    )
+  }
+
   def parseName(value: String): Name = {
     if (value.trim.isEmpty) {
       Name()
@@ -145,13 +154,6 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
     )
   )
 
-  private[this] def apiClient(oauthToken: String) = new GithubClient(
-    apiUrl = "https://api.github.com",
-    defaultHeaders = Seq(
-      ("Authorization" -> s"token $oauthToken")
-    )
-  )
-
   override def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUserData]] = {
     oauthClient.accessTokens.postLoginAndOauthAndAccessToken(
       AccessTokenForm(
@@ -160,7 +162,7 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
         code = code
       )
     ).flatMap { response =>
-      val client = apiClient(response.accessToken)
+      val client = GithubHelper.apiClient(response.accessToken)
       for {
         githubUser <- client.users.getUser()
         emails <- client.userEmails.getUserAndEmails()
@@ -186,7 +188,7 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
     oauthToken(user) match {
       case None => Future { Nil }
       case Some(token) => {
-        apiClient(token).repositories.getUserAndRepos().map { repos =>
+        GithubHelper.apiClient(token).repositories.getUserAndRepos().map { repos =>
           repos.map { repo =>
             Repository(
               name = repo.name,
@@ -220,7 +222,7 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
             None
           }
           case Some(token) => {
-            apiClient(token).contents.getReposByOwnerAndRepoAndPath(
+            GithubHelper.apiClient(token).contents.getReposByOwnerAndRepoAndPath(
               owner = repo.owner,
               repo = repo.project,
               path = path
