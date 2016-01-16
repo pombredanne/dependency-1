@@ -2242,12 +2242,13 @@ package com.bryzek.dependency.v0 {
     }
 
     object GithubWebhooks extends GithubWebhooks {
-      override def postWebhooksAndGithub(
+      override def postWebhooksAndGithubByProjectId(
+        projectId: String,
         githubWebhookBody: com.bryzek.dependency.v0.models.GithubWebhookBody
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         val payload = play.api.libs.json.Json.toJson(githubWebhookBody)
 
-        _executeRequest("POST", s"/webhooks/github", body = Some(payload)).map {
+        _executeRequest("POST", s"/webhooks/github/${play.utils.UriEncoding.encodePathSegment(projectId, "UTF-8")}", body = Some(payload)).map {
           case r if r.status == 204 => ()
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
         }
@@ -3156,7 +3157,11 @@ package com.bryzek.dependency.v0 {
   }
 
   trait GithubWebhooks {
-    def postWebhooksAndGithub(
+    /**
+     * Receives a webhook on push for this particular project
+     */
+    def postWebhooksAndGithubByProjectId(
+      projectId: String,
       githubWebhookBody: com.bryzek.dependency.v0.models.GithubWebhookBody
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit]
   }

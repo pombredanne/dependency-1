@@ -40,13 +40,9 @@ class ProjectActor extends Actor with Util {
 
   implicit val projectExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("project-actor-context")
 
-  private[this] val HookUrl = DefaultConfig.requiredString("dependency.api.host") + "/webhooks/github"
+  private[this] val HookBaseUrl = DefaultConfig.requiredString("dependency.api.host") + "/webhooks/github/"
   private[this] val HookName = "web"
   private[this] val HookEvents = Seq("push")
-  private[this] val HookConfig = io.flow.github.v0.models.HookConfig(
-    url = Some(HookUrl),
-    contentType = Some("json")
-  )
 
   private[this] var dataProject: Option[Project] = None
 
@@ -103,11 +99,13 @@ class ProjectActor extends Actor with Util {
                 val client = GithubHelper.apiClient(token)
 
                 client.hooks.getReposByOwnerAndRepo(repo.owner, repo.project).map { hooks =>
-                  println("Got back from call to getReposByOwnerAndRepo")
+                  val targetUrl = HookBaseUrl + project.id
+                  println("Got back from call to getReposByOwnerAndRepo targetUrl[$targetUrl]")
+
                   hooks.foreach { hook =>
                     println(s"hook id[${hook.id}] url[${hook.url}]")
                   }
-                  hooks.find(_.config.url == Some(HookUrl)) match {
+                  hooks.find(_.config.url == Some(targetUrl)) match {
                     case Some(hook) => {
                       println("  - existing hook found: " + hook.id)
                       println("  - existing hook events: " + hook.events)
@@ -119,7 +117,10 @@ class ProjectActor extends Actor with Util {
                         owner = repo.owner,
                         repo = repo.project,
                         name = HookName,
-                        config = HookConfig,
+                        config = io.flow.github.v0.models.HookConfig(
+                          url = Some(targetUrl),
+                          contentType = Some("json")
+                        ),
                         events = HookEvents,
                         active = true
                       )
@@ -127,7 +128,7 @@ class ProjectActor extends Actor with Util {
                       println("  - hook created: " + hook)
                     }.recover {
                       case e: Throwable => {
-                        println("Error creating hook: " + e)
+                        Logger.error("Project[${project.id}] Error creating hook: " + e)
                       }
                     }
                   }

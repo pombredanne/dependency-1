@@ -1,5 +1,6 @@
 package controllers
 
+import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.GithubWebhookBody
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
@@ -15,22 +16,22 @@ class GithubWebhooks @javax.inject.Inject() (
   val userTokensClient: UserTokensClient
 ) extends Controller with IdentifiedRestController with Helpers {
 
-  def postWebhooksAndGithub() = Action(parse.json) { request =>
-    println("HOOKS POST")
-    println(request.body.toString)
-
+  def postWebhooksAndGithubByProjectId(projectId: String) = Action(parse.json) { request =>
     request.body.validate[GithubWebhookBody] match {
       case e: JsError => {
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[GithubWebhookBody] => {
-        val body = s.get
-        println("BODY: " + body.toString)
-        println("HOOK ID[${body.hook.id}]")
-        println("HOOK repo[${body.repository.fullName}]")
-        println("HOOK sender[${body.sender}]")
-        
-        Ok(Json.toJson(Map("result" -> "success")))
+        ProjectsDao.findById(Authorization.All, projectId) match {
+          case None => {
+            NotFound
+          }
+          case Some(project) => {
+            play.api.Logger.info(s"Received github webook for project[${project.id}]")
+            MainActor.ref ! MainActor.Messages.ProjectSync(project.id)
+            Ok(Json.toJson(Map("result" -> "success")))
+          }
+        }
       }
     }
   }

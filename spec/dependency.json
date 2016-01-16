@@ -1233,9 +1233,12 @@
 	"github_webhook": {
 	    "path": "/webhooks/github",
 	    "description": "The target of the github webooks",
+
 	    "operations": [
 		{
 		    "method": "POST",
+		    "path": "/:project_id",
+		    "description": "Receives a webhook on push for this particular project",
 		    "body": { "type": "github_webhook_body" }
 		}
 	    ]
