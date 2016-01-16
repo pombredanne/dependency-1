@@ -213,25 +213,6 @@ object ResolversDao {
     }
   }
 
-
-  def parser(): RowParser[com.bryzek.dependency.v0.models.Resolver] = {
-    SqlParser.str("id") ~
-    com.bryzek.dependency.v0.anorm.parsers.Visibility.parser("visibility") ~
-    com.bryzek.dependency.v0.anorm.parsers.OrganizationSummary.parserWithPrefix("organization").? ~
-    SqlParser.str("uri") ~
-    SqlParser.str("credentials").? map {
-      case id ~ visibility ~ organization ~ uri ~ credentials => {
-        com.bryzek.dependency.v0.models.Resolver(
-          id = id,
-          visibility = visibility,
-          organization = organization,
-          uri = uri,
-          credentials = credentials.flatMap { parseCredentials(id, _) }.flatMap(Util.maskCredentials(_))
-        )
-      }
-    }
-  }
-
   private[this] val NextPublicPositionQuery = """
     select coalesce(max(position) + 1, 0) as position
       from resolvers
@@ -266,7 +247,25 @@ object ResolversDao {
     }
   }
 
-  private def parseCredentials(resolverId: String, value: String): Option[Credentials] = {
+  private[this] def parser(): RowParser[com.bryzek.dependency.v0.models.Resolver] = {
+    SqlParser.str("id") ~
+    com.bryzek.dependency.v0.anorm.parsers.Visibility.parser("visibility") ~
+    com.bryzek.dependency.v0.anorm.parsers.OrganizationSummary.parserWithPrefix("organization").? ~
+    SqlParser.str("uri") ~
+    SqlParser.str("credentials").? map {
+      case id ~ visibility ~ organization ~ uri ~ credentials => {
+        com.bryzek.dependency.v0.models.Resolver(
+          id = id,
+          visibility = visibility,
+          organization = organization,
+          uri = uri,
+          credentials = credentials.flatMap { parseCredentials(id, _) }.flatMap(Util.maskCredentials(_))
+        )
+      }
+    }
+  }
+
+  private[this] def parseCredentials(resolverId: String, value: String): Option[Credentials] = {
     Json.parse(value).validate[Credentials] match {
       case JsSuccess(credentials, _) => {
         Some(credentials)
