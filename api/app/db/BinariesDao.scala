@@ -14,8 +14,8 @@ object BinariesDao {
   private[this] val BaseQuery = Query(s"""
     select binaries.id,
            binaries.name,
-           organizations.id as binaries_organization_id,
-           organizations.key as binaries_organization_key
+           organizations.id as organization_id,
+           organizations.key as organization_key
       from binaries
       left join organizations on organizations.deleted_at is null and organizations.id = binaries.organization_id
   """)
@@ -133,7 +133,7 @@ object BinariesDao {
         limit(Some(limit)).
         offset(Some(offset)).
         as(
-          com.bryzek.dependency.v0.anorm.parsers.Binary.table("binaries").*
+          com.bryzek.dependency.v0.anorm.parsers.Binary.parser().*
         )
     }
   }

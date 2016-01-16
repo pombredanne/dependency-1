@@ -12,7 +12,7 @@ object SubscriptionsDao {
 
   private[this] val BaseQuery = Query(s"""
     select subscriptions.id,
-           subscriptions.user_id as subscriptions_user_id,
+           subscriptions.user_id,
            subscriptions.publication
       from subscriptions
   """)
@@ -146,7 +146,7 @@ object SubscriptionsDao {
           s"select user_id from user_identifiers where deleted_at is null and value = trim(${bindVar.sql})"
         }).
         as(
-          com.bryzek.dependency.v0.anorm.parsers.Subscription.table("subscriptions").*
+          com.bryzek.dependency.v0.anorm.parsers.Subscription.parser().*
         )
     }
   }

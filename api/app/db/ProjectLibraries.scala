@@ -27,11 +27,11 @@ object ProjectLibrariesDao {
            project_libraries.version,
            project_libraries.cross_build_version,
            project_libraries.path,
-           project_libraries.library_id as project_libraries_library_id,
-           projects.id as project_libraries_project_id,
-           projects.name as project_libraries_project_name,
-           organizations.id as project_libraries_project_organization_id,
-           organizations.key as project_libraries_project_organization_key
+           project_libraries.library_id as library_id,
+           projects.id as project_id,
+           projects.name as project_name,
+           organizations.id as project_organization_id,
+           organizations.key as project_organization_key
       from project_libraries
       join projects on projects.deleted_at is null and projects.id = project_libraries.project_id
       join organizations on organizations.deleted_at is null and organizations.id = projects.organization_id
@@ -278,7 +278,7 @@ object ProjectLibrariesDao {
         bind("sync_event_completed", isSynced.map(_ => SyncEvent.Completed.toString)).
         nullBoolean("project_libraries.library_id", hasLibrary).
         as(
-          com.bryzek.dependency.v0.anorm.parsers.ProjectLibrary.table("project_libraries").*
+          com.bryzek.dependency.v0.anorm.parsers.ProjectLibrary.parser().*
         )
     }
   }

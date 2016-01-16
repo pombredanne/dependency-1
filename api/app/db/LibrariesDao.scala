@@ -16,13 +16,13 @@ object LibrariesDao {
     select libraries.id,
            libraries.group_id,
            libraries.artifact_id,
-           organizations.id as libraries_organization_id,
-           organizations.key as libraries_organization_key,
-           resolvers.id as libraries_resolver_id,
-           resolvers.visibility as libraries_resolver_visibility,
-           resolvers.uri as libraries_resolver_uri,
-           resolver_orgs.id as libraries_resolver_organization_id,
-           resolver_orgs.key as libraries_resolver_organization_key
+           organizations.id as organization_id,
+           organizations.key as organization_key,
+           resolvers.id as resolver_id,
+           resolvers.visibility as resolver_visibility,
+           resolvers.uri as resolver_uri,
+           resolver_orgs.id as resolver_organization_id,
+           resolver_orgs.key as resolver_organization_key
       from libraries
       join organizations on organizations.deleted_at is null and organizations.id = libraries.organization_id
       join resolvers on resolvers.deleted_at is null and resolvers.id = libraries.resolver_id
@@ -183,7 +183,7 @@ object LibrariesDao {
         ).
         equals("libraries.resolver_id", resolverId).
         as(
-          com.bryzek.dependency.v0.anorm.parsers.Library.table("libraries").*
+          com.bryzek.dependency.v0.anorm.parsers.Library.parser().*
         )
     }
   }

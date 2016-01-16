@@ -15,7 +15,7 @@ object OrganizationsDao {
 
   private[this] val BaseQuery = Query(s"""
     select organizations.id,
-           organizations.user_id as organizations_user_id,
+           organizations.user_id,
            organizations.key
       from organizations
   """)
@@ -222,7 +222,7 @@ object OrganizationsDao {
           s"select organization_id from user_organizations where deleted_at is null and user_id = ${bindVar.sql}"
         }).
         as(
-          com.bryzek.dependency.v0.anorm.parsers.Organization.table("organizations").*
+          com.bryzek.dependency.v0.anorm.parsers.Organization.parser().*
         )
     }
   }

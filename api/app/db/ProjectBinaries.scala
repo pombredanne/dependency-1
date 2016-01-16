@@ -24,11 +24,11 @@ object ProjectBinariesDao {
            project_binaries.name,
            project_binaries.version,
            project_binaries.path,
-           project_binaries.binary_id as project_binaries_binary_id,
-           projects.id as project_binaries_project_id,
-           projects.name as project_binaries_project_name,
-           organizations.id as project_binaries_project_organization_id,
-           organizations.key as project_binaries_project_organization_key
+           project_binaries.binary_id as binary_id,
+           projects.id as project_id,
+           projects.name as project_name,
+           organizations.id as project_organization_id,
+           organizations.key as project_organization_key
       from project_binaries
       join projects on projects.deleted_at is null and projects.id = project_binaries.project_id
       join organizations on organizations.deleted_at is null and organizations.id = projects.organization_id
@@ -246,7 +246,7 @@ object ProjectBinariesDao {
         bind("sync_event_completed", isSynced.map(_ => SyncEvent.Completed.toString)).
         nullBoolean("project_binaries.binary_id", hasBinary).
         as(
-          com.bryzek.dependency.v0.anorm.parsers.ProjectBinary.table("project_binaries").*
+          com.bryzek.dependency.v0.anorm.parsers.ProjectBinary.parser().*
         )
     }
   }

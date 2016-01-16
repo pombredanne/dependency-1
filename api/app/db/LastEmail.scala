@@ -107,21 +107,18 @@ object LastEmailsDao {
 
   private[this] val parser: RowParser[LastEmail] = {
     SqlParser.str("id") ~
-    SqlParser.str("user_id") ~
-    com.bryzek.dependency.v0.anorm.parsers.Publication.parser(
-      com.bryzek.dependency.v0.anorm.parsers.Publication.Mappings("publication")
-    ) ~
+    com.bryzek.dependency.v0.anorm.parsers.Reference.parser("user_id") ~
+    com.bryzek.dependency.v0.anorm.parsers.Publication.parser() ~
     SqlParser.get[DateTime]("created_at") map {
-      case id ~ userId ~ publication ~ createdAt => {
+      case id ~ user ~ publication ~ createdAt => {
         LastEmail(
           id = id,
-          user = Reference(id = userId),
+          user = user,
           publication = publication,
           createdAt = createdAt
         )
       }
     }
   }
-
 
 }

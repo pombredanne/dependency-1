@@ -22,8 +22,8 @@ object ResolversDao {
            resolvers.credentials,
            resolvers.uri,
            resolvers.position,
-           organizations.id as resolvers_organization_id,
-           organizations.key as resolvers_organization_key
+           organizations.id as organization_id,
+           organizations.key as organization_key
       from resolvers
       left join organizations on organizations.deleted_at is null and organizations.id = resolvers.organization_id
   """)
@@ -41,11 +41,19 @@ object ResolversDao {
 
   def credentials(resolver: Resolver): Option[Credentials] = {
     resolver.credentials.flatMap { _ =>
-      import com.bryzek.dependency.v0.anorm.conversions.Json.Local._
+      import com.bryzek.dependency.v0.anorm.conversions.Json._
       DB.withConnection { implicit c =>
         SQL(SelectCredentialsQuery).on('id -> resolver.id.toString).as(
-          SqlParser.get[Credentials]("credentials").*
-        ).headOption
+          SqlParser.get[JsObject]("credentials").*
+        ).headOption.flatMap { js =>
+          js.validate[Credentials] match {
+            case JsSuccess(credentials, _) => Some(credentials)
+            case JsError(error) => {
+              play.api.Logger.warn(s"Resolver[${resolver.id}] has credentials that could not be parsed: $error")
+              None
+            }
+          }
+        }
       }
     }
   }
@@ -207,7 +215,7 @@ object ResolversDao {
         equals("organizations.id", organizationId).
         text("resolvers.uri", uri).
         as(
-          com.bryzek.dependency.v0.anorm.parsers.Resolver.table("resolvers").*
+          com.bryzek.dependency.v0.anorm.parsers.Resolver.parser().*
         ).map { maskCredentials(_) }
     }
   }

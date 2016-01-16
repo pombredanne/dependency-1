@@ -23,15 +23,15 @@ object RecommendationsDao {
   private[this] val BaseQuery = Query(s"""
     select recommendations.id,
            recommendations.type,
-           recommendations.object_id as recommendations_object_id,
+           recommendations.object_id as object_id,
            recommendations.created_at,
            recommendations.name,
            recommendations.from_version as "recommendations.from",
            recommendations.to_version as "recommendations.to",
-           projects.id as recommendations_project_id,
-           projects.name as recommendations_project_name,
-           organizations.id as recommendations_project_organization_id,
-           organizations.key as recommendations_project_organization_key
+           projects.id as project_id,
+           projects.name as project_name,
+           organizations.id as project_organization_id,
+           organizations.key as project_organization_key
       from recommendations
       join projects on
              projects.deleted_at is null and
@@ -212,7 +212,7 @@ object RecommendationsDao {
         text("recommendations.from_version", fromVersion).
         equals("recommendations.object_id", objectId).
         as(
-          com.bryzek.dependency.v0.anorm.parsers.Recommendation.table("recommendations").*
+          com.bryzek.dependency.v0.anorm.parsers.Recommendation.parser().*
         )
     }
   }

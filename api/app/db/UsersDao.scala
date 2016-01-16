@@ -28,8 +28,8 @@ object UsersDao {
   private[this] val BaseQuery = Query(s"""
     select users.id,
            users.email,
-           users.first_name as users_name_first,
-           users.last_name as users_name_last,
+           users.first_name as name_first,
+           users.last_name as name_last,
            users.avatar_url
       from users
   """)
@@ -150,7 +150,7 @@ object UsersDao {
           s"select user_id from github_users where deleted_at is null and github_user_id = ${bindVar.sql}"
         }).
         as(
-          io.flow.common.v0.anorm.parsers.User.table("users").*
+          io.flow.common.v0.anorm.parsers.User.parser().*
         )
     }
   }

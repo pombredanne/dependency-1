@@ -17,16 +17,16 @@ object LibraryVersionsDao {
     select library_versions.id,
            library_versions.version,
            library_versions.cross_build_version,
-           libraries.id as library_versions_library_id,
-           libraries.group_id as library_versions_library_group_id,
-           libraries.artifact_id as library_versions_library_artifact_id,
-           organizations.id as library_versions_library_organization_id,
-           organizations.key as library_versions_library_organization_key,
-           resolvers.id as library_versions_library_resolver_id,
-           resolvers.visibility as library_versions_library_resolver_visibility,
-           resolvers.uri as library_versions_library_resolver_uri,
-           resolver_orgs.id as library_versions_library_resolver_organization_id,
-           resolver_orgs.key as library_versions_library_resolver_organization_key
+           libraries.id as library_id,
+           libraries.group_id as library_group_id,
+           libraries.artifact_id as library_artifact_id,
+           organizations.id as library_organization_id,
+           organizations.key as library_organization_key,
+           resolvers.id as library_resolver_id,
+           resolvers.visibility as library_resolver_visibility,
+           resolvers.uri as library_resolver_uri,
+           resolver_orgs.id as library_resolver_organization_id,
+           resolver_orgs.key as library_resolver_organization_key
       from library_versions
       join libraries on libraries.deleted_at is null and libraries.id = library_versions.library_id
       join organizations on organizations.deleted_at is null and organizations.id = libraries.organization_id
@@ -230,7 +230,7 @@ object LibraryVersionsDao {
       ).
       bind("greater_than_version_sort_key", greaterThanVersion).
       as(
-        com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.table("library_versions").*
+        com.bryzek.dependency.v0.anorm.parsers.LibraryVersion.parser().*
       )
   }
 

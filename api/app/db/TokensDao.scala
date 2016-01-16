@@ -244,9 +244,7 @@ object TokensDao {
       text("tokens.tag", tag, valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)).
       orderBy(orderBy.sql).
       as(
-        com.bryzek.dependency.v0.anorm.parsers.Token.parser(
-          com.bryzek.dependency.v0.anorm.parsers.Token.Mappings.base
-        ).*
+        com.bryzek.dependency.v0.anorm.parsers.Token.parser().*
       )
   }
 

@@ -14,13 +14,13 @@ object ProjectsDao {
 
   private[this] val BaseQuery = Query(s"""
     select projects.id,
-           projects.user_id as projects_user_id,
+           projects.user_id,
            projects.visibility,
            projects.scms,
            projects.name,
            projects.uri,
-           organizations.id as projects_organization_id,
-           organizations.key as projects_organization_key
+           organizations.id as organization_id,
+           organizations.key as organization_key
       from projects
       left join organizations on organizations.deleted_at is null and organizations.id = projects.organization_id
   """)
@@ -253,7 +253,7 @@ object ProjectsDao {
           binaryId.map { v => FilterProjectBinaries.format("project_binaries.binary_id = {binary_id}") }
         ).bind("binary_id", binaryId).
         as(
-          com.bryzek.dependency.v0.anorm.parsers.Project.table("projects").*
+          com.bryzek.dependency.v0.anorm.parsers.Project.parser().*
         )
     }
   }

@@ -15,12 +15,12 @@ object MembershipsDao {
   private[this] val BaseQuery = Query(s"""
     select memberships.id,
            memberships.role,
-           organizations.id as memberships_organization_id,
-           organizations.key as memberships_organization_key,
-           users.id as memberships_user_id,
-           users.email  as memberships_user_email,
-           users.first_name as memberships_user_name_first,
-           users.last_name as memberships_user_name_last
+           organizations.id as organization_id,
+           organizations.key as organization_key,
+           users.id as user_id,
+           users.email  as user_email,
+           users.first_name as user_name_first,
+           users.last_name as user_name_last
       from memberships
       join organizations on organizations.deleted_at is null and organizations.id = memberships.organization_id
       join users on users.deleted_at is null and users.id = memberships.user_id
@@ -183,7 +183,7 @@ object MembershipsDao {
       equals("memberships.user_id", userId).
       text("memberships.role", role.map(_.toString.toLowerCase)).
       as(
-        com.bryzek.dependency.v0.anorm.parsers.Membership.table("memberships").*
+        com.bryzek.dependency.v0.anorm.parsers.Membership.parser().*
       )
     }
   }

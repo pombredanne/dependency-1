@@ -15,7 +15,7 @@ object UserIdentifiersDao {
 
   private[this] val BaseQuery = Query(s"""
     select user_identifiers.id,
-           user_identifiers.user_id as user_identifiers_user_id,
+           user_identifiers.user_id,
            user_identifiers.value
       from user_identifiers
   """)
@@ -138,7 +138,7 @@ object UserIdentifiersDao {
       equals("user_identifiers.user_id", userId).
       text("user_identifiers.value", value).
       as(
-        com.bryzek.dependency.v0.anorm.parsers.UserIdentifier.table("user_identifiers").*
+        com.bryzek.dependency.v0.anorm.parsers.UserIdentifier.parser().*
       )
   }
 

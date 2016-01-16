@@ -31,8 +31,8 @@ object ItemsDao {
            items.summary,
            items.created_at,
            items.deleted_at,
-           organizations.id as items_organization_id,
-           organizations.key as items_organization_key
+           organizations.id as organization_id,
+           organizations.key as organization_key
       from items
       join organizations on organizations.deleted_at is null and organizations.id = items.organization_id
   """)
@@ -224,7 +224,7 @@ object ItemsDao {
         limit(limit).
         offset(Some(offset)).
         as(
-          com.bryzek.dependency.v0.anorm.parsers.Item.table("items").*
+          com.bryzek.dependency.v0.anorm.parsers.Item.parser().*
         )
     }
   }

@@ -11,7 +11,7 @@ object GithubUsersDao {
 
   private[this] val BaseQuery = Query(s"""
     select github_users.id,
-           github_users.user_id as github_users_user_id,
+           github_users.user_id,
            github_users.github_user_id,
            github_users.login
       from github_users
@@ -86,7 +86,7 @@ object GithubUsersDao {
         limit(Some(limit)).
         offset(Some(offset)).
         as(
-          com.bryzek.dependency.v0.anorm.parsers.GithubUser.table("github_users").*
+          com.bryzek.dependency.v0.anorm.parsers.GithubUser.parser().*
         )
     }
   }

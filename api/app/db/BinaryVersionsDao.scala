@@ -16,10 +16,10 @@ object BinaryVersionsDao {
   private[this] val BaseQuery = Query(s"""
     select binary_versions.id,
            binary_versions.version,
-           binaries.id as binary_versions_binary_id,
-           binaries.name as binary_versions_binary_name,
-           organizations.id as binary_versions_binary_organization_id,
-           organizations.key as binary_versions_binary_organization_key
+           binaries.id as binary_id,
+           binaries.name as binary_name,
+           organizations.id as binary_organization_id,
+           organizations.key as binary_organization_key
       from binary_versions
       join binaries on binaries.deleted_at is null and binaries.id = binary_versions.binary_id
       left join organizations on organizations.deleted_at is null and organizations.id = binaries.organization_id
@@ -198,7 +198,7 @@ object BinaryVersionsDao {
       limit(Some(limit)).
       offset(Some(offset)).
       as(
-        com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.table("binary_versions").*
+        com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.parser().*
       )
   }
 

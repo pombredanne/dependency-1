@@ -113,7 +113,7 @@ object SyncsDao {
         equals("syncs.object_id", objectId).
         text("syncs.event", event).
         as(
-          com.bryzek.dependency.v0.anorm.parsers.Sync.table("syncs").*
+          com.bryzek.dependency.v0.anorm.parsers.Sync.parser().*
         )
     }
   }
