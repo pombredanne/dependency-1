@@ -28,7 +28,7 @@ object ItemsDao {
            items.label,
            items.description,
            items.contents,
-           items.summary,
+           items.summary::text,
            items.created_at,
            items.deleted_at,
            organizations.id as organization_id,
@@ -224,8 +224,28 @@ object ItemsDao {
         limit(limit).
         offset(Some(offset)).
         as(
-          com.bryzek.dependency.v0.anorm.parsers.Item.parser().*
+          parser().*
         )
+    }
+  }
+
+  private[this] def parser(): RowParser[com.bryzek.dependency.v0.models.Item] = {
+    SqlParser.str("id") ~
+    com.bryzek.dependency.v0.anorm.parsers.OrganizationSummary.parserWithPrefix("organization") ~
+    com.bryzek.dependency.v0.anorm.parsers.Visibility.parser("visibility") ~
+    SqlParser.str("summary") ~
+    SqlParser.str("label") ~
+    SqlParser.str("description").? map {
+      case id ~ organization ~ visibility ~ summary ~ label ~ description => {
+        com.bryzek.dependency.v0.models.Item(
+          id = id,
+          organization = organization,
+          visibility = visibility,
+          summary = Json.parse(summary).as[ItemSummary],
+          label = label,
+          description = description
+        )
+      }
     }
   }
 
