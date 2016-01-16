@@ -19,7 +19,7 @@ object ResolversDao {
   private[this] val BaseQuery = Query(s"""
     select resolvers.id,
            resolvers.visibility,
-           resolvers.credentials,
+           resolvers.credentials::varchar,
            resolvers.uri,
            resolvers.position,
            organizations.id as organization_id,
@@ -29,7 +29,7 @@ object ResolversDao {
   """)
 
   private[this] val SelectCredentialsQuery = s"""
-    select credentials from resolvers where id = {id}
+    select credentials::varchar from resolvers where id = {id}
   """
 
   private[this] val InsertQuery = """
@@ -40,20 +40,13 @@ object ResolversDao {
   """
 
   def credentials(resolver: Resolver): Option[Credentials] = {
+    println(s"resolver: $resolver")
     resolver.credentials.flatMap { _ =>
-      import com.bryzek.dependency.v0.anorm.conversions.Json._
+      println(s"Fetching credentials for id[${resolver.id}]")
       DB.withConnection { implicit c =>
-        SQL(SelectCredentialsQuery).on('id -> resolver.id.toString).as(
-          SqlParser.get[JsObject]("credentials").*
-        ).headOption.flatMap { js =>
-          js.validate[Credentials] match {
-            case JsSuccess(credentials, _) => Some(credentials)
-            case JsError(error) => {
-              play.api.Logger.warn(s"Resolver[${resolver.id}] has credentials that could not be parsed: $error")
-              None
-            }
-          }
-        }
+        SQL(SelectCredentialsQuery).on('id -> resolver.id).as(
+          SqlParser.str("credentials").*
+        ).headOption.flatMap { parseCredentials(resolver.id, _) }
       }
     }
   }
@@ -215,23 +208,25 @@ object ResolversDao {
         equals("organizations.id", organizationId).
         text("resolvers.uri", uri).
         as(
-          com.bryzek.dependency.v0.anorm.parsers.Resolver.parser().*
-        ).map { maskCredentials(_) }
+          parser().*
+        )
     }
   }
 
-  /**
-    * If this resolver has credentials, masks any passwords, returning
-    * the resulting resolver.
-    */
-  def maskCredentials(resolver: Resolver): Resolver = {
-    resolver.credentials match {
-      case None => {
-        resolver
-      }
-      case Some(cred) => {
-        resolver.copy(
-          credentials = Util.maskCredentials(cred)
+
+  def parser(): RowParser[com.bryzek.dependency.v0.models.Resolver] = {
+    SqlParser.str("id") ~
+    com.bryzek.dependency.v0.anorm.parsers.Visibility.parser("visibility") ~
+    com.bryzek.dependency.v0.anorm.parsers.OrganizationSummary.parserWithPrefix("organization").? ~
+    SqlParser.str("uri") ~
+    SqlParser.str("credentials").? map {
+      case id ~ visibility ~ organization ~ uri ~ credentials => {
+        com.bryzek.dependency.v0.models.Resolver(
+          id = id,
+          visibility = visibility,
+          organization = organization,
+          uri = uri,
+          credentials = credentials.flatMap { parseCredentials(id, _) }.flatMap(Util.maskCredentials(_))
         )
       }
     }
@@ -271,4 +266,16 @@ object ResolversDao {
     }
   }
 
+  private def parseCredentials(resolverId: String, value: String): Option[Credentials] = {
+    Json.parse(value).validate[Credentials] match {
+      case JsSuccess(credentials, _) => {
+        Some(credentials)
+      }
+      case JsError(error) => {
+        play.api.Logger.warn(s"Resolver[${resolverId}] has credentials that could not be parsed: $error")
+        None
+      }
+    }
+  }
+  
 }
