@@ -98,9 +98,9 @@ class ProjectActor extends Actor with Util {
                 println(s"Create Hooks for project[${project.id}] user[${project.user.id}] token[$token]")
                 val client = GithubHelper.apiClient(token)
 
-                client.hooks.getReposByOwnerAndRepo(repo.owner, repo.project).map { hooks =>
+                client.hooks.get(repo.owner, repo.project).map { hooks =>
                   val targetUrl = HookBaseUrl + project.id
-                  println("Got back from call to getReposByOwnerAndRepo targetUrl[$targetUrl]")
+                  println("Got back from call to get targetUrl[$targetUrl]")
 
                   hooks.foreach { hook =>
                     println(s"hook id[${hook.id}] url[${hook.url}]")
@@ -113,7 +113,7 @@ class ProjectActor extends Actor with Util {
                     case None => {
                       println("  - hook not found. Creating")
                       println(s"  - HookEvents: ${HookEvents}")
-                      client.hooks.postReposByOwnerAndRepo(
+                      client.hooks.post(
                         owner = repo.owner,
                         repo = repo.project,
                         name = HookName,

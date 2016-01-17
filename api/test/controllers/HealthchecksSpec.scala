@@ -15,7 +15,7 @@ class HealthchecksSpec extends PlaySpecification {
 
   "GET /_internal_/healthcheck" in new WithServer(port=port) {
     await(
-      client.healthchecks.getInternalAndHealthcheck()
+      client.healthchecks.get()
     ) must beEqualTo(
       Healthcheck("healthy")
     )

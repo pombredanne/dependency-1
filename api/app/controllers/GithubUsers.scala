@@ -17,7 +17,7 @@ class GithubUsers @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def postAuthenticationsAndGithub() = Action.async(parse.json) { request =>
+  def post() = Action.async(parse.json) { request =>
     request.body.validate[GithubAuthenticationForm] match {
       case e: JsError => Future {
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))

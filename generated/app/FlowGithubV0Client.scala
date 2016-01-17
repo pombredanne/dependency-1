@@ -736,7 +736,7 @@ package io.flow.github.v0 {
     def users: Users = Users
 
     object Contents extends Contents {
-      override def getReposAndReadmeByOwnerAndRepo(
+      override def getReadme(
         owner: String,
         repo: String,
         ref: String = "master"
@@ -753,7 +753,7 @@ package io.flow.github.v0 {
         }
       }
 
-      override def getReposByOwnerAndRepoAndPath(
+      override def getContentsByPath(
         owner: String,
         repo: String,
         path: String,
@@ -773,7 +773,7 @@ package io.flow.github.v0 {
     }
 
     object Hooks extends Hooks {
-      override def getReposByOwnerAndRepo(
+      override def get(
         owner: String,
         repo: String
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.github.v0.models.Hook]] = {
@@ -784,7 +784,7 @@ package io.flow.github.v0 {
         }
       }
 
-      override def getReposByOwnerAndRepoAndId(
+      override def getById(
         owner: String,
         repo: String,
         id: Long
@@ -796,7 +796,7 @@ package io.flow.github.v0 {
         }
       }
 
-      override def postReposByOwnerAndRepo(
+      override def post(
         owner: String,
         repo: String,
         name: String,
@@ -818,7 +818,7 @@ package io.flow.github.v0 {
         }
       }
 
-      override def deleteReposByOwnerAndRepoAndId(
+      override def deleteById(
         owner: String,
         repo: String,
         id: Long
@@ -894,7 +894,7 @@ package io.flow.github.v0 {
     }
 
     object UserEmails extends UserEmails {
-      override def getUserAndEmails()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.github.v0.models.UserEmail]] = {
+      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.github.v0.models.UserEmail]] = {
         _executeRequest("GET", s"/user/emails").map {
           case r if r.status == 200 => _root_.io.flow.github.v0.Client.parseJson("Seq[io.flow.github.v0.models.UserEmail]", r, _.validate[Seq[io.flow.github.v0.models.UserEmail]])
           case r if r.status == 401 => throw new io.flow.github.v0.errors.UnitResponse(r.status)
@@ -904,7 +904,7 @@ package io.flow.github.v0 {
     }
 
     object Users extends Users {
-      override def getUser()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.github.v0.models.User] = {
+      override def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.github.v0.models.User] = {
         _executeRequest("GET", s"/user").map {
           case r if r.status == 200 => _root_.io.flow.github.v0.Client.parseJson("io.flow.github.v0.models.User", r, _.validate[io.flow.github.v0.models.User])
           case r if r.status == 401 => throw new io.flow.github.v0.errors.UnitResponse(r.status)
@@ -1001,13 +1001,13 @@ package io.flow.github.v0 {
   }
 
   trait Contents {
-    def getReposAndReadmeByOwnerAndRepo(
+    def getReadme(
       owner: String,
       repo: String,
       ref: String = "master"
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.github.v0.models.Contents]
 
-    def getReposByOwnerAndRepoAndPath(
+    def getContentsByPath(
       owner: String,
       repo: String,
       path: String,
@@ -1016,18 +1016,18 @@ package io.flow.github.v0 {
   }
 
   trait Hooks {
-    def getReposByOwnerAndRepo(
+    def get(
       owner: String,
       repo: String
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.github.v0.models.Hook]]
 
-    def getReposByOwnerAndRepoAndId(
+    def getById(
       owner: String,
       repo: String,
       id: Long
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.github.v0.models.Hook]
 
-    def postReposByOwnerAndRepo(
+    def post(
       owner: String,
       repo: String,
       name: String,
@@ -1036,7 +1036,7 @@ package io.flow.github.v0 {
       active: Boolean
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.github.v0.models.Hook]
 
-    def deleteReposByOwnerAndRepoAndId(
+    def deleteById(
       owner: String,
       repo: String,
       id: Long
@@ -1074,11 +1074,11 @@ package io.flow.github.v0 {
   }
 
   trait UserEmails {
-    def getUserAndEmails()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.github.v0.models.UserEmail]]
+    def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.github.v0.models.UserEmail]]
   }
 
   trait Users {
-    def getUser()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.github.v0.models.User]
+    def get()(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.github.v0.models.User]
   }
 
   package errors {

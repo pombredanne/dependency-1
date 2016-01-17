@@ -164,8 +164,8 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
     ).flatMap { response =>
       val client = GithubHelper.apiClient(response.accessToken)
       for {
-        githubUser <- client.users.getUser()
-        emails <- client.userEmails.getUserAndEmails()
+        githubUser <- client.users.get()
+        emails <- client.userEmails.get()
       } yield {
         // put primary first
         val sortedEmailAddresses = (emails.filter(_.primary) ++ emails.filter(!_.primary)).map(_.email)
@@ -222,7 +222,7 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
             None
           }
           case Some(token) => {
-            GithubHelper.apiClient(token).contents.getReposByOwnerAndRepoAndPath(
+            GithubHelper.apiClient(token).contents.getContentsByPath(
               owner = repo.owner,
               repo = repo.project,
               path = path
