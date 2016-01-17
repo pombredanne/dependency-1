@@ -42,7 +42,7 @@ class ProjectActor extends Actor with Util {
 
   private[this] val HookBaseUrl = DefaultConfig.requiredString("dependency.api.host") + "/webhooks/github/"
   private[this] val HookName = "web"
-  private[this] val HookEvents = Seq("push")
+  private[this] val HookEvents = Seq(io.flow.github.v0.models.HookEvent.Push)
 
   private[this] var dataProject: Option[Project] = None
 
