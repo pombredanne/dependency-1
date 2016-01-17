@@ -201,30 +201,6 @@ package com.bryzek.dependency.v0.anorm.parsers {
 
   }
 
-  object GithubAccount {
-
-    def parserWithPrefix(prefix: String) = parser(
-      id = s"${prefix}_id",
-      login = s"${prefix}_login"
-    )
-
-    def parser(
-      id: String = "id",
-      login: String = "login"
-    ): RowParser[com.bryzek.dependency.v0.models.GithubAccount] = {
-      SqlParser.long(id) ~
-      SqlParser.str(login) map {
-        case id ~ login => {
-          com.bryzek.dependency.v0.models.GithubAccount(
-            id = id,
-            login = login
-          )
-        }
-      }
-    }
-
-  }
-
   object GithubAuthenticationForm {
 
     def parserWithPrefix(prefix: String) = parser(
@@ -238,62 +214,6 @@ package com.bryzek.dependency.v0.anorm.parsers {
         case code => {
           com.bryzek.dependency.v0.models.GithubAuthenticationForm(
             code = code
-          )
-        }
-      }
-    }
-
-  }
-
-  object GithubHook {
-
-    def parserWithPrefix(prefix: String) = parser(
-      id = s"${prefix}_id",
-      name = s"${prefix}_name",
-      events = s"${prefix}_events"
-    )
-
-    def parser(
-      id: String = "id",
-      name: String = "name",
-      events: String = "events"
-    ): RowParser[com.bryzek.dependency.v0.models.GithubHook] = {
-      SqlParser.long(id) ~
-      SqlParser.str(name) ~
-      SqlParser.get[Seq[String]](events) map {
-        case id ~ name ~ events => {
-          com.bryzek.dependency.v0.models.GithubHook(
-            id = id,
-            name = name,
-            events = events
-          )
-        }
-      }
-    }
-
-  }
-
-  object GithubRepository {
-
-    def parserWithPrefix(prefix: String) = parser(
-      id = s"${prefix}_id",
-      fullName = s"${prefix}_full_name",
-      ownerPrefix = s"${prefix}_owner"
-    )
-
-    def parser(
-      id: String = "id",
-      fullName: String = "full_name",
-      ownerPrefix: String = "owner"
-    ): RowParser[com.bryzek.dependency.v0.models.GithubRepository] = {
-      SqlParser.long(id) ~
-      SqlParser.str(fullName) ~
-      com.bryzek.dependency.v0.anorm.parsers.GithubAccount.parserWithPrefix(ownerPrefix) map {
-        case id ~ fullName ~ owner => {
-          com.bryzek.dependency.v0.models.GithubRepository(
-            id = id,
-            fullName = fullName,
-            owner = owner
           )
         }
       }
@@ -374,38 +294,6 @@ package com.bryzek.dependency.v0.anorm.parsers {
         case id => {
           com.bryzek.dependency.v0.models.GithubWebhook(
             id = id
-          )
-        }
-      }
-    }
-
-  }
-
-  object GithubWebhookBody {
-
-    def parserWithPrefix(prefix: String) = parser(
-      hookId = s"${prefix}_hook_id",
-      hookPrefix = s"${prefix}_hook",
-      repositoryPrefix = s"${prefix}_repository",
-      senderPrefix = s"${prefix}_sender"
-    )
-
-    def parser(
-      hookId: String = "hook_id",
-      hookPrefix: String = "hook",
-      repositoryPrefix: String = "repository",
-      senderPrefix: String = "sender"
-    ): RowParser[com.bryzek.dependency.v0.models.GithubWebhookBody] = {
-      SqlParser.long(hookId) ~
-      com.bryzek.dependency.v0.anorm.parsers.GithubHook.parserWithPrefix(hookPrefix) ~
-      com.bryzek.dependency.v0.anorm.parsers.GithubRepository.parserWithPrefix(repositoryPrefix) ~
-      com.bryzek.dependency.v0.anorm.parsers.GithubAccount.parserWithPrefix(senderPrefix) map {
-        case hookId ~ hook ~ repository ~ sender => {
-          com.bryzek.dependency.v0.models.GithubWebhookBody(
-            hookId = hookId,
-            hook = hook,
-            repository = repository,
-            sender = sender
           )
         }
       }
