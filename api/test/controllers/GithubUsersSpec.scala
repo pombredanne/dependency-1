@@ -37,13 +37,13 @@ class GithubUsersSpec extends PlaySpecification with MockClient {
 
     MockGithubData.addUser(githubUser, code)
 
-    val user = await(anonClient.githubUsers.post(GithubAuthenticationForm(code = code)))
+    val user = await(anonClient.githubUsers.postGithub(GithubAuthenticationForm(code = code)))
     user.email must beEqualTo(githubUser.email)
 
     GithubUsersDao.findAll(userId = Some(user.id), limit = 1).headOption.map(_.user.id) must beEqualTo(Some(user.id))
 
     // Test idempotence
-    val user2 = await(anonClient.githubUsers.post(GithubAuthenticationForm(code = code)))
+    val user2 = await(anonClient.githubUsers.postGithub(GithubAuthenticationForm(code = code)))
     user2.email must beEqualTo(githubUser.email)
   }
 
@@ -53,7 +53,7 @@ class GithubUsersSpec extends PlaySpecification with MockClient {
 
     MockGithubData.addUser(githubUser, code)
     val user = await(
-      anonClient.githubUsers.post(GithubAuthenticationForm(code = code))
+      anonClient.githubUsers.postGithub(GithubAuthenticationForm(code = code))
     )
     user.email should be(None)
     db.UsersDao.findByGithubUserId(githubUser.id).map(_.id) must beEqualTo(Some(user.id))

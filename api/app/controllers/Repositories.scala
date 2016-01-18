@@ -18,7 +18,7 @@ class Repositories @javax.inject.Inject() (
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def get(
+  def getGithub(
     name: Option[String] = None,
     organizationId: Option[String] = None,
     existingProject: Option[Boolean] = None,

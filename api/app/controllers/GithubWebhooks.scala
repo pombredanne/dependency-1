@@ -15,7 +15,7 @@ class GithubWebhooks @javax.inject.Inject() (
   val userTokensClient: UserTokensClient
 ) extends Controller with IdentifiedRestController with Helpers {
 
-  def post(projectId: String) = Action(parse.json) { request =>
+  def postByProjectId(projectId: String) = Action(parse.json) { request =>
     ProjectsDao.findById(Authorization.All, projectId) match {
       case None => {
         NotFound

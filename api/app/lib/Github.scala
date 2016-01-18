@@ -155,7 +155,7 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
   )
 
   override def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUserData]] = {
-    oauthClient.accessTokens.postLoginAndOauthAndAccessToken(
+    oauthClient.accessTokens.postAccessToken(
       AccessTokenForm(
         clientId = clientId,
         clientSecret = clientSecret,
@@ -164,7 +164,7 @@ class DefaultGithub @javax.inject.Inject() () extends Github {
     ).flatMap { response =>
       val client = GithubHelper.apiClient(response.accessToken)
       for {
-        githubUser <- client.users.get()
+        githubUser <- client.users.getUser()
         emails <- client.userEmails.get()
       } yield {
         // put primary first

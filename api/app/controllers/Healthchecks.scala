@@ -11,7 +11,7 @@ class Healthchecks extends Controller {
 
   private val HealthyJson = Json.toJson(Healthcheck(status = "healthy"))
 
-  def get() = Action { request =>
+  def getHealthcheck() = Action { request =>
     com.bryzek.dependency.actors.MainActor.ref
     Ok(HealthyJson)
   }
