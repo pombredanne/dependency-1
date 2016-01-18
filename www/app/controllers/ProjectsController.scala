@@ -97,7 +97,7 @@ class ProjectsController @javax.inject.Inject() (
   def githubOrg(orgKey: String, repositoriesPage: Int = 0) = Identified.async { implicit request =>
     withOrganization(request, orgKey) { org =>
       for {
-        repositories <- dependencyClient(request).repositories.get(
+        repositories <- dependencyClient(request).repositories.getGithub(
           organizationId = Some(org.id),
           existingProject = Some(false),
           limit = Pagination.DefaultLimit+1,
@@ -119,7 +119,7 @@ class ProjectsController @javax.inject.Inject() (
     repositoriesPage: Int = 0
   ) = Identified.async { implicit request =>
     withOrganization(request, orgKey) { org =>
-      dependencyClient(request).repositories.get(
+      dependencyClient(request).repositories.getGithub(
         organizationId = Some(org.id),
         name = Some(name)
       ).flatMap { selected =>
