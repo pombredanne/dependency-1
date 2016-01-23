@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.v0.models.{Project, Recommendation, RecommendationType}
 import io.flow.common.v0.models.User
-import io.flow.postgresql.{Query, OrderBy}
+import io.flow.postgresql.{Query, OrderBy, Pager}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -73,7 +73,9 @@ object RecommendationsDao {
 
     val newRecords = libraries ++ binaries
 
-    val existing = RecommendationsDao.findAll(Authorization.All, projectId = Some(project.id), limit = None)
+    val existing = Pager.create { offset =>
+      RecommendationsDao.findAll(Authorization.All, projectId = Some(project.id), limit = 1000, offset = offset)
+    }.toSeq
 
     val toAdd = newRecords.filter { rec => !existing.map(toForm(_)).contains(rec) }
     val toRemove = existing.filter { rec => !newRecords.contains(toForm(rec)) }
@@ -169,7 +171,7 @@ object RecommendationsDao {
   }
 
   def findById(auth: Authorization, id: String): Option[Recommendation] = {
-    findAll(auth, id = Some(id), limit = Some(1)).headOption
+    findAll(auth, id = Some(id), limit = 1).headOption
   }
 
   def findAll(
@@ -184,7 +186,7 @@ object RecommendationsDao {
     fromVersion: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("-recommendations.created_at, lower(projects.name), lower(recommendations.name)"),
-    limit: Option[Long] = Some(25),
+    limit: Long = 25,
     offset: Long = 0
   ): Seq[Recommendation] = {
     DB.withConnection { implicit c =>
@@ -199,17 +201,19 @@ object RecommendationsDao {
         limit = limit,
         offset = offset
       ).
-        subquery("organizations.id", "organization", organization, { bind =>
-          s"select id from organizations where deleted_at is null and key = lower(trim(${bind.sql}))"
-        }).
+        and(
+          organization.map { org =>
+            "organizations.id in (select id from organizations where deleted_at is null and key = lower(trim({org})))"
+          }
+        ).bind("org", organization).
         equals("recommendations.project_id", projectId).
-        text(
+        optionalText(
           "recommendations.type",
           `type`,
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
-        text("recommendations.name", name).
-        text("recommendations.from_version", fromVersion).
+        optionalText("recommendations.name", name).
+        optionalText("recommendations.from_version", fromVersion).
         equals("recommendations.object_id", objectId).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Recommendation.parser().*

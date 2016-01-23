@@ -201,29 +201,25 @@ object LibraryVersionsDao {
       ids = ids,
       orderBy = orderBy.sql,
       isDeleted = isDeleted,
-      limit = Some(limit),
+      limit = limit,
       offset = offset
     ).
       equals("library_versions.library_id", libraryId).
-      text(
+      optionalText(
         "library_versions.version",
         version,
         columnFunctions = Seq(Query.Function.Lower),
         valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
       ).
-      condition(
+      and(
         crossBuildVersion.map { v =>
           v match {
             case None => s"library_versions.cross_build_version is null"
             case Some(_) => s"lower(library_versions.cross_build_version) = lower(trim({cross_build_version}))"
           }
         }
-      ).
-      bind(
-        "cross_build_version",
-        crossBuildVersion.flatMap { v => v }
-      ).
-      condition(
+      ).bind("cross_build_version", crossBuildVersion).
+      and(
         greaterThanVersion.map { v =>
           s"library_versions.sort_key > {greater_than_version_sort_key}"
         }

@@ -200,13 +200,13 @@ object ResolversDao {
           resolvers.position, lower(resolvers.uri),resolvers.created_at
         """),
         isDeleted = isDeleted,
-        limit = Some(limit),
+        limit = limit,
         offset = offset
       ).
-        text("resolvers.visibility", visibility).
-        text("organizations.key", organization.map(_.toLowerCase)).
+        optionalText("resolvers.visibility", visibility).
+        optionalText("organizations.key", organization.map(_.toLowerCase)).
         equals("organizations.id", organizationId).
-        text("resolvers.uri", uri).
+        optionalText("resolvers.uri", uri).
         as(
           parser().*
         )

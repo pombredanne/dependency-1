@@ -176,27 +176,28 @@ object BinaryVersionsDao {
 
     BaseQuery.
       equals("binary_versions.id", id).
-      in("binary_versions.id", ids).
+      optionalIn("binary_versions.id", ids).
       equals("binary_versions.binary_id", binaryId).
-      subquery("binary_versions.binary_id", "project_id", projectId, { bind =>
-        s"select binary_id from project_binaries where deleted_at is null and binary_id is not null and project_id = ${bind.sql}"
-      }).
-      text(
+      and(
+        projectId.map { id =>
+          "binary_versions.binary_id in (select binary_id from project_bainaries where deleted_at is null and binary_id is not null and project_id = {project_id})"
+        }
+      ).bind("project_id", projectId).
+      optionalText(
         "binary_versions.version",
         version,
         columnFunctions = Seq(Query.Function.Lower),
         valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
       ).
-      condition(
+      and(
         greaterThanVersion.map { v =>
           s"binary_versions.sort_key > {greater_than_version_sort_key}"
         }
-      ).
-      bind("greater_than_version_sort_key", greaterThanVersion).
+      ).bind("greater_than_version_sort_key", greaterThanVersion).
       nullBoolean("binary_versions.deleted_at", isDeleted).
       orderBy(orderBy.sql).
-      limit(Some(limit)).
-      offset(Some(offset)).
+      limit(limit).
+      offset(offset).
       as(
         com.bryzek.dependency.v0.anorm.parsers.BinaryVersion.parser().*
       )

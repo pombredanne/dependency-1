@@ -219,22 +219,22 @@ object ProjectBinariesDao {
         ids = ids,
         orderBy = orderBy.sql,
         isDeleted = isDeleted,
-        limit = Some(limit),
+        limit = limit,
         offset = offset
       ).
         equals("project_binaries.project_id", projectId).
         equals("project_binaries.binary_id", binaryId).
-        text(
+        optionalText(
           "project_binaries.name",
           name,
           columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
-        text(
+        optionalText(
           "project_binaries.version",
           version
         ).
-        condition(
+        and(
           isSynced.map { value =>
             val clause = "select 1 from syncs where object_id = project_binaries.id and event = {sync_event_completed}"
             value match {

@@ -28,7 +28,7 @@ class Recommendations @javax.inject.Inject() (
           organization = organization,
           projectId = projectId,
           `type` = `type`,
-          limit = Some(limit),
+          limit = limit,
           offset = offset
         )
       )

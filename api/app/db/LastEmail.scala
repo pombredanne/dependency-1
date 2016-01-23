@@ -94,13 +94,13 @@ object LastEmailsDao {
     DB.withConnection { implicit c =>
       BaseQuery.
         equals("last_emails.id", id).
-        in("last_emails.id", ids).
+        optionalIn("last_emails.id", ids).
         equals("last_emails.user_id", userId).
-        text("last_emails.publication", publication).
+        optionalText("last_emails.publication", publication).
         nullBoolean("last_emails.deleted_at", isDeleted).
         orderBy(orderBy.sql).
-        limit(Some(limit)).
-        offset(Some(offset)).
+        limit(limit).
+        offset(offset).
         as(parser.*)
     }
   }

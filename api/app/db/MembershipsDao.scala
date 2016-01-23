@@ -175,13 +175,13 @@ object MembershipsDao {
       ids = ids,
       orderBy = orderBy.sql,
       isDeleted = isDeleted,
-      limit = Some(limit),
+      limit = limit,
       offset = offset
     ).
       equals("memberships.organization_id", organizationId).
-      text("organizations.key", organization, valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)).
+      optionalText("organizations.key", organization, valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)).
       equals("memberships.user_id", userId).
-      text("memberships.role", role.map(_.toString.toLowerCase)).
+      optionalText("memberships.role", role.map(_.toString.toLowerCase)).
       as(
         com.bryzek.dependency.v0.anorm.parsers.Membership.parser().*
       )

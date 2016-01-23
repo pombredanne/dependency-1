@@ -236,28 +236,28 @@ object ProjectLibrariesDao {
         ids = ids,
         orderBy = orderBy.sql,
         isDeleted = isDeleted,
-        limit = Some(limit),
+        limit = limit,
         offset = offset
       ).
         equals("project_libraries.project_id", projectId).
         equals("project_libraries.library_id", libraryId).
-        text(
+        optionalText(
           "project_libraries.group_id",
           groupId,
           columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
-        text(
+        optionalText(
           "project_libraries.artifact_id",
           artifactId,
           columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
-        text(
+        optionalText(
           "project_libraries.version",
           version
         ).
-        condition(
+        and(
           crossBuildVersion.map { v =>
             v match {
               case None => "project_libraries.cross_build_version is null"
@@ -266,7 +266,7 @@ object ProjectLibrariesDao {
           }
         ).
         bind("cross_build_version", crossBuildVersion.flatten).
-        condition(
+        and(
           isSynced.map { value =>
             val clause = "select 1 from syncs where object_id = project_libraries.id and event = {sync_event_completed}"
             value match {

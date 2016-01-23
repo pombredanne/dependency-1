@@ -107,11 +107,11 @@ object SyncsDao {
         ids = ids,
         orderBy = orderBy.sql,
         isDeleted = None,
-        limit = Some(limit),
+        limit = limit,
         offset = offset
       ).
         equals("syncs.object_id", objectId).
-        text("syncs.event", event).
+        optionalText("syncs.event", event).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Sync.parser().*
         )

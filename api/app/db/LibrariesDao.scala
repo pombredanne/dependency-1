@@ -162,20 +162,22 @@ object LibrariesDao {
         ids = ids,
         isDeleted = isDeleted,
         orderBy = orderBy.sql,
-        limit = Some(limit),
+        limit = limit,
         offset = offset
       ).
         equals("libraries.organization_id", organizationId).
-        subquery("libraries.id", "project_id", projectId, { bindVar =>
-          s"select library_id from project_libraries where deleted_at is null and project_id = ${bindVar.sql}"
-        }).
-        text(
+        and(
+          projectId.map { id =>
+            "libraries.id in (select library_id from project_libraries where deleted_at is null and project_id = {project_id})"
+          }
+        ).bind("project_id", projectId).
+        optionalText(
           "libraries.group_id",
           groupId,
           columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
-        text(
+        optionalText(
           "libraries.artifact_id",
           artifactId,
           columnFunctions = Seq(Query.Function.Lower),

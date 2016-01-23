@@ -132,11 +132,11 @@ object UserIdentifiersDao {
       ids = ids,
       orderBy = orderBy.sql,
       isDeleted = isDeleted,
-      limit = Some(limit),
+      limit = limit,
       offset = offset
     ).
       equals("user_identifiers.user_id", userId).
-      text("user_identifiers.value", value).
+      optionalText("user_identifiers.value", value).
       as(
         com.bryzek.dependency.v0.anorm.parsers.UserIdentifier.parser().*
       )

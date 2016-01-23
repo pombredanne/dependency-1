@@ -107,18 +107,20 @@ object BinariesDao {
     DB.withConnection { implicit c =>
       BaseQuery.
         equals("binaries.id", id).
-        in("binaries.id", ids).
-        subquery("binaries.id", "project_id", projectId, { bindVar =>
-          s"select binary_id from project_binaries where deleted_at is null and binary_id is not null and project_id = ${bindVar.sql}"
-        }).
+        optionalIn("binaries.id", ids).
+        and (
+          projectId.map { id =>
+            s"binaries.id in (select binary_id from project_binaries where deleted_at is null and binary_id is not null and project_id = {project_id})"
+          }
+        ).bind("project_id", projectId).
         equals("binaries.organization_id", organizationId).
-        text(
+        optionalText(
           "binaries.name",
           name,
           columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
-        condition(
+        and(
           isSynced.map { value =>
             val clause = "select 1 from syncs where object_id = binaries.id and event = {sync_event_completed}"
             value match {
@@ -127,11 +129,11 @@ object BinariesDao {
             }
           }
         ).
-        bind("sync_event_completed", isSynced.map(_ => SyncEvent.Completed.toString)).
+        bind("sync_event_completed", SyncEvent.Completed.toString).
         nullBoolean("binaries.deleted_at", isDeleted).
         orderBy(orderBy.sql).
-        limit(Some(limit)).
-        offset(Some(offset)).
+        limit(limit).
+        offset(offset).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Binary.parser().*
         )

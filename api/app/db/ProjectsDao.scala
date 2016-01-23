@@ -219,37 +219,37 @@ object ProjectsDao {
         ids = ids,
         orderBy = orderBy.sql,
         isDeleted = isDeleted,
-        limit = Some(limit),
+        limit = limit,
         offset = offset
       ).
-        text(
+        optionalText(
           "organizations.key",
           organization,
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
         equals("organizations.id", organizationId).
-        text(
+        optionalText(
           "projects.name",
           name,
           columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
-        condition(
+        and(
           groupId.map { v => FilterProjectLibraries.format("project_libraries.group_id = trim({group_id})") }
         ).bind("group_id", groupId).
-        condition(
+        and(
           artifactId.map { v => FilterProjectLibraries.format("project_libraries.artifact_id = trim({artifact_id})") }
         ).bind("artifact_id", artifactId).
-        condition(
+        and(
           version.map { v => FilterProjectLibraries.format("project_libraries.version = trim({version})") }
         ).bind("version", version).
-        condition(
+        and(
           libraryId.map { v => FilterProjectLibraries.format("project_libraries.library_id = {library_id}") }
         ).bind("library_id", libraryId).
-        condition(
+        and(
           binary.map { v => FilterProjectBinaries.format("project_binaries.name = trim({binary})") }
         ).bind("binary", binary).
-        condition(
+        and(
           binaryId.map { v => FilterProjectBinaries.format("project_binaries.binary_id = {binary_id}") }
         ).bind("binary_id", binaryId).
         as(

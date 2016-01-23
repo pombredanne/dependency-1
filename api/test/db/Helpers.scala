@@ -1,6 +1,6 @@
 package db
 
-import io.flow.play.clients.MockUserClient
+import io.flow.play.clients.MockUserTokensClient
 import io.flow.play.util.Random
 import com.bryzek.dependency.v0.models._
 import io.flow.common.v0.models.{Name, User}
