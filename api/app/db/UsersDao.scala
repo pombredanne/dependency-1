@@ -152,7 +152,7 @@ object UsersDao {
         ).bind("token", token).
         and(
           githubUserId.map { id =>
-            "users.id in (select user_id from user_github_user_ids where deleted_at is null and value = trim({github_user_id}))"
+            "users.id in (select user_id from github_users where deleted_at is null and github_user_id = {github_user_id}::numeric)"
           }
         ).bind("github_user_id", githubUserId).
         as(
