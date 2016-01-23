@@ -147,7 +147,7 @@ object UsersDao {
         ).bind("identifier", identifier).
         and(
           token.map { t =>
-            "users.id in (select user_id from user_tokens where deleted_at is null and value = trim({token}))"
+            "users.id in (select user_id from tokens where deleted_at is null and token = trim({token}))"
           }
         ).bind("token", token).
         and(
