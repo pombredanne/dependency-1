@@ -118,12 +118,12 @@ object SubscriptionsDao {
         ids = ids,
         orderBy = orderBy.sql,
         isDeleted = isDeleted,
-        limit = Some(limit),
+        limit = limit,
         offset = offset
       ).
         equals("subscriptions.user_id", userId).
-        text("subscriptions.publication", publication).
-        condition(
+        optionalText("subscriptions.publication", publication).
+        and(
           minHoursSinceLastEmail.map { v => """
             not exists (select 1
                           from last_emails
@@ -133,7 +133,7 @@ object SubscriptionsDao {
                            and last_emails.created_at > now() - interval '1 hour' * {min_hours}::int)
           """.trim }
         ).bind("min_hours", minHoursSinceLastEmail).
-        condition(
+        and(
           minHoursSinceRegistration.map { v => """
             exists (select 1
                       from users
@@ -142,9 +142,11 @@ object SubscriptionsDao {
                        and users.created_at <= now() - interval '1 hour' * {min_hours_since_registration}::int)
           """.trim }
         ).bind("min_hours_since_registration", minHoursSinceRegistration).
-        subquery("subscriptions.user_id", "identifier", identifier, { bindVar =>
-          s"select user_id from user_identifiers where deleted_at is null and value = trim(${bindVar.sql})"
-        }).
+        and(
+          identifier.map { id =>
+            "subscriptions.user_id in (select user_id from user_identifiers where deleted_at is null and value = trim({identifier}))"
+          }
+        ).bind("identifier", identifier).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Subscription.parser().*
         )

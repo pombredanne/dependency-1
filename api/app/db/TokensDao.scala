@@ -173,9 +173,9 @@ object TokensDao {
       SelectCleartextTokenQuery.
         isNull("tokens.deleted_at").
         equals("tokens.user_id", Some(userId)).
-        text("tokens.tag", Some(InternalTokenForm.GithubOauthTag)).
-        limit(Some(1)).
-        orderBy(Some("tokens.created_at desc")).
+        optionalText("tokens.tag", Some(InternalTokenForm.GithubOauthTag)).
+        limit(1).
+        orderBy("tokens.created_at desc").
         as(
           cleartextTokenParser().*
         ).headOption.map(_.token)
@@ -237,11 +237,11 @@ object TokensDao {
       ids = ids,
       orderBy = orderBy.sql,
       isDeleted = isDeleted,
-      limit = Some(limit),
+      limit = limit,
       offset = offset
     ).
       equals("tokens.user_id", userId).
-      text("tokens.tag", tag, valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)).
+      optionalText("tokens.tag", tag, valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)).
       orderBy(orderBy.sql).
       as(
         com.bryzek.dependency.v0.anorm.parsers.Token.parser().*

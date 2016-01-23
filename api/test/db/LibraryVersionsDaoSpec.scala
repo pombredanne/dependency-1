@@ -128,5 +128,6 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       LibraryVersionsDao.findAll(Authorization.User(createUser().id), id = Some(libraryVersion.id)) must be(Nil)
     }
 
-  }
+ }
+
 }

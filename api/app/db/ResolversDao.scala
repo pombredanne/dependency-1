@@ -40,9 +40,7 @@ object ResolversDao {
   """
 
   def credentials(resolver: Resolver): Option[Credentials] = {
-    println(s"resolver: $resolver")
     resolver.credentials.flatMap { _ =>
-      println(s"Fetching credentials for id[${resolver.id}]")
       DB.withConnection { implicit c =>
         SQL(SelectCredentialsQuery).on('id -> resolver.id).as(
           SqlParser.str("credentials").*
@@ -200,13 +198,13 @@ object ResolversDao {
           resolvers.position, lower(resolvers.uri),resolvers.created_at
         """),
         isDeleted = isDeleted,
-        limit = Some(limit),
+        limit = limit,
         offset = offset
       ).
-        text("resolvers.visibility", visibility).
-        text("organizations.key", organization.map(_.toLowerCase)).
+        optionalText("resolvers.visibility", visibility).
+        optionalText("organizations.key", organization.map(_.toLowerCase)).
         equals("organizations.id", organizationId).
-        text("resolvers.uri", uri).
+        optionalText("resolvers.uri", uri).
         as(
           parser().*
         )

@@ -2,7 +2,6 @@ package com.bryzek.dependency.lib
 
 import com.bryzek.dependency.v0.models.{BinarySummary, BinaryType, ItemSummary, ItemSummaryUndefinedType, LibrarySummary, OrganizationSummary, ProjectSummary, Reference}
 import com.bryzek.dependency.v0.models.{ProjectDetail, Recommendation, RecommendationType}
-import io.flow.play.clients.MockUserClient
 import io.flow.play.util.{IdGenerator, Random}
 import org.joda.time.DateTime
 

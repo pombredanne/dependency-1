@@ -21,17 +21,17 @@ private[db] case object Standards {
     ids: Option[Seq[String]],
     isDeleted: Option[Boolean],
     orderBy: Option[String],
-    limit: Option[Long] = Some(25),
+    limit: Long = 25,
     offset: Long = 0
   ): Query = {
     query.
       equals(s"$tableName.id", id).
-      in(s"$tableName.id", ids).
-      condition(Some(auth.sql)).
+      optionalIn(s"$tableName.id", ids).
+      and(auth.sql).
       nullBoolean(s"$tableName.deleted_at", isDeleted).
       orderBy(orderBy).
       limit(limit).
-      offset(Some(offset))
+      offset(offset)
   }
 
 }

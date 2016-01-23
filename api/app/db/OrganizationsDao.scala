@@ -206,21 +206,25 @@ object OrganizationsDao {
         ids = ids,
         orderBy = orderBy.sql,
         isDeleted = isDeleted,
-        limit = Some(limit),
+        limit = limit,
         offset = offset
       ).
-        subquery("organizations.id", "user_id", userId, { bindVar =>
-          s"select organization_id from memberships where deleted_at is null and user_id = ${bindVar.sql}"
-        }).
-        text(
+        and(
+          userId.map { id =>
+            "organizations.id in (select organization_id from memberships where deleted_at is null and user_id = {user_id})"
+          }
+        ).bind("user_id", userId).
+        optionalText(
           "organizations.key",
           key,
           columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
-        subquery("organizations.id", "for_user_id", forUserId, { bindVar =>
-          s"select organization_id from user_organizations where deleted_at is null and user_id = ${bindVar.sql}"
-        }).
+        and(
+          forUserId.map { id =>
+            "organizations.id in (select organization_id from user_organizations where deleted_at is null and user_id = {for_user_id})"
+          }
+        ).bind("for_user_id", forUserId).
         as(
           com.bryzek.dependency.v0.anorm.parsers.Organization.parser().*
         )

@@ -35,7 +35,7 @@ lazy val api = project
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       jdbc,      
-      "io.flow" %% "lib-postgresql" % "0.0.17",
+      "io.flow" %% "lib-postgresql" % "0.0.18",
       "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.16",
       "org.postgresql" % "postgresql" % "9.4.1207",
       "com.typesafe.play" %% "anorm" % "2.5.0",
@@ -70,7 +70,7 @@ val credsToUse = Option(System.getenv("ARTIFACTORY_USERNAME")) match {
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("dependency-" + _),
   libraryDependencies ++= Seq(
-    "io.flow" %% "lib-play" % "0.0.23",
+    "io.flow" %% "lib-play" % "0.0.27",
     specs2 % Test,
     "org.scalatest" %% "scalatest" % "2.2.6" % Test
   ),

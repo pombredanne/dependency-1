@@ -131,24 +131,30 @@ object UsersDao {
         ids = ids,
         orderBy = orderBy.sql,
         isDeleted = isDeleted,
-        limit = Some(limit),
+        limit = limit,
         offset = offset
       ).
-        text(
+        optionalText(
           "users.email",
           email,
           columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
-        subquery("users.id", "identifier", identifier, { bindVar =>
-          s"select user_id from user_identifiers where deleted_at is null and value = trim(${bindVar.sql})"
-        }).
-        subquery("users.id", "token", token, { bindVar =>
-          s"select user_id from tokens where deleted_at is null and token = trim(${bindVar.sql}) and tag = {user_created_tag}"
-        }).bind("user_created_tag", Some(InternalTokenForm.UserCreatedTag)).
-        subquery("users.id", "github_user_id", githubUserId, { bindVar =>
-          s"select user_id from github_users where deleted_at is null and github_user_id = ${bindVar.sql}"
-        }).
+        and(
+          identifier.map { id =>
+            "users.id in (select user_id from user_identifiers where deleted_at is null and value = trim({identifier}))"
+          }
+        ).bind("identifier", identifier).
+        and(
+          token.map { t =>
+            "users.id in (select user_id from tokens where deleted_at is null and token = trim({token}))"
+          }
+        ).bind("token", token).
+        and(
+          githubUserId.map { id =>
+            "users.id in (select user_id from github_users where deleted_at is null and github_user_id = {github_user_id}::numeric)"
+          }
+        ).bind("github_user_id", githubUserId).
         as(
           io.flow.common.v0.anorm.parsers.User.parser().*
         )

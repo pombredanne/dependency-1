@@ -77,14 +77,14 @@ object GithubUsersDao {
   ): Seq[GithubUser] = {
     DB.withConnection { implicit c =>
       BaseQuery.
-        in("github_users.id", id).
+        optionalIn("github_users.id", id).
         equals("github_users.user_id", userId).
-        text("github_users.login", login).
+        optionalText("github_users.login", login).
         equals("github_users.github_user_id", githubUserId).
         nullBoolean("github_users.deleted_at", isDeleted).
         orderBy(orderBy.sql).
-        limit(Some(limit)).
-        offset(Some(offset)).
+        limit(limit).
+        offset(offset).
         as(
           com.bryzek.dependency.v0.anorm.parsers.GithubUser.parser().*
         )

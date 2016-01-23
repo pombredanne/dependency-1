@@ -193,11 +193,11 @@ object ItemsDao {
   }
 
   def findById(auth: Authorization, id: String): Option[Item] = {
-    findAll(auth, id = Some(id), limit = Some(1)).headOption
+    findAll(auth, id = Some(id), limit = 1).headOption
   }
 
   def findByObjectId(auth: Authorization, objectId: String): Option[Item] = {
-    findAll(auth, objectId = Some(objectId), limit = Some(1)).headOption
+    findAll(auth, objectId = Some(objectId), limit = 1).headOption
   }
 
   def findAll(
@@ -208,21 +208,20 @@ object ItemsDao {
     objectId: Option[String] = None,
     isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("-lower(items.label), items.created_at"),
-    limit: Option[Long] = Some(25),
+    limit: Long = 25,
     offset: Long = 0
   ): Seq[Item] = {
     DB.withConnection { implicit c =>
       BaseQuery.
-        condition(Some(auth.organizations("items.organization_id", Some("items.visibility")).sql)).
+        and(auth.organizations("items.organization_id", Some("items.visibility")).sql).
         equals("items.id", id).
-        in("items.id", ids).
-        condition(q.map { v => "items.contents like '%' || lower(trim({q})) || '%' " }).
-        bind("q", q).
+        optionalIn("items.id", ids).
+        and(q.map { v => "items.contents like '%' || lower(trim({q})) || '%' " }).bind("q", q).
         equals("items.object_id", objectId).
         nullBoolean("items.deleted_at", isDeleted).
         orderBy(orderBy.sql).
         limit(limit).
-        offset(Some(offset)).
+        offset(offset).
         as(
           parser().*
         )
