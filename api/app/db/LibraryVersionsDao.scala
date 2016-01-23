@@ -218,7 +218,7 @@ object LibraryVersionsDao {
             case Some(_) => s"lower(library_versions.cross_build_version) = lower(trim({cross_build_version}))"
           }
         }
-      ).bind("cross_build_version", crossBuildVersion).
+      ).bind("cross_build_version", crossBuildVersion.flatMap(v => v)).
       and(
         greaterThanVersion.map { v =>
           s"library_versions.sort_key > {greater_than_version_sort_key}"
