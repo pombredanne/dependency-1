@@ -40,9 +40,7 @@ object ResolversDao {
   """
 
   def credentials(resolver: Resolver): Option[Credentials] = {
-    println(s"resolver: $resolver")
     resolver.credentials.flatMap { _ =>
-      println(s"Fetching credentials for id[${resolver.id}]")
       DB.withConnection { implicit c =>
         SQL(SelectCredentialsQuery).on('id -> resolver.id).as(
           SqlParser.str("credentials").*
