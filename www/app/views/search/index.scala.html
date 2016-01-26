@@ -14,7 +14,15 @@
     <div class="table-responsive">
       <table class="table">
         @items.items.map { item =>
-          <tr>
+        <tr>
+            <td>
+              @{item.summary match {
+                case s: com.bryzek.dependency.v0.models.BinarySummary => "Binary"
+                case s: com.bryzek.dependency.v0.models.LibrarySummary => "Library"
+                case s: com.bryzek.dependency.v0.models.ProjectSummary => "Project"
+                case com.bryzek.dependency.v0.models.ItemSummaryUndefinedType(other) => other
+              }}
+            </td>
             <td><a href="@data.urls.itemSummary(item.summary)">@item.label</a></td>
           </tr>
         }
