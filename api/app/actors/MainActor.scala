@@ -38,6 +38,7 @@ object MainActor {
     case class LibraryCreated(id: String)
     case class LibraryDeleted(id: String)
     case class LibrarySync(id: String)
+    case class LibrarySyncFuture(id: String, seconds: Int)
     case class LibrarySyncCompleted(id: String)
 
     case class LibraryVersionCreated(id: String)
@@ -164,6 +165,13 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
       syncLibrary(id)
     }
 
+    case m @ MainActor.Messages.LibrarySyncFuture(id, seconds) => withVerboseErrorHandler(m) {
+      Akka.system.scheduler.scheduleOnce(Duration(seconds, "seconds")) {
+        println(s"MainActor.Messages.LibrarySyncFuture - $seconds - syncLibrary($id)")
+        syncLibrary(id)
+      }
+    }
+      
     case m @ MainActor.Messages.LibrarySyncCompleted(id) => withVerboseErrorHandler(m) {
       projectBroadcast(ProjectActor.Messages.LibrarySynced(id))
     }

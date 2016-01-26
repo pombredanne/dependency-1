@@ -100,7 +100,7 @@ class ProjectActor extends Actor with Util {
 
                 client.hooks.get(repo.owner, repo.project).map { hooks =>
                   val targetUrl = HookBaseUrl + project.id
-                  println("Got back from call to get targetUrl[$targetUrl]")
+                  println(s"Got back from call to get targetUrl[$targetUrl]")
 
                   hooks.foreach { hook =>
                     println(s"hook id[${hook.id}] url[${hook.url}]")
