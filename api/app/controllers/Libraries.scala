@@ -14,7 +14,7 @@ import play.api.libs.json._
 @javax.inject.Singleton
 class Libraries @javax.inject.Inject() (
   val userTokensClient: UserTokensClient
-) extends Controller with IdentifiedRestController {
+) extends Controller with IdentifiedRestController with Helpers {
 
   def get(
     id: Option[String],
@@ -70,16 +70,4 @@ class Libraries @javax.inject.Inject() (
     }
   }
 
-  def withLibrary(user: User, id: String)(
-    f: Library => Result
-  ): Result = {
-    LibrariesDao.findById(Authorization.User(user.id), id) match {
-      case None => {
-        NotFound
-      }
-      case Some(library) => {
-        f(library)
-      }
-    }
-  }
 }

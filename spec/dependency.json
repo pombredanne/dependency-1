@@ -2,7 +2,7 @@
   "name": "dependency",
 
   "imports": [
-    { "uri": "http://www.apidoc.me/flow/common/0.0.5-dev/service.json" }
+    { "uri": "http://www.apidoc.me/flow/common/0.0.9/service.json" }
   ],
 
   "unions": {
@@ -396,6 +396,7 @@
       "description": "Records when we start and complete each sync of a module (e.g. project)",
       "fields": [
         { "name": "id", "type": "string", "description": "Unique identifier for this item." },
+        { "name": "object_id", "type": "string" },
         { "name": "event", "type": "sync_event" },
 	{ "name": "created_at", "type": "date-time-iso8601" }
       ]
@@ -433,6 +434,7 @@
 	{ "name": "id", "type": "long" }
       ]
     }
+
   },
 
   "resources": {
@@ -1140,6 +1142,33 @@
 	    "200": { "type": "[sync]" },
 	    "401": { "type": "unit" }
           }
+	},
+        
+	{
+	  "method": "POST",
+	  "path": "/binaries/:id",
+	  "responses": {
+            "204": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
+	},
+
+	{
+	  "method": "POST",
+	  "path": "/libraries/:id",
+	  "responses": {
+            "204": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
+	},
+
+	{
+	  "method": "POST",
+	  "path": "/projects/:id",
+	  "responses": {
+            "204": { "type": "unit" },
+            "404": { "type": "unit" }
+          }
 	}
       ]
     },
@@ -1208,6 +1237,6 @@
 	}
       ]
     }
-
   }
+
 }

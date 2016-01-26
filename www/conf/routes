@@ -57,6 +57,12 @@ GET     /organizations/:key/edit                controllers.OrganizationsControl
 POST    /organizations/:key/postEdit            controllers.OrganizationsController.postEdit(key: String)
 POST    /organizations/:key/delete              controllers.OrganizationsController.postDelete(key: String)
 
+GET     /syncs                                  controllers.ApplicationController.redirect
+GET     /syncs/                                 controllers.SyncsController.index(objectId: Option[String] ?= None, page: Int ?= 0)
+POST    /syncs/binaries/:id                     controllers.SyncsController.postBinariesById(id: String)
+POST    /syncs/libraries/:id                    controllers.SyncsController.postLibrariesById(id: String)
+POST    /syncs/projects/:id                     controllers.SyncsController.postProjectsById(id: String)
+
 GET     /:org                                   controllers.OrganizationsController.redirectToDashboard(org: String)
 GET     /:org/members                           controllers.MembersController.index(org: String, page: Int ?= 0)
 GET     /:org/members/create                    controllers.MembersController.create(org: String)

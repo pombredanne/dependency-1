@@ -3,7 +3,8 @@
   project: com.bryzek.dependency.v0.models.Project,
   recommendations: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Recommendation],
   binaries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectBinary],
-  libraries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectLibrary]
+  libraries: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.ProjectLibrary],
+  lastCompletedSync: Option[com.bryzek.dependency.v0.models.Sync]
 )(implicit flash: Flash, messages: Messages)
 
 @main(data.copy(title = Some(project.name))) {
@@ -15,6 +16,9 @@
     @if(com.bryzek.dependency.www.lib.Permissions.Project.delete(project, data.user)) {
       | <a class="delete" data-confirm="Are you sure?" href="@routes.ProjectsController.postDelete(project.id)">Delete</a>
     }
+
+    <a href="@routes.SyncsController.postProjectsById(project.id)" class="btn btn-primary btn-sm active postForm" role="button">Sync</a>
+
   </div>
 
   <ul>
@@ -22,6 +26,13 @@
     <li>Visbility: @project.visibility.toString</li>
     <li>SCMS: @project.scms.toString</li>
     <li>URI: <a href="@project.uri">@project.uri</a></li>
+    <li>Last synced:
+      @if(lastCompletedSync.isEmpty) {
+        <em>pending</em>
+      } else {
+        @io.flow.play.util.DateHelper.longDateTime(lastCompletedSync.get.createdAt)
+      }
+    </li>
   </ul>
 
   <h3>Recommendations</h3>

@@ -1,6 +1,7 @@
 package controllers
 
 import db.SyncsDao
+import com.bryzek.dependency.actors.MainActor
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import com.bryzek.dependency.v0.models.SyncEvent
@@ -30,6 +31,27 @@ class Syncs @javax.inject.Inject() (
         )
       )
     )
+  }
+
+  def postBinariesById(id: String) = Identified { request =>
+    withBinary(request.user, id) { binary =>
+      MainActor.ref ! MainActor.Messages.BinarySync(binary.id)
+      NoContent
+    }
+  }
+
+  def postLibrariesById(id: String) = Identified { request =>
+    withLibrary(request.user, id) { library =>
+      MainActor.ref ! MainActor.Messages.LibrarySync(library.id)
+      NoContent
+    }
+  }
+
+  def postProjectsById(id: String) = Identified { request =>
+    withProject(request.user, id) { project =>
+      MainActor.ref ! MainActor.Messages.ProjectSync(id)
+      NoContent
+    }
   }
 
 }

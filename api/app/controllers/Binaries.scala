@@ -14,7 +14,7 @@ import play.api.libs.json._
 @javax.inject.Singleton
 class Binaries @javax.inject.Inject() (
   val userTokensClient: UserTokensClient
-) extends Controller with IdentifiedRestController {
+) extends Controller with IdentifiedRestController with Helpers {
 
   def get(
     id: Option[String],
@@ -66,20 +66,5 @@ class Binaries @javax.inject.Inject() (
       NoContent
     }
   }
-
-  def withBinary(user: User, id: String)(
-    f: Binary => Result
-  ): Result = {
-    BinariesDao.findById(Authorization.User(user.id), id) match {
-      case None => {
-        NotFound
-      }
-      case Some(binary) => {
-        f(binary)
-      }
-    }
-  }
-
-
 
 }

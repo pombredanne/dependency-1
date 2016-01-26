@@ -58,6 +58,11 @@ class ProjectsController @javax.inject.Inject() (
           limit = Pagination.DefaultLimit+1,
           offset = librariesPage * Pagination.DefaultLimit
         )
+        syncs <- dependencyClient(request).syncs.get(
+          objectId = Some(id),
+          event = Some(SyncEvent.Completed),
+          limit = 1
+        )
       } yield {
         Ok(
           views.html.projects.show(
@@ -65,7 +70,8 @@ class ProjectsController @javax.inject.Inject() (
             project,
             PaginatedCollection(recommendationsPage, recommendations),
             PaginatedCollection(binariesPage, projectBinaries),
-            PaginatedCollection(librariesPage, projectLibraries)
+            PaginatedCollection(librariesPage, projectLibraries),
+            syncs.headOption
           )
         )
       }

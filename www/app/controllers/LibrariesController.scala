@@ -1,7 +1,7 @@
 package controllers
 
 import com.bryzek.dependency.v0.errors.UnitResponse
-import com.bryzek.dependency.v0.models.{Library, LibraryForm, Scms}
+import com.bryzek.dependency.v0.models.{Library, LibraryForm, SyncEvent}
 import com.bryzek.dependency.www.lib.{Config, DependencyClientProvider}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
@@ -56,13 +56,19 @@ class LibrariesController @javax.inject.Inject() (
           limit = Pagination.DefaultLimit+1,
           offset = projectsPage * Pagination.DefaultLimit
         )
+        syncs <- dependencyClient(request).syncs.get(
+          objectId = Some(id),
+          event = Some(SyncEvent.Completed),
+          limit = 1
+        )
       } yield {
         Ok(
           views.html.libraries.show(
             uiData(request),
             library,
             PaginatedCollection(versionsPage, versions, Config.VersionsPerPage),
-            PaginatedCollection(projectsPage, projectLibraries)
+            PaginatedCollection(projectsPage, projectLibraries),
+            syncs.headOption
           )
         )
       }
