@@ -22,8 +22,8 @@
                 case s: com.bryzek.dependency.v0.models.ProjectSummary => "Project"
                 case com.bryzek.dependency.v0.models.ItemSummaryUndefinedType(other) => other
               }}
+              <a href="@data.urls.itemSummary(item.summary)">@item.label</a>
             </td>
-            <td><a href="@data.urls.itemSummary(item.summary)">@item.label</a></td>
           </tr>
         }
       </table>
