@@ -41,9 +41,8 @@ object BinaryVersionsDao {
   private[db] def upsertWithConnection(createdBy: User, binaryId: String, version: String)(
     implicit c: java.sql.Connection
   ): BinaryVersion = {
-    val auth = Authorization.User(createdBy.id)
     findAllWithConnection(
-      auth,
+      Authorization.All,
       binaryId = Some(binaryId),
       version = Some(version),
       limit = 1
@@ -54,7 +53,7 @@ object BinaryVersionsDao {
         case Success(version) => version
         case Failure(ex) => {
           findAllWithConnection(
-            auth,
+            Authorization.All,
             binaryId = Some(binaryId),
             version = Some(version),
             limit = 1

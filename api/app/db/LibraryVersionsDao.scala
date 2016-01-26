@@ -50,10 +50,8 @@ object LibraryVersionsDao {
   private[db] def upsertWithConnection(createdBy: User, libraryId: String, form: VersionForm)(
     implicit c: java.sql.Connection
   ): LibraryVersion = {
-    val auth = Authorization.User(createdBy.id)
-
     findAllWithConnection(
-      auth,
+      Authorization.All,
       libraryId = Some(libraryId),
       version = Some(form.version),
       crossBuildVersion = Some(form.crossBuildVersion),
@@ -68,7 +66,7 @@ object LibraryVersionsDao {
         case Failure(ex) => {
           // check concurrent insert
           findAllWithConnection(
-            auth,
+            Authorization.All,
             libraryId = Some(libraryId),
             version = Some(form.version),
             crossBuildVersion = Some(form.crossBuildVersion),
