@@ -3,7 +3,7 @@ package db
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Scms, Binary, BinaryForm, Library, LibraryForm, Project, ProjectForm, ProjectSummary, OrganizationSummary, Visibility}
 import com.bryzek.dependency.api.lib.GithubUtil
-import io.flow.postgresql.{Query, OrderBy}
+import io.flow.postgresql.{Query, OrderBy, Pager}
 import io.flow.common.v0.models.User
 import anorm._
 import play.api.db._
@@ -174,6 +174,14 @@ object ProjectsDao {
   }
 
   def delete(deletedBy: User, project: Project) {
+    Pager.create { offset =>
+      ProjectLibrariesDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
+    }.foreach { ProjectLibrariesDao.delete(deletedBy, _) }
+
+    Pager.create { offset =>
+      ProjectBinariesDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
+    }.foreach { ProjectBinariesDao.delete(deletedBy, _) }
+
     DbHelpers.delete("projects", deletedBy.id, project.id)
     MainActor.ref ! MainActor.Messages.ProjectDeleted(project.id)
   }

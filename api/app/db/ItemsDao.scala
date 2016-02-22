@@ -30,11 +30,10 @@ object ItemsDao {
            items.contents,
            items.summary::text,
            items.created_at,
-           items.deleted_at,
            organizations.id as organization_id,
            organizations.key as organization_key
       from items
-      join organizations on organizations.deleted_at is null and organizations.id = items.organization_id
+      join organizations on organizations.id = items.organization_id
   """)
 
   private[this] val InsertQuery = """

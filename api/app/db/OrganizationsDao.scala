@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.v0.models.{MembershipForm, Organization, OrganizationForm, Role}
-import io.flow.postgresql.{Query, OrderBy}
+import io.flow.postgresql.{Query, OrderBy, Pager}
 import io.flow.play.util.{IdGenerator, Random, UrlKey}
 import io.flow.common.v0.models.User
 import anorm._
@@ -128,6 +128,18 @@ object OrganizationsDao {
   }
 
   def delete(deletedBy: User, organization: Organization) {
+    Pager.create { offset =>
+      ProjectsDao.findAll(Authorization.All, organizationId = Some(organization.id), offset = offset)
+    }.foreach { project =>
+      ProjectsDao.delete(deletedBy, project)
+    }
+
+    Pager.create { offset =>
+      MembershipsDao.findAll(Authorization.All, organizationId = Some(organization.id), offset = offset)
+    }.foreach { membership =>
+      MembershipsDao.delete(deletedBy, membership)
+    }
+
     DbHelpers.delete("organizations", deletedBy.id, organization.id)
   }
 
