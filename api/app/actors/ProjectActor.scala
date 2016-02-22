@@ -206,7 +206,7 @@ class ProjectActor extends Actor with Util {
         Pager.create { offset =>
           RecommendationsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
         }.foreach { rec =>
-          RecommendationsDao.softDelete(MainActor.SystemUser, rec)
+          RecommendationsDao.delete(MainActor.SystemUser, rec)
         }
       }
       context.stop(self)
@@ -227,7 +227,7 @@ class ProjectActor extends Actor with Util {
               objectId = Some(lib.id),
               fromVersion = Some(projectLibrary.version)
             ).foreach { rec =>
-              RecommendationsDao.softDelete(MainActor.SystemUser, rec)
+              RecommendationsDao.delete(MainActor.SystemUser, rec)
             }
           }
         }
@@ -250,7 +250,7 @@ class ProjectActor extends Actor with Util {
               objectId = Some(lib.id),
               fromVersion = Some(projectBinary.version)
             ).foreach { rec =>
-              RecommendationsDao.softDelete(MainActor.SystemUser, rec)
+              RecommendationsDao.delete(MainActor.SystemUser, rec)
             }
           }
         }

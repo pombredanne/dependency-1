@@ -25,9 +25,9 @@ class RecommendationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   lazy val org = createOrganization()
 
-  "softDelete" in {
+  "delete" in {
     val rec = createRecommendation(org)
-    RecommendationsDao.softDelete(systemUser, rec)
+    RecommendationsDao.delete(systemUser, rec)
     RecommendationsDao.findAll(Authorization.All, projectId = Some(rec.project.id)) must be(Nil)
   }
 

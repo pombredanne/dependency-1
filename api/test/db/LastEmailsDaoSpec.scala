@@ -12,9 +12,9 @@ class LastEmailsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  "softDelete" in {
+  "delete" in {
     val lastEmail = createLastEmail()
-    LastEmailsDao.softDelete(systemUser, lastEmail)
+    LastEmailsDao.delete(systemUser, lastEmail)
     LastEmailsDao.findById(lastEmail.id) must be(None)
   }
 

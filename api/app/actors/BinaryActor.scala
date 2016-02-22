@@ -41,7 +41,7 @@ class BinaryActor extends Actor with Util {
 
     case m @ BinaryActor.Messages.Deleted => withVerboseErrorHandler(m) {
       dataBinary.foreach { binary =>
-        ItemsDao.softDeleteByObjectId(Authorization.All, MainActor.SystemUser, binary.id)
+        ItemsDao.deleteByObjectId(Authorization.All, MainActor.SystemUser, binary.id)
 
         Pager.create { offset =>
           ProjectBinariesDao.findAll(Authorization.All, binaryId = Some(binary.id), offset = offset)

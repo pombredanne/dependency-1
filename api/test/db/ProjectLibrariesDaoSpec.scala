@@ -115,9 +115,9 @@ class ProjectLibrariesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers 
     ProjectLibrariesDao.findById(Authorization.All, projectLibrary.id).flatMap(_.library) must be(None)
   }
 
-  "softDelete" in {
+  "delete" in {
     val projectLibrary = createProjectLibrary(project)
-    ProjectLibrariesDao.softDelete(systemUser, projectLibrary)
+    ProjectLibrariesDao.delete(systemUser, projectLibrary)
     ProjectLibrariesDao.findById(Authorization.All, projectLibrary.id) must be(None)
   }
 
