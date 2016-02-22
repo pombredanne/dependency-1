@@ -173,7 +173,7 @@ object ProjectBinariesDao {
 
   def delete(deletedBy: User, binary: ProjectBinary) {
     DbHelpers.delete("project_binaries", deletedBy.id, binary.id)
-    MainActor.ref ! MainActor.Messages.ProjectBinaryDeleted(binary.project.id, binary.id)
+    MainActor.ref ! MainActor.Messages.ProjectBinaryDeleted(binary.project.id, binary.id, binary.version)
   }
 
   def findByProjectIdAndNameAndVersion(

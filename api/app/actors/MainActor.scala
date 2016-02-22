@@ -26,11 +26,11 @@ object MainActor {
 
     case class ProjectLibraryCreated(projectId: String, id: String)
     case class ProjectLibrarySync(projectId: String, id: String)
-    case class ProjectLibraryDeleted(projectId: String, id: String)
+    case class ProjectLibraryDeleted(projectId: String, id: String, version: String)
 
     case class ProjectBinaryCreated(projectId: String, id: String)
     case class ProjectBinarySync(projectId: String, id: String)
-    case class ProjectBinaryDeleted(projectId: String, id: String)
+    case class ProjectBinaryDeleted(projectId: String, id: String, version: String)
 
     case class ResolverCreated(id: String)
     case class ResolverDeleted(id: String)

@@ -184,7 +184,7 @@ object ProjectLibrariesDao {
 
   def delete(deletedBy: User, library: ProjectLibrary) {
     DbHelpers.delete("project_libraries", deletedBy.id, library.id)
-    MainActor.ref ! MainActor.Messages.ProjectLibraryDeleted(library.project.id, library.id)
+    MainActor.ref ! MainActor.Messages.ProjectLibraryDeleted(library.project.id, library.id, library.version)
   }
 
   def findByProjectIdAndGroupIdAndArtifactIdAndVersion(
