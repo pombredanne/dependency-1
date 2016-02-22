@@ -28,10 +28,10 @@ object LibraryVersionsDao {
            resolver_orgs.id as library_resolver_organization_id,
            resolver_orgs.key as library_resolver_organization_key
       from library_versions
-      join libraries on libraries.deleted_at is null and libraries.id = library_versions.library_id
-      join organizations on organizations.deleted_at is null and organizations.id = libraries.organization_id
-      join resolvers on resolvers.deleted_at is null and resolvers.id = libraries.resolver_id
-      left join organizations resolver_orgs on resolver_orgs.deleted_at is null and resolver_orgs.id = resolvers.organization_id
+      join libraries on libraries.id = library_versions.library_id
+      join organizations on organizations.id = libraries.organization_id
+      join resolvers on resolvers.id = libraries.resolver_id
+      left join organizations resolver_orgs on resolver_orgs.id = resolvers.organization_id
   """)
 
   private[this] val InsertQuery = s"""
@@ -110,8 +110,8 @@ object LibraryVersionsDao {
     }
   }
 
-  def softDelete(deletedBy: User, id: String) {
-    SoftDelete.delete("library_versions", deletedBy.id, id)
+  def delete(deletedBy: User, id: String) {
+    DbHelpers.delete("library_versions", deletedBy.id, id)
     MainActor.ref ! MainActor.Messages.LibraryVersionDeleted(id)
   }
 
@@ -156,7 +156,6 @@ object LibraryVersionsDao {
     version: Option[String] = None,
     crossBuildVersion: Option[Option[String]] = None,
     greaterThanVersion: Option[String] = None,
-    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ) = {
@@ -169,7 +168,6 @@ object LibraryVersionsDao {
         version = version,
         crossBuildVersion = crossBuildVersion,
         greaterThanVersion = greaterThanVersion,
-        isDeleted = isDeleted,
         limit = limit,
         offset = offset
       )
@@ -184,7 +182,6 @@ object LibraryVersionsDao {
     version: Option[String] = None,
     crossBuildVersion: Option[Option[String]] = None,
     greaterThanVersion: Option[String] = None,
-    isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("-library_versions.sort_key, library_versions.created_at"),
     limit: Long = 25,
     offset: Long = 0
@@ -198,7 +195,6 @@ object LibraryVersionsDao {
       id = id,
       ids = ids,
       orderBy = orderBy.sql,
-      isDeleted = isDeleted,
       limit = limit,
       offset = offset
     ).

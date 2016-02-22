@@ -17,7 +17,7 @@ object BinariesDao {
            organizations.id as organization_id,
            organizations.key as organization_key
       from binaries
-      left join organizations on organizations.deleted_at is null and organizations.id = binaries.organization_id
+      left join organizations on organizations.id = binaries.organization_id
   """)
 
   private[this] val InsertQuery = """
@@ -74,8 +74,8 @@ object BinariesDao {
     }
   }
 
-  def softDelete(deletedBy: User, binary: Binary) {
-    SoftDelete.delete("binaries", deletedBy.id, binary.id)
+  def delete(deletedBy: User, binary: Binary) {
+    DbHelpers.delete("binaries", deletedBy.id, binary.id)
     MainActor.ref ! MainActor.Messages.BinaryDeleted(binary.id)
   }
 
@@ -99,7 +99,6 @@ object BinariesDao {
     organizationId: Option[String] = None,
     name: Option[String] = None,
     isSynced: Option[Boolean] = None,
-    isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy(s"-lower(binaries.name),binaries.created_at"),
     limit: Long = 25,
     offset: Long = 0
@@ -110,7 +109,7 @@ object BinariesDao {
         optionalIn("binaries.id", ids).
         and (
           projectId.map { id =>
-            s"binaries.id in (select binary_id from project_binaries where deleted_at is null and binary_id is not null and project_id = {project_id})"
+            s"binaries.id in (select binary_id from project_binaries where binary_id is not null and project_id = {project_id})"
           }
         ).bind("project_id", projectId).
         equals("binaries.organization_id", organizationId).
@@ -130,7 +129,6 @@ object BinariesDao {
           }
         ).
         bind("sync_event_completed", SyncEvent.Completed.toString).
-        nullBoolean("binaries.deleted_at", isDeleted).
         orderBy(orderBy.sql).
         limit(limit).
         offset(offset).

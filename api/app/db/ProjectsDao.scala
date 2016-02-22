@@ -22,15 +22,15 @@ object ProjectsDao {
            organizations.id as organization_id,
            organizations.key as organization_key
       from projects
-      left join organizations on organizations.deleted_at is null and organizations.id = projects.organization_id
+      left join organizations on organizations.id = projects.organization_id
   """)
 
   private[this] val FilterProjectLibraries = """
-    projects.id in (select project_id from project_libraries where deleted_at is null and %s)
+    projects.id in (select project_id from project_libraries where %s)
   """.trim
 
   private[this] val FilterProjectBinaries = """
-    projects.id in (select project_id from project_binaries where deleted_at is null and %s)
+    projects.id in (select project_id from project_binaries where %s)
   """.trim
 
   private[this] val InsertQuery = """
@@ -173,16 +173,11 @@ object ProjectsDao {
     }
   }
 
-  def softDelete(deletedBy: User, project: Project) {
-    SoftDelete.delete("projects", deletedBy.id, project.id)
+  def delete(deletedBy: User, project: Project) {
+    DbHelpers.delete("projects", deletedBy.id, project.id)
     MainActor.ref ! MainActor.Messages.ProjectDeleted(project.id)
   }
 
-/*
-  def findByOrganizationIdAndName(auth: Authorization, organizationId: String, name: String): Option[Project] = {
-    findAll(auth, organizationId = Some(organizationId), name = Some(name), limit = 1).headOption
-  }
- */
   def findByOrganizationAndName(auth: Authorization, organization: String, name: String): Option[Project] = {
     findAll(auth, organization = Some(organization), name = Some(name), limit = 1).headOption
   }
@@ -204,7 +199,6 @@ object ProjectsDao {
     libraryId: Option[String] = None,
     binary: Option[String] = None,
     binaryId: Option[String] = None,
-    isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("lower(projects.name), projects.created_at"),
     limit: Long = 25,
     offset: Long = 0
@@ -218,7 +212,6 @@ object ProjectsDao {
         id = id,
         ids = ids,
         orderBy = orderBy.sql,
-        isDeleted = isDeleted,
         limit = limit,
         offset = offset
       ).

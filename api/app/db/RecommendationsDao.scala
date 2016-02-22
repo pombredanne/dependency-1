@@ -34,10 +34,8 @@ object RecommendationsDao {
            organizations.key as project_organization_key
       from recommendations
       join projects on
-             projects.deleted_at is null and
              projects.id = recommendations.project_id
       join organizations on
-             organizations.deleted_at is null and
              organizations.id = projects.organization_id
   """)
 
@@ -83,7 +81,7 @@ object RecommendationsDao {
     DB.withTransaction { implicit c =>
       toAdd.foreach { upsert(user, _) }
       toRemove.foreach { rec =>
-        SoftDelete.delete(c, "recommendations", user.id, rec.id)
+        DbHelpers.delete(c, "recommendations", user.id, rec.id)
       }
     }
 
@@ -93,8 +91,8 @@ object RecommendationsDao {
     }
   }
 
-  def softDelete(deletedBy: User, rec: Recommendation) {
-    SoftDelete.delete("recommendations", deletedBy.id, rec.id)
+  def delete(deletedBy: User, rec: Recommendation) {
+    DbHelpers.delete("recommendations", deletedBy.id, rec.id)
   }
 
   private[this] def upsert(
@@ -125,7 +123,7 @@ object RecommendationsDao {
             // No-op
           }
           case false => {
-            SoftDelete.delete(c, "recommendations", createdBy.id, rec.id)
+            DbHelpers.delete(c, "recommendations", createdBy.id, rec.id)
             create(createdBy, form)
           }
         }
@@ -184,7 +182,6 @@ object RecommendationsDao {
     objectId: Option[String] = None,
     name: Option[String] = None,
     fromVersion: Option[String] = None,
-    isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("-recommendations.created_at, lower(projects.name), lower(recommendations.name)"),
     limit: Long = 25,
     offset: Long = 0
@@ -197,13 +194,12 @@ object RecommendationsDao {
         id = id,
         ids = ids,
         orderBy = orderBy.sql,
-        isDeleted = isDeleted,
         limit = limit,
         offset = offset
       ).
         and(
           organization.map { org =>
-            "organizations.id in (select id from organizations where deleted_at is null and key = lower(trim({org})))"
+            "organizations.id in (select id from organizations where key = lower(trim({org})))"
           }
         ).bind("org", organization).
         equals("recommendations.project_id", projectId).

@@ -15,7 +15,7 @@ private[db] object LocalFilters {
     orgKeyBindVarName: String,
     orgKey: String
   ): String = {
-    s"and $organizationIdColumnName = (select id from organizations where deleted_at is null and key = lower(trim({$orgKeyBindVarName})))"
+    s"and $organizationIdColumnName = (select id from organizations where key = lower(trim({$orgKeyBindVarName})))"
   }
 
 }

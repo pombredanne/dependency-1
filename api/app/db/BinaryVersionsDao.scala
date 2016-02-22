@@ -21,8 +21,8 @@ object BinaryVersionsDao {
            organizations.id as binary_organization_id,
            organizations.key as binary_organization_key
       from binary_versions
-      join binaries on binaries.deleted_at is null and binaries.id = binary_versions.binary_id
-      left join organizations on organizations.deleted_at is null and organizations.id = binaries.organization_id
+      join binaries on binaries.id = binary_versions.binary_id
+      left join organizations on organizations.id = binaries.organization_id
   """)
 
   private[this] val InsertQuery = s"""
@@ -91,8 +91,8 @@ object BinaryVersionsDao {
     }
   }
 
-  def softDelete(deletedBy: User, id: String) {
-    SoftDelete.delete("binary_versions", deletedBy.id, id)
+  def delete(deletedBy: User, id: String) {
+    DbHelpers.delete("binary_versions", deletedBy.id, id)
     MainActor.ref ! MainActor.Messages.BinaryVersionDeleted(id)
   }
 
@@ -134,7 +134,6 @@ object BinaryVersionsDao {
     projectId: Option[String] = None,
     version: Option[String] = None,
     greaterThanVersion: Option[String] = None,
-    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ) = {
@@ -147,7 +146,6 @@ object BinaryVersionsDao {
         projectId = projectId,
         version = version,
         greaterThanVersion = greaterThanVersion,
-        isDeleted = isDeleted,
         limit = limit,
         offset = offset
       )
@@ -162,7 +160,6 @@ object BinaryVersionsDao {
     projectId: Option[String] = None,
     version: Option[String] = None,
     greaterThanVersion: Option[String] = None,
-    isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy(s"-binary_versions.sort_key, binary_versions.created_at"),
     limit: Long = 25,
     offset: Long = 0
@@ -179,7 +176,7 @@ object BinaryVersionsDao {
       equals("binary_versions.binary_id", binaryId).
       and(
         projectId.map { id =>
-          "binary_versions.binary_id in (select binary_id from project_bainaries where deleted_at is null and binary_id is not null and project_id = {project_id})"
+          "binary_versions.binary_id in (select binary_id from project_bainaries where binary_id is not null and project_id = {project_id})"
         }
       ).bind("project_id", projectId).
       optionalText(
@@ -193,7 +190,6 @@ object BinaryVersionsDao {
           s"binary_versions.sort_key > {greater_than_version_sort_key}"
         }
       ).bind("greater_than_version_sort_key", greaterThanVersion).
-      nullBoolean("binary_versions.deleted_at", isDeleted).
       orderBy(orderBy.sql).
       limit(limit).
       offset(offset).

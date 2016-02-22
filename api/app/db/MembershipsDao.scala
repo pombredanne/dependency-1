@@ -22,8 +22,8 @@ object MembershipsDao {
            users.first_name as user_name_first,
            users.last_name as user_name_last
       from memberships
-      join organizations on organizations.deleted_at is null and organizations.id = memberships.organization_id
-      join users on users.deleted_at is null and users.id = memberships.user_id
+      join organizations on organizations.id = memberships.organization_id
+      join users on users.id = memberships.user_id
   """)
 
   private[this] val InsertQuery = """
@@ -83,7 +83,7 @@ object MembershipsDao {
           case Some(existing) => {
             // the role is changing. Replace record
             DB.withTransaction { implicit c =>
-              SoftDelete.delete(c, "memberships", createdBy.id, existing.id)
+              DbHelpers.delete(c, "memberships", createdBy.id, existing.id)
               create(c, createdBy, form)
             }
           }
@@ -119,8 +119,8 @@ object MembershipsDao {
     id
   }
 
-  def softDelete(deletedBy: User, membership: Membership) {
-    SoftDelete.delete("memberships", deletedBy.id, membership.id)
+  def delete(deletedBy: User, membership: Membership) {
+    DbHelpers.delete("memberships", deletedBy.id, membership.id)
   }
 
   def findByOrganizationAndUserId(
@@ -161,7 +161,6 @@ object MembershipsDao {
     organizationId: Option[String] = None,
     userId: Option[String] = None,
     role: Option[Role] = None,
-    isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("memberships.created_at"),
     limit: Long = 25,
     offset: Long = 0
@@ -174,7 +173,6 @@ object MembershipsDao {
       id = id,
       ids = ids,
       orderBy = orderBy.sql,
-      isDeleted = isDeleted,
       limit = limit,
       offset = offset
     ).
