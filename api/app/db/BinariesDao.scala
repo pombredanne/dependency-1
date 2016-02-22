@@ -3,7 +3,7 @@ package db
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Binary, BinaryForm, SyncEvent}
 import io.flow.common.v0.models.User
-import io.flow.postgresql.{Query, OrderBy}
+import io.flow.postgresql.{Query, OrderBy, Pager}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -75,6 +75,10 @@ object BinariesDao {
   }
 
   def delete(deletedBy: User, binary: Binary) {
+    Pager.create { offset =>
+      BinaryVersionsDao.findAll(Authorization.All, binaryId = Some(binary.id), offset = offset)
+    }.foreach { BinaryVersionsDao.delete(deletedBy, _) }
+
     DbHelpers.delete("binaries", deletedBy.id, binary.id)
     MainActor.ref ! MainActor.Messages.BinaryDeleted(binary.id)
   }

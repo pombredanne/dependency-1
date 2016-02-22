@@ -3,7 +3,7 @@ package db
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Library, LibraryForm}
-import io.flow.postgresql.{Query, OrderBy}
+import io.flow.postgresql.{Query, OrderBy, Pager}
 import io.flow.common.v0.models.User
 import anorm._
 import play.api.db._
@@ -118,6 +118,10 @@ object LibrariesDao {
   }
 
   def delete(deletedBy: User, library: Library) {
+    Pager.create { offset =>
+      LibraryVersionsDao.findAll(Authorization.All, libraryId = Some(library.id), offset = offset)
+    }.foreach { LibraryVersionsDao.delete(deletedBy, _) }
+
     DbHelpers.delete("libraries", deletedBy.id, library.id)
     MainActor.ref ! MainActor.Messages.LibraryDeleted(library.id)
   }
