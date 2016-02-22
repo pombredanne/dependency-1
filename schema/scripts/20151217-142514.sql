@@ -24,7 +24,7 @@ comment on column project_binaries.path is '
 create index on project_binaries(project_id);
 create index on project_binaries(binary_id);
 create index on project_binaries(lower(name));
-create unique index project_binaries_project_id_lower_name_version_not_deleted_un_idx on project_binaries(project_id, lower(name), version) where deleted_at is null;
+create unique index project_binaries_project_id_lower_name_version_not_idx on project_binaries(project_id, lower(name), version);
 
 create table project_libraries (
   id                      text primary key,
@@ -60,13 +60,11 @@ create index on project_libraries(group_id);
 create index on project_libraries(artifact_id);
 create index on project_libraries(version);
 
-create unique index project_libraries_project_id_group_id_artifact_id_version_no_cross_not_deleted_un_idx
+create unique index project_libraries_project_id_group_id_artifact_id_version_no_cross_un_idx
     on project_libraries(project_id, group_id, artifact_id, version)
- where deleted_at is null
-   and cross_build_version is null;
+ where cross_build_version is null;
 
-create unique index project_libraries_project_id_group_id_artifact_id_version_cross_not_deleted_un_idx
+create unique index project_libraries_project_id_group_id_artifact_id_version_cross_un_idx
     on project_libraries(project_id, group_id, artifact_id, version, cross_build_version)
- where deleted_at is null
-   and cross_build_version is not null;
+ where cross_build_version is not null;
 

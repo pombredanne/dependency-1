@@ -7,7 +7,8 @@ create table recommendations (
   object_id                text not null,
   name                       text not null check(util.non_empty_trimmed_string(name)),
   from_version               text not null check(util.non_empty_trimmed_string(from_version)),
-  to_version                 text not null check(util.non_empty_trimmed_string(to_version))
+  to_version                 text not null check(util.non_empty_trimmed_string(to_version)),
+  unique(project_id, type, object_id, name, from_version)
 );
 
 comment on table recommendations is '
@@ -20,9 +21,4 @@ comment on table recommendations is '
 ';
 
 select audit.setup('public', 'recommendations');
-create index on recommendations(project_id);
 create index on recommendations(object_id);
-
-create unique index recommendations_not_deleted_un_idx
-    on recommendations(project_id, type, object_id, name, from_version)
- where deleted_at is null;

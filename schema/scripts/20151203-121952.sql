@@ -8,7 +8,8 @@ create table items (
   label                      text not null check(util.non_empty_trimmed_string(label)),
   description                text check(trim(description) = description),
   summary                    json,
-  contents                   text not null check(util.non_empty_trimmed_string(contents)) check(lower(contents) = contents)
+  contents                   text not null check(util.non_empty_trimmed_string(contents)) check(lower(contents) = contents),
+  unique(organization_id, object_id)
 );
 
 comment on table items is '
@@ -28,5 +29,3 @@ comment on column items.contents is '
 ';
 
 select audit.setup('public', 'items');
-create unique index items_organization_id_object_id_not_deleted_un_idx on items(organization_id, object_id) where deleted_at is null;
-create index on items(organization_id);

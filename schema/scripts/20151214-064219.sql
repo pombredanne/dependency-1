@@ -4,7 +4,8 @@ create table memberships (
   id                      text primary key,
   user_id                 text not null references users,
   organization_id         text not null references organizations,
-  role                    text not null check(util.lower_non_empty_trimmed_string(role))
+  role                    text not null check(util.lower_non_empty_trimmed_string(role)),
+  unique(user_id, organization_id)
 );
 
 comment on table memberships is '
@@ -16,6 +17,4 @@ comment on table memberships is '
 ';
 
 select audit.setup('public', 'memberships');
-create index on memberships(user_id);
 create index on memberships(organization_id);
-create unique index memberships_user_id_organization_id_not_del_idx on memberships(user_id, organization_id) where deleted_at is null;

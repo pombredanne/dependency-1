@@ -5,6 +5,8 @@
 #  ./dev.rb
 #
 
-command = "sem-apply --host localhost --user api --name dependency"
-puts command
-system(command)
+Dir.chdir(File.dirname($0)) {
+  command = "sem-apply --url postgresql://api@localhost/dependencydb"
+  puts command
+  exec(command)
+}

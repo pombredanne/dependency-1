@@ -21,13 +21,14 @@ comment on table users is '
 ';
 
 select audit.setup('public', 'users');
-create unique index users_lower_email_not_deleted_un_idx on users(lower(email)) where deleted_at is null;
+create unique index users_lower_email_un_idx on users(lower(email));
 
 create table authorizations (
   id                      text primary key,
   user_id                 text not null references users,
   scms                    text not null check(util.lower_non_empty_trimmed_string(scms)),
-  token                   text not null check(util.non_empty_trimmed_string(token))
+  token                   text not null check(util.non_empty_trimmed_string(token)),
+  unique(user_id, scms, token)
 );
 
 comment on table authorizations is '
@@ -36,20 +37,15 @@ comment on table authorizations is '
 ';
 
 select audit.setup('public', 'authorizations');
-create index on authorizations(user_id);
-create unique index authorizations_user_id_scms_token_not_deleted_un_idx
-    on authorizations(user_id, scms, token)
-    where deleted_at is null;
 
 create table organizations (
   id                      text primary key,
   user_id                 text not null references users,
-  key                     text not null check (util.lower_non_empty_trimmed_string(key))
+  key                     text unique not null check (util.lower_non_empty_trimmed_string(key))
 );
 
 select audit.setup('public', 'organizations');
 
-create unique index organizations_key_not_deleted_un_idx on organizations(key) where deleted_at is null;
 create index on organizations(user_id);
 
 comment on table organizations is '
@@ -95,9 +91,8 @@ comment on column projects.name is '
 ';
 
 select audit.setup('public', 'projects');
-create index on projects(organization_id);
 create index on projects(user_id);
-create unique index projects_organization_scms_lower_name_not_deleted_un_idx on projects(organization_id, scms, lower(name)) where deleted_at is null;
+create unique index projects_organization_scms_lower_name_un_idx on projects(organization_id, scms, lower(name));
 
 create table resolvers (
   id                      text primary key,
@@ -108,7 +103,8 @@ create table resolvers (
   credentials             json,
   -- can only have credentials if belongs to organization
   constraint resolvers_organization_credentials_ck
-       check ( (organization_id is null and credentials is null) or organization_id is not null )
+       check ( (organization_id is null and credentials is null) or organization_id is not null ),
+  unique(organization_id, uri)       
 );
 
 select audit.setup('public', 'resolvers');
@@ -119,18 +115,16 @@ comment on table resolvers is '
   created the resolver.
 ';
 
-create index on resolvers(organization_id);
-create unique index resolvers_organization_id_uri_not_deleted_un_idx on resolvers(organization_id, uri) where deleted_at is null;
-
-create unique index resolvers_public_uri_un_idx on resolvers(uri) where deleted_at is null and visibility = 'public';
-create unique index resolvers_public_position_un_idx on resolvers(position) where deleted_at is null and visibility = 'public';
+create unique index resolvers_public_uri_un_idx on resolvers(uri) where visibility = 'public';
+create unique index resolvers_public_position_un_idx on resolvers(position) where visibility = 'public';
 
 create table libraries (
   id                      text primary key,
   organization_id         text not null references organizations,
   group_id                text not null check(util.non_empty_trimmed_string(group_id)),
   artifact_id             text not null check(util.non_empty_trimmed_string(artifact_id)),
-  resolver_id             text not null references resolvers
+  resolver_id             text not null references resolvers,
+  unique(group_id, artifact_id)
 );
 
 comment on table libraries is '
@@ -143,12 +137,8 @@ comment on column libraries.resolver_id is '
 
 select audit.setup('public', 'libraries');
 create index on libraries(organization_id);
-create index on libraries(group_id);
 create index on libraries(artifact_id);
 create index on libraries(resolver_id);
-create unique index libraries_group_id_artifact_id_not_deleted_un_idx
-    on libraries(group_id, artifact_id)
- where deleted_at is null;
 
 create table library_versions (
   id                      text primary key,
@@ -165,13 +155,13 @@ comment on table library_versions is '
 select audit.setup('public', 'library_versions');
 create index on library_versions(library_id);
 
-create unique index library_versions_library_id_lower_version_not_cross_built_not_deleted_un_idx
+create unique index library_versions_library_id_lower_version_not_cross_built_un_idx
     on library_versions(library_id, lower(version))
- where deleted_at is null and cross_build_version is null;
+ where cross_build_version is null;
 
-create unique index library_versions_library_id_lower_version_lower_cross_build_version_not_deleted_un_idx
+create unique index library_versions_library_id_lower_version_lower_cross_build_version_un_idx
     on library_versions(library_id, lower(version), lower(cross_build_version))
- where deleted_at is null and cross_build_version is not null;
+ where cross_build_version is not null;
 
 create table binaries (
   id                      text primary key,
@@ -185,13 +175,14 @@ comment on table binaries is '
 
 select audit.setup('public', 'binaries');
 create index on binaries(organization_id);
-create unique index binaries_lower_name_not_deleted_un_idx on binaries(lower(name)) where deleted_at is null;
+create unique index binaries_lower_name_un_idx on binaries(lower(name));
 
 create table binary_versions (
   id                      text primary key,
   binary_id               text not null references binaries,
   version                 text not null check(util.non_empty_trimmed_string(version)),
-  sort_key                text not null
+  sort_key                text not null,
+  unique(binary_id, version)
 );
 
 comment on table binary_versions is '
@@ -199,6 +190,4 @@ comment on table binary_versions is '
 ';
 
 select audit.setup('public', 'binary_versions');
-create index on binary_versions(binary_id);
-create unique index binary_versions_binary_id_version_not_deleted_un_idx on binary_versions(binary_id, version) where deleted_at is null;
 
