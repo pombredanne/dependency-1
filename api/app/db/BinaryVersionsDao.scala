@@ -84,16 +84,16 @@ object BinaryVersionsDao {
       'updated_by_user_id -> createdBy.id
     ).execute()
 
-    MainActor.ref ! MainActor.Messages.BinaryVersionCreated(id)
+    MainActor.ref ! MainActor.Messages.BinaryVersionCreated(id, binaryId)
 
     findByIdWithConnection(Authorization.All, id).getOrElse {
       sys.error("Failed to create version")
     }
   }
 
-  def delete(deletedBy: User, id: String) {
-    DbHelpers.delete("binary_versions", deletedBy.id, id)
-    MainActor.ref ! MainActor.Messages.BinaryVersionDeleted(id)
+  def delete(deletedBy: User, bv: BinaryVersion) {
+    DbHelpers.delete("binary_versions", deletedBy.id, bv.id)
+    MainActor.ref ! MainActor.Messages.BinaryVersionDeleted(bv.id, bv.binary.id)
   }
 
   def findByBinaryAndVersion(

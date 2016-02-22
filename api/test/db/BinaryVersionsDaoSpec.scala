@@ -48,7 +48,7 @@ class BinaryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "delete" in {
     val binary = createBinary(org)
     val version1 = BinaryVersionsDao.upsert(systemUser, binary.id, "1.0")
-    BinaryVersionsDao.delete(systemUser, version1.id)
+    BinaryVersionsDao.delete(systemUser, version1)
     val version2 = BinaryVersionsDao.upsert(systemUser, binary.id, "1.0")
     val version3 = BinaryVersionsDao.upsert(systemUser, binary.id, "1.0")
 

@@ -78,7 +78,7 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "delete" in {
     val library = createLibrary(org)()
     val version1 = LibraryVersionsDao.upsert(systemUser, library.id, VersionForm("1.0", None))
-    LibraryVersionsDao.delete(systemUser, version1.id)
+    LibraryVersionsDao.delete(systemUser, version1)
     val version2 = LibraryVersionsDao.upsert(systemUser, library.id, VersionForm("1.0", None))
     val version3 = LibraryVersionsDao.upsert(systemUser, library.id, VersionForm("1.0", None))
 

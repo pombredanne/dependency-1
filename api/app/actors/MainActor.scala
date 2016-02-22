@@ -41,16 +41,16 @@ object MainActor {
     case class LibrarySyncFuture(id: String, seconds: Int)
     case class LibrarySyncCompleted(id: String)
 
-    case class LibraryVersionCreated(id: String)
-    case class LibraryVersionDeleted(id: String)
+    case class LibraryVersionCreated(id: String, libraryId: String)
+    case class LibraryVersionDeleted(id: String, libraryId: String)
 
     case class BinaryCreated(id: String)
     case class BinaryDeleted(id: String)
     case class BinarySync(id: String)
     case class BinarySyncCompleted(id: String)
 
-    case class BinaryVersionCreated(id: String)
-    case class BinaryVersionDeleted(id: String)
+    case class BinaryVersionCreated(id: String, binaryId: String)
+    case class BinaryVersionDeleted(id: String, binaryId: String)
     
     case class UserCreated(id: String)
   }
@@ -140,8 +140,8 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
       upsertProjectActor(projectId) ! ProjectActor.Messages.ProjectLibrarySync(id)
     }
 
-    case m @ MainActor.Messages.ProjectLibraryDeleted(projectId, id) => withVerboseErrorHandler(m) {
-      upsertProjectActor(projectId) ! ProjectActor.Messages.ProjectLibraryDeleted(id)
+    case m @ MainActor.Messages.ProjectLibraryDeleted(projectId, id, version) => withVerboseErrorHandler(m) {
+      upsertProjectActor(projectId) ! ProjectActor.Messages.ProjectLibraryDeleted(id, version)
     }
 
     case m @ MainActor.Messages.ProjectBinaryCreated(projectId, id) => withVerboseErrorHandler(m) {
@@ -152,8 +152,8 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
       upsertProjectActor(projectId) ! ProjectActor.Messages.ProjectBinarySync(id)
     }
 
-    case m @ MainActor.Messages.ProjectBinaryDeleted(projectId, id) => withVerboseErrorHandler(m) {
-      upsertProjectActor(projectId) ! ProjectActor.Messages.ProjectBinaryDeleted(id)
+    case m @ MainActor.Messages.ProjectBinaryDeleted(projectId, id, version) => withVerboseErrorHandler(m) {
+      upsertProjectActor(projectId) ! ProjectActor.Messages.ProjectBinaryDeleted(id, version)
     }
 
     case m @ MainActor.Messages.LibraryCreated(id) => withVerboseErrorHandler(m) {
@@ -181,12 +181,12 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
       }
     }
 
-    case m @ MainActor.Messages.LibraryVersionCreated(id) => withVerboseErrorHandler(m) {
-      syncLibraryVersion(id)
+    case m @ MainActor.Messages.LibraryVersionCreated(id, libraryId) => withVerboseErrorHandler(m) {
+      syncLibraryVersion(id, libraryId)
     }
 
-    case m @ MainActor.Messages.LibraryVersionDeleted(id) => withVerboseErrorHandler(m) {
-      syncLibraryVersion(id)
+    case m @ MainActor.Messages.LibraryVersionDeleted(id, libraryId) => withVerboseErrorHandler(m) {
+      syncLibraryVersion(id, libraryId)
     }
 
     case m @ MainActor.Messages.BinaryCreated(id) => withVerboseErrorHandler(m) {
@@ -207,12 +207,12 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
       }
     }
 
-    case m @ MainActor.Messages.BinaryVersionCreated(id) => withVerboseErrorHandler(m) {
-      syncBinaryVersion(id)
+    case m @ MainActor.Messages.BinaryVersionCreated(id, binaryId) => withVerboseErrorHandler(m) {
+      syncBinaryVersion(id, binaryId)
     }
 
-    case m @ MainActor.Messages.BinaryVersionDeleted(id) => withVerboseErrorHandler(m) {
-      syncBinaryVersion(id)
+    case m @ MainActor.Messages.BinaryVersionDeleted(id, binaryId) => withVerboseErrorHandler(m) {
+      syncBinaryVersion(id, binaryId)
     }
 
     case m @ MainActor.Messages.ResolverCreated(id) => withVerboseErrorHandler(m) {
@@ -281,10 +281,8 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
   }
 
 
-  def syncLibraryVersion(id: String) {
-    LibraryVersionsDao.findAll(Authorization.All, id = Some(id), isDeleted = None).map { lv =>
-      syncLibrary(lv.library.id)
-    }
+  def syncLibraryVersion(id: String, libraryId: String) {
+    syncLibrary(libraryId)
   }
 
   def syncBinary(id: String) {
@@ -293,10 +291,8 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
     projectBroadcast(ProjectActor.Messages.BinarySynced(id))
   }
 
-  def syncBinaryVersion(id: String) {
-    BinaryVersionsDao.findAll(Authorization.All, id = Some(id), isDeleted = None).map { bv =>
-      syncBinary(bv.binary.id)
-    }
+  def syncBinaryVersion(id: String, binaryId: String) {
+    syncBinary(binaryId)
   }
 
   def projectBroadcast(message: ProjectActor.Message) {

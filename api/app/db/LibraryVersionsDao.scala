@@ -103,16 +103,16 @@ object LibraryVersionsDao {
       'updated_by_user_id -> createdBy.id
     ).execute()
 
-    MainActor.ref ! MainActor.Messages.LibraryVersionCreated(id)
+    MainActor.ref ! MainActor.Messages.LibraryVersionCreated(id, libraryId)
 
     findByIdWithConnection(Authorization.All, id).getOrElse {
       sys.error("Failed to create version")
     }
   }
 
-  def delete(deletedBy: User, id: String) {
-    DbHelpers.delete("library_versions", deletedBy.id, id)
-    MainActor.ref ! MainActor.Messages.LibraryVersionDeleted(id)
+  def delete(deletedBy: User, lv: LibraryVersion) {
+    DbHelpers.delete("library_versions", deletedBy.id, lv.id)
+    MainActor.ref ! MainActor.Messages.LibraryVersionDeleted(lv.id, lv.library.id)
   }
 
   def findByLibraryAndVersionAndCrossBuildVersion(
