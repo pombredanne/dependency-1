@@ -5,7 +5,8 @@ create table tokens (
   user_id                 text not null references users,
   tag                     text not null check(util.lower_non_empty_trimmed_string(tag)),
   token                   text unique not null check (trim(token) = token),
-  number_views            bigint default 0 not null check (number_views >= 0)
+  number_views            bigint default 0 not null check (number_views >= 0),
+  description             text
 );
 
 select audit.setup('public', 'tokens');
