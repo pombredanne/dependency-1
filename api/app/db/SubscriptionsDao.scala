@@ -77,8 +77,8 @@ object SubscriptionsDao {
     }
   }
 
-  def softDelete(deletedBy: User, subscription: Subscription) {
-    SoftDelete.delete("subscriptions", deletedBy.id, subscription.id)
+  def delete(deletedBy: User, subscription: Subscription) {
+    DbHelpers.delete("subscriptions", deletedBy.id, subscription.id)
   }
 
   def findByUserIdAndPublication(
@@ -104,7 +104,6 @@ object SubscriptionsDao {
     publication: Option[Publication] = None,
     minHoursSinceLastEmail: Option[Int] = None,
     minHoursSinceRegistration: Option[Int] = None,
-    isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("subscriptions.created_at"),
     limit: Long = 25,
     offset: Long = 0
@@ -117,7 +116,6 @@ object SubscriptionsDao {
         id = id,
         ids = ids,
         orderBy = orderBy.sql,
-        isDeleted = isDeleted,
         limit = limit,
         offset = offset
       ).
@@ -127,8 +125,7 @@ object SubscriptionsDao {
           minHoursSinceLastEmail.map { v => """
             not exists (select 1
                           from last_emails
-                         where last_emails.deleted_at is null
-                           and last_emails.user_id = subscriptions.user_id
+                         where last_emails.user_id = subscriptions.user_id
                            and last_emails.publication = subscriptions.publication
                            and last_emails.created_at > now() - interval '1 hour' * {min_hours}::int)
           """.trim }
@@ -137,14 +134,13 @@ object SubscriptionsDao {
           minHoursSinceRegistration.map { v => """
             exists (select 1
                       from users
-                     where users.deleted_at is null
-                       and users.id = subscriptions.user_id
+                     where users.id = subscriptions.user_id
                        and users.created_at <= now() - interval '1 hour' * {min_hours_since_registration}::int)
           """.trim }
         ).bind("min_hours_since_registration", minHoursSinceRegistration).
         and(
           identifier.map { id =>
-            "subscriptions.user_id in (select user_id from user_identifiers where deleted_at is null and value = trim({identifier}))"
+            "subscriptions.user_id in (select user_id from user_identifiers where value = trim({identifier}))"
           }
         ).bind("identifier", identifier).
         as(

@@ -42,7 +42,7 @@ class ResolverActor extends Actor with Util {
         Pager.create { offset =>
           LibrariesDao.findAll(Authorization.All, resolverId = Some(resolver.id), offset = offset)
         }.foreach { library =>
-          LibrariesDao.softDelete(MainActor.SystemUser, library)
+          LibrariesDao.delete(MainActor.SystemUser, library)
         }
       }
 

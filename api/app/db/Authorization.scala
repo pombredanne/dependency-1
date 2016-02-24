@@ -106,7 +106,7 @@ object Authorization {
       visibilityColumnName: Option[String] = None
     ): Clause = {
       // TODO: Bind
-      val userClause = s"$organizationIdColumn in (select organization_id from memberships where deleted_at is null and user_id = '$id')"
+      val userClause = s"$organizationIdColumn in (select organization_id from memberships where user_id = '$id')"
       visibilityColumnName match {
         case None => Clause.single(userClause)
         case Some(col) => Clause.Or(Seq(userClause, publicVisibilityClause(col)))
@@ -135,7 +135,7 @@ object Authorization {
 
     override def users(
       userIdColumn: String
-    ) = Clause.single(s"$userIdColumn in (select user_id from memberships where deleted_at is null and organization_id = '$id')")
+    ) = Clause.single(s"$userIdColumn in (select user_id from memberships where organization_id = '$id')")
 
   }
 

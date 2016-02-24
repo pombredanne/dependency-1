@@ -43,7 +43,7 @@ object LastEmailsDao {
   ): LastEmail = {
     val id = DB.withTransaction { implicit c =>
       findByUserIdAndPublication(form.userId, form.publication).foreach { rec =>
-        SoftDelete.delete(c, "last_emails", createdBy.id, rec.id)
+        DbHelpers.delete(c, "last_emails", createdBy.id, rec.id)
       }
       create(createdBy, form)
     }
@@ -52,8 +52,8 @@ object LastEmailsDao {
     }
   }
 
-  def softDelete(deletedBy: User, rec: LastEmail) {
-    SoftDelete.delete("last_emails", deletedBy.id, rec.id)
+  def delete(deletedBy: User, rec: LastEmail) {
+    DbHelpers.delete("last_emails", deletedBy.id, rec.id)
   }
 
   private[this] def create(
@@ -85,7 +85,6 @@ object LastEmailsDao {
     ids: Option[Seq[String]] = None,
     userId: Option[String] = None,
     publication: Option[Publication] = None,
-    isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("-last_emails.publication, last_emails.created_at"),
     limit: Long = 25,
     offset: Long = 0
@@ -97,7 +96,6 @@ object LastEmailsDao {
         optionalIn("last_emails.id", ids).
         equals("last_emails.user_id", userId).
         optionalText("last_emails.publication", publication).
-        nullBoolean("last_emails.deleted_at", isDeleted).
         orderBy(orderBy.sql).
         limit(limit).
         offset(offset).

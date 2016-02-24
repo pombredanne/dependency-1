@@ -3,7 +3,7 @@ package db
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Library, LibraryForm}
-import io.flow.postgresql.{Query, OrderBy}
+import io.flow.postgresql.{Query, OrderBy, Pager}
 import io.flow.common.v0.models.User
 import anorm._
 import play.api.db._
@@ -24,9 +24,9 @@ object LibrariesDao {
            resolver_orgs.id as resolver_organization_id,
            resolver_orgs.key as resolver_organization_key
       from libraries
-      join organizations on organizations.deleted_at is null and organizations.id = libraries.organization_id
-      join resolvers on resolvers.deleted_at is null and resolvers.id = libraries.resolver_id
-      left join organizations resolver_orgs on resolver_orgs.deleted_at is null and resolver_orgs.id = resolvers.organization_id
+      join organizations on organizations.id = libraries.organization_id
+      join resolvers on resolvers.id = libraries.resolver_id
+      left join organizations resolver_orgs on resolver_orgs.id = resolvers.organization_id
   """)
 
   private[this] val InsertQuery = """
@@ -117,8 +117,12 @@ object LibrariesDao {
     }
   }
 
-  def softDelete(deletedBy: User, library: Library) {
-    SoftDelete.delete("libraries", deletedBy.id, library.id)
+  def delete(deletedBy: User, library: Library) {
+    Pager.create { offset =>
+      LibraryVersionsDao.findAll(Authorization.All, libraryId = Some(library.id), offset = offset)
+    }.foreach { LibraryVersionsDao.delete(deletedBy, _) }
+
+    DbHelpers.delete("libraries", deletedBy.id, library.id)
     MainActor.ref ! MainActor.Messages.LibraryDeleted(library.id)
   }
 
@@ -148,7 +152,6 @@ object LibrariesDao {
     groupId: Option[String] = None,
     artifactId: Option[String] = None,
     resolverId: Option[String] = None,
-    isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("lower(libraries.group_id), lower(libraries.artifact_id), libraries.created_at"),
     limit: Long = 25,
     offset: Long = 0
@@ -160,7 +163,6 @@ object LibrariesDao {
         auth = auth.organizations("organizations.id", Some("resolvers.visibility")),
         id = id,
         ids = ids,
-        isDeleted = isDeleted,
         orderBy = orderBy.sql,
         limit = limit,
         offset = offset
@@ -168,7 +170,7 @@ object LibrariesDao {
         equals("libraries.organization_id", organizationId).
         and(
           projectId.map { id =>
-            "libraries.id in (select library_id from project_libraries where deleted_at is null and project_id = {project_id})"
+            "libraries.id in (select library_id from project_libraries where project_id = {project_id})"
           }
         ).bind("project_id", projectId).
         optionalText(

@@ -65,7 +65,7 @@ class Libraries @javax.inject.Inject() (
 
   def deleteById(id: String) = Identified { request =>
     withLibrary(request.user, id) { library =>
-      LibrariesDao.softDelete(request.user, library)
+      LibrariesDao.delete(request.user, library)
       NoContent
     }
   }

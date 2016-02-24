@@ -25,7 +25,7 @@ object ResolversDao {
            organizations.id as organization_id,
            organizations.key as organization_key
       from resolvers
-      left join organizations on organizations.deleted_at is null and organizations.id = resolvers.organization_id
+      left join organizations on organizations.id = resolvers.organization_id
   """)
 
   private[this] val SelectCredentialsQuery = s"""
@@ -140,7 +140,7 @@ object ResolversDao {
     }
   }
 
-  def softDelete(deletedBy: User, resolver: Resolver) {
+  def delete(deletedBy: User, resolver: Resolver) {
     Pager.create { offset =>
       LibrariesDao.findAll(
         Authorization.All,
@@ -148,11 +148,11 @@ object ResolversDao {
         offset = offset
       )
     }.foreach { library =>
-      LibrariesDao.softDelete(MainActor.SystemUser, library)
+      LibrariesDao.delete(MainActor.SystemUser, library)
     }
 
     MainActor.ref ! MainActor.Messages.ResolverDeleted(resolver.id)
-    SoftDelete.delete("resolvers", deletedBy.id, resolver.id)
+    DbHelpers.delete("resolvers", deletedBy.id, resolver.id)
   }
 
   def findByOrganizationAndUri(
@@ -180,7 +180,6 @@ object ResolversDao {
     organization: Option[String] = None,
     organizationId: Option[String] = None,
     uri: Option[String] = None,
-    isDeleted: Option[Boolean] = Some(false),
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Resolver] = {
@@ -197,7 +196,6 @@ object ResolversDao {
                else 2 end,
           resolvers.position, lower(resolvers.uri),resolvers.created_at
         """),
-        isDeleted = isDeleted,
         limit = limit,
         offset = offset
       ).
@@ -215,7 +213,6 @@ object ResolversDao {
     select coalesce(max(position) + 1, 0) as position
       from resolvers
      where visibility = 'public'
-       and deleted_at is null
   """
 
   private[this] val NextPrivatePositionQuery = """
@@ -223,7 +220,6 @@ object ResolversDao {
       from resolvers
      where visibility = 'private'
        and organization_id = {organization_id}
-       and deleted_at is null
   """
 
   /**

@@ -30,8 +30,8 @@ object ProjectBinariesDao {
            organizations.id as project_organization_id,
            organizations.key as project_organization_key
       from project_binaries
-      join projects on projects.deleted_at is null and projects.id = project_binaries.project_id
-      join organizations on organizations.deleted_at is null and organizations.id = projects.organization_id
+      join projects on projects.id = project_binaries.project_id
+      join organizations on organizations.id = projects.organization_id
   """)
 
   private[this] val InsertQuery = """
@@ -155,7 +155,7 @@ object ProjectBinariesDao {
       findAll(Authorization.All, projectId = Some(projectId), limit = 100, offset = offset)
     }.foreach { projectBinary =>
       if (!ids.contains(projectBinary.id)) {
-        softDelete(user, projectBinary)
+        delete(user, projectBinary)
       }
     }
 
@@ -171,9 +171,9 @@ object ProjectBinariesDao {
     }
   }
 
-  def softDelete(deletedBy: User, binary: ProjectBinary) {
-    SoftDelete.delete("project_binaries", deletedBy.id, binary.id)
-    MainActor.ref ! MainActor.Messages.ProjectBinaryDeleted(binary.project.id, binary.id)
+  def delete(deletedBy: User, binary: ProjectBinary) {
+    DbHelpers.delete("project_binaries", deletedBy.id, binary.id)
+    MainActor.ref ! MainActor.Messages.ProjectBinaryDeleted(binary.project.id, binary.id, binary.version)
   }
 
   def findByProjectIdAndNameAndVersion(
@@ -205,7 +205,6 @@ object ProjectBinariesDao {
     version: Option[String] = None,
     isSynced: Option[Boolean] = None,
     hasBinary: Option[Boolean] = None,
-    isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("lower(project_binaries.name), project_binaries.created_at"),
     limit: Long = 25,
     offset: Long = 0
@@ -218,7 +217,6 @@ object ProjectBinariesDao {
         id = id,
         ids = ids,
         orderBy = orderBy.sql,
-        isDeleted = isDeleted,
         limit = limit,
         offset = offset
       ).

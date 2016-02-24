@@ -60,7 +60,7 @@ class Resolvers @javax.inject.Inject() (
 
   def deleteById(id: String) = Identified { request =>
     withResolver(request.user, id) { resolver =>
-      ResolversDao.softDelete(request.user, resolver)
+      ResolversDao.delete(request.user, resolver)
       NoContent
     }
   }

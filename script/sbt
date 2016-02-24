@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-KEYS_REPO_DIR = "/web/keys"
+KEYS_REPO_DIR = File.expand_path(File.join(File.dirname(__FILE__), '/../../keys'))
 if !File.directory?(KEYS_REPO_DIR)
   puts "ERROR: Could not find keys repo. Expected at %s" % KEYS_REPO_DIR
   exit(1)
@@ -40,21 +40,29 @@ if subproject == ""
   end
   puts ""
   exit(1)
-end  
-
-# Select out the names of the configuration variables coming from the environment
-application_conf_file = File.join(File.dirname(__FILE__), "..", subproject, "conf", "application.conf")
-if !File.exists?(application_conf_file)
-  puts "ERROR: Could not find name application conf file. Expected at[%s]" % application_conf_file
-  exit(1)
 end
 
-names = IO.readlines(application_conf_file).map do |line|
-  (key, value) = line.split("=").map(&:strip)
-  if value && (md = value.match(/^\$\{\?(.+)\}$/))
-    md[1]
-  else
-    ""
+# Select out the names of the configuration variables coming from the environment
+files = []
+
+base_conf_file = File.join(File.dirname(__FILE__), "..", subproject, "conf", "base.conf")
+if File.exists?(base_conf_file)
+  files << base_conf_file
+end
+
+application_conf_file = File.join(File.dirname(__FILE__), "..", subproject, "conf", "application.conf")
+if File.exists?(application_conf_file)
+  files << application_conf_file
+end
+
+names = []
+
+files.each do |file|
+  IO.readlines(file).map do |line|
+    (key, value) = line.split("=").map(&:strip)
+    if value && (md = value.match(/^\$\{\?(.+)\}$/))
+      names << md[1]
+    end
   end
 end.select { |v| !v.empty? }
 
@@ -62,10 +70,10 @@ key_file = File.join(KEYS_REPO_DIR, "ec2", "apps", "%s-%s" % [name, subproject])
 if File.exists?(key_file)
   puts "Loading environment variables from %s" % key_file
   vars = IO.readlines(key_file).map do |line|
-    (key, value) = line.strip.split("=").map(&:strip)
+    (key, value) = line.strip.split("=", 2).map(&:strip)
     if names.include?(key) && value && !value.empty?
       puts " - setting env var %s" % key
-      "%s=%s" % [key, value]
+      "%s=\"%s\"" % [key, value]
     else
       ""
     end
@@ -79,4 +87,3 @@ if File.exists?(key_file)
 else
   puts "WARNING: Could not find application keys file. Expected at %s" % key_file
 end
-

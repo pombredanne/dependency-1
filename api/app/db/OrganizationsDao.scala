@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.v0.models.{MembershipForm, Organization, OrganizationForm, Role}
-import io.flow.postgresql.{Query, OrderBy}
+import io.flow.postgresql.{Query, OrderBy, Pager}
 import io.flow.play.util.{IdGenerator, Random, UrlKey}
 import io.flow.common.v0.models.User
 import anorm._
@@ -127,8 +127,20 @@ object OrganizationsDao {
     }
   }
 
-  def softDelete(deletedBy: User, organization: Organization) {
-    SoftDelete.delete("organizations", deletedBy.id, organization.id)
+  def delete(deletedBy: User, organization: Organization) {
+    Pager.create { offset =>
+      ProjectsDao.findAll(Authorization.All, organizationId = Some(organization.id), offset = offset)
+    }.foreach { project =>
+      ProjectsDao.delete(deletedBy, project)
+    }
+
+    Pager.create { offset =>
+      MembershipsDao.findAll(Authorization.All, organizationId = Some(organization.id), offset = offset)
+    }.foreach { membership =>
+      MembershipsDao.delete(deletedBy, membership)
+    }
+
+    DbHelpers.delete("organizations", deletedBy.id, organization.id)
   }
 
   def upsertForUser(user: User): Organization = {
@@ -192,7 +204,6 @@ object OrganizationsDao {
     userId: Option[String] = None,
     key: Option[String] = None,
     forUserId: Option[String] = None,
-    isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("organizations.key, -organizations.created_at"),
     limit: Long = 25,
     offset: Long = 0
@@ -205,13 +216,12 @@ object OrganizationsDao {
         id = id,
         ids = ids,
         orderBy = orderBy.sql,
-        isDeleted = isDeleted,
         limit = limit,
         offset = offset
       ).
         and(
           userId.map { id =>
-            "organizations.id in (select organization_id from memberships where deleted_at is null and user_id = {user_id})"
+            "organizations.id in (select organization_id from memberships where user_id = {user_id})"
           }
         ).bind("user_id", userId).
         optionalText(
@@ -222,7 +232,7 @@ object OrganizationsDao {
         ).
         and(
           forUserId.map { id =>
-            "organizations.id in (select organization_id from user_organizations where deleted_at is null and user_id = {for_user_id})"
+            "organizations.id in (select organization_id from user_organizations where user_id = {for_user_id})"
           }
         ).bind("for_user_id", forUserId).
         as(

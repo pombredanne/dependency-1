@@ -33,8 +33,8 @@ object ProjectLibrariesDao {
            organizations.id as project_organization_id,
            organizations.key as project_organization_key
       from project_libraries
-      join projects on projects.deleted_at is null and projects.id = project_libraries.project_id
-      join organizations on organizations.deleted_at is null and organizations.id = projects.organization_id
+      join projects on projects.id = project_libraries.project_id
+      join organizations on organizations.id = projects.organization_id
   """)
 
   private[this] val InsertQuery = """
@@ -166,7 +166,7 @@ object ProjectLibrariesDao {
       findAll(Authorization.All, projectId = Some(projectId), limit = 100, offset = offset)
     }.foreach { projectLibrary =>
       if (!ids.contains(projectLibrary.id)) {
-        softDelete(user, projectLibrary)
+        delete(user, projectLibrary)
       }
     }
 
@@ -182,9 +182,9 @@ object ProjectLibrariesDao {
     }
   }
 
-  def softDelete(deletedBy: User, library: ProjectLibrary) {
-    SoftDelete.delete("project_libraries", deletedBy.id, library.id)
-    MainActor.ref ! MainActor.Messages.ProjectLibraryDeleted(library.project.id, library.id)
+  def delete(deletedBy: User, library: ProjectLibrary) {
+    DbHelpers.delete("project_libraries", deletedBy.id, library.id)
+    MainActor.ref ! MainActor.Messages.ProjectLibraryDeleted(library.project.id, library.id, library.version)
   }
 
   def findByProjectIdAndGroupIdAndArtifactIdAndVersion(
@@ -221,7 +221,6 @@ object ProjectLibrariesDao {
     crossBuildVersion: Option[Option[String]] = None,
     isSynced: Option[Boolean] = None,
     hasLibrary: Option[Boolean] = None,
-    isDeleted: Option[Boolean] = Some(false),
     orderBy: OrderBy = OrderBy("lower(project_libraries.group_id), lower(project_libraries.artifact_id), project_libraries.created_at"),
     limit: Long = 25,
     offset: Long = 0
@@ -235,7 +234,6 @@ object ProjectLibrariesDao {
         id = id,
         ids = ids,
         orderBy = orderBy.sql,
-        isDeleted = isDeleted,
         limit = limit,
         offset = offset
       ).

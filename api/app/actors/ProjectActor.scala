@@ -24,11 +24,11 @@ object ProjectActor {
 
     case class ProjectLibraryCreated(id: String) extends Message
     case class ProjectLibrarySync(id: String) extends Message
-    case class ProjectLibraryDeleted(id: String) extends Message
+    case class ProjectLibraryDeleted(id: String, version: String) extends Message
 
     case class ProjectBinaryCreated(id: String) extends Message
     case class ProjectBinarySync(id: String) extends Message
-    case class ProjectBinaryDeleted(id: String) extends Message
+    case class ProjectBinaryDeleted(id: String, version: String) extends Message
 
     case class LibrarySynced(id: String) extends Message
     case class BinarySynced(id: String) extends Message
@@ -206,53 +206,38 @@ class ProjectActor extends Actor with Util {
         Pager.create { offset =>
           RecommendationsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
         }.foreach { rec =>
-          RecommendationsDao.softDelete(MainActor.SystemUser, rec)
+          RecommendationsDao.delete(MainActor.SystemUser, rec)
         }
       }
       context.stop(self)
     }
 
-    case m @ ProjectActor.Messages.ProjectLibraryDeleted(id) => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.ProjectLibraryDeleted(id, version) => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
-        ProjectLibrariesDao.findAll(
+        RecommendationsDao.findAll(
           Authorization.All,
-          id = Some(id),
-          isDeleted = Some(true)
-        ).map { projectLibrary =>
-          projectLibrary.library.map { lib =>
-            RecommendationsDao.findAll(
-              Authorization.All,
-              projectId = Some(project.id),
-              `type` = Some(RecommendationType.Library),
-              objectId = Some(lib.id),
-              fromVersion = Some(projectLibrary.version)
-            ).foreach { rec =>
-              RecommendationsDao.softDelete(MainActor.SystemUser, rec)
-            }
-          }
+          projectId = Some(project.id),
+          `type` = Some(RecommendationType.Library),
+          objectId = Some(id),
+          fromVersion = Some(version)
+        ).foreach { rec =>
+          RecommendationsDao.delete(MainActor.SystemUser, rec)
         }
+
         processPendingSync(project)
       }
     }
 
-    case m @ ProjectActor.Messages.ProjectBinaryDeleted(id) => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.ProjectBinaryDeleted(id, version) => withVerboseErrorHandler(m.toString) {
       dataProject.foreach { project =>
-        ProjectBinariesDao.findAll(
+        RecommendationsDao.findAll(
           Authorization.All,
-          id = Some(id),
-          isDeleted = Some(true)
-        ).map { projectBinary =>
-          projectBinary.binary.map { lib =>
-            RecommendationsDao.findAll(
-              Authorization.All,
-              projectId = Some(project.id),
-              `type` = Some(RecommendationType.Binary),
-              objectId = Some(lib.id),
-              fromVersion = Some(projectBinary.version)
-            ).foreach { rec =>
-              RecommendationsDao.softDelete(MainActor.SystemUser, rec)
-            }
-          }
+          projectId = Some(project.id),
+          `type` = Some(RecommendationType.Binary),
+          objectId = Some(id),
+          fromVersion = Some(version)
+        ).foreach { rec =>
+          RecommendationsDao.delete(MainActor.SystemUser, rec)
         }
         processPendingSync(project)
       }

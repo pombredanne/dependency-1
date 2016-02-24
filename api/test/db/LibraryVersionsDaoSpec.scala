@@ -75,10 +75,10 @@ class LibraryVersionsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     LibraryVersionsDao.findAll(Authorization.All, ids = Some(Seq(version1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(version1.id))
   }
 
-  "softDelete" in {
+  "delete" in {
     val library = createLibrary(org)()
     val version1 = LibraryVersionsDao.upsert(systemUser, library.id, VersionForm("1.0", None))
-    LibraryVersionsDao.softDelete(systemUser, version1.id)
+    LibraryVersionsDao.delete(systemUser, version1)
     val version2 = LibraryVersionsDao.upsert(systemUser, library.id, VersionForm("1.0", None))
     val version3 = LibraryVersionsDao.upsert(systemUser, library.id, VersionForm("1.0", None))
 

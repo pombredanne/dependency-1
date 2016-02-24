@@ -56,7 +56,7 @@ class LibraryActor extends Actor with Util {
 
     case m @ LibraryActor.Messages.Deleted => withVerboseErrorHandler(m) {
       dataLibrary.foreach { lib =>
-        ItemsDao.softDeleteByObjectId(Authorization.All, MainActor.SystemUser, lib.id)
+        ItemsDao.deleteByObjectId(Authorization.All, MainActor.SystemUser, lib.id)
 
         Pager.create { offset =>
           ProjectLibrariesDao.findAll(Authorization.All, libraryId = Some(lib.id), offset = offset)

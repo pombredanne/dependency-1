@@ -4,10 +4,10 @@ import anorm._
 import play.api.db._
 import play.api.Play.current
 
-object SoftDelete {
+object DbHelpers {
 
   private[this] val Query = """
-    update %s set deleted_at=now(), updated_by_user_id = {updated_by_user_id} where id = {id}
+    select util.delete_by_id({updated_by_user_id}, '%s', {id})
   """
 
   def delete(tableName: String, deletedById: String, id: String) {

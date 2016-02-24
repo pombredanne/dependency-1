@@ -106,7 +106,6 @@ object SyncsDao {
         id = id,
         ids = ids,
         orderBy = orderBy.sql,
-        isDeleted = None,
         limit = limit,
         offset = offset
       ).

@@ -62,7 +62,7 @@ class Binaries @javax.inject.Inject() (
 
   def deleteById(id: String) = Identified { request =>
     withBinary(request.user, id) { binary =>
-      BinariesDao.softDelete(request.user, binary)
+      BinariesDao.delete(request.user, binary)
       NoContent
     }
   }
