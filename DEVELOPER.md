@@ -1,3 +1,7 @@
+building docker images
+======================
+go run ~/go/src/github.com/flowcommerce/tools/dev.go  multi --app delta --project all
+
 api
 ===
 project defining the REST API itself. See api/api.json for a full
