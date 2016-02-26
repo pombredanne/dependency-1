@@ -1,6 +1,6 @@
 package com.bryzek.dependency.lib
 
-import io.flow.play.util.DefaultConfig
+import io.flow.play.util.Config
 import com.bryzek.dependency.v0.models.{BinarySummary, ItemSummary, ItemSummaryUndefinedType, LibrarySummary, ProjectSummary}
 import com.bryzek.dependency.v0.models.{Recommendation, RecommendationType}
 
@@ -12,10 +12,12 @@ import com.bryzek.dependency.v0.models.{Recommendation, RecommendationType}
  * maintenance.
  */
 case class Urls(
-  wwwHost: String = DefaultConfig.requiredString("dependency.www.host")
+  config: Config
 ) {
 
   val github = "https://github.com/mbryzek/dependency"
+
+  lazy val wwwHost = config.requiredString("dependency.www.host")
 
   def binary(id: String) = s"/binaries/$id"
   def library(id: String) = s"/libraries/$id"
@@ -37,7 +39,7 @@ case class Urls(
   }
 
   def www(rest: String): String = {
-    s"$wwwHost$rest"
+    wwwHost + rest
   }
 
 

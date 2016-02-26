@@ -6,17 +6,18 @@ import com.bryzek.dependency.api.lib.{Email, Recipient}
 import com.bryzek.dependency.actors._
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.AnonymousController
-import io.flow.play.util.DefaultConfig
+import io.flow.play.util.Config
 import play.api.mvc._
 import play.api.libs.json._
 
 @javax.inject.Singleton
 class Emails @javax.inject.Inject() (
-  val userTokensClient: UserTokensClient
+  val userTokensClient: UserTokensClient,
+  config: Config
 ) extends Controller with AnonymousController with Helpers {
 
   private[this] val TestEmailAddressName = "com.bryzek.dependency.api.test.email"
-  private[this] lazy val TestEmailAddress = DefaultConfig.optionalString(TestEmailAddressName)
+  private[this] lazy val TestEmailAddress = config.optionalString(TestEmailAddressName)
 
   override def user(
     session: play.api.mvc.Session,

@@ -1,19 +1,21 @@
 package com.bryzek.dependency.actors
 
 import db.{Authorization, BinaryVersionsDao, LibraryVersionsDao}
-import io.flow.play.util.DefaultConfig
+import io.flow.play.util.Config
+import io.flow.play.actors.{ErrorHandler, Scheduler}
 import play.api.libs.concurrent.Akka
 import akka.actor._
 import play.api.Logger
 import play.api.Play.current
+import play.api.libs.concurrent.InjectedActorSupport
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 object MainActor {
 
-  def props() = Props(new MainActor("main"))
-
-  lazy val ref = Akka.system.actorOf(props(), "main")
+  def ref() = {
+    MainActorProvider.ref()
+  }
 
   lazy val SystemUser = db.UsersDao.systemUser
 
@@ -56,13 +58,20 @@ object MainActor {
   }
 }
 
+@javax.inject.Singleton
+class MainActor @javax.inject.Inject() (
+  projectFactory: ProjectActor.Factory,
+  override val config: io.flow.play.util.Config,
+  system: ActorSystem
+) extends Actor with ActorLogging with ErrorHandler with Scheduler with InjectedActorSupport{
 
-class MainActor(name: String) extends Actor with ActorLogging with Util {
   import scala.concurrent.duration._
 
-  private[this] val emailActor = Akka.system.actorOf(Props[EmailActor], name = s"$name:emailActor")
-  private[this] val periodicActor = Akka.system.actorOf(Props[PeriodicActor], name = s"$name:periodicActor")
-  private[this] val searchActor = Akka.system.actorOf(Props[SearchActor], name = s"$name:SearchActor")
+  private[this] val name = "main"
+
+  private[this] val emailActor = system.actorOf(Props[EmailActor], name = s"$name:emailActor")
+  private[this] val periodicActor = system.actorOf(Props[PeriodicActor], name = s"$name:periodicActor")
+  private[this] val searchActor = system.actorOf(Props[SearchActor], name = s"$name:SearchActor")
 
   private[this] val binaryActors = scala.collection.mutable.Map[String, ActorRef]()
   private[this] val libraryActors = scala.collection.mutable.Map[String, ActorRef]()
@@ -70,37 +79,27 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
   private[this] val userActors = scala.collection.mutable.Map[String, ActorRef]()
   private[this] val resolverActors = scala.collection.mutable.Map[String, ActorRef]()
 
-  implicit val mainActorExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("main-actor-context")
+  implicit val mainActorExecutionContext: ExecutionContext = system.dispatchers.lookup("main-actor-context")
 
-  /**
-   * Helper to schedule a message to be sent on a recurring interval
-   * based on a configuration parameter.
-   *
-   * @param configName The name of the configuration parameter containing the number
-   *        of seconds between runs. You can also optionally add a configuration
-   *        parameter of the same name with "_inital" appended to set the initial
-   *        interval if you wish it to be different.
-   */
-  private[this] def scheduleRecurring[T](
-    actor: ActorRef,
-    configName: String,
-    message: T
-  ) {
-    val seconds = DefaultConfig.requiredString(configName).toInt
-    val initial = DefaultConfig.optionalString(s"${configName}_initial").map(_.toInt).getOrElse(seconds)
-    Logger.info(s"scheduling a periodic message[$message]. Initial[$initial seconds], recurring[$seconds seconds]")
-    Akka.system.scheduler.schedule(
-      FiniteDuration(initial, SECONDS),
-      FiniteDuration(seconds, SECONDS),
-      actor, message
-    )
+  scheduleRecurring(system, "com.bryzek.dependency.api.binary.seconds") {
+    periodicActor ! PeriodicActor.Messages.SyncBinaries
   }
 
-  scheduleRecurring(periodicActor, "com.bryzek.dependency.api.binary.seconds", PeriodicActor.Messages.SyncBinaries)
-  scheduleRecurring(periodicActor, "com.bryzek.dependency.api.library.seconds", PeriodicActor.Messages.SyncLibraries)
-  scheduleRecurring(periodicActor, "com.bryzek.dependency.api.project.seconds", PeriodicActor.Messages.SyncProjects)
-  scheduleRecurring(periodicActor, "com.bryzek.dependency.api.purge.seconds", PeriodicActor.Messages.Purge)
-  scheduleRecurring(emailActor, "com.bryzek.dependency.api.email.seconds", EmailActor.Messages.ProcessDailySummary)
+  scheduleRecurring(system, "com.bryzek.dependency.api.library.seconds") {
+    periodicActor !  PeriodicActor.Messages.SyncLibraries
+  }
+
+  scheduleRecurring(system, "com.bryzek.dependency.api.project.seconds") {
+    periodicActor !  PeriodicActor.Messages.SyncProjects
+  }
+
+  scheduleRecurring(system, "com.bryzek.dependency.api.purge.seconds") {
+    periodicActor !  PeriodicActor.Messages.Purge
+  }
+
+  scheduleRecurring(system, "com.bryzek.dependency.api.email.seconds") {
+    emailActor ! EmailActor.Messages.ProcessDailySummary
+  }
 
   def receive = akka.event.LoggingReceive {
 
@@ -165,7 +164,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
     }
 
     case m @ MainActor.Messages.LibrarySyncFuture(id, seconds) => withVerboseErrorHandler(m) {
-      Akka.system.scheduler.scheduleOnce(Duration(seconds, "seconds")) {
+      system.scheduler.scheduleOnce(Duration(seconds, "seconds")) {
         println(s"MainActor.Messages.LibrarySyncFuture - $seconds - syncLibrary($id)")
         syncLibrary(id)
       }
@@ -231,7 +230,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
 
   def upsertUserActor(id: String): ActorRef = {
     userActors.lift(id).getOrElse {
-      val ref = Akka.system.actorOf(Props[UserActor], name = s"$name:userActor:$id")
+      val ref = system.actorOf(Props[UserActor], name = s"$name:userActor:$id")
       ref ! UserActor.Messages.Data(id)
       userActors += (id -> ref)
       ref
@@ -240,8 +239,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
 
   def upsertProjectActor(id: String): ActorRef = {
     projectActors.lift(id).getOrElse {
-      val ref = Akka.system.actorOf(Props[ProjectActor], name = s"$name:projectActor:$id")
-      ref ! ProjectActor.Messages.Data(id)
+      val ref = injectedChild(projectFactory(id), name = s"$name:projectActor:$id")
       projectActors += (id -> ref)
       ref
     }
@@ -249,7 +247,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
 
   def upsertLibraryActor(id: String): ActorRef = {
     libraryActors.lift(id).getOrElse {
-      val ref = Akka.system.actorOf(Props[LibraryActor], name = s"$name:libraryActor:$id")
+      val ref = system.actorOf(Props[LibraryActor], name = s"$name:libraryActor:$id")
       ref ! LibraryActor.Messages.Data(id)
       libraryActors += (id -> ref)
       ref
@@ -258,7 +256,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
 
   def upsertBinaryActor(id: String): ActorRef = {
     binaryActors.lift(id).getOrElse {
-      val ref = Akka.system.actorOf(Props[BinaryActor], name = s"$name:binaryActor:$id")
+      val ref = system.actorOf(Props[BinaryActor], name = s"$name:binaryActor:$id")
       ref ! BinaryActor.Messages.Data(id)
       binaryActors += (id -> ref)
       ref
@@ -267,7 +265,7 @@ class MainActor(name: String) extends Actor with ActorLogging with Util {
 
   def upsertResolverActor(id: String): ActorRef = {
     resolverActors.lift(id).getOrElse {
-      val ref = Akka.system.actorOf(Props[ResolverActor], name = s"$name:resolverActor:$id")
+      val ref = system.actorOf(Props[ResolverActor], name = s"$name:resolverActor:$id")
       ref ! ResolverActor.Messages.Data(id)
       resolverActors += (id -> ref)
       ref
