@@ -3,6 +3,7 @@ package com.bryzek.dependency.actors
 import com.bryzek.dependency.api.lib.{DefaultLibraryArtifactProvider, Dependencies, GithubDependencyProviderClient, GithubHelper, GithubUtil}
 import com.bryzek.dependency.v0.models.{Binary, BinaryForm, BinaryType, Library, LibraryForm, Project, ProjectBinary, ProjectLibrary, RecommendationType, VersionForm}
 import io.flow.postgresql.Pager
+import io.flow.play.actors.ErrorHandler
 import io.flow.play.util.Config
 import db.{Authorization, BinariesDao, LibrariesDao, LibraryVersionsDao, ProjectBinariesDao, ProjectLibrariesDao}
 import db.{ProjectsDao, RecommendationsDao, SyncsDao, TokensDao, UsersDao}
@@ -39,10 +40,10 @@ object ProjectActor {
   }
 }
 
-class ProjectActor(
+class ProjectActor @javax.inject.Inject() (
   config: Config,
   @com.google.inject.assistedinject.Assisted projectId: String
-) extends Actor with Util {
+) extends Actor with ErrorHandler {
 
   implicit val projectExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("project-actor-context")
 

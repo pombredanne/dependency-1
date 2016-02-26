@@ -1,11 +1,22 @@
 package com.bryzek.dependency.lib
 
+import io.flow.play.util.Config
 import com.bryzek.dependency.v0.models.{ItemSummaryUndefinedType, RecommendationType}
 import org.scalatest.{FunSpec, Matchers}
 
 class UrlsSpec extends FunSpec with Matchers with Factories {
 
-  private[this] lazy val urls = Urls(wwwHost = "http://localhost")
+  private[this] lazy val urls = Urls(
+    new Config {
+      def optionalString(name: String): Option[String] = {
+        if (name == "dependency.www.host") {
+          Some("http://localhost")
+        } else {
+          None
+        }
+      }
+    }
+  )
 
   it("www") {
     urls.www("/foo") should be("http://localhost/foo")
