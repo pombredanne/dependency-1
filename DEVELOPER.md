@@ -1,6 +1,6 @@
 building docker images
 ======================
-go run ~/go/src/github.com/flowcommerce/tools/dev.go tag --label minor
+go run ~/go/src/github.com/flowcommerce/tools/dev.go tag --label micro
 go run ~/go/src/github.com/flowcommerce/tools/dev.go multi --project all
 
 api
