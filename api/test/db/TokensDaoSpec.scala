@@ -29,7 +29,7 @@ class TokensDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "getCleartextGithubOauthTokenByUserId" in {
     val user = createUser()
-    val actualToken = "foo"
+    val actualToken = createTestKey()
     val form = InternalTokenForm.GithubOauth(user.id, actualToken)
     val token = TokensDao.create(systemUser, form)
 

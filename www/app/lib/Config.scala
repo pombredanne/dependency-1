@@ -1,13 +1,15 @@
 package com.bryzek.dependency.www.lib
 
 import com.bryzek.dependency.v0.models.{BinarySummary, ItemSummary, ItemSummaryUndefinedType, LibrarySummary, ProjectSummary, Recommendation, RecommendationType, Scms}
-import io.flow.play.util.DefaultConfig
+import io.flow.play.util.{Config => FlowConfig}
 import java.net.URLEncoder
 
 object Config {
 
-  lazy val githubClientId = DefaultConfig.requiredString("github.dependency.client.id")
-  lazy val dependencyWwwHost = DefaultConfig.requiredString("dependency.www.host")
+  private[this] lazy val config = play.api.Play.current.injector.instanceOf[FlowConfig]
+
+  lazy val githubClientId = config.requiredString("github.dependency.client.id")
+  lazy val dependencyWwwHost = config.requiredString("dependency.www.host")
   lazy val githubBaseUrl = s"$dependencyWwwHost/login/github"
 
   val VersionsPerPage = 5

@@ -1,7 +1,7 @@
 package com.bryzek.dependency.www.lib
 
 import io.flow.play.clients.UserTokensClient
-import io.flow.play.util.DefaultConfig
+import io.flow.play.util.{Config => FlowConfig}
 import io.flow.common.v0.models.User
 import com.bryzek.dependency.v0.{Authorization, Client}
 import com.bryzek.dependency.v0.errors.UnitResponse
@@ -15,10 +15,12 @@ trait DependencyClientProvider extends UserTokensClient {
 }
 
 @javax.inject.Singleton
-class DefaultDependencyClientProvider() extends DependencyClientProvider {
+class DefaultDependencyClientProvider @javax.inject.Inject() (
+  config: FlowConfig
+) extends DependencyClientProvider {
 
-  def host: String = DefaultConfig.requiredString("dependency.api.host")
-  def token: String = DefaultConfig.requiredString("dependency.api.token")
+  def host: String = config.requiredString("dependency.api.host")
+  def token: String = config.requiredString("dependency.api.token")
 
   private[this] lazy val client = new Client(host)
 

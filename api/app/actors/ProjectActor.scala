@@ -3,7 +3,8 @@ package com.bryzek.dependency.actors
 import com.bryzek.dependency.api.lib.{DefaultLibraryArtifactProvider, Dependencies, GithubDependencyProviderClient, GithubHelper, GithubUtil}
 import com.bryzek.dependency.v0.models.{Binary, BinaryForm, BinaryType, Library, LibraryForm, Project, ProjectBinary, ProjectLibrary, RecommendationType, VersionForm}
 import io.flow.postgresql.Pager
-import io.flow.play.util.DefaultConfig
+import io.flow.play.actors.ErrorHandler
+import io.flow.play.util.Config
 import db.{Authorization, BinariesDao, LibrariesDao, LibraryVersionsDao, ProjectBinariesDao, ProjectLibrariesDao}
 import db.{ProjectsDao, RecommendationsDao, SyncsDao, TokensDao, UsersDao}
 import play.api.Logger
@@ -16,7 +17,7 @@ object ProjectActor {
   trait Message
 
   object Messages {
-    case class Data(id: String) extends Message
+
     case object Deleted extends Message
     case object CreateHooks extends Message
     case object Sync extends Message
@@ -34,23 +35,25 @@ object ProjectActor {
     case class BinarySynced(id: String) extends Message
   }
 
+  trait Factory {
+    def apply(projectId: String): Actor
+  }
 }
 
-class ProjectActor extends Actor with Util {
+class ProjectActor @javax.inject.Inject() (
+  config: Config,
+  @com.google.inject.assistedinject.Assisted projectId: String
+) extends Actor with ErrorHandler {
 
   implicit val projectExecutionContext: ExecutionContext = Akka.system.dispatchers.lookup("project-actor-context")
 
-  private[this] val HookBaseUrl = DefaultConfig.requiredString("dependency.api.host") + "/webhooks/github/"
+  private[this] val HookBaseUrl = config.requiredString("dependency.api.host") + "/webhooks/github/"
   private[this] val HookName = "web"
   private[this] val HookEvents = Seq(io.flow.github.v0.models.HookEvent.Push)
 
-  private[this] var dataProject: Option[Project] = None
+  private[this] lazy val dataProject: Option[Project] = ProjectsDao.findById(Authorization.All, projectId)
 
   def receive = {
-
-    case m @ ProjectActor.Messages.Data(id) => withVerboseErrorHandler(m.toString) {
-      dataProject = ProjectsDao.findById(Authorization.All, id)
-    }
 
     case m @ ProjectActor.Messages.ProjectLibraryCreated(id) => withVerboseErrorHandler(m.toString) {
       syncProjectLibrary(id)

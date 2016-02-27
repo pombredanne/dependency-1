@@ -1,6 +1,6 @@
 package com.bryzek.dependency.actors
 
-import io.flow.play.util.DefaultConfig
+import io.flow.play.util.Config
 import io.flow.postgresql.Pager
 import io.flow.common.v0.models.User
 import db.{Authorization, LastEmail, LastEmailForm, LastEmailsDao, RecommendationsDao, SubscriptionsDao, UserIdentifiersDao, UsersDao}
@@ -18,7 +18,8 @@ object EmailActor {
   }
 
   val PreferredHourToSendEst: Int = {
-    val value = DefaultConfig.requiredString("com.bryzek.dependency.api.email.daily.summary.hour.est").toInt
+    val config = play.api.Play.current.injector.instanceOf[Config]
+    val value = config.requiredString("com.bryzek.dependency.api.email.daily.summary.hour.est").toInt
     assert( value >= 0 && value < 23 )
     value
   }
@@ -117,9 +118,11 @@ trait EmailMessageGenerator {
   */
 case class DailySummaryEmailMessage(recipient: Recipient) extends EmailMessageGenerator {
 
-  private val MaxRecommendations = 250
+  private[this] val MaxRecommendations = 250
 
-  private val lastEmail = LastEmailsDao.findByUserIdAndPublication(recipient.userId, Publication.DailySummary)
+  private[this] val lastEmail = LastEmailsDao.findByUserIdAndPublication(recipient.userId, Publication.DailySummary)
+
+  private[this] lazy val config = play.api.Play.current.injector.instanceOf[Config]
 
   override def subject() = "Daily Summary"
 
@@ -144,7 +147,7 @@ case class DailySummaryEmailMessage(recipient: Recipient) extends EmailMessageGe
       newRecommendations = newRecommendations,
       oldRecommendations = oldRecommendations,
       lastEmail = lastEmail,
-      urls = Urls()
+      urls = Urls(config)
     ).toString
   }
 
