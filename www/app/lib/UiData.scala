@@ -1,6 +1,7 @@
 package com.bryzek.dependency.www.lib
 
 import io.flow.common.v0.models.User
+import io.flow.play.util.Config
 import com.bryzek.dependency.lib.Urls
 
 sealed trait Section
@@ -25,6 +26,6 @@ case class UiData(
   query: Option[String] = None
 ) {
 
-  lazy val urls = Urls()
+  lazy val urls = Urls(play.api.Play.current.injector.instanceOf[Config])
 
 }
