@@ -8,7 +8,7 @@ import io.flow.github.oauth.v0.{Client => GithubOauthClient}
 import io.flow.github.oauth.v0.models.AccessTokenForm
 import io.flow.github.v0.{Client => GithubClient}
 import io.flow.github.v0.errors.UnitResponse
-import io.flow.github.v0.models.{User => GithubUser}
+import io.flow.github.v0.models.{Repository => GithubRepository, User => GithubUser}
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.Logger
 
@@ -132,7 +132,41 @@ trait Github {
     */
   def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUserData]]
 
-  def repositories(user: User)(implicit ec: ExecutionContext): Future[Seq[Repository]]
+  def githubRepos(user: User, page: Long = 1)(implicit ec: ExecutionContext): Future[Seq[GithubRepository]]
+
+  /**
+    * Recursively calls the github API until we either:
+    *  - consume all records
+    *  - meet the specified limit/offset
+    */
+  def repositories(
+    user: User,
+    offset: Long,
+    limit: Long,
+    resultsSoFar: Seq[GithubRepository] = Nil,
+    page: Long = 1  // internal parameter
+  ) (
+    acceptsFilter: GithubRepository => Boolean = { _ => true }
+  ) (
+    implicit ec: ExecutionContext
+  ): Future[Seq[GithubRepository]] = {
+    githubRepos(user, page).flatMap { thisPage =>
+      if (thisPage.isEmpty) {
+        Future {
+          resultsSoFar.drop(offset.toInt).take(limit.toInt)
+        }
+      } else {
+        val all = resultsSoFar ++ thisPage.filter { acceptsFilter(_) }
+        if (all.size >= offset + limit) {
+          Future {
+            all.drop(offset.toInt).take(limit.toInt)
+          }
+        } else {
+          repositories(user, offset, limit, all, page + 1)(acceptsFilter)
+        }
+      }
+    }
+  }
 
   /**
     * For this user, returns the oauth token if available
@@ -184,19 +218,14 @@ case class DefaultGithub() extends Github {
     }
   }
 
-  override def repositories(user: User)(implicit ec: ExecutionContext): Future[Seq[Repository]] = {
+  /**
+    * Fetches one page of repositories from the Github API
+    */
+ override def githubRepos(user: User, page: Long = 1)(implicit ec: ExecutionContext): Future[Seq[GithubRepository]] = {
     oauthToken(user) match {
       case None => Future { Nil }
       case Some(token) => {
-        GithubHelper.apiClient(token).repositories.getUserAndRepos().map { repos =>
-          repos.map { repo =>
-            Repository(
-              name = repo.name,
-              visibility = if (repo.`private`) { Visibility.Private } else { Visibility.Public },
-              uri = repo.htmlUrl
-            )
-          }
-        }
+        GithubHelper.apiClient(token).repositories.getUserAndRepos(page)
       }
     }
   }
@@ -252,7 +281,7 @@ class MockGithub() extends Github {
     }
   }
 
-  override def repositories(user: User)(implicit ec: ExecutionContext): Future[Seq[Repository]] = {
+  override def githubRepos(user: User, page: Long = 1)(implicit ec: ExecutionContext): Future[Seq[GithubRepository]] = {
     Future {
       MockGithubData.repositories(user)
     }
@@ -280,7 +309,7 @@ object MockGithubData {
 
   private[this] var githubUserByCodes = scala.collection.mutable.Map[String, GithubUserData]()
   private[this] var userTokens = scala.collection.mutable.Map[String, String]()
-  private[this] var repositories = scala.collection.mutable.Map[String, Repository]()
+  private[this] var repositories = scala.collection.mutable.Map[String, GithubRepository]()
   private[this] var files = scala.collection.mutable.Map[String, String]()
 
   def addUser(githubUser: GithubUser, code: String, token: Option[String] = None) {
@@ -308,11 +337,11 @@ object MockGithubData {
     userTokens.lift(user.id)
   }
 
-  def addRepository(user: User, repository: Repository) = {
+  def addRepository(user: User, repository: GithubRepository) = {
     repositories +== (user.id -> repository)
   }
 
-  def repositories(user: User): Seq[Repository] = {
+  def repositories(user: User): Seq[GithubRepository] = {
     repositories.lift(user.id) match {
       case None => Nil
       case Some(repo) => Seq(repo)

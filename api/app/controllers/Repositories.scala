@@ -4,6 +4,7 @@ import db.{Authorization, OrganizationsDao, ProjectsDao}
 import com.bryzek.dependency.api.lib.Github
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
+import io.flow.github.v0.models.json._
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
@@ -19,6 +20,7 @@ class Repositories @javax.inject.Inject() (
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def getGithub(
+    owner: Option[String] = None, // Ex: flowcommerce
     name: Option[String] = None,
     organizationId: Option[String] = None,
     existingProject: Option[Boolean] = None,
@@ -31,27 +33,31 @@ class Repositories @javax.inject.Inject() (
       }
     } else {
       val auth = Authorization.User(request.user.id)
-      github.repositories(request.user).map { repos =>
-        Ok(
-          Json.toJson(
-            repos.
-              filter { r => name.isEmpty || name == Some(r.name) }.
-              filter { r =>
-                organizationId.flatMap { OrganizationsDao.findById(auth, _) } match {
-                  case None => true
-                  case Some(org) => {
-                    existingProject.isEmpty ||
-                    existingProject == Some(true) && !ProjectsDao.findByOrganizationAndName(auth, org.key, r.name).isEmpty ||
-                    existingProject == Some(false) && ProjectsDao.findByOrganizationAndName(auth, org.key, r.name).isEmpty
-                  }
-                }
-              }.
-              drop(offset.toInt).
-              take(limit.toInt)
-          )
-        )
+      val org = organizationId.flatMap { OrganizationsDao.findById(auth, _)}
+
+      // Set limit to 1 if we are guaranteed at most 1 record back
+      val actualLimit = if (offset == 0 && !name.isEmpty && !owner.isEmpty) { 1 } else { limit }
+
+      github.repositories(request.user, offset, actualLimit) { r =>
+        (name match {
+          case None => true
+          case Some(n) => n.toLowerCase == r.name.toLowerCase
+        }) &&
+        (owner match {
+          case None => true
+          case Some(o) => o.toLowerCase == r.owner.login.toLowerCase
+        }) &&
+        (org match {
+          case None => true
+          case Some(org) => {
+            existingProject.isEmpty ||
+            existingProject == Some(true) && !ProjectsDao.findByOrganizationAndName(auth, org.id, r.name).isEmpty ||
+            existingProject == Some(false) && ProjectsDao.findByOrganizationAndName(auth, org.id, r.name).isEmpty
+          }
+        })
+      }.map { results =>
+        Ok(Json.toJson(results))
       }
     }
   }
-
 }

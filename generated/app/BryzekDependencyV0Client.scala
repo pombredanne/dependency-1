@@ -577,6 +577,7 @@ package com.bryzek.dependency.v0.models {
     import play.api.libs.functional.syntax._
     import com.bryzek.dependency.v0.models.json._
     import io.flow.common.v0.models.json._
+    import io.flow.github.v0.models.json._
 
     private[v0] implicit val jsonReadsUUID = __.read[String].map(java.util.UUID.fromString)
 
@@ -2041,6 +2042,7 @@ package com.bryzek.dependency.v0 {
   ) extends interfaces.Client {
     import com.bryzek.dependency.v0.models.json._
     import io.flow.common.v0.models.json._
+    import io.flow.github.v0.models.json._
 
     private[this] val logger = play.api.Logger("com.bryzek.dependency.v0.Client")
 
@@ -2677,7 +2679,7 @@ package com.bryzek.dependency.v0 {
         existingProject: _root_.scala.Option[Boolean] = None,
         limit: Long = 25,
         offset: Long = 0
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Repository]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.github.v0.models.Repository]] = {
         val queryParameters = Seq(
           owner.map("owner" -> _),
           name.map("name" -> _),
@@ -2688,7 +2690,7 @@ package com.bryzek.dependency.v0 {
         ).flatten
 
         _executeRequest("GET", s"/repositories/github", queryParameters = queryParameters).map {
-          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[com.bryzek.dependency.v0.models.Repository]", r, _.validate[Seq[com.bryzek.dependency.v0.models.Repository]])
+          case r if r.status == 200 => _root_.com.bryzek.dependency.v0.Client.parseJson("Seq[io.flow.github.v0.models.Repository]", r, _.validate[Seq[io.flow.github.v0.models.Repository]])
           case r if r.status == 401 => throw new com.bryzek.dependency.v0.errors.UnitResponse(r.status)
           case r if r.status == 422 => throw new com.bryzek.dependency.v0.errors.ErrorsResponse(r)
           case r => throw new com.bryzek.dependency.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 422")
@@ -3429,7 +3431,7 @@ package com.bryzek.dependency.v0 {
       existingProject: _root_.scala.Option[Boolean] = None,
       limit: Long = 25,
       offset: Long = 0
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[com.bryzek.dependency.v0.models.Repository]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.github.v0.models.Repository]]
   }
 
   trait Resolvers {
@@ -3587,6 +3589,7 @@ package com.bryzek.dependency.v0 {
 
     import com.bryzek.dependency.v0.models.json._
     import io.flow.common.v0.models.json._
+    import io.flow.github.v0.models.json._
 
     case class ErrorsResponse(
       response: play.api.libs.ws.WSResponse,

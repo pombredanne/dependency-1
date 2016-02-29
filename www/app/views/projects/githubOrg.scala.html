@@ -1,7 +1,7 @@
 @(
   data: com.bryzek.dependency.www.lib.UiData,
   org: com.bryzek.dependency.v0.models.Organization,
-  repositories: io.flow.play.util.PaginatedCollection[com.bryzek.dependency.v0.models.Repository],
+  repositories: io.flow.play.util.PaginatedCollection[io.flow.github.v0.models.Repository],
   errorMessages: Seq[String] = Nil
 )(implicit flash: Flash, messages: Messages)
 
@@ -18,8 +18,8 @@
       <table class="table">
         @repositories.items.map { repo =>
           <tr>
-            <td><a class="postForm" href="@routes.ProjectsController.postGithubOrg(org.key, repo.name, repositories.page)">@{repo.name}</a></td>
-            <td>@repo.uri</td>
+            <td><a class="postForm" href="@routes.ProjectsController.postGithubOrg(org.key, repo.owner.login, repo.name, repositories.page)">@{repo.owner.login}/@{repo.name}</a></td>
+            <td>@repo.description</td>
           </tr>
         }
       </table>
