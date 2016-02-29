@@ -2,7 +2,8 @@
   "name": "dependency",
 
   "imports": [
-    { "uri": "http://www.apidoc.me/flow/common/0.0.9/service.json" }
+    { "uri": "http://www.apidoc.me/flow/common/0.0.10/service.json" },
+    { "uri": "http://www.apidoc.me/flow/github/0.0.3/service.json" }    
   ],
 
   "unions": {
@@ -1014,6 +1015,7 @@
 	  "path": "/github",
           "description": "Returns a list of repositories from github",
           "parameters": [
+	    { "name": "owner", "type": "string", "required": false, "description": "Optionally filter by owner name. Case in-sensitive. Exact match" },            
 	    { "name": "name", "type": "string", "required": false, "description": "Optionally filter by repo name. Case in-sensitive. Exact match" },
 	    { "name": "organization_id", "type": "string", "required": false, "description": "If specified, we enable additional filtering by this organization (see existing_project parameter)." },
 	    { "name": "existing_project", "type": "boolean", "required": false, "description": "Optionally filter by repositories that are either already mapped to existing projects or not. Requires organization_id parameter to also be specified." },
@@ -1021,7 +1023,7 @@
 	    { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
           ],
           "responses": {
-	    "200": { "type": "[repository]" },
+	    "200": { "type": "[io.flow.github.v0.models.repository]" },
 	    "401": { "type": "unit" },
             "422": { "type": "[io.flow.common.v0.models.error]" }
           }

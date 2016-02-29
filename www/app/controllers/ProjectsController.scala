@@ -121,12 +121,14 @@ class ProjectsController @javax.inject.Inject() (
 
   def postGithubOrg(
     orgKey: String,
-    name: String,
+    owner: String, // github owner, ex. flowcommerce    
+    name: String,  // github repo name, ex. user
     repositoriesPage: Int = 0
   ) = Identified.async { implicit request =>
     withOrganization(request, orgKey) { org =>
       dependencyClient(request).repositories.getGithub(
         organizationId = Some(org.id),
+        owner = Some(owner),
         name = Some(name)
       ).flatMap { selected =>
         selected.headOption match {
@@ -139,8 +141,8 @@ class ProjectsController @javax.inject.Inject() (
                 organization = org.key,
                 name = repo.name,
                 scms = Scms.Github,
-                visibility = repo.visibility,
-                uri = repo.uri
+                visibility = if (repo.`private`) { Visibility.Private } else { Visibility.Public },
+                uri = repo.htmlUrl
               )
             ).map { project =>
               Redirect(routes.ProjectsController.sync(project.id)).flashing("success" -> "Project added")

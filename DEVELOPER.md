@@ -24,8 +24,7 @@ apidoc. To regenerate code, clone github.com/gilt/apidoc-cli and
 Database
 ========
 
-    psql -h <host> -U root -c "create role api login password 'xxx'" dependency
-    psql -h <host> -U root -c "GRANT ALL ON DATABASE dependency TO api" dependency
+    See https://github.com/flowcommerce/dependency-postgresql
 
 Running locally
 ===============
@@ -34,31 +33,12 @@ In one screen:
 
     $ sbt
     sbt> project api
-    sbt> run 9001
+    sbt> run 6111
 
 In another screen:
 
     $ sbt
     sbt> project www
-    sbt> run
+    sbt> run 6110
 
-Goto http://localhost:9000 in your browser
-
-Initial production setup:
-
-    sudo yum install http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-ami201503-94-9.4-1.noarch.rpm
-    sudo yum install postgresql94
-
-    echo "dependency.crqe2ozpjr64.us-east-1.rds.amazonaws.com:5432:dependency:api:PASSWORD" > ~/.pgpass
-    chmod 0600 ~/.pgpass
-
-    cd /web/dependency/schema
-    sem-dist
-    scp -i /web/keys/ssh/mbryzek-key-pair-us-east.pem dist/schema-0.0.1.tar.gz ec2-user@ADDRESS:~/
-    ssh -i /web/keys/ssh/mbryzek-key-pair-us-east.pem ec2-user@54.175.54.172
-    tar xfz schema-*.tar.gz
-    cd schema-*
-
-    sudo yum install git
-
-    sem-apply --user api --host TODO.rds.amazonaws.com --name dependency
+Goto http://localhost:6110 in your browser
