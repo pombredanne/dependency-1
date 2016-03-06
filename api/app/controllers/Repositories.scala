@@ -27,6 +27,13 @@ class Repositories @javax.inject.Inject() (
     limit: Long = 25,
     offset: Long = 0
   ) = Identified.async { request =>
+    println(s"getGithub")
+    println(s"  - owner: $owner")
+    println(s"  - name: $name")
+    println(s"  - organizationId: $organizationId")
+    println(s"  - existingProject: $existingProject")
+
+
     if (!existingProject.isEmpty && organizationId.isEmpty) {
       Future {
         UnprocessableEntity(Json.toJson(Validation.error("When filtering by existing projects, you must also provide the organization_id")))
@@ -50,6 +57,9 @@ class Repositories @javax.inject.Inject() (
         (org match {
           case None => true
           case Some(org) => {
+            println(s"Matching orgId[${org.id}] r.name[${r.name}]")
+            println(s"  a: ${ProjectsDao.findByOrganizationAndName(auth, org.id, r.name)}")
+            println(s"  b: ${ProjectsDao.findByOrganizationAndName(Authorization.All, org.id, r.name)}")
             existingProject.isEmpty ||
             existingProject == Some(true) && !ProjectsDao.findByOrganizationAndName(auth, org.id, r.name).isEmpty ||
             existingProject == Some(false) && ProjectsDao.findByOrganizationAndName(auth, org.id, r.name).isEmpty

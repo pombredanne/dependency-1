@@ -224,7 +224,7 @@ object ProjectsDao {
         offset = offset
       ).
         optionalText(
-          "organizations.key",
+          "organizations.id",
           organization,
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
