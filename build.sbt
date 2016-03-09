@@ -4,7 +4,7 @@ name := "dependency"
 
 organization := "io.flow"
 
-scalaVersion in ThisBuild := "2.11.7"
+scalaVersion in ThisBuild := "2.11.8"
 
 // required because of issue between scoverage & sbt
 parallelExecution in Test in ThisBuild := true
@@ -35,7 +35,7 @@ lazy val api = project
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       jdbc,      
-      "io.flow" %% "lib-postgresql" % "0.0.25",
+      "io.flow" %% "lib-postgresql" % "0.0.26",
       "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.16",
       "org.postgresql" % "postgresql" % "9.4.1208",
       "com.typesafe.play" %% "anorm" % "2.5.0",
@@ -70,7 +70,7 @@ val credsToUse = Option(System.getenv("ARTIFACTORY_USERNAME")) match {
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("dependency-" + _),
   libraryDependencies ++= Seq(
-    "io.flow" %% "lib-play" % "0.0.52",
+    "io.flow" %% "lib-play" % "0.0.53",
     specs2 % Test,
     "org.scalatest" %% "scalatest" % "2.2.6" % Test
   ),
