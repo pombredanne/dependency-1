@@ -254,7 +254,6 @@ object ProjectsDao {
         and(
           binaryId.map { v => FilterProjectBinaries.format("project_binaries.binary_id = {binary_id}") }
         ).bind("binary_id", binaryId).
-        withDebugging().
         as(
           com.bryzek.dependency.v0.anorm.parsers.Project.parser().*
         )
