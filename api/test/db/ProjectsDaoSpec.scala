@@ -16,12 +16,12 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   lazy val project2 = createProject(org)
 
   "findByOrganizationIdAndName" in {
-    ProjectsDao.findByOrganizationAndName(Authorization.All, org.key, project1.name).map(_.id) must be(
+    ProjectsDao.findByOrganizationKeyAndName(Authorization.All, org.key, project1.name).map(_.id) must be(
       Some(project1.id)
     )
 
-    ProjectsDao.findByOrganizationAndName(Authorization.All, createTestKey(), project1.name) must be(None)
-    ProjectsDao.findByOrganizationAndName(Authorization.All, org.key, createTestName()) must be(None)
+    ProjectsDao.findByOrganizationKeyAndName(Authorization.All, createTestKey(), project1.name) must be(None)
+    ProjectsDao.findByOrganizationKeyAndName(Authorization.All, org.key, createTestName()) must be(None)
   }
 
   "findById" in {
@@ -112,12 +112,12 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
       ProjectsDao.findAll(Authorization.All, id = Some(project1.id), organizationId = Some(createOrganization().id)) must be(Nil)
     }
 
-    "org" in {
-      ProjectsDao.findAll(Authorization.All, id = Some(project1.id), organization = Some(org.key)).map(_.id) must be(
+    "organizationKey" in {
+      ProjectsDao.findAll(Authorization.All, id = Some(project1.id), organizationKey = Some(org.key)).map(_.id) must be(
         Seq(project1.id)
       )
 
-      ProjectsDao.findAll(Authorization.All, id = Some(project1.id), organization = Some(createOrganization().key)) must be(Nil)
+      ProjectsDao.findAll(Authorization.All, id = Some(project1.id), organizationKey = Some(createOrganization().key)) must be(Nil)
     }
 
     "with library" must {
@@ -213,7 +213,6 @@ class ProjectsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     }
 
   }
-
 }
 
 

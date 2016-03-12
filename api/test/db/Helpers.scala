@@ -3,10 +3,13 @@ package db
 import io.flow.play.clients.MockUserTokensClient
 import io.flow.play.util.Random
 import com.bryzek.dependency.v0.models._
-import io.flow.common.v0.models.{Name, User}
+import io.flow.common.v0.models.{Name, User, UserReference}
 import java.util.UUID
 
 trait Helpers {
+
+  import scala.language.implicitConversions
+  implicit def toUserReference(user: User) = UserReference(id = user.id)
 
   lazy val systemUser = createUser()
   val random = Random()

@@ -2,7 +2,7 @@ package db
 
 import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Binary, BinaryForm, SyncEvent}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import io.flow.postgresql.{Query, OrderBy, Pager}
 import anorm._
 import play.api.db._
@@ -41,14 +41,14 @@ object BinariesDao {
     }
   }
 
-  def upsert(createdBy: User, form: BinaryForm): Either[Seq[String], Binary] = {
+  def upsert(createdBy: UserReference, form: BinaryForm): Either[Seq[String], Binary] = {
     BinariesDao.findByName(Authorization.All, form.name.toString) match {
       case Some(binary) => Right(binary)
       case None => create(createdBy, form)
     }
   }
 
-  def create(createdBy: User, form: BinaryForm): Either[Seq[String], Binary] = {
+  def create(createdBy: UserReference, form: BinaryForm): Either[Seq[String], Binary] = {
     validate(form) match {
       case Nil => {
         val id = io.flow.play.util.IdGenerator("bin").randomId()
@@ -74,7 +74,7 @@ object BinariesDao {
     }
   }
 
-  def delete(deletedBy: User, binary: Binary) {
+  def delete(deletedBy: UserReference, binary: Binary) {
     Pager.create { offset =>
       BinaryVersionsDao.findAll(Authorization.All, binaryId = Some(binary.id), offset = offset)
     }.foreach { BinaryVersionsDao.delete(deletedBy, _) }

@@ -3,7 +3,7 @@ package db
 import com.bryzek.dependency.v0.models.{MembershipForm, Organization, OrganizationForm, Role}
 import io.flow.postgresql.{Query, OrderBy, Pager}
 import io.flow.play.util.{IdGenerator, Random, UrlKey}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.{User, UserReference}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -69,7 +69,7 @@ object OrganizationsDao {
     }
   }
 
-  def create(createdBy: User, form: OrganizationForm): Either[Seq[String], Organization] = {
+  def create(createdBy: UserReference, form: OrganizationForm): Either[Seq[String], Organization] = {
     validate(form) match {
       case Nil => {
         val id = DB.withTransaction { implicit c =>
@@ -85,7 +85,7 @@ object OrganizationsDao {
     }
   }
 
-  private[this] def create(implicit c: java.sql.Connection, createdBy: User, form: OrganizationForm): String = {
+  private[this] def create(implicit c: java.sql.Connection, createdBy: UserReference, form: OrganizationForm): String = {
     val id = IdGenerator("org").randomId()
 
     SQL(InsertQuery).on(
@@ -106,7 +106,7 @@ object OrganizationsDao {
     id
   }
 
-  def update(createdBy: User, organization: Organization, form: OrganizationForm): Either[Seq[String], Organization] = {
+  def update(createdBy: UserReference, organization: Organization, form: OrganizationForm): Either[Seq[String], Organization] = {
     validate(form, Some(organization)) match {
       case Nil => {
         DB.withConnection { implicit c =>
@@ -127,7 +127,7 @@ object OrganizationsDao {
     }
   }
 
-  def delete(deletedBy: User, organization: Organization) {
+  def delete(deletedBy: UserReference, organization: Organization) {
     Pager.create { offset =>
       ProjectsDao.findAll(Authorization.All, organizationId = Some(organization.id), offset = offset)
     }.foreach { project =>
@@ -148,7 +148,7 @@ object OrganizationsDao {
       val key = urlKey.generate(defaultUserName(user))
 
       val orgId = DB.withTransaction { implicit c =>
-        val orgId = create(c, user, OrganizationForm(
+        val orgId = create(c, UserReference(id = user.id), OrganizationForm(
           key = key
         ))
 

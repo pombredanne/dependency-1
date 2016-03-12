@@ -36,7 +36,7 @@ class Projects @javax.inject.Inject() (
           id = id,
           ids = optionals(ids),
           name = name,
-          organization = organization,
+          organizationKey = organization,
           groupId = groupId,
           artifactId = artifactId,
           version = version,

@@ -6,7 +6,7 @@ import io.flow.postgresql.Pager
 import io.flow.play.actors.ErrorHandler
 import io.flow.play.util.Config
 import db.{Authorization, BinariesDao, LibrariesDao, LibraryVersionsDao, ProjectBinariesDao, ProjectLibrariesDao}
-import db.{ProjectsDao, RecommendationsDao, SyncsDao, TokensDao, UsersDao}
+import db.{ProjectsDao, RecommendationsDao, SyncsDao, TokensDao}
 import play.api.Logger
 import play.libs.Akka
 import akka.actor.Actor
@@ -91,12 +91,11 @@ class ProjectActor @javax.inject.Inject() (
           }
           case Right(repo) => {
             println(s"Create Hooks for project[${project.id}] repo[$repo]")
-            UsersDao.findById(project.user.id).flatMap { u =>
-              TokensDao.getCleartextGithubOauthTokenByUserId(u.id)
-            } match {
+            TokensDao.getCleartextGithubOauthTokenByUserId(project.user.id) match {
               case None => {
                 Logger.warn(s"No oauth token for user[${project.user.id}]")
               }
+
               case Some(token) => {
                 println(s"Create Hooks for project[${project.id}] user[${project.user.id}] token[$token]")
                 val client = GithubHelper.apiClient(token)
@@ -147,58 +146,56 @@ class ProjectActor @javax.inject.Inject() (
       dataProject.foreach { project =>
         SyncsDao.recordStarted(MainActor.SystemUser, "project", project.id)
 
-        UsersDao.findById(project.user.id).map { user =>
-          val summary = ProjectsDao.toSummary(project)
+        val summary = ProjectsDao.toSummary(project)
 
-          GithubDependencyProviderClient.instance(summary, user).dependencies(project).map { dependencies =>
-            println(s" - project[${project.id}] name[${project.name}] dependencies: $dependencies")
+        GithubDependencyProviderClient.instance(summary, project.user).dependencies(project).map { dependencies =>
+          println(s" - project[${project.id}] name[${project.name}] dependencies: $dependencies")
 
-            dependencies.binaries.map { binaries =>
-              val projectBinaries = binaries.map { form =>
-                println(s" -- project[${project.id}] name[${project.name}] binaries dao upsert")
-                ProjectBinariesDao.upsert(user, form) match {
-                  case Left(errors) => {
-                    Logger.error(s"Project[${project.name}] id[${project.id}] Error storing binary[$form]: " + errors.mkString(", "))
-                    None
-                  }
-                  case Right(projectBinary) => {
-                    Some(projectBinary)
-                  }
+          dependencies.binaries.map { binaries =>
+            val projectBinaries = binaries.map { form =>
+              println(s" -- project[${project.id}] name[${project.name}] binaries dao upsert")
+              ProjectBinariesDao.upsert(project.user, form) match {
+                case Left(errors) => {
+                  Logger.error(s"Project[${project.name}] id[${project.id}] Error storing binary[$form]: " + errors.mkString(", "))
+                  None
+                }
+                case Right(projectBinary) => {
+                  Some(projectBinary)
                 }
               }
-              ProjectBinariesDao.setIds(user, project.id, projectBinaries.flatten)
             }
+            ProjectBinariesDao.setIds(project.user, project.id, projectBinaries.flatten)
+          }
 
-            dependencies.librariesAndPlugins.map { libraries =>
-              val projectLibraries = libraries.map { artifact =>
-                println(s" -- project[${project.id}] name[${project.name}] artifact upsert: " + artifact)
-                println(s" -- project[${project.id}] name[${project.name}] crossBuildVersion: " + dependencies.crossBuildVersion() + " binaries: " + dependencies.binaries)
-                ProjectLibrariesDao.upsert(
-                  user,
-                  artifact.toProjectLibraryForm(
-                    crossBuildVersion = dependencies.crossBuildVersion()
-                  )
-                ) match {
-                  case Left(errors) => {
-                    Logger.error(s"Project[${project.name}] id[${project.id}] Error storing artifact[$artifact]: " + errors.mkString(", "))
-                    None
-                  }
-                  case Right(library) => {
-                    Some(library)
-                  }
+          dependencies.librariesAndPlugins.map { libraries =>
+            val projectLibraries = libraries.map { artifact =>
+              println(s" -- project[${project.id}] name[${project.name}] artifact upsert: " + artifact)
+              println(s" -- project[${project.id}] name[${project.name}] crossBuildVersion: " + dependencies.crossBuildVersion() + " binaries: " + dependencies.binaries)
+              ProjectLibrariesDao.upsert(
+                project.user,
+                artifact.toProjectLibraryForm(
+                  crossBuildVersion = dependencies.crossBuildVersion()
+                )
+              ) match {
+                case Left(errors) => {
+                  Logger.error(s"Project[${project.name}] id[${project.id}] Error storing artifact[$artifact]: " + errors.mkString(", "))
+                  None
+                }
+                case Right(library) => {
+                  Some(library)
                 }
               }
-              ProjectLibrariesDao.setIds(user, project.id, projectLibraries.flatten)
             }
+            ProjectLibrariesDao.setIds(project.user, project.id, projectLibraries.flatten)
+          }
 
-            RecommendationsDao.sync(MainActor.SystemUser, project)
+          RecommendationsDao.sync(MainActor.SystemUser, project)
 
-            processPendingSync(project)
-          }.recover {
-            case e => {
-              e.printStackTrace(System.err)
-              Logger.error(s"Error fetching dependencies for project[${project.id}] name[${project.name}]: $e")
-            }
+          processPendingSync(project)
+        }.recover {
+          case e => {
+            e.printStackTrace(System.err)
+            Logger.error(s"Error fetching dependencies for project[${project.id}] name[${project.name}]: $e")
           }
         }
       }

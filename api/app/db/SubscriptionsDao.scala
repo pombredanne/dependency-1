@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.v0.models.{Publication, Subscription, SubscriptionForm}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import io.flow.postgresql.{Query, OrderBy}
 import anorm._
 import play.api.db._
@@ -40,7 +40,7 @@ object SubscriptionsDao {
     userErrors ++ publicationErrors
   }
 
-  def upsert(createdBy: User, form: SubscriptionForm): Subscription = {
+  def upsert(createdBy: UserReference, form: SubscriptionForm): Subscription = {
     findByUserIdAndPublication(form.userId, form.publication).getOrElse {
       create(createdBy, form) match {
         case Left(errors) => {
@@ -53,7 +53,7 @@ object SubscriptionsDao {
     }
   }
 
-  def create(createdBy: User, form: SubscriptionForm): Either[Seq[String], Subscription] = {
+  def create(createdBy: UserReference, form: SubscriptionForm): Either[Seq[String], Subscription] = {
     validate(form) match {
       case Nil => {
         val id = io.flow.play.util.IdGenerator("sub").randomId()
@@ -77,7 +77,7 @@ object SubscriptionsDao {
     }
   }
 
-  def delete(deletedBy: User, subscription: Subscription) {
+  def delete(deletedBy: UserReference, subscription: Subscription) {
     DbHelpers.delete("subscriptions", deletedBy.id, subscription.id)
   }
 

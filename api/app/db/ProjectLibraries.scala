@@ -4,7 +4,7 @@ import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Library, ProjectLibrary, SyncEvent, VersionForm}
 import io.flow.postgresql.{Query, OrderBy, Pager}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -59,7 +59,7 @@ object ProjectLibrariesDao {
   """
 
   private[db] def validate(
-    user: User,
+    user: UserReference,
     form: ProjectLibraryForm
   ): Seq[String] = {
     val groupIdErrors = if (form.groupId.trim.isEmpty) {
@@ -106,7 +106,7 @@ object ProjectLibrariesDao {
     projectErrors ++ groupIdErrors ++ artifactIdErrors ++ versionErrors ++ existsErrors
   }
 
-  def upsert(createdBy: User, form: ProjectLibraryForm): Either[Seq[String], ProjectLibrary] = {
+  def upsert(createdBy: UserReference, form: ProjectLibraryForm): Either[Seq[String], ProjectLibrary] = {
     ProjectLibrariesDao.findByProjectIdAndGroupIdAndArtifactIdAndVersion(
       Authorization.All, form.projectId, form.groupId, form.artifactId, form.version
     ) match {
@@ -119,7 +119,7 @@ object ProjectLibrariesDao {
     }
   }
 
-  def create(createdBy: User, form: ProjectLibraryForm): Either[Seq[String], ProjectLibrary] = {
+  def create(createdBy: UserReference, form: ProjectLibraryForm): Either[Seq[String], ProjectLibrary] = {
     validate(createdBy, form) match {
       case Nil => {
         val id = io.flow.play.util.IdGenerator("prl").randomId()
@@ -148,7 +148,7 @@ object ProjectLibrariesDao {
     }
   }
 
-  def removeLibrary(user: User, projectLibrary: ProjectLibrary) {
+  def removeLibrary(user: UserReference, projectLibrary: ProjectLibrary) {
     DB.withConnection { implicit c =>
       SQL(RemoveLibraryQuery).on(
         'id -> projectLibrary.id,
@@ -160,7 +160,7 @@ object ProjectLibrariesDao {
   /**
     * Removes any project library ids for this project not specified in this list
     */
-  def setIds(user: User, projectId: String, projectBinaries: Seq[ProjectLibrary]) {
+  def setIds(user: UserReference, projectId: String, projectBinaries: Seq[ProjectLibrary]) {
     val ids = projectBinaries.map(_.id)
     Pager.create { offset =>
       findAll(Authorization.All, projectId = Some(projectId), limit = 100, offset = offset)
@@ -172,7 +172,7 @@ object ProjectLibrariesDao {
 
   }
 
-  def setLibrary(user: User, projectLibrary: ProjectLibrary, library: Library) {
+  def setLibrary(user: UserReference, projectLibrary: ProjectLibrary, library: Library) {
     DB.withConnection { implicit c =>
       SQL(SetLibraryQuery).on(
         'id -> projectLibrary.id,
@@ -182,7 +182,7 @@ object ProjectLibrariesDao {
     }
   }
 
-  def delete(deletedBy: User, library: ProjectLibrary) {
+  def delete(deletedBy: UserReference, library: ProjectLibrary) {
     DbHelpers.delete("project_libraries", deletedBy.id, library.id)
     MainActor.ref ! MainActor.Messages.ProjectLibraryDeleted(library.project.id, library.id, library.version)
   }

@@ -5,7 +5,7 @@ import com.bryzek.dependency.api.lib.Validation
 import com.bryzek.dependency.v0.models.{Credentials, CredentialsUndefinedType, Resolver, ResolverForm, ResolverSummary}
 import com.bryzek.dependency.v0.models.{OrganizationSummary, UsernamePassword, Visibility}
 import com.bryzek.dependency.v0.models.json._
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import io.flow.postgresql.{Query, OrderBy, Pager}
 import anorm._
 import play.api.db._
@@ -60,7 +60,7 @@ object ResolversDao {
     )
   }
 
-  def validate(user: User, form: ResolverForm): Seq[String] = {
+  def validate(user: UserReference, form: ResolverForm): Seq[String] = {
     val urlErrors = Validation.validateUri(form.uri) match {
       case Left(errors) => errors
       case Right(url) => Nil
@@ -100,14 +100,14 @@ object ResolversDao {
     urlErrors ++ uniqueErrors ++ organizationErrors
   }
 
-  def upsert(createdBy: User, form: ResolverForm): Either[Seq[String], Resolver] = {
+  def upsert(createdBy: UserReference, form: ResolverForm): Either[Seq[String], Resolver] = {
     findByOrganizationAndUri(Authorization.All, form.organization, form.uri) match {
       case Some(resolver) => Right(resolver)
       case None => create(createdBy, form)
     }
   }
 
-  def create(createdBy: User, form: ResolverForm): Either[Seq[String], Resolver] = {
+  def create(createdBy: UserReference, form: ResolverForm): Either[Seq[String], Resolver] = {
     validate(createdBy, form) match {
       case Nil => {
         val org = OrganizationsDao.findByKey(Authorization.All, form.organization).getOrElse {
@@ -140,7 +140,7 @@ object ResolversDao {
     }
   }
 
-  def delete(deletedBy: User, resolver: Resolver) {
+  def delete(deletedBy: UserReference, resolver: Resolver) {
     Pager.create { offset =>
       LibrariesDao.findAll(
         Authorization.All,

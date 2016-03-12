@@ -57,12 +57,9 @@ class Repositories @javax.inject.Inject() (
         (org match {
           case None => true
           case Some(org) => {
-            println(s"Matching orgId[${org.id}] r.name[${r.name}]")
-            println(s"  a: ${ProjectsDao.findByOrganizationAndName(auth, org.id, r.name)}")
-            println(s"  b: ${ProjectsDao.findByOrganizationAndName(Authorization.All, org.id, r.name)}")
             existingProject.isEmpty ||
-            existingProject == Some(true) && !ProjectsDao.findByOrganizationAndName(auth, org.id, r.name).isEmpty ||
-            existingProject == Some(false) && ProjectsDao.findByOrganizationAndName(auth, org.id, r.name).isEmpty
+            existingProject == Some(true) && !ProjectsDao.findByOrganizationKeyAndName(auth, org.id, r.name).isEmpty ||
+            existingProject == Some(false) && ProjectsDao.findByOrganizationKeyAndName(auth, org.id, r.name).isEmpty
           }
         })
       }.map { results =>

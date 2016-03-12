@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.v0.models.Reference
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import io.flow.postgresql.{Query, OrderBy}
 import com.bryzek.dependency.v0.models.Publication
 import org.joda.time.DateTime
@@ -38,7 +38,7 @@ object LastEmailsDao {
   """
 
   def record(
-    createdBy: User,
+    createdBy: UserReference,
     form: LastEmailForm
   ): LastEmail = {
     val id = DB.withTransaction { implicit c =>
@@ -52,12 +52,12 @@ object LastEmailsDao {
     }
   }
 
-  def delete(deletedBy: User, rec: LastEmail) {
+  def delete(deletedBy: UserReference, rec: LastEmail) {
     DbHelpers.delete("last_emails", deletedBy.id, rec.id)
   }
 
   private[this] def create(
-    createdBy: User,
+    createdBy: UserReference,
     form: LastEmailForm
   ) (
     implicit c: java.sql.Connection

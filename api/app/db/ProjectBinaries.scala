@@ -4,7 +4,7 @@ import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Binary, BinaryType, Project, ProjectBinary, SyncEvent}
 import io.flow.postgresql.{Query, OrderBy, Pager}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -56,7 +56,7 @@ object ProjectBinariesDao {
   """
 
   private[db] def validate(
-    user: User,
+    user: UserReference,
     form: ProjectBinaryForm
   ): Seq[String] = {
     val nameErrors = if (form.name.toString.trim.isEmpty) {
@@ -97,7 +97,7 @@ object ProjectBinariesDao {
     projectErrors ++ nameErrors ++ versionErrors ++ existsErrors
   }
 
-  def upsert(createdBy: User, form: ProjectBinaryForm): Either[Seq[String], ProjectBinary] = {
+  def upsert(createdBy: UserReference, form: ProjectBinaryForm): Either[Seq[String], ProjectBinary] = {
     ProjectBinariesDao.findByProjectIdAndNameAndVersion(
       Authorization.All, form.projectId, form.name.toString, form.version
     ) match {
@@ -110,7 +110,7 @@ object ProjectBinariesDao {
     }
   }
 
-  def create(createdBy: User, form: ProjectBinaryForm): Either[Seq[String], ProjectBinary] = {
+  def create(createdBy: UserReference, form: ProjectBinaryForm): Either[Seq[String], ProjectBinary] = {
     validate(createdBy, form) match {
       case Nil => {
         val id = io.flow.play.util.IdGenerator("prb").randomId()
@@ -137,7 +137,7 @@ object ProjectBinariesDao {
     }
   }
 
-  def removeBinary(user: User, projectBinary: ProjectBinary) {
+  def removeBinary(user: UserReference, projectBinary: ProjectBinary) {
     DB.withConnection { implicit c =>
       SQL(RemoveBinaryQuery).on(
         'id -> projectBinary.id,
@@ -149,7 +149,7 @@ object ProjectBinariesDao {
   /**
     * Removes any project binary ids for this project not specified in this list
     */
-  def setIds(user: User, projectId: String, projectBinaries: Seq[ProjectBinary]) {
+  def setIds(user: UserReference, projectId: String, projectBinaries: Seq[ProjectBinary]) {
     val ids = projectBinaries.map(_.id)
     Pager.create { offset =>
       findAll(Authorization.All, projectId = Some(projectId), limit = 100, offset = offset)
@@ -161,7 +161,7 @@ object ProjectBinariesDao {
 
   }
 
-  def setBinary(user: User, projectBinary: ProjectBinary, binary: Binary) {
+  def setBinary(user: UserReference, projectBinary: ProjectBinary, binary: Binary) {
     DB.withConnection { implicit c =>
       SQL(SetBinaryQuery).on(
         'id -> projectBinary.id,
@@ -171,7 +171,7 @@ object ProjectBinariesDao {
     }
   }
 
-  def delete(deletedBy: User, binary: ProjectBinary) {
+  def delete(deletedBy: UserReference, binary: ProjectBinary) {
     DbHelpers.delete("project_binaries", deletedBy.id, binary.id)
     MainActor.ref ! MainActor.Messages.ProjectBinaryDeleted(binary.project.id, binary.id, binary.version)
   }

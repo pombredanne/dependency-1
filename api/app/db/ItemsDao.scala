@@ -3,7 +3,7 @@ package db
 import com.bryzek.dependency.v0.models.{Binary, BinarySummary, Item, ItemSummary, ItemSummaryUndefinedType, Library, LibrarySummary}
 import com.bryzek.dependency.v0.models.{OrganizationSummary, Project, ProjectSummary, ResolverSummary, Visibility}
 import com.bryzek.dependency.v0.models.json._
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import io.flow.postgresql.{Query, OrderBy}
 import anorm._
 import play.api.db._
@@ -82,7 +82,7 @@ object ItemsDao {
     ResolversDao.findById(Authorization.All, resolver.id).map(_.visibility).getOrElse(Visibility.Private)
   }
 
-  def replaceBinary(user: User, binary: Binary): Item = {
+  def replaceBinary(user: UserReference, binary: Binary): Item = {
     val label = binary.name.toString
     replace(
       user,
@@ -99,7 +99,7 @@ object ItemsDao {
     )
   }
 
-  def replaceLibrary(user: User, library: Library): Item = {
+  def replaceLibrary(user: UserReference, library: Library): Item = {
     val label = Seq(library.groupId, library.artifactId).mkString(".")
     replace(
       user,
@@ -117,7 +117,7 @@ object ItemsDao {
     )
   }
 
-  def replaceProject(user: User, project: Project): Item = {
+  def replaceProject(user: UserReference, project: Project): Item = {
     val label = project.name
     val description = project.uri
 
@@ -136,7 +136,7 @@ object ItemsDao {
     )
   }
 
-  private[db] def replace(user: User, form: ItemForm): Item = {
+  private[db] def replace(user: UserReference, form: ItemForm): Item = {
     DB.withConnection { implicit c =>
       findByObjectId(Authorization.All, objectId(form.summary)).map { item =>
         deleteWithConnection(user, item)(c)
@@ -153,7 +153,7 @@ object ItemsDao {
     }
   }
 
-  private[this] def create(createdBy: User, form: ItemForm)(implicit c: java.sql.Connection): Item = {
+  private[this] def create(createdBy: UserReference, form: ItemForm)(implicit c: java.sql.Connection): Item = {
     val id = io.flow.play.util.IdGenerator("itm").randomId()
 
     SQL(InsertQuery).on(
@@ -173,19 +173,19 @@ object ItemsDao {
     }
   }
 
-  def delete(deletedBy: User, item: Item) {
+  def delete(deletedBy: UserReference, item: Item) {
     DB.withConnection { implicit c =>
       deleteWithConnection(deletedBy, item)(c)
     }
   }
 
-  private[this] def deleteWithConnection(deletedBy: User, item: Item)(
+  private[this] def deleteWithConnection(deletedBy: UserReference, item: Item)(
     implicit c: java.sql.Connection
   ) {
     DbHelpers.delete("items", deletedBy.id, item.id)
   }
 
-  def deleteByObjectId(auth: Authorization, deletedBy: User, objectId: String) {
+  def deleteByObjectId(auth: Authorization, deletedBy: UserReference, objectId: String) {
     findByObjectId(auth, objectId).map { item =>
       delete(deletedBy, item)
     }
