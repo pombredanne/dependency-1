@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.v0.models.UserIdentifier
-import io.flow.common.v0.models.UserReference
+import io.flow.common.v0.models.{User, UserReference}
 import io.flow.postgresql.{Query, OrderBy}
 import io.flow.play.util.UrlKey
 import anorm._

@@ -4,7 +4,7 @@ import db.{Authorization, MembershipsDao}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import com.bryzek.dependency.v0.models.{Membership, MembershipForm, Role}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
@@ -68,7 +68,7 @@ class Memberships @javax.inject.Inject() (
     }
   }
 
-  def withMembership(user: User, id: String)(
+  def withMembership(user: UserReference, id: String)(
     f: Membership => Result
   ): Result = {
     MembershipsDao.findById(Authorization.User(user.id), id) match {

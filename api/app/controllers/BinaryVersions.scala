@@ -3,7 +3,7 @@ package controllers
 import db.{Authorization, BinaryVersionsDao}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import io.flow.play.util.Validation
 import com.bryzek.dependency.v0.models.BinaryVersion
 import com.bryzek.dependency.v0.models.json._
@@ -45,7 +45,7 @@ class BinaryVersions @javax.inject.Inject() (
     }
   }
 
-  def withBinaryVersion(user: User, id: String)(
+  def withBinaryVersion(user: UserReference, id: String)(
     f: BinaryVersion => Result
   ): Result = {
     BinaryVersionsDao.findById(Authorization.User(user.id), id) match {

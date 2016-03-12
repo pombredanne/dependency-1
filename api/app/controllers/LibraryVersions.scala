@@ -3,7 +3,7 @@ package controllers
 import db.{Authorization, LibraryVersionsDao}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import io.flow.play.util.Validation
 import com.bryzek.dependency.v0.models.LibraryVersion
 import com.bryzek.dependency.v0.models.json._
@@ -43,7 +43,7 @@ class LibraryVersions @javax.inject.Inject() (
     }
   }
 
-  def withLibraryVersion(user: User, id: String) (
+  def withLibraryVersion(user: UserReference, id: String) (
     f: LibraryVersion => Result
   ): Result = {
     LibraryVersionsDao.findById(

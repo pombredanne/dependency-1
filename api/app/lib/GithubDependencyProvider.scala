@@ -1,7 +1,7 @@
 package com.bryzek.dependency.api.lib
 
 import db.ProjectBinaryForm
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.{User, UserReference}
 import com.bryzek.dependency.v0.models.{BinaryForm, BinaryType, LibraryForm, Project, ProjectSummary}
 import io.flow.github.v0.Client
 import io.flow.github.v0.errors.UnitResponse
@@ -57,7 +57,7 @@ object GithubUtil {
 
 object GithubDependencyProviderClient {
 
-  def instance(project: ProjectSummary, user: User) = {
+  def instance(project: ProjectSummary, user: UserReference) = {
     new GithubDependencyProvider(new DefaultGithub(), project, user)
   }
 
@@ -66,7 +66,7 @@ object GithubDependencyProviderClient {
 private[lib] case class GithubDependencyProvider(
   github: Github,
   project: ProjectSummary,
-  user: User
+  user: UserReference
 ) extends DependencyProvider {
 
   private val BuildSbtFilename = "build.sbt"

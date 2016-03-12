@@ -3,7 +3,7 @@ package db
 import com.bryzek.dependency.v0.models.{MembershipForm, Organization, OrganizationForm, Role}
 import io.flow.postgresql.{Query, OrderBy, Pager}
 import io.flow.play.util.{IdGenerator, Random, UrlKey}
-import io.flow.common.v0.models.UserReference
+import io.flow.common.v0.models.{User, UserReference}
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -148,7 +148,7 @@ object OrganizationsDao {
       val key = urlKey.generate(defaultUserName(user))
 
       val orgId = DB.withTransaction { implicit c =>
-        val orgId = create(c, user, OrganizationForm(
+        val orgId = create(c, UserReference(id = user.id), OrganizationForm(
           key = key
         ))
 

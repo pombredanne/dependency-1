@@ -4,7 +4,7 @@ import db.{SubscriptionsDao, UsersDao}
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import com.bryzek.dependency.v0.models.{Publication, Subscription, SubscriptionForm}
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
@@ -29,18 +29,18 @@ class Subscriptions @javax.inject.Inject() (
     queryString: Map[String, Seq[String]]
   ) (
     implicit ec: ExecutionContext
-  ): Future[Option[User]] = {
+  ): Future[Option[UserReference]] = {
     queryString.get("identifier").getOrElse(Nil).toList match {
       case Nil => {
         super.user(session, headers, path, queryString)
       }
       case id :: Nil => {
         Future {
-          UsersDao.findAll(identifier = Some(id), limit = 1).headOption
+          UsersDao.findAll(identifier = Some(id), limit = 1).headOption.map { u => UserReference(id = u.id) }
         }
       }
-      case inple => {
-        Logger.warn(s"Multiple identifiers[${inple.size}] found in request - assuming no User")
+      case multiple => {
+        Logger.warn(s"Multiple identifiers[${multiple.size}] found in request - assuming no User")
         Future { None }
       }
     }

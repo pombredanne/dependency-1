@@ -2,12 +2,12 @@ package controllers
 
 import db.{Authorization, BinariesDao, LibrariesDao, OrganizationsDao, ProjectsDao, ResolversDao, UsersDao}
 import com.bryzek.dependency.v0.models.{Binary, Library, Organization, Project, Resolver}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.{User, UserReference}
 import play.api.mvc.{Result, Results}
 
 trait Helpers {
 
-  def withBinary(user: User, id: String)(
+  def withBinary(user: UserReference, id: String)(
     f: Binary => Result
   ): Result = {
     BinariesDao.findById(Authorization.User(user.id), id) match {
@@ -20,7 +20,7 @@ trait Helpers {
     }
   }
   
-  def withLibrary(user: User, id: String)(
+  def withLibrary(user: UserReference, id: String)(
     f: Library => Result
   ): Result = {
     LibrariesDao.findById(Authorization.User(user.id), id) match {
@@ -33,7 +33,7 @@ trait Helpers {
     }
   }
 
-  def withOrganization(user: User, id: String)(
+  def withOrganization(user: UserReference, id: String)(
     f: Organization => Result
   ) = {
     OrganizationsDao.findById(Authorization.User(user.id), id) match {
@@ -46,7 +46,7 @@ trait Helpers {
     }
   }
 
-  def withProject(user: User, id: String)(
+  def withProject(user: UserReference, id: String)(
     f: Project => Result
   ): Result = {
     ProjectsDao.findById(Authorization.User(user.id), id) match {
@@ -59,7 +59,7 @@ trait Helpers {
     }
   }
 
-  def withResolver(user: User, id: String)(
+  def withResolver(user: UserReference, id: String)(
     f: Resolver => Result
   ): Result = {
     ResolversDao.findById(Authorization.User(user.id), id) match {
