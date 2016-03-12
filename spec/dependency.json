@@ -2,7 +2,7 @@
   "name": "dependency",
 
   "imports": [
-    { "uri": "http://www.apidoc.me/flow/common/0.0.10/service.json" },
+    { "uri": "http://www.apidoc.me/flow/common/0.0.11/service.json" },
     { "uri": "http://www.apidoc.me/flow/github/0.0.3/service.json" }    
   ],
 
@@ -198,7 +198,7 @@
     "organization": {
       "fields": [
 	{ "name": "id", "type": "string" },
-	{ "name": "user", "type": "reference", "description": "The user that created this organization" },		
+	{ "name": "user", "type": "io.flow.common.v0.models.user_reference", "description": "The user that created this organization" },		
 	{ "name": "key", "type": "string" }
       ]
     },
@@ -220,7 +220,7 @@
       "fields": [
 	{ "name": "id", "type": "string" },
 	{ "name": "organization", "type": "organization_summary" },
-	{ "name": "user", "type": "reference", "description": "The user that created this project" },
+	{ "name": "user", "type": "io.flow.common.v0.models.user_reference", "description": "The user that created this project" },		
 	{ "name": "visibility", "type": "visibility" },
 	{ "name": "scms", "type": "scms" },
 	{ "name": "name", "type": "string" },
@@ -327,7 +327,7 @@
     "github_user": {
       "fields": [
 	{ "name": "id", "type": "string" },
-        { "name": "user", "type": "reference" },
+	{ "name": "user", "type": "io.flow.common.v0.models.user_reference" },
 	{ "name": "github_user_id", "type": "long" },
 	{ "name": "login", "type": "string" }
       ]
@@ -343,7 +343,7 @@
     "user_identifier": {
       "fields": [
 	{ "name": "id", "type": "string" },
-        { "name": "user", "type": "reference" },
+	{ "name": "user", "type": "io.flow.common.v0.models.user_reference" },
 	{ "name": "value", "type": "string" }
       ]
     },
@@ -351,7 +351,7 @@
     "token": {
       "fields": [
 	{ "name": "id", "type": "string" },
-        { "name": "user", "type": "reference" },
+	{ "name": "user", "type": "io.flow.common.v0.models.user_reference" },
 	{ "name": "masked", "type": "string" },
 	{ "name": "cleartext", "type": "string", "required": false, "description": "The cleartext token. Only available when the token is initially created" },
 	{ "name": "description", "type": "string", "required": false }
@@ -369,7 +369,7 @@
       "description": "Represents a user that is currently subscribed to a publication",
       "fields": [
 	{ "name": "id", "type": "string", "description": "Internal unique identifier for this subscription record" },
-	{ "name": "user", "type": "reference" },
+	{ "name": "user", "type": "io.flow.common.v0.models.user_reference" },
 	{ "name": "publication", "type": "publication" }
       ]
     },
