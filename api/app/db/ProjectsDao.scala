@@ -86,7 +86,7 @@ object ProjectsDao {
       Seq("Name cannot be empty")
 
     } else {
-      ProjectsDao.findByOrganizationAndName(Authorization.All, form.organization, form.name) match {
+      ProjectsDao.findByOrganizationKeyAndName(Authorization.All, form.organization, form.name) match {
         case None => Seq.empty
         case Some(p) => {
           Some(p.id) == existing.map(_.id) match {
@@ -186,8 +186,8 @@ object ProjectsDao {
     MainActor.ref ! MainActor.Messages.ProjectDeleted(project.id)
   }
 
-  def findByOrganizationAndName(auth: Authorization, organization: String, name: String): Option[Project] = {
-    findAll(auth, organization = Some(organization), name = Some(name), limit = 1).headOption
+  def findByOrganizationKeyAndName(auth: Authorization, organizationKey: String, name: String): Option[Project] = {
+    findAll(auth, organizationKey = Some(organizationKey), name = Some(name), limit = 1).headOption
   }
 
   def findById(auth: Authorization, id: String): Option[Project] = {
@@ -198,8 +198,8 @@ object ProjectsDao {
     auth: Authorization,
     id: Option[String] = None,
     ids: Option[Seq[String]] = None,
-    organization: Option[String] = None,
     organizationId: Option[String] = None,
+    organizationKey: Option[String] = None,
     name: Option[String] = None,
     groupId: Option[String] = None,
     artifactId: Option[String] = None,
@@ -224,8 +224,9 @@ object ProjectsDao {
         offset = offset
       ).
         optionalText(
-          "organizations.id",
-          organization,
+          "organizations.key",
+          organizationKey,
+          columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
         equals("organizations.id", organizationId).
@@ -253,6 +254,7 @@ object ProjectsDao {
         and(
           binaryId.map { v => FilterProjectBinaries.format("project_binaries.binary_id = {binary_id}") }
         ).bind("binary_id", binaryId).
+        withDebugging().
         as(
           com.bryzek.dependency.v0.anorm.parsers.Project.parser().*
         )

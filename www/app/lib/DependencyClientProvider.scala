@@ -2,7 +2,7 @@ package com.bryzek.dependency.www.lib
 
 import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Config => FlowConfig}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import com.bryzek.dependency.v0.{Authorization, Client}
 import com.bryzek.dependency.v0.errors.UnitResponse
 import scala.concurrent.{ExecutionContext, Future}
@@ -10,7 +10,7 @@ import scala.util.{Failure, Success, Try}
 
 trait DependencyClientProvider extends UserTokensClient {
 
-  def newClient(user: Option[User]): Client
+  def newClient(user: Option[UserReference]): Client
 
 }
 
@@ -24,7 +24,7 @@ class DefaultDependencyClientProvider @javax.inject.Inject() (
 
   private[this] lazy val client = new Client(host)
 
-  override def newClient(user: Option[User]): Client = {
+  override def newClient(user: Option[UserReference]): Client = {
     user match {
       case None => {
         client
@@ -45,9 +45,9 @@ class DefaultDependencyClientProvider @javax.inject.Inject() (
 
   override def getUserByToken(
     token: String
-  )(implicit ec: ExecutionContext): Future[Option[User]] = {
+  )(implicit ec: ExecutionContext): Future[Option[UserReference]] = {
     // Token is just the ID
-    client.users.get(id = Some(token)).map { _.headOption }
+    client.users.get(id = Some(token)).map { _.headOption.map { u => UserReference(id = u.id) } }
   }
 
 }
