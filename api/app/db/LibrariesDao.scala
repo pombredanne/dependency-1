@@ -4,7 +4,7 @@ import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Library, LibraryForm}
 import io.flow.postgresql.{Query, OrderBy, Pager}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -70,7 +70,7 @@ object LibrariesDao {
     groupIdErrors ++ artifactIdErrors ++ existsErrors
   }
 
-  def upsert(createdBy: User, form: LibraryForm): Either[Seq[String], Library] = {
+  def upsert(createdBy: UserReference, form: LibraryForm): Either[Seq[String], Library] = {
     LibrariesDao.findByGroupIdAndArtifactId(Authorization.All, form.groupId, form.artifactId) match {
       case None => {
         create(createdBy, form)
@@ -86,7 +86,7 @@ object LibrariesDao {
     }
   }
 
-  def create(createdBy: User, form: LibraryForm): Either[Seq[String], Library] = {
+  def create(createdBy: UserReference, form: LibraryForm): Either[Seq[String], Library] = {
     validate(form) match {
       case Nil => {
         val id = io.flow.play.util.IdGenerator("lib").randomId()
@@ -117,7 +117,7 @@ object LibrariesDao {
     }
   }
 
-  def delete(deletedBy: User, library: Library) {
+  def delete(deletedBy: UserReference, library: Library) {
     Pager.create { offset =>
       LibraryVersionsDao.findAll(Authorization.All, libraryId = Some(library.id), offset = offset)
     }.foreach { LibraryVersionsDao.delete(deletedBy, _) }

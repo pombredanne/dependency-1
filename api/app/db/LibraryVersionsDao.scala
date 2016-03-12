@@ -4,7 +4,7 @@ import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Library, LibraryVersion, VersionForm}
 import io.flow.postgresql.{Query, OrderBy}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -41,13 +41,13 @@ object LibraryVersionsDao {
     ({id}, {library_id}, {version}, {cross_build_version}, {sort_key}, {updated_by_user_id})
   """
 
-  def upsert(createdBy: User, libraryId: String, form: VersionForm): LibraryVersion = {
+  def upsert(createdBy: UserReference, libraryId: String, form: VersionForm): LibraryVersion = {
     DB.withConnection { implicit c =>
       upsertWithConnection(createdBy, libraryId, form)
     }
   }
 
-  private[db] def upsertWithConnection(createdBy: User, libraryId: String, form: VersionForm)(
+  private[db] def upsertWithConnection(createdBy: UserReference, libraryId: String, form: VersionForm)(
     implicit c: java.sql.Connection
   ): LibraryVersion = {
     findAllWithConnection(
@@ -80,13 +80,13 @@ object LibraryVersionsDao {
     }
   }
 
-  def create(createdBy: User, libraryId: String, form: VersionForm): LibraryVersion = {
+  def create(createdBy: UserReference, libraryId: String, form: VersionForm): LibraryVersion = {
     DB.withConnection { implicit c =>
       createWithConnection(createdBy, libraryId, form)
     }
   }
 
-  def createWithConnection(createdBy: User, libraryId: String, form: VersionForm)(implicit c: java.sql.Connection): LibraryVersion = {
+  def createWithConnection(createdBy: UserReference, libraryId: String, form: VersionForm)(implicit c: java.sql.Connection): LibraryVersion = {
     val id = io.flow.play.util.IdGenerator("liv").randomId()
 
     val sortKey = form.crossBuildVersion match {
@@ -110,7 +110,7 @@ object LibraryVersionsDao {
     }
   }
 
-  def delete(deletedBy: User, lv: LibraryVersion) {
+  def delete(deletedBy: UserReference, lv: LibraryVersion) {
     DbHelpers.delete("library_versions", deletedBy.id, lv.id)
     MainActor.ref ! MainActor.Messages.LibraryVersionDeleted(lv.id, lv.library.id)
   }

@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.v0.models.{Project, Recommendation, RecommendationType}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import io.flow.postgresql.{Query, OrderBy, Pager}
 import anorm._
 import play.api.db._
@@ -46,7 +46,7 @@ object RecommendationsDao {
     ({id}, {project_id}, {type}, {object_id}, {name}, {from_version}, {to_version}, {updated_by_user_id})
   """
 
-  def sync(user: User, project: Project) {
+  def sync(user: UserReference, project: Project) {
     val libraries = LibraryRecommendationsDao.forProject(project).map { rec =>
       RecommendationForm(
         projectId = project.id,
@@ -91,12 +91,12 @@ object RecommendationsDao {
     }
   }
 
-  def delete(deletedBy: User, rec: Recommendation) {
+  def delete(deletedBy: UserReference, rec: Recommendation) {
     DbHelpers.delete("recommendations", deletedBy.id, rec.id)
   }
 
   private[this] def upsert(
-    createdBy: User,
+    createdBy: UserReference,
     form: RecommendationForm
   ) (
     implicit c: java.sql.Connection
@@ -132,7 +132,7 @@ object RecommendationsDao {
   }
 
   private[this] def create(
-    createdBy: User,
+    createdBy: UserReference,
     form: RecommendationForm
   ) (
     implicit c: java.sql.Connection

@@ -4,7 +4,7 @@ import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.{Scms, Binary, BinaryForm, Library, LibraryForm, Project, ProjectForm, ProjectSummary, OrganizationSummary, Visibility}
 import com.bryzek.dependency.api.lib.GithubUtil
 import io.flow.postgresql.{Query, OrderBy, Pager}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -59,7 +59,7 @@ object ProjectsDao {
   }
 
   private[db] def validate(
-    user: User,
+    user: UserReference,
     form: ProjectForm,
     existing: Option[Project] = None
   ): Seq[String] = {
@@ -105,7 +105,7 @@ object ProjectsDao {
     nameErrors ++ visibilityErrors ++ uriErrors ++ organizationErrors
   }
 
-  def create(createdBy: User, form: ProjectForm): Either[Seq[String], Project] = {
+  def create(createdBy: UserReference, form: ProjectForm): Either[Seq[String], Project] = {
     validate(createdBy, form) match {
       case Nil => {
 
@@ -140,7 +140,7 @@ object ProjectsDao {
     }
   }
 
-  def update(createdBy: User, project: Project, form: ProjectForm): Either[Seq[String], Project] = {
+  def update(createdBy: UserReference, project: Project, form: ProjectForm): Either[Seq[String], Project] = {
     validate(createdBy, form, Some(project)) match {
       case Nil => {
         // To support org change - need to record the change as its
@@ -173,7 +173,7 @@ object ProjectsDao {
     }
   }
 
-  def delete(deletedBy: User, project: Project) {
+  def delete(deletedBy: UserReference, project: Project) {
     Pager.create { offset =>
       ProjectLibrariesDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
     }.foreach { ProjectLibrariesDao.delete(deletedBy, _) }

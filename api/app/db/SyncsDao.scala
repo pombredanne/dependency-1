@@ -1,7 +1,7 @@
 package db
 
 import com.bryzek.dependency.v0.models.{Sync, SyncEvent}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import io.flow.postgresql.{Query, OrderBy}
 import anorm._
 import play.api.db._
@@ -38,7 +38,7 @@ object SyncsDao {
   """
 
   def withStartedAndCompleted[T](
-    createdBy: User, `type`: String, id: String
+    createdBy: UserReference, `type`: String, id: String
   ) (
     f: => T
   ): T = {
@@ -48,22 +48,22 @@ object SyncsDao {
     result
   }
 
-  def recordStarted(createdBy: User, `type`: String, id: String) {
+  def recordStarted(createdBy: UserReference, `type`: String, id: String) {
     createInternal(createdBy, SyncForm(`type`, id, SyncEvent.Started))
   }
 
-  def recordCompleted(createdBy: User, `type`: String, id: String) {
+  def recordCompleted(createdBy: UserReference, `type`: String, id: String) {
     createInternal(createdBy, SyncForm(`type`, id, SyncEvent.Completed))
   }
 
-  def create(createdBy: User, form: SyncForm): Sync = {
+  def create(createdBy: UserReference, form: SyncForm): Sync = {
     val id = createInternal(createdBy, form)
     findById(id).getOrElse {
       sys.error("Failed to create sync")
     }
   }
 
-  private[this] def createInternal(createdBy: User, form: SyncForm): String = {
+  private[this] def createInternal(createdBy: UserReference, form: SyncForm): String = {
     val id = io.flow.play.util.IdGenerator("syn").randomId()
 
     DB.withConnection { implicit c =>

@@ -4,7 +4,7 @@ import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.api.lib.Version
 import com.bryzek.dependency.v0.models.{Binary, BinaryType, BinaryVersion}
 import io.flow.postgresql.{Query, OrderBy}
-import io.flow.common.v0.models.User
+import io.flow.common.v0.models.UserReference
 import anorm._
 import play.api.db._
 import play.api.Play.current
@@ -32,13 +32,13 @@ object BinaryVersionsDao {
     ({id}, {binary_id}, {version}, {sort_key}, {updated_by_user_id})
   """
 
-  def upsert(createdBy: User, binaryId: String, version: String): BinaryVersion = {
+  def upsert(createdBy: UserReference, binaryId: String, version: String): BinaryVersion = {
     DB.withConnection { implicit c =>
       upsertWithConnection(createdBy, binaryId, version)
     }
   }
 
-  private[db] def upsertWithConnection(createdBy: User, binaryId: String, version: String)(
+  private[db] def upsertWithConnection(createdBy: UserReference, binaryId: String, version: String)(
     implicit c: java.sql.Connection
   ): BinaryVersion = {
     findAllWithConnection(
@@ -66,13 +66,13 @@ object BinaryVersionsDao {
     }
   }
 
-  def create(createdBy: User, binaryId: String, version: String): BinaryVersion = {
+  def create(createdBy: UserReference, binaryId: String, version: String): BinaryVersion = {
     DB.withConnection { implicit c =>
       createWithConnection(createdBy, binaryId, version)
     }
   }
 
-  def createWithConnection(createdBy: User, binaryId: String, version: String)(implicit c: java.sql.Connection): BinaryVersion = {
+  def createWithConnection(createdBy: UserReference, binaryId: String, version: String)(implicit c: java.sql.Connection): BinaryVersion = {
     assert(!version.trim.isEmpty, "Version must be non empty")
     val id = io.flow.play.util.IdGenerator("biv").randomId()
 
@@ -91,7 +91,7 @@ object BinaryVersionsDao {
     }
   }
 
-  def delete(deletedBy: User, bv: BinaryVersion) {
+  def delete(deletedBy: UserReference, bv: BinaryVersion) {
     DbHelpers.delete("binary_versions", deletedBy.id, bv.id)
     MainActor.ref ! MainActor.Messages.BinaryVersionDeleted(bv.id, bv.binary.id)
   }
