@@ -211,6 +211,7 @@ object TokensDao {
         auth,
         id = id,
         ids = ids,
+        token = token,
         userId = userId,
         tag = tag,
         limit = limit,
