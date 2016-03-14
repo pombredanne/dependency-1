@@ -1,6 +1,5 @@
 package com.bryzek.dependency.www.lib
 
-import io.flow.play.clients.UserTokensClient
 import play.api.{Environment, Configuration, Mode}
 import play.api.inject.Module
 

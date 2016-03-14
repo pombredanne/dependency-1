@@ -1,15 +1,14 @@
 package com.bryzek.dependency.api.lib
 
+import io.flow.token.v0.interfaces.{Client => TokenClient}
 import play.api.{Environment, Configuration, Mode}
 import play.api.inject.Module
 
-import io.flow.play.clients.UserTokensClient
-
-class UserTokensClientModule extends Module {
+class TokenClientModule extends Module {
 
   def bindings(env: Environment, conf: Configuration) = {
     Seq(
-      bind[UserTokensClient].to[DefaultUserTokensClient]
+      bind[TokenClient].to[DefaultTokenClient]
     )
   }
 

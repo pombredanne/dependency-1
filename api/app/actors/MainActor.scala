@@ -81,6 +81,8 @@ class MainActor @javax.inject.Inject() (
 
   implicit val mainActorExecutionContext: ExecutionContext = system.dispatchers.lookup("main-actor-context")
 
+  /*
+
   scheduleRecurring(system, "com.bryzek.dependency.api.binary.seconds") {
     periodicActor ! PeriodicActor.Messages.SyncBinaries
   }
@@ -100,7 +102,8 @@ class MainActor @javax.inject.Inject() (
   scheduleRecurring(system, "com.bryzek.dependency.api.email.seconds") {
     emailActor ! EmailActor.Messages.ProcessDailySummary
   }
-
+   */
+  
   def receive = akka.event.LoggingReceive {
 
     case m @ MainActor.Messages.UserCreated(id) => withVerboseErrorHandler(m) {

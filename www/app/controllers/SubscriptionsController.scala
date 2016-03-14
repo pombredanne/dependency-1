@@ -2,7 +2,6 @@ package controllers
 
 import com.bryzek.dependency.v0.models.{Publication, SubscriptionForm}
 import com.bryzek.dependency.www.lib.{DependencyClientProvider, UiData}
-import io.flow.play.clients.UserTokensClient
 import io.flow.common.v0.models.User
 import scala.concurrent.Future
 
@@ -25,7 +24,7 @@ object Subscriptions {
 
 class SubscriptionsController @javax.inject.Inject() (
   val messagesApi: MessagesApi,
-  val userTokensClient: UserTokensClient,
+  val tokenClient: io.flow.token.v0.interfaces.Client,
   val dependencyClientProvider: DependencyClientProvider
 ) extends Controller
     with I18nSupport

@@ -4,7 +4,6 @@ import com.bryzek.dependency.actors.MainActor
 import com.bryzek.dependency.v0.models.json._
 import io.flow.common.v0.models.json._
 import db.{Authorization, LibrariesDao, ProjectsDao}
-import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
 import io.flow.postgresql.Pager
@@ -13,7 +12,7 @@ import play.api.libs.json._
 
 @javax.inject.Singleton
 class GithubWebhooks @javax.inject.Inject() (
-  val userTokensClient: UserTokensClient
+  val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller with IdentifiedRestController with Helpers {
 
   def postByProjectId(projectId: String) = Action { request =>

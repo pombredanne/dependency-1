@@ -1,7 +1,6 @@
 package controllers
 
 import db.{Authorization, InternalTokenForm, TokensDao}
-import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.Validation
 import io.flow.common.v0.models.UserReference
 import com.bryzek.dependency.v0.models.{Token, TokenForm}
@@ -11,7 +10,7 @@ import play.api.mvc._
 import play.api.libs.json._
 
 class Tokens @javax.inject.Inject() (
-  val userTokensClient: UserTokensClient
+  val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller with BaseIdentifiedController {
 
   import scala.concurrent.ExecutionContext.Implicits.global

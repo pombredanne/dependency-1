@@ -3,7 +3,6 @@ package controllers
 import com.bryzek.dependency.v0.Client
 import com.bryzek.dependency.v0.models.Organization
 import com.bryzek.dependency.www.lib.{DependencyClientProvider, Section, UiData}
-import io.flow.play.clients.UserTokensClient
 import io.flow.common.v0.models.{User, UserReference}
 import io.flow.play.controllers.IdentifiedController
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,7 +34,7 @@ object Helpers {
 }
 
 abstract class BaseController(
-  val userTokensClient: UserTokensClient,
+  val tokenClient: io.flow.token.v0.interfaces.Client,
   val dependencyClientProvider: DependencyClientProvider
 ) extends Controller
     with IdentifiedController

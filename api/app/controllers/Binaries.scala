@@ -1,7 +1,6 @@
 package controllers
 
 import db.{Authorization, BinariesDao}
-import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
 import io.flow.common.v0.models.UserReference
@@ -13,7 +12,7 @@ import play.api.libs.json._
 
 @javax.inject.Singleton
 class Binaries @javax.inject.Inject() (
-  val userTokensClient: UserTokensClient
+  val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller with IdentifiedRestController with Helpers {
 
   def get(

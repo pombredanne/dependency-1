@@ -1,7 +1,6 @@
 package controllers
 
 import db.OrganizationsDao
-import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.Validation
 import com.bryzek.dependency.v0.models.{Organization, OrganizationForm}
 import com.bryzek.dependency.v0.models.json._
@@ -10,7 +9,7 @@ import play.api.mvc._
 import play.api.libs.json._
 
 class Organizations @javax.inject.Inject() (
-  val userTokensClient: UserTokensClient
+  val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller with BaseIdentifiedController {
 
   import scala.concurrent.ExecutionContext.Implicits.global

@@ -4,7 +4,6 @@ import com.bryzek.dependency.v0.errors.UnitResponse
 import com.bryzek.dependency.v0.models.{Token, TokenForm}
 import com.bryzek.dependency.www.lib.DependencyClientProvider
 import io.flow.common.v0.models.User
-import io.flow.play.clients.UserTokensClient
 import io.flow.play.util.{Pagination, PaginatedCollection}
 import scala.concurrent.Future
 
@@ -16,7 +15,7 @@ import play.api.data.Forms._
 
 class TokensController @javax.inject.Inject() (
   val messagesApi: MessagesApi,
-  override val userTokensClient: UserTokensClient,
+  override val tokenClient: io.flow.token.v0.interfaces.Client,
   override val dependencyClientProvider: DependencyClientProvider
 ) extends BaseController(userTokensClient, dependencyClientProvider) {
 
