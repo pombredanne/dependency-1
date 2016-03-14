@@ -35,7 +35,7 @@ class SubscriptionsController @javax.inject.Inject() (
   lazy val client = dependencyClientProvider.newClient(user = None)
 
   def index() = Action.async { implicit request =>
-    Helpers.userFromSession(userTokensClient, request.session).flatMap { userOption =>
+    Helpers.userFromSession(tokenClient, request.session).flatMap { userOption =>
       userOption match {
         case None => Future {
           Redirect(routes.LoginController.index(return_url = Some(request.path)))

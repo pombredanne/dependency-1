@@ -1,6 +1,5 @@
 package com.bryzek.dependency.www.lib
 
-import io.flow.play.util.{Config => FlowConfig}
 import io.flow.common.v0.models.UserReference
 import com.bryzek.dependency.v0.{Authorization, Client}
 import com.bryzek.dependency.v0.errors.UnitResponse
@@ -15,7 +14,7 @@ trait DependencyClientProvider {
 
 @javax.inject.Singleton
 class DefaultDependencyClientProvider @javax.inject.Inject() (
-  config: FlowConfig
+  config: io.flow.play.util.Config
 ) extends DependencyClientProvider {
 
   def host: String = config.requiredString("dependency.api.host")
@@ -30,7 +29,7 @@ class DefaultDependencyClientProvider @javax.inject.Inject() (
       }
       case Some(u) => {
         new Client(
-          apiUrl = host,
+          baseUrl = host,
           auth = Some(
             Authorization.Basic(
               username = u.id.toString,

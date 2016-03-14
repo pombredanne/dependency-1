@@ -10,7 +10,7 @@ class ApplicationController @javax.inject.Inject() (
   val messagesApi: MessagesApi,
   override val tokenClient: io.flow.token.v0.interfaces.Client,
   override val dependencyClientProvider: DependencyClientProvider
-) extends BaseController(userTokensClient, dependencyClientProvider) {
+) extends BaseController(tokenClient, dependencyClientProvider) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
  
