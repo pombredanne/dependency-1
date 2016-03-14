@@ -191,10 +191,15 @@ object TokensDao {
     findAll(auth, id = Some(id), limit = 1).headOption
   }
 
+  def findByToken(token: String): Option[Token] = {
+    findAll(Authorization.All, token = Some(token), limit = 1).headOption
+  }
+
   def findAll(
     auth: Authorization,
     id: Option[String] = None,
     ids: Option[Seq[String]] = None,
+    token: Option[String] = None,
     userId: Option[String] = None,
     tag: Option[String] = None,
     orderBy: OrderBy = OrderBy("tokens.created_at"),
@@ -206,6 +211,7 @@ object TokensDao {
         auth,
         id = id,
         ids = ids,
+        token = token,
         userId = userId,
         tag = tag,
         limit = limit,
@@ -219,6 +225,7 @@ object TokensDao {
     auth: Authorization,
     id: Option[String] = None,
     ids: Option[Seq[String]] = None,
+    token: Option[String] = None,
     userId: Option[String] = None,
     tag: Option[String] = None,
     orderBy: OrderBy = OrderBy("tokens.created_at"),
@@ -236,6 +243,7 @@ object TokensDao {
       offset = offset
     ).
       equals("tokens.user_id", userId).
+      equals("tokens.token", token).
       optionalText("tokens.tag", tag, valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)).
       orderBy(orderBy.sql).
       as(

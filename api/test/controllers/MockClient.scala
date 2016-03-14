@@ -13,7 +13,7 @@ trait MockClient extends db.Helpers {
 
   val port = 9010
 
-  lazy val client = new Client(
+  def client = new Client(
     s"http://localhost:$port",
     auth = Some(Authorization.Basic(systemUser.id.toString))
   )

@@ -1,7 +1,6 @@
 package controllers
 
 import db.{SubscriptionsDao, UsersDao}
-import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
 import io.flow.common.v0.models.UserReference
@@ -15,7 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @javax.inject.Singleton
 class Subscriptions @javax.inject.Inject() (
-  val userTokensClient: UserTokensClient
+  val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller with IdentifiedRestController {
 
   /**

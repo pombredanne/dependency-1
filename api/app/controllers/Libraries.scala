@@ -1,8 +1,6 @@
 package controllers
 
 import db.{Authorization, LibrariesDao}
-import io.flow.play.clients.UserTokensClient
-import io.flow.play.controllers.IdentifiedRestController
 import io.flow.play.util.Validation
 import io.flow.common.v0.models.UserReference
 import com.bryzek.dependency.v0.models.{Library, LibraryForm}
@@ -13,8 +11,8 @@ import play.api.libs.json._
 
 @javax.inject.Singleton
 class Libraries @javax.inject.Inject() (
-  val userTokensClient: UserTokensClient
-) extends Controller with IdentifiedRestController with Helpers {
+  val tokenClient: io.flow.token.v0.interfaces.Client
+) extends Controller with BaseIdentifiedController {
 
   def get(
     id: Option[String],

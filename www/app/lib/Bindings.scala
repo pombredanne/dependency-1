@@ -1,6 +1,6 @@
 package com.bryzek.dependency.www.lib
 
-import io.flow.play.clients.UserTokensClient
+import io.flow.token.v0.interfaces.{Client => TokenClient}
 import play.api.{Environment, Configuration, Mode}
 import play.api.inject.Module
 
@@ -10,12 +10,12 @@ class DependencyClientProviderModule extends Module {
     env.mode match {
       case Mode.Prod | Mode.Dev => Seq(
         bind[DependencyClientProvider].to[DefaultDependencyClientProvider],
-        bind[UserTokensClient].to[DefaultDependencyClientProvider]
+        bind[TokenClient].to[DefaultTokenClient]
       )
       case Mode.Test => Seq(
         // TODO: Add mock
         bind[DependencyClientProvider].to[DependencyClientProvider],
-        bind[UserTokensClient].to[DefaultDependencyClientProvider]
+        bind[TokenClient].to[DefaultTokenClient]
       )
     }
   }

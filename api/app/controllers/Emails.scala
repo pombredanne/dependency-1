@@ -4,7 +4,6 @@ import db.{LastEmailsDao, UsersDao}
 import com.bryzek.dependency.v0.models.Publication
 import com.bryzek.dependency.api.lib.{Email, Recipient}
 import com.bryzek.dependency.actors._
-import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.AnonymousController
 import io.flow.play.util.Config
 import play.api.mvc._
@@ -12,7 +11,7 @@ import play.api.libs.json._
 
 @javax.inject.Singleton
 class Emails @javax.inject.Inject() (
-  val userTokensClient: UserTokensClient,
+  val tokenClient: io.flow.token.v0.interfaces.Client,
   config: Config
 ) extends Controller with AnonymousController with Helpers {
 

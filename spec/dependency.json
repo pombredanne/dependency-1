@@ -588,6 +588,7 @@
           "responses": {
             "200": { "type": "project", "description": "Project successfully updated" },
             "401": { "type": "unit" },
+            "404": { "type": "unit" },
             "422": { "type": "[io.flow.common.v0.models.error]" }
           }
         },

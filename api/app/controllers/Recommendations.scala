@@ -1,7 +1,6 @@
 package controllers
 
 import db.{Authorization, RecommendationsDao}
-import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import com.bryzek.dependency.v0.models.RecommendationType
 import com.bryzek.dependency.v0.models.json._
@@ -11,7 +10,7 @@ import play.api.libs.json._
 
 @javax.inject.Singleton
 class Recommendations @javax.inject.Inject() (
-  val userTokensClient: UserTokensClient
+  val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller with IdentifiedRestController with Helpers {
 
   def get(

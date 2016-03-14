@@ -3,8 +3,8 @@ package controllers
 import com.bryzek.dependency.v0.Client
 import com.bryzek.dependency.v0.models.Organization
 import com.bryzek.dependency.www.lib.{DependencyClientProvider, Section, UiData}
-import io.flow.play.clients.UserTokensClient
 import io.flow.common.v0.models.{User, UserReference}
+import io.flow.token.v0.interfaces.{Client => TokenClient}
 import io.flow.play.controllers.IdentifiedController
 import scala.concurrent.{ExecutionContext, Future}
 import play.api._
@@ -17,17 +17,20 @@ import scala.concurrent.duration.Duration
 object Helpers {
 
   def userFromSession(
-    userTokensClient: UserTokensClient,
+    tokenClient: TokenClient,
     session: play.api.mvc.Session
   ) (
     implicit ec: scala.concurrent.ExecutionContext
   ): scala.concurrent.Future[Option[UserReference]] = {
     session.get("user_id") match {
       case None => {
-        scala.concurrent.Future { None }
+        Future { None }
       }
+
       case Some(userId) => {
-        userTokensClient.getUserByToken(userId)
+        tokenClient.tokens.get(token = Seq(userId)).map { result =>
+          result.headOption.map(_.user)
+        }
       }
     }
   }
@@ -35,7 +38,7 @@ object Helpers {
 }
 
 abstract class BaseController(
-  val userTokensClient: UserTokensClient,
+  val tokenClient: io.flow.token.v0.interfaces.Client,
   val dependencyClientProvider: DependencyClientProvider
 ) extends Controller
     with IdentifiedController
@@ -89,7 +92,7 @@ abstract class BaseController(
   ) (
     implicit ec: scala.concurrent.ExecutionContext
   ): scala.concurrent.Future[Option[UserReference]] = {
-    Helpers.userFromSession(userTokensClient, session)
+    Helpers.userFromSession(tokenClient, session)
   }
 
   def uiData[T](

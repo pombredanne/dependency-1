@@ -2,7 +2,6 @@ package controllers
 
 import db.SyncsDao
 import com.bryzek.dependency.actors.MainActor
-import io.flow.play.clients.UserTokensClient
 import io.flow.play.controllers.IdentifiedRestController
 import com.bryzek.dependency.v0.models.SyncEvent
 import com.bryzek.dependency.v0.models.json._
@@ -12,7 +11,7 @@ import play.api.libs.json._
 
 @javax.inject.Singleton
 class Syncs @javax.inject.Inject() (
-  val userTokensClient: UserTokensClient
+  val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller with IdentifiedRestController with Helpers {
 
   def get(

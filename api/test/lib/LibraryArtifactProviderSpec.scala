@@ -6,7 +6,6 @@ import play.api.test.Helpers._
 import org.scalatestplus.play._
 
 import com.bryzek.dependency.v0.models.{Library, OrganizationSummary}
-import io.flow.play.clients.MockUserTokensClient
 import org.joda.time.DateTime
 import java.util.UUID
 

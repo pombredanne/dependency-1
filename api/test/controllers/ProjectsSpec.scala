@@ -29,6 +29,7 @@ class ProjectsSpec extends PlaySpecification with MockClient {
     )
   }
 
+  /*
   "GET /projects by name" in new WithServer(port=port) {
     await(
       client.projects.get(name = Some(project1.name))
@@ -112,5 +113,5 @@ class ProjectsSpec extends PlaySpecification with MockClient {
       client.projects.deleteById(project.id)
     )
   }
-
+ */
 }
