@@ -21,8 +21,9 @@ class DefaultTokenClient() extends Client {
 // TODO: Add JWT for auth
 class Tokens() extends io.flow.token.v0.Tokens {
 
-  def get(
-    tokens: Seq[String]
+  override def get(
+    tokens: Seq[String],
+    requestHeaders: Seq[(String, String)] = Nil
   )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.token.v0.models.Token]] = Future {
     tokens.map { userId =>
       FlowToken(
@@ -31,20 +32,23 @@ class Tokens() extends io.flow.token.v0.Tokens {
     }
   }
 
-  def getByToken(
-    token: String
+  override def getByToken(
+    token: String,
+    requestHeaders: Seq[(String, String)] = Nil
   )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.token.v0.models.Token] = {
     get(Seq(token)).map(_.headOption.getOrElse {
       throw new UnitResponse(404)
     })
   }
 
-  def post(
-    tokenForm: io.flow.token.v0.models.TokenForm
+  override def post(
+    tokenForm: io.flow.token.v0.models.TokenForm,
+    requestHeaders: Seq[(String, String)] = Nil
   )(implicit ec: scala.concurrent.ExecutionContext) = throw new UnsupportedOperationException()
 
-  def deleteByToken(
-    token: String
+  override def deleteByToken(
+    token: String,
+    requestHeaders: Seq[(String, String)] = Nil
   )(implicit ec: scala.concurrent.ExecutionContext) = throw new UnsupportedOperationException()
 
 }
