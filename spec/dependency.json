@@ -2,7 +2,7 @@
   "name": "dependency",
 
   "imports": [
-    { "uri": "http://www.apidoc.me/flow/common/0.0.11/service.json" },
+    { "uri": "http://www.apidoc.me/flow/common/0.0.12/service.json" },
     { "uri": "http://www.apidoc.me/flow/github/0.0.3/service.json" }    
   ],
 
