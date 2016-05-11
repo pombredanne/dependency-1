@@ -59,7 +59,7 @@ lazy val www = project
       "org.webjars" %% "webjars-play" % "2.5.0",
       "org.webjars" % "bootstrap" % "3.3.6",
       "org.webjars.bower" % "bootstrap-social" % "5.0.0",
-      "org.webjars" % "font-awesome" % "4.6.1",
+      "org.webjars" % "font-awesome" % "4.6.2",
       "org.webjars" % "jquery" % "2.1.4"
     )
   )
@@ -82,4 +82,4 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases",
   resolvers += "Artifactory" at "https://flow.artifactoryonline.com/flow/libs-release/"
 )
-version := "0.4.11"
+
