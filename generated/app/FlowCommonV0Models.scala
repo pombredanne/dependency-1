@@ -12,23 +12,6 @@ package io.flow.common.v0.models {
   sealed trait ExpandableUser
 
   /**
-   * Defines structured fields for address to be used in user/form input. Either text
-   * or the structured input needs to be present.
-   */
-  case class Address(
-    text: _root_.scala.Option[String] = None,
-    streets: _root_.scala.Option[Seq[String]] = None,
-    city: _root_.scala.Option[String] = None,
-    province: _root_.scala.Option[String] = None,
-    postal: _root_.scala.Option[String] = None,
-    country: _root_.scala.Option[String] = None
-  ) extends ExpandableLocation
-
-  case class AddressSummary(
-    text: _root_.scala.Option[String] = None
-  ) extends ExpandableLocation
-
-  /**
    * Defines structured fields for a contact person. Typically used for specifying
    * contact person for an account, shipment, or organization representative
    */
@@ -66,13 +49,23 @@ package io.flow.common.v0.models {
   )
 
   /**
-   * We capture the location as a string; over time we anticipate storing structued
-   * data by parsing the location (e.g. the country) to enable things like reporting,
-   * filtering in bulk
+   * Defines structured fields for address to be used in user/form input. Either text
+   * or the structured input needs to be present.
    */
   case class Location(
-    value: String
-  )
+    text: _root_.scala.Option[String] = None,
+    streets: _root_.scala.Option[Seq[String]] = None,
+    city: _root_.scala.Option[String] = None,
+    province: _root_.scala.Option[String] = None,
+    postal: _root_.scala.Option[String] = None,
+    country: _root_.scala.Option[String] = None,
+    latitude: _root_.scala.Option[String] = None,
+    longitude: _root_.scala.Option[String] = None
+  ) extends ExpandableLocation
+
+  case class LocationReference(
+    text: _root_.scala.Option[String] = None
+  ) extends ExpandableLocation
 
   case class Measurement(
     value: String,
@@ -377,6 +370,40 @@ package io.flow.common.v0.models {
     def apply(value: String): ScheduleExceptionStatus = fromString(value).getOrElse(UNDEFINED(value))
 
     def fromString(value: String): _root_.scala.Option[ScheduleExceptionStatus] = byName.get(value.toLowerCase)
+
+  }
+
+  sealed trait SortDirection
+
+  object SortDirection {
+
+    case object Ascending extends SortDirection { override def toString = "ascending" }
+    case object Descending extends SortDirection { override def toString = "descending" }
+
+    /**
+     * UNDEFINED captures values that are sent either in error or
+     * that were added by the server after this library was
+     * generated. We want to make it easy and obvious for users of
+     * this library to handle this case gracefully.
+     *
+     * We use all CAPS for the variable name to avoid collisions
+     * with the camel cased values above.
+     */
+    case class UNDEFINED(override val toString: String) extends SortDirection
+
+    /**
+     * all returns a list of all the valid, known values. We use
+     * lower case to avoid collisions with the camel cased values
+     * above.
+     */
+    val all = Seq(Ascending, Descending)
+
+    private[this]
+    val byName = all.map(x => x.toString.toLowerCase -> x).toMap
+
+    def apply(value: String): SortDirection = fromString(value).getOrElse(UNDEFINED(value))
+
+    def fromString(value: String): _root_.scala.Option[SortDirection] = byName.get(value.toLowerCase)
 
   }
 
@@ -782,6 +809,36 @@ package io.flow.common.v0.models {
       }
     }
 
+    implicit val jsonReadsCommonSortDirection = new play.api.libs.json.Reads[io.flow.common.v0.models.SortDirection] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.common.v0.models.SortDirection] = {
+        js match {
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.common.v0.models.SortDirection(v.value))
+          case _ => {
+            (js \ "value").validate[String] match {
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.common.v0.models.SortDirection(v))
+              case err: play.api.libs.json.JsError => err
+            }
+          }
+        }
+      }
+    }
+
+    def jsonWritesCommonSortDirection(obj: io.flow.common.v0.models.SortDirection) = {
+      play.api.libs.json.JsString(obj.toString)
+    }
+
+    def jsObjectSortDirection(obj: io.flow.common.v0.models.SortDirection) = {
+      play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
+    }
+
+    implicit def jsonWritesCommonSortDirection: play.api.libs.json.Writes[SortDirection] = {
+      new play.api.libs.json.Writes[io.flow.common.v0.models.SortDirection] {
+        def writes(obj: io.flow.common.v0.models.SortDirection) = {
+          jsonWritesCommonSortDirection(obj)
+        }
+      }
+    }
+
     implicit val jsonReadsCommonUnitOfMeasurement = new play.api.libs.json.Reads[io.flow.common.v0.models.UnitOfMeasurement] {
       def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.common.v0.models.UnitOfMeasurement] = {
         js match {
@@ -900,55 +957,6 @@ package io.flow.common.v0.models {
           jsonWritesCommonVisibility(obj)
         }
       }
-    }
-
-    implicit def jsonReadsCommonAddress: play.api.libs.json.Reads[Address] = {
-      (
-        (__ \ "text").readNullable[String] and
-        (__ \ "streets").readNullable[Seq[String]] and
-        (__ \ "city").readNullable[String] and
-        (__ \ "province").readNullable[String] and
-        (__ \ "postal").readNullable[String] and
-        (__ \ "country").readNullable[String]
-      )(Address.apply _)
-    }
-
-    def jsObjectAddress(obj: io.flow.common.v0.models.Address) = {
-      (obj.text match {
-        case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("text" -> play.api.libs.json.JsString(x))
-      }) ++
-      (obj.streets match {
-        case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("streets" -> play.api.libs.json.Json.toJson(x))
-      }) ++
-      (obj.city match {
-        case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("city" -> play.api.libs.json.JsString(x))
-      }) ++
-      (obj.province match {
-        case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("province" -> play.api.libs.json.JsString(x))
-      }) ++
-      (obj.postal match {
-        case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("postal" -> play.api.libs.json.JsString(x))
-      }) ++
-      (obj.country match {
-        case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("country" -> play.api.libs.json.JsString(x))
-      })
-    }
-
-    implicit def jsonReadsCommonAddressSummary: play.api.libs.json.Reads[AddressSummary] = {
-      (__ \ "text").readNullable[String].map { x => new AddressSummary(text = x) }
-    }
-
-    def jsObjectAddressSummary(obj: io.flow.common.v0.models.AddressSummary) = {
-      (obj.text match {
-        case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("text" -> play.api.libs.json.JsString(x))
-      })
     }
 
     implicit def jsonReadsCommonContact: play.api.libs.json.Reads[Contact] = {
@@ -1087,21 +1095,62 @@ package io.flow.common.v0.models {
     }
 
     implicit def jsonReadsCommonLocation: play.api.libs.json.Reads[Location] = {
-      (__ \ "value").read[String].map { x => new Location(value = x) }
+      (
+        (__ \ "text").readNullable[String] and
+        (__ \ "streets").readNullable[Seq[String]] and
+        (__ \ "city").readNullable[String] and
+        (__ \ "province").readNullable[String] and
+        (__ \ "postal").readNullable[String] and
+        (__ \ "country").readNullable[String] and
+        (__ \ "latitude").readNullable[String] and
+        (__ \ "longitude").readNullable[String]
+      )(Location.apply _)
     }
 
     def jsObjectLocation(obj: io.flow.common.v0.models.Location) = {
-      play.api.libs.json.Json.obj(
-        "value" -> play.api.libs.json.JsString(obj.value)
-      )
+      (obj.text match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("text" -> play.api.libs.json.JsString(x))
+      }) ++
+      (obj.streets match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("streets" -> play.api.libs.json.Json.toJson(x))
+      }) ++
+      (obj.city match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("city" -> play.api.libs.json.JsString(x))
+      }) ++
+      (obj.province match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("province" -> play.api.libs.json.JsString(x))
+      }) ++
+      (obj.postal match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("postal" -> play.api.libs.json.JsString(x))
+      }) ++
+      (obj.country match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("country" -> play.api.libs.json.JsString(x))
+      }) ++
+      (obj.latitude match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("latitude" -> play.api.libs.json.JsString(x))
+      }) ++
+      (obj.longitude match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("longitude" -> play.api.libs.json.JsString(x))
+      })
     }
 
-    implicit def jsonWritesCommonLocation: play.api.libs.json.Writes[Location] = {
-      new play.api.libs.json.Writes[io.flow.common.v0.models.Location] {
-        def writes(obj: io.flow.common.v0.models.Location) = {
-          jsObjectLocation(obj)
-        }
-      }
+    implicit def jsonReadsCommonLocationReference: play.api.libs.json.Reads[LocationReference] = {
+      (__ \ "text").readNullable[String].map { x => new LocationReference(text = x) }
+    }
+
+    def jsObjectLocationReference(obj: io.flow.common.v0.models.LocationReference) = {
+      (obj.text match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("text" -> play.api.libs.json.JsString(x))
+      })
     }
 
     implicit def jsonReadsCommonMeasurement: play.api.libs.json.Reads[Measurement] = {
@@ -1311,8 +1360,8 @@ package io.flow.common.v0.models {
           case play.api.libs.json.JsError(msg) => play.api.libs.json.JsError(msg)
           case play.api.libs.json.JsSuccess(discriminator, _) => {
             discriminator match {
-              case "address" => js.validate[io.flow.common.v0.models.Address]
-              case "address_summary" => js.validate[io.flow.common.v0.models.AddressSummary]
+              case "location" => js.validate[io.flow.common.v0.models.Location]
+              case "location_reference" => js.validate[io.flow.common.v0.models.LocationReference]
               case other => play.api.libs.json.JsSuccess(io.flow.common.v0.models.ExpandableLocationUndefinedType(other))
             }
           }
@@ -1322,8 +1371,8 @@ package io.flow.common.v0.models {
 
     def jsObjectExpandableLocation(obj: io.flow.common.v0.models.ExpandableLocation) = {
       obj match {
-        case x: io.flow.common.v0.models.Address => jsObjectAddress(x) ++ play.api.libs.json.Json.obj("discriminator" -> "address")
-        case x: io.flow.common.v0.models.AddressSummary => jsObjectAddressSummary(x) ++ play.api.libs.json.Json.obj("discriminator" -> "address_summary")
+        case x: io.flow.common.v0.models.Location => jsObjectLocation(x) ++ play.api.libs.json.Json.obj("discriminator" -> "location")
+        case x: io.flow.common.v0.models.LocationReference => jsObjectLocationReference(x) ++ play.api.libs.json.Json.obj("discriminator" -> "location_reference")
         case other => {
           sys.error(s"The type[${other.getClass.getName}] has no JSON writer")
         }
@@ -1497,6 +1546,17 @@ package io.flow.common.v0 {
 
     implicit val queryStringBindableEnumScheduleExceptionStatus = new QueryStringBindable.Parsing[io.flow.common.v0.models.ScheduleExceptionStatus](
       ScheduleExceptionStatus.fromString(_).get, _.toString, enumScheduleExceptionStatusNotFound
+    )
+
+    // Enum: SortDirection
+    private[this] val enumSortDirectionNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.SortDirection.all.mkString(", ")}"
+
+    implicit val pathBindableEnumSortDirection = new PathBindable.Parsing[io.flow.common.v0.models.SortDirection] (
+      SortDirection.fromString(_).get, _.toString, enumSortDirectionNotFound
+    )
+
+    implicit val queryStringBindableEnumSortDirection = new QueryStringBindable.Parsing[io.flow.common.v0.models.SortDirection](
+      SortDirection.fromString(_).get, _.toString, enumSortDirectionNotFound
     )
 
     // Enum: UnitOfMeasurement
