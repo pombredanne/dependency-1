@@ -1,5 +1,9 @@
 builds:
   - api:
       dockerfile: api/Dockerfile
+      port.container: 9000
+      port.host: 6111
   - www:
-      dockerfile: api/Dockerfile
+      dockerfile: www/Dockerfile
+      port.container: 9000
+      port.host: 6110
