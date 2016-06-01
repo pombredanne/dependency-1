@@ -59,7 +59,7 @@ lazy val www = project
       "org.webjars" %% "webjars-play" % "2.5.0",
       "org.webjars" % "bootstrap" % "3.3.6",
       "org.webjars.bower" % "bootstrap-social" % "5.0.0",
-      "org.webjars" % "font-awesome" % "4.6.2",
+      "org.webjars" % "font-awesome" % "4.6.3",
       "org.webjars" % "jquery" % "2.1.4"
     )
   )
@@ -72,7 +72,7 @@ val credsToUse = Option(System.getenv("ARTIFACTORY_USERNAME")) match {
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("dependency-" + _),
   libraryDependencies ++= Seq(
-    "io.flow" %% "lib-play" % "0.1.21",
+    "io.flow" %% "lib-play" % "0.1.22",
     specs2 % Test,
     "org.scalatest" %% "scalatest" % "2.2.6" % Test
   ),
