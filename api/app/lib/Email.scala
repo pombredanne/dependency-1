@@ -63,7 +63,7 @@ object Email {
         request.endpoint = "mail/send"
         request.body = mail.build()
         val response = sendgrid.api(request)
-        assert(response.statusCode != 202, "Error sending email: " + response.body)
+        assert(response.statusCode == 202, "Error sending email: " + response.body)
       }
     }
   }
