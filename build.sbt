@@ -40,7 +40,7 @@ lazy val api = project
       "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.16",
       "org.postgresql" % "postgresql" % "9.4.1208",
       "com.typesafe.play" %% "anorm" % "2.5.1",
-      "com.sendgrid"   %  "sendgrid-java" % "2.2.2",
+      "com.sendgrid"   %  "sendgrid-java" % "3.0.0",
       "org.scalatestplus" %% "play" % "1.4.0" % "test"
     )
   )
@@ -72,7 +72,7 @@ val credsToUse = Option(System.getenv("ARTIFACTORY_USERNAME")) match {
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("dependency-" + _),
   libraryDependencies ++= Seq(
-    "io.flow" %% "lib-play" % "0.1.26",
+    "io.flow" %% "lib-play" % "0.1.28",
     specs2 % Test,
     "org.scalatest" %% "scalatest" % "2.2.6" % Test
   ),

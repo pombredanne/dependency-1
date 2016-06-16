@@ -97,7 +97,7 @@ case class BatchEmailProcessor(
           )
 
           Email.sendHtml(
-            to = generator.recipient,
+            recipient = generator.recipient,
             subject = generator.subject(),
             body = generator.body()
           )
