@@ -1,7 +1,8 @@
 package com.bryzek.dependency.api.lib
 
+import io.flow.delta.api.lib.DefaultTokenClient
 import io.flow.token.v0.interfaces.{Client => TokenClient}
-import play.api.{Environment, Configuration, Mode}
+import play.api.{Configuration, Environment, Mode}
 import play.api.inject.Module
 
 class TokenClientModule extends Module {

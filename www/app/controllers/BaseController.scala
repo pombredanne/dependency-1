@@ -28,7 +28,7 @@ object Helpers {
       }
 
       case Some(userId) => {
-        tokenClient.tokens.get(token = Seq(userId)).map { result =>
+        tokenClient.tokens.get(token = Some(userId)).map { result =>
           result.headOption.map(_.user)
         }
       }

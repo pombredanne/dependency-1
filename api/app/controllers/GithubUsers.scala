@@ -10,6 +10,7 @@ import play.api.libs.json._
 import scala.concurrent.Future
 
 class GithubUsers @javax.inject.Inject() (
+  val config: io.flow.play.util.Config,
   val tokenClient: io.flow.token.v0.interfaces.Client,
   val github: Github
 ) extends Controller {

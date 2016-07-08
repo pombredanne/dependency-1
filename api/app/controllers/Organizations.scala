@@ -9,7 +9,8 @@ import play.api.mvc._
 import play.api.libs.json._
 
 class Organizations @javax.inject.Inject() (
-  val tokenClient: io.flow.token.v0.interfaces.Client
+  override val config: io.flow.play.util.Config,
+  override val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller with BaseIdentifiedController {
 
   import scala.concurrent.ExecutionContext.Implicits.global

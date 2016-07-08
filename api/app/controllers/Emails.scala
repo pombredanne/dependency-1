@@ -11,8 +11,8 @@ import play.api.libs.json._
 
 @javax.inject.Singleton
 class Emails @javax.inject.Inject() (
-  val tokenClient: io.flow.token.v0.interfaces.Client,
-  config: Config
+  val config: io.flow.play.util.Config,
+  override val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller with AnonymousController with Helpers {
 
   private[this] val TestEmailAddressName = "com.bryzek.dependency.api.test.email"

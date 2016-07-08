@@ -14,7 +14,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @javax.inject.Singleton
 class Subscriptions @javax.inject.Inject() (
-  val tokenClient: io.flow.token.v0.interfaces.Client
+  override val config: io.flow.play.util.Config,
+  override val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller with IdentifiedRestController {
 
   /**

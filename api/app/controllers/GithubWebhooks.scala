@@ -12,7 +12,8 @@ import play.api.libs.json._
 
 @javax.inject.Singleton
 class GithubWebhooks @javax.inject.Inject() (
-  val tokenClient: io.flow.token.v0.interfaces.Client
+  override val config: io.flow.play.util.Config,
+  override val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller with IdentifiedRestController with Helpers {
 
   def postByProjectId(projectId: String) = Action { request =>

@@ -12,7 +12,8 @@ import play.api.libs.json._
 import scala.concurrent.Future
 
 class Users @javax.inject.Inject() (
-  val tokenClient: io.flow.token.v0.interfaces.Client
+  override val config: io.flow.play.util.Config,
+  override val tokenClient: io.flow.token.v0.interfaces.Client
 ) extends Controller with IdentifiedRestController {
 
   import scala.concurrent.ExecutionContext.Implicits.global

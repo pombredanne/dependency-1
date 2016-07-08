@@ -3,7 +3,8 @@ package com.bryzek.dependency.www.lib
 import io.flow.common.v0.models.UserReference
 import io.flow.token.v0.interfaces.Client
 import io.flow.token.v0.errors.UnitResponse
-import io.flow.token.v0.models.{ Token => FlowToken }
+import io.flow.token.v0.models.{AuthenticationForm, TokenReference, Token => FlowToken}
+import org.joda.time.DateTime
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -18,37 +19,39 @@ class DefaultTokenClient() extends Client {
 
 }
 
-// TODO: Add JWT for auth
 class Tokens() extends io.flow.token.v0.Tokens {
 
   override def get(
-    tokens: Seq[String],
+    id: _root_.scala.Option[Seq[String]] = None,
+    token: _root_.scala.Option[String] = None,
+    limit: Long = 25,
+    offset: Long = 0,
+    sort: String = "-created_at",
     requestHeaders: Seq[(String, String)] = Nil
   )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.token.v0.models.Token]] = Future {
-    tokens.map { userId =>
-      FlowToken(
-        user = UserReference(id = userId)
-      )
-    }
+    token.map { t=>
+      FlowToken(id = t, user = UserReference(t), createdAt = new DateTime)
+    }.toSeq
   }
 
-  override def getByToken(
+  override def getById(
     token: String,
-    requestHeaders: Seq[(String, String)] = Nil
+    requestHeaders: Seq[(String, String)]
   )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.token.v0.models.Token] = {
-    get(Seq(token)).map(_.headOption.getOrElse {
+    get(token = Some(token), requestHeaders = requestHeaders).map(_.headOption.getOrElse {
       throw new UnitResponse(404)
     })
   }
 
   override def post(
     tokenForm: io.flow.token.v0.models.TokenForm,
-    requestHeaders: Seq[(String, String)] = Nil
+    requestHeaders: Seq[(String, String)]
   )(implicit ec: scala.concurrent.ExecutionContext) = throw new UnsupportedOperationException()
 
-  override def deleteByToken(
+  override def deleteById(
     token: String,
-    requestHeaders: Seq[(String, String)] = Nil
+    requestHeaders: Seq[(String, String)]
   )(implicit ec: scala.concurrent.ExecutionContext) = throw new UnsupportedOperationException()
 
+  override def postAuthentications(authenticationForm: AuthenticationForm, requestHeaders: Seq[(String, String)])(implicit ec: ExecutionContext): Future[TokenReference] = ???
 }
