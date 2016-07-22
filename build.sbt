@@ -40,7 +40,7 @@ lazy val api = project
       "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.16",
       "org.postgresql" % "postgresql" % "9.4.1209",
       "com.typesafe.play" %% "anorm" % "2.5.1",
-      "com.sendgrid"   %  "sendgrid-java" % "3.0.4",
+      "com.sendgrid"   %  "sendgrid-java" % "3.0.5",
       "org.scalatestplus" %% "play" % "1.4.0" % "test"
     )
   )
