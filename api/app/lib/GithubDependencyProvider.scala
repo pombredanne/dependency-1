@@ -44,6 +44,9 @@ object GithubUtil {
       case (Some(encoded), Encoding.Base64) => {
         new String(Base64.decodeBase64(encoded.getBytes))
       }
+      case (Some(contents), Encoding.Utf8) => {
+        contents
+      }
       case (Some(_), Encoding.UNDEFINED(name)) => {
         sys.error(s"Unsupported encoding[$name] for content: $contents")
       }
