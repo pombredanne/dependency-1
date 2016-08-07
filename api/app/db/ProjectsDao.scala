@@ -182,6 +182,10 @@ object ProjectsDao {
       ProjectBinariesDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
     }.foreach { ProjectBinariesDao.delete(deletedBy, _) }
 
+    Pager.create { offset =>
+      RecommendationsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
+    }.foreach { RecommendationsDao.delete(deletedBy, _) }
+
     DbHelpers.delete("projects", deletedBy.id, project.id)
     MainActor.ref ! MainActor.Messages.ProjectDeleted(project.id)
   }
