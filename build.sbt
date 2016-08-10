@@ -6,9 +6,6 @@ organization := "io.flow"
 
 scalaVersion in ThisBuild := "2.11.8"
 
-// required because of issue between scoverage & sbt
-parallelExecution in Test in ThisBuild := true
-
 lazy val generated = project
   .in(file("generated"))
   .enablePlugins(PlayScala)
@@ -39,7 +36,7 @@ lazy val api = project
       "io.flow" %% "lib-postgresql" % "0.0.35",
       "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.16",
       "org.postgresql" % "postgresql" % "9.4.1209",
-      "com.sendgrid"   %  "sendgrid-java" % "3.0.6",
+      "com.sendgrid"   %  "sendgrid-java" % "3.0.7",
       "org.scalatestplus" %% "play" % "1.4.0" % "test"
     )
   )
@@ -76,10 +73,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     "org.scalatest" %% "scalatest" % "2.2.6" % Test
   ),
   scalacOptions += "-feature",
-  coverageHighlighting := true,
   credentials += credsToUse,
   resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases",
   resolvers += "Artifactory" at "https://flow.artifactoryonline.com/flow/libs-release/"
 )
-
-version := "0.4.51"
