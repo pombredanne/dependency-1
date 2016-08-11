@@ -36,8 +36,7 @@ lazy val api = project
       "io.flow" %% "lib-postgresql" % "0.0.35",
       "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.16",
       "org.postgresql" % "postgresql" % "9.4.1209",
-      "com.sendgrid"   %  "sendgrid-java" % "3.0.7",
-      "org.scalatestplus" %% "play" % "1.4.0" % "test"
+      "com.sendgrid"   %  "sendgrid-java" % "3.0.8"
     )
   )
 
@@ -70,7 +69,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     "io.flow" %% "lib-play" % "0.1.37",
     specs2 % Test,
-    "org.scalatest" %% "scalatest" % "2.2.6" % Test
+    "org.scalatestplus" %% "play" % "1.4.0" % "test"
   ),
   scalacOptions += "-feature",
   credentials += credsToUse,
