@@ -23,11 +23,11 @@ class UserActor extends Actor with Util {
 
   def receive = {
 
-    case m @ UserActor.Messages.Data(id) => withVerboseErrorHandler(m.toString) {
+    case m @ UserActor.Messages.Data(id) => withErrorHandler(m.toString) {
       dataUser = UsersDao.findById(id)
     }
 
-    case m @ UserActor.Messages.Created => withVerboseErrorHandler(m.toString) {
+    case m @ UserActor.Messages.Created => withErrorHandler(m.toString) {
       dataUser.foreach { user =>
         OrganizationsDao.upsertForUser(user)
 

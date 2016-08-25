@@ -47,7 +47,7 @@ class EmailActor extends Actor with Util {
       *  Otherwise, filter by 26 hours to allow us to catch up on any
       *  missed emails
       */
-    case m @ EmailActor.Messages.ProcessDailySummary => withVerboseErrorHandler(m) {
+    case m @ EmailActor.Messages.ProcessDailySummary => withErrorHandler(m) {
       val hoursForPreferredTime = 2
       val hours = currentHourEst match {
         case EmailActor.PreferredHourToSendEst => hoursForPreferredTime

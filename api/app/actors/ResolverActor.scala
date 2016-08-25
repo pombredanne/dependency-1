@@ -25,19 +25,19 @@ class ResolverActor extends Actor with Util {
 
   def receive = {
 
-    case m @ ResolverActor.Messages.Data(id) => withVerboseErrorHandler(m.toString) {
+    case m @ ResolverActor.Messages.Data(id) => withErrorHandler(m.toString) {
       dataResolver = ResolversDao.findById(Authorization.All, id)
     }
 
-    case m @ ResolverActor.Messages.Created => withVerboseErrorHandler(m.toString) {
+    case m @ ResolverActor.Messages.Created => withErrorHandler(m.toString) {
       sync()
     }
 
-    case m @ ResolverActor.Messages.Sync => withVerboseErrorHandler(m.toString) {
+    case m @ ResolverActor.Messages.Sync => withErrorHandler(m.toString) {
       sync()
     }
 
-    case m @ ResolverActor.Messages.Deleted => withVerboseErrorHandler(m.toString) {
+    case m @ ResolverActor.Messages.Deleted => withErrorHandler(m.toString) {
       dataResolver.foreach { resolver =>
         Pager.create { offset =>
           LibrariesDao.findAll(Authorization.All, resolverId = Some(resolver.id), offset = offset)

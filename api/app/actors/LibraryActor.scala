@@ -23,11 +23,11 @@ class LibraryActor extends Actor with Util {
 
   def receive = {
 
-    case m @ LibraryActor.Messages.Data(id: String) => withVerboseErrorHandler(m) {
+    case m @ LibraryActor.Messages.Data(id: String) => withErrorHandler(m) {
       dataLibrary = LibrariesDao.findById(Authorization.All, id)
     }
 
-    case m @ LibraryActor.Messages.Sync => withVerboseErrorHandler(m) {
+    case m @ LibraryActor.Messages.Sync => withErrorHandler(m) {
       dataLibrary.foreach { lib =>
         SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "library", lib.id) {
           ResolversDao.findById(Authorization.All, lib.resolver.id).map { resolver =>
@@ -54,7 +54,7 @@ class LibraryActor extends Actor with Util {
       }
     }
 
-    case m @ LibraryActor.Messages.Deleted => withVerboseErrorHandler(m) {
+    case m @ LibraryActor.Messages.Deleted => withErrorHandler(m) {
       dataLibrary.foreach { lib =>
         ItemsDao.deleteByObjectId(Authorization.All, MainActor.SystemUser, lib.id)
 

@@ -23,11 +23,11 @@ class BinaryActor extends Actor with Util {
 
   def receive = {
 
-    case m @ BinaryActor.Messages.Data(id: String) => withVerboseErrorHandler(m) {
+    case m @ BinaryActor.Messages.Data(id: String) => withErrorHandler(m) {
       dataBinary = BinariesDao.findById(Authorization.All, id)
     }
 
-    case m @ BinaryActor.Messages.Sync => withVerboseErrorHandler(m) {
+    case m @ BinaryActor.Messages.Sync => withErrorHandler(m) {
       dataBinary.foreach { binary =>
         SyncsDao.withStartedAndCompleted(MainActor.SystemUser, "binary", binary.id) {
           DefaultBinaryVersionProvider.versions(binary.name).foreach { version =>
@@ -39,7 +39,7 @@ class BinaryActor extends Actor with Util {
       }
     }
 
-    case m @ BinaryActor.Messages.Deleted => withVerboseErrorHandler(m) {
+    case m @ BinaryActor.Messages.Deleted => withErrorHandler(m) {
       dataBinary.foreach { binary =>
         ItemsDao.deleteByObjectId(Authorization.All, MainActor.SystemUser, binary.id)
 

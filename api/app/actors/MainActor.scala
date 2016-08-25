@@ -103,122 +103,122 @@ class MainActor @javax.inject.Inject() (
 
   def receive = akka.event.LoggingReceive {
 
-    case m @ MainActor.Messages.UserCreated(id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.UserCreated(id) => withErrorHandler(m) {
       upsertUserActor(id) ! UserActor.Messages.Created
     }
 
-    case m @ MainActor.Messages.ProjectCreated(id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ProjectCreated(id) => withErrorHandler(m) {
       val actor = upsertProjectActor(id)
       actor ! ProjectActor.Messages.CreateHooks
       actor ! ProjectActor.Messages.Sync
       searchActor ! SearchActor.Messages.SyncProject(id)
     }
 
-    case m @ MainActor.Messages.ProjectUpdated(id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ProjectUpdated(id) => withErrorHandler(m) {
       upsertProjectActor(id) ! ProjectActor.Messages.Sync
       searchActor ! SearchActor.Messages.SyncProject(id)
     }
 
-    case m @ MainActor.Messages.ProjectDeleted(id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ProjectDeleted(id) => withErrorHandler(m) {
       projectActors.remove(id).map { actor =>
         actor ! ProjectActor.Messages.Deleted
       }
       searchActor ! SearchActor.Messages.SyncProject(id)
     }
 
-    case m @ MainActor.Messages.ProjectSync(id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ProjectSync(id) => withErrorHandler(m) {
       upsertProjectActor(id) ! ProjectActor.Messages.Sync
       searchActor ! SearchActor.Messages.SyncProject(id)
     }
 
-    case m @ MainActor.Messages.ProjectLibraryCreated(projectId, id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ProjectLibraryCreated(projectId, id) => withErrorHandler(m) {
       upsertProjectActor(projectId) ! ProjectActor.Messages.ProjectLibraryCreated(id)
     }
 
-    case m @ MainActor.Messages.ProjectLibrarySync(projectId, id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ProjectLibrarySync(projectId, id) => withErrorHandler(m) {
       upsertProjectActor(projectId) ! ProjectActor.Messages.ProjectLibrarySync(id)
     }
 
-    case m @ MainActor.Messages.ProjectLibraryDeleted(projectId, id, version) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ProjectLibraryDeleted(projectId, id, version) => withErrorHandler(m) {
       upsertProjectActor(projectId) ! ProjectActor.Messages.ProjectLibraryDeleted(id, version)
     }
 
-    case m @ MainActor.Messages.ProjectBinaryCreated(projectId, id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ProjectBinaryCreated(projectId, id) => withErrorHandler(m) {
       upsertProjectActor(projectId) ! ProjectActor.Messages.ProjectBinaryCreated(id)
     }
 
-    case m @ MainActor.Messages.ProjectBinarySync(projectId, id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ProjectBinarySync(projectId, id) => withErrorHandler(m) {
       upsertProjectActor(projectId) ! ProjectActor.Messages.ProjectBinarySync(id)
     }
 
-    case m @ MainActor.Messages.ProjectBinaryDeleted(projectId, id, version) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ProjectBinaryDeleted(projectId, id, version) => withErrorHandler(m) {
       upsertProjectActor(projectId) ! ProjectActor.Messages.ProjectBinaryDeleted(id, version)
     }
 
-    case m @ MainActor.Messages.LibraryCreated(id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.LibraryCreated(id) => withErrorHandler(m) {
       syncLibrary(id)
     }
 
-    case m @ MainActor.Messages.LibrarySync(id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.LibrarySync(id) => withErrorHandler(m) {
       syncLibrary(id)
     }
 
-    case m @ MainActor.Messages.LibrarySyncFuture(id, seconds) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.LibrarySyncFuture(id, seconds) => withErrorHandler(m) {
       system.scheduler.scheduleOnce(Duration(seconds, "seconds")) {
         println(s"MainActor.Messages.LibrarySyncFuture - $seconds - syncLibrary($id)")
         syncLibrary(id)
       }
     }
       
-    case m @ MainActor.Messages.LibrarySyncCompleted(id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.LibrarySyncCompleted(id) => withErrorHandler(m) {
       projectBroadcast(ProjectActor.Messages.LibrarySynced(id))
     }
 
-    case m @ MainActor.Messages.LibraryDeleted(id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.LibraryDeleted(id) => withErrorHandler(m) {
       libraryActors.remove(id).map { ref =>
         ref ! LibraryActor.Messages.Deleted
       }
     }
 
-    case m @ MainActor.Messages.LibraryVersionCreated(id, libraryId) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.LibraryVersionCreated(id, libraryId) => withErrorHandler(m) {
       syncLibraryVersion(id, libraryId)
     }
 
-    case m @ MainActor.Messages.LibraryVersionDeleted(id, libraryId) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.LibraryVersionDeleted(id, libraryId) => withErrorHandler(m) {
       syncLibraryVersion(id, libraryId)
     }
 
-    case m @ MainActor.Messages.BinaryCreated(id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.BinaryCreated(id) => withErrorHandler(m) {
       syncBinary(id)
     }
 
-    case m @ MainActor.Messages.BinarySync(id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.BinarySync(id) => withErrorHandler(m) {
       syncBinary(id)
     }
 
-    case m @ MainActor.Messages.BinarySyncCompleted(id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.BinarySyncCompleted(id) => withErrorHandler(m) {
       projectBroadcast(ProjectActor.Messages.BinarySynced(id))
     }
 
-    case m @ MainActor.Messages.BinaryDeleted(id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.BinaryDeleted(id) => withErrorHandler(m) {
       binaryActors.remove(id).map { ref =>
         ref ! BinaryActor.Messages.Deleted
       }
     }
 
-    case m @ MainActor.Messages.BinaryVersionCreated(id, binaryId) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.BinaryVersionCreated(id, binaryId) => withErrorHandler(m) {
       syncBinaryVersion(id, binaryId)
     }
 
-    case m @ MainActor.Messages.BinaryVersionDeleted(id, binaryId) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.BinaryVersionDeleted(id, binaryId) => withErrorHandler(m) {
       syncBinaryVersion(id, binaryId)
     }
 
-    case m @ MainActor.Messages.ResolverCreated(id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ResolverCreated(id) => withErrorHandler(m) {
       upsertResolverActor(id) ! ResolverActor.Messages.Sync
     }
 
-    case m @ MainActor.Messages.ResolverDeleted(id) => withVerboseErrorHandler(m) {
+    case m @ MainActor.Messages.ResolverDeleted(id) => withErrorHandler(m) {
       resolverActors.remove(id).map { ref =>
         ref ! ResolverActor.Messages.Deleted
       }

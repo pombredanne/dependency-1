@@ -55,35 +55,35 @@ class ProjectActor @javax.inject.Inject() (
 
   def receive = {
 
-    case m @ ProjectActor.Messages.ProjectLibraryCreated(id) => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.ProjectLibraryCreated(id) => withErrorHandler(m.toString) {
       syncProjectLibrary(id)
     }
 
-    case m @ ProjectActor.Messages.ProjectLibrarySync(id) => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.ProjectLibrarySync(id) => withErrorHandler(m.toString) {
       syncProjectLibrary(id)
     }
 
-    case m @ ProjectActor.Messages.ProjectBinaryCreated(id) => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.ProjectBinaryCreated(id) => withErrorHandler(m.toString) {
       syncProjectBinary(id)
     }
 
-    case m @ ProjectActor.Messages.ProjectBinarySync(id) => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.ProjectBinarySync(id) => withErrorHandler(m.toString) {
       syncProjectBinary(id)
     }
 
-    case m @ ProjectActor.Messages.LibrarySynced(id) => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.LibrarySynced(id) => withErrorHandler(m.toString) {
       dataProject.foreach { project =>
         processPendingSync(project)
       }
     }
 
-    case m @ ProjectActor.Messages.BinarySynced(id) => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.BinarySynced(id) => withErrorHandler(m.toString) {
       dataProject.foreach { project =>
         processPendingSync(project)
       }
     }
 
-    case m @ ProjectActor.Messages.CreateHooks => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.CreateHooks => withErrorHandler(m.toString) {
       dataProject.foreach { project =>
         GithubUtil.parseUri(project.uri) match {
           case Left(error) => {
@@ -142,7 +142,7 @@ class ProjectActor @javax.inject.Inject() (
       }
     }
 
-    case m @ ProjectActor.Messages.Sync => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.Sync => withErrorHandler(m.toString) {
       dataProject.foreach { project =>
         SyncsDao.recordStarted(MainActor.SystemUser, "project", project.id)
 
@@ -201,7 +201,7 @@ class ProjectActor @javax.inject.Inject() (
       }
     }
 
-    case m @ ProjectActor.Messages.Deleted => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.Deleted => withErrorHandler(m.toString) {
       dataProject.foreach { project =>
         Pager.create { offset =>
           RecommendationsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
@@ -212,7 +212,7 @@ class ProjectActor @javax.inject.Inject() (
       context.stop(self)
     }
 
-    case m @ ProjectActor.Messages.ProjectLibraryDeleted(id, version) => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.ProjectLibraryDeleted(id, version) => withErrorHandler(m.toString) {
       dataProject.foreach { project =>
         RecommendationsDao.findAll(
           Authorization.All,
@@ -228,7 +228,7 @@ class ProjectActor @javax.inject.Inject() (
       }
     }
 
-    case m @ ProjectActor.Messages.ProjectBinaryDeleted(id, version) => withVerboseErrorHandler(m.toString) {
+    case m @ ProjectActor.Messages.ProjectBinaryDeleted(id, version) => withErrorHandler(m.toString) {
       dataProject.foreach { project =>
         RecommendationsDao.findAll(
           Authorization.All,

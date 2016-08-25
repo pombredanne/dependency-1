@@ -22,11 +22,11 @@ class PeriodicActor extends Actor with Util {
 
   def receive = {
 
-    case m @ PeriodicActor.Messages.Purge => withVerboseErrorHandler(m) {
+    case m @ PeriodicActor.Messages.Purge => withErrorHandler(m) {
       SyncsDao.purgeOld()
     }
 
-    case m @ PeriodicActor.Messages.SyncProjects => withVerboseErrorHandler(m) {
+    case m @ PeriodicActor.Messages.SyncProjects => withErrorHandler(m) {
       Pager.create { offset =>
         ProjectsDao.findAll(Authorization.All, offset = offset)
       }.foreach { project =>
@@ -34,7 +34,7 @@ class PeriodicActor extends Actor with Util {
       }
     }
 
-    case m @ PeriodicActor.Messages.SyncBinaries => withVerboseErrorHandler(m) {
+    case m @ PeriodicActor.Messages.SyncBinaries => withErrorHandler(m) {
       Pager.create { offset =>
         BinariesDao.findAll(Authorization.All, offset = offset)
       }.foreach { bin =>
@@ -42,7 +42,7 @@ class PeriodicActor extends Actor with Util {
       }
     }
 
-    case m @ PeriodicActor.Messages.SyncLibraries => withVerboseErrorHandler(m) {
+    case m @ PeriodicActor.Messages.SyncLibraries => withErrorHandler(m) {
       Pager.create { offset =>
         LibrariesDao.findAll(Authorization.All, offset = offset)
       }.foreach { library =>
